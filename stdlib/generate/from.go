@@ -6,11 +6,14 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -18,30 +21,15 @@ import (
 const FromGeneratorKind = "fromGenerator"
 
 type FromGeneratorOpSpec struct {
-	Start time.Time                    `json:"start"`
-	Stop  time.Time                    `json:"stop"`
+	Start flux.Time                    `json:"start"`
+	Stop  flux.Time                    `json:"stop"`
 	Count int64                        `json:"count"`
 	Fn    interpreter.ResolvedFunction `json:"fn"`
 }
 
 func init() {
-	fromGeneratorSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"start": semantic.Time,
-			"stop":  semantic.Time,
-			"count": semantic.Int,
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"n": semantic.Int,
-				},
-				Required: semantic.LabelSet{"n"},
-				Return:   semantic.Int,
-			}),
-		},
-		Required: semantic.LabelSet{"start", "stop", "count", "fn"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("generate", "from", flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature))
+	fromGeneratorSignature := runtime.MustLookupBuiltinType("generate", "from")
+	runtime.RegisterPackageValue("generate", "from", flux.MustValue(flux.FunctionValue(FromGeneratorKind, createFromGeneratorOpSpec, fromGeneratorSignature)))
 	flux.RegisterOpSpec(FromGeneratorKind, newFromGeneratorOp)
 	plan.RegisterProcedureSpec(FromGeneratorKind, newFromGeneratorProcedure, FromGeneratorKind)
 	execute.RegisterSource(FromGeneratorKind, createFromGeneratorSource)
@@ -53,13 +41,12 @@ func createFromGeneratorOpSpec(args flux.Arguments, a *flux.Administration) (flu
 	if t, err := args.GetRequiredTime("start"); err != nil {
 		return nil, err
 	} else {
-		spec.Start = t.Time(time.Now())
+		spec.Start = t
 	}
-
 	if t, err := args.GetRequiredTime("stop"); err != nil {
 		return nil, err
 	} else {
-		spec.Stop = t.Time(time.Now())
+		spec.Stop = t
 	}
 
 	if i, err := args.GetRequiredInt("count"); err != nil {
@@ -106,8 +93,8 @@ func newFromGeneratorProcedure(qs flux.OperationSpec, pa plan.Administration) (p
 
 	return &FromGeneratorProcedureSpec{
 		Count: spec.Count,
-		Start: spec.Start,
-		Stop:  spec.Stop,
+		Start: spec.Start.Time(pa.Now()),
+		Stop:  spec.Stop.Time(pa.Now()),
 		Fn:    spec.Fn,
 	}, nil
 }
@@ -132,9 +119,15 @@ func createFromGeneratorSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID
 	s.Start = spec.Start
 	s.Stop = spec.Stop
 	s.Count = spec.Count
-	fn, _, err := compiler.CompileFnParam(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope), semantic.Int, semantic.Int)
+	fn, err := compiler.Compile(compiler.ToScope(spec.Fn.Scope), spec.Fn.Fn, semantic.NewObjectType(
+		[]semantic.PropertyType{
+			{Key: []byte("n"), Value: semantic.BasicInt},
+		},
+	))
 	if err != nil {
 		return nil, err
+	} else if n := fn.Type().Nature(); n != semantic.Int {
+		return nil, errors.Newf(codes.Invalid, "function must return type integer, but got %s", n)
 	}
 	s.Fn = fn
 
@@ -206,9 +199,11 @@ func (s *GeneratorSource) Decode(ctx context.Context) (flux.Table, error) {
 	deltaT := s.Stop.Sub(s.Start) / time.Duration(s.Count)
 	timeIdx := execute.ColIdx("_time", cols)
 	valueIdx := execute.ColIdx("_value", cols)
+	in := values.NewObject(semantic.NewObjectType([]semantic.PropertyType{
+		{Key: []byte("n"), Value: semantic.BasicInt},
+	}))
 	for i := 0; i < int(s.Count); i++ {
 		b.AppendTime(timeIdx, values.ConvertTime(s.Start.Add(time.Duration(i)*deltaT)))
-		in := values.NewObject()
 		in.Set("n", values.NewInt(int64(i)))
 		v, err := s.Fn.Eval(ctx, in)
 		if err != nil {

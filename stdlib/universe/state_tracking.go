@@ -12,7 +12,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -27,24 +27,9 @@ type StateTrackingOpSpec struct {
 }
 
 func init() {
-	stateTrackingSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"r": semantic.Tvar(1),
-				},
-				Required: semantic.LabelSet{"r"},
-				Return:   semantic.Bool,
-			}),
-			"countColumn":    semantic.String,
-			"durationColumn": semantic.String,
-			"durationUnit":   semantic.Duration,
-			"timeColumn":     semantic.String,
-		},
-		[]string{"fn"},
-	)
+	stateTrackingSignature := runtime.MustLookupBuiltinType("universe", "stateTracking")
 
-	flux.RegisterPackageValue("universe", StateTrackingKind, flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature))
+	runtime.RegisterPackageValue("universe", StateTrackingKind, flux.MustValue(flux.FunctionValue(StateTrackingKind, createStateTrackingOpSpec, stateTrackingSignature)))
 	flux.RegisterOpSpec(StateTrackingKind, newStateTrackingOp)
 	plan.RegisterProcedureSpec(StateTrackingKind, newStateTrackingProcedure, StateTrackingKind)
 	execute.RegisterTransformation(StateTrackingKind, createStateTrackingTransformation)
@@ -176,10 +161,7 @@ type stateTrackingTransformation struct {
 }
 
 func NewStateTrackingTransformation(ctx context.Context, spec *StateTrackingProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*stateTrackingTransformation, error) {
-	fn, err := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	if err != nil {
-		return nil, err
-	}
+	fn := execute.NewRowPredicateFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &stateTrackingTransformation{
 		d:              d,
 		cache:          cache,
@@ -201,14 +183,13 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	if !created {
 		return errors.Newf(codes.FailedPrecondition, "found duplicate table with key: %v", tbl.Key())
 	}
-	err := execute.AddTableCols(tbl, builder)
-	if err != nil {
+	if err := execute.AddTableCols(tbl, builder); err != nil {
 		return err
 	}
 
 	// Prepare the functions for the column types.
 	cols := tbl.Cols()
-	err = t.fn.Prepare(cols)
+	fn, err := t.fn.Prepare(cols)
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
@@ -255,7 +236,7 @@ func (t *stateTrackingTransformation) Process(id execute.DatasetID, tbl flux.Tab
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			match, err := t.fn.EvalRow(t.ctx, i, cr)
+			match, err := fn.EvalRow(t.ctx, i, cr)
 			if err != nil {
 				log.Printf("failed to evaluate state tracking expression: %v", err)
 				continue

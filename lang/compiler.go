@@ -2,17 +2,21 @@ package lang
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/colm/tableflux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -48,7 +52,7 @@ type CompileOption func(*compileOptions)
 type compileOptions struct {
 	verbose bool
 
-	extern *ast.File
+	extern flux.ASTHandle
 
 	planOptions struct {
 		logical  []plan.LogicalOption
@@ -66,7 +70,7 @@ func WithPhysPlanOpts(popts ...plan.PhysicalOption) CompileOption {
 		o.planOptions.physical = append(o.planOptions.physical, popts...)
 	}
 }
-func WithExtern(extern *ast.File) CompileOption {
+func WithExtern(extern flux.ASTHandle) CompileOption {
 	return func(o *compileOptions) {
 		o.extern = extern
 	}
@@ -96,20 +100,21 @@ func Verbose(v bool) CompileOption {
 
 // Compile evaluates a Flux script producing a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func Compile(q string, now time.Time, opts ...CompileOption) (*AstProgram, error) {
-	astPkg, err := flux.Parse(q)
+func Compile(q string, runtime flux.Runtime, now time.Time, opts ...CompileOption) (*AstProgram, error) {
+	astPkg, err := runtime.Parse(q)
 	if err != nil {
 		return nil, err
 	}
-	return CompileAST(astPkg, now, opts...), nil
+	return CompileAST(astPkg, runtime, now, opts...), nil
 }
 
-// CompileAST evaluates a Flux AST and produces a flux.Program.
+// CompileAST evaluates a Flux handle to an AST and produces a flux.Program.
 // now parameter must be non-zero, that is the default now time should be set before compiling.
-func CompileAST(astPkg *ast.Package, now time.Time, opts ...CompileOption) *AstProgram {
+func CompileAST(astPkg flux.ASTHandle, runtime flux.Runtime, now time.Time, opts ...CompileOption) *AstProgram {
 	return &AstProgram{
 		Program: &Program{
-			opts: applyOptions(opts...),
+			Runtime: runtime,
+			opts:    applyOptions(opts...),
 		},
 		Ast: astPkg,
 		Now: now,
@@ -127,7 +132,7 @@ func CompileTableObject(ctx context.Context, to *flux.TableObject, now time.Time
 	if o.verbose {
 		log.Println("Query Spec: ", flux.Formatted(s, flux.FmtJSON))
 	}
-	ps, err := buildPlan(context.Background(), s, o)
+	ps, err := buildPlan(ctx, s, o)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +155,7 @@ func buildPlan(ctx context.Context, spec *flux.Spec, opts *compileOptions) (*pla
 	pb.AddLogicalOptions(lopts...)
 	pb.AddPhysicalOptions(popts...)
 
-	ps, err := pb.Build().Plan(spec)
+	ps, err := pb.Build().Plan(ctx, spec)
 	if err != nil {
 		return nil, err
 	}
@@ -160,41 +165,85 @@ func buildPlan(ctx context.Context, spec *flux.Spec, opts *compileOptions) (*pla
 // FluxCompiler compiles a Flux script into a spec.
 type FluxCompiler struct {
 	Now    time.Time
-	Extern *ast.File `json:"extern"`
-	Query  string    `json:"query"`
+	Extern json.RawMessage `json:"extern,omitempty"`
+	Query  string          `json:"query"`
 }
 
-func (c FluxCompiler) Compile(ctx context.Context) (flux.Program, error) {
+func wrapFileJSONInPkg(bs []byte) []byte {
+	return []byte(fmt.Sprintf(
+		`{"type":"Package","package":"main","files":[%s]}`,
+		string(bs)))
+}
+
+func IsNonNullJSON(bs json.RawMessage) bool {
+	if len(bs) == 0 {
+		return false
+	}
+	if len(bs) == 4 && string(bs) == "null" {
+		return false
+	}
+	return true
+}
+
+func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
+	query := c.Query
+
+	if tableflux.Enabled() {
+		ok, flux, err, _ := tableflux.TableFlux(query)
+		if !ok {
+			return nil, errors.Newf(codes.Invalid, "tableflux transformation failed: %s", err)
+		}
+		query = flux
+	}
+
 	// Ignore context, it will be provided upon Program Start.
-	return Compile(c.Query, c.Now, WithExtern(c.Extern))
+	if IsNonNullJSON(c.Extern) {
+		hdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
+		if err != nil {
+			return nil, err
+		}
+		return Compile(query, runtime, c.Now, WithExtern(hdl))
+	}
+	return Compile(query, runtime, c.Now)
 }
 
 func (c FluxCompiler) CompilerType() flux.CompilerType {
 	return FluxCompilerType
 }
 
-// ASTCompiler implements Compiler by producing a Spec from an AST.
+// ASTCompiler implements Compiler by producing a Program from an AST.
 type ASTCompiler struct {
-	AST *ast.Package `json:"ast"`
-	Now time.Time
+	Extern json.RawMessage `json:"extern,omitempty"`
+	AST    json.RawMessage `json:"ast"`
+	Now    time.Time
 }
 
-func (c ASTCompiler) Compile(ctx context.Context) (flux.Program, error) {
+func (c ASTCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	now := c.Now
 	if now.IsZero() {
 		now = time.Now()
 	}
+	hdl, err := runtime.JSONToHandle(c.AST)
+	if err != nil {
+		return nil, err
+	}
+	if err := hdl.GetError(); err != nil {
+		return nil, err
+	}
+
 	// Ignore context, it will be provided upon Program Start.
-	return CompileAST(c.AST, now), nil
+	if IsNonNullJSON(c.Extern) {
+		extHdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
+		if err != nil {
+			return nil, err
+		}
+		return CompileAST(hdl, runtime, now, WithExtern(extHdl)), nil
+	}
+	return CompileAST(hdl, runtime, now), nil
 }
 
 func (ASTCompiler) CompilerType() flux.CompilerType {
 	return ASTCompilerType
-}
-
-// PrependFile prepends a file onto the compiler's list of package files.
-func (c *ASTCompiler) PrependFile(file *ast.File) {
-	c.AST.Files = append([]*ast.File{file}, c.AST.Files...)
 }
 
 // TableObjectCompiler compiles a TableObject into an executable flux.Program.
@@ -223,8 +272,10 @@ type LoggingProgram interface {
 type Program struct {
 	Logger   *zap.Logger
 	PlanSpec *plan.Spec
+	Runtime  flux.Runtime
 
-	opts *compileOptions
+	opts      *compileOptions
+	Profilers []execute.Profiler
 }
 
 func (p *Program) SetLogger(logger *zap.Logger) {
@@ -243,9 +294,17 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		span:    s,
 		cancel:  cancel,
 		stats: flux.Statistics{
-			Metadata: make(flux.Metadata),
+			Metadata: make(metadata.Metadata),
 		},
 	}
+
+	if execdeps.HaveExecutionDependencies(ctx) {
+		deps := execdeps.GetExecutionDependencies(ctx)
+		q.stats.Metadata.AddAll(deps.Metadata)
+	}
+
+	q.stats.Metadata.Add("flux/query-plan",
+		fmt.Sprintf("%v", plan.Formatted(p.PlanSpec, plan.WithDetails())))
 
 	e := execute.NewExecutor(p.Logger)
 	resultMap, md, err := e.Execute(cctx, p.PlanSpec, q.alloc)
@@ -279,7 +338,7 @@ func (p *Program) processResults(ctx context.Context, q *query, resultMap map[st
 	}
 }
 
-func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
+func (p *Program) readMetadata(q *query, metaCh <-chan metadata.Metadata) {
 	defer q.wg.Done()
 	for md := range metaCh {
 		q.stats.Metadata.AddAll(md)
@@ -291,29 +350,38 @@ func (p *Program) readMetadata(q *query, metaCh <-chan flux.Metadata) {
 type AstProgram struct {
 	*Program
 
-	Ast *ast.Package
+	Ast flux.ASTHandle
 	Now time.Time
 }
 
-func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
-	if p.opts == nil {
-		p.opts = defaultOptions()
-	}
+// Prepare the Ast for semantic analysis
+func (p *AstProgram) GetAst() (flux.ASTHandle, error) {
 	if p.Now.IsZero() {
 		p.Now = time.Now()
 	}
+	if p.opts == nil {
+		p.opts = defaultOptions()
+	}
 	if p.opts.extern != nil {
-		p.Ast.Files = append([]*ast.File{p.opts.extern}, p.Ast.Files...)
+		extern := p.opts.extern
+		if err := p.Runtime.MergePackages(extern, p.Ast); err != nil {
+			return nil, err
+		}
+		p.Ast = extern
+		p.opts.extern = nil
 	}
-	// The program must inject execution dependencies to make it available
-	// to function calls during the evaluation phase (see `tableFind`).
-	deps := ExecutionDependencies{
-		Allocator: alloc,
-		Logger:    p.Logger,
+	return p.Ast, nil
+}
+
+func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
+	ast, astErr := p.GetAst()
+	if astErr != nil {
+		return nil, nil, astErr
 	}
-	ctx = deps.Inject(ctx)
+
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := flux.EvalAST(cctx, p.Ast, flux.SetNowOption(p.Now))
+
+	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -321,9 +389,9 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 
 	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
-	nowOpt, ok := scope.Lookup(flux.NowOption)
+	nowOpt, ok := scope.Lookup(interpreter.NowOption)
 	if !ok {
-		return nil, nil, fmt.Errorf("%q option not set", flux.NowOption)
+		return nil, nil, fmt.Errorf("%q option not set", interpreter.NowOption)
 	}
 	nowTime, err := nowOpt.Function().Call(ctx, nil)
 	if err != nil {
@@ -338,16 +406,27 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 }
 
 func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
+	// The program must inject execution dependencies to make it available to
+	// function calls during the evaluation phase (see `tableFind`).
+	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+	ctx = deps.Inject(ctx)
+
+	// Evaluation.
 	sp, scope, err := p.getSpec(ctx, alloc)
 	if err != nil {
 		return nil, err
 	}
+
+	// Planing.
 	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))
 	}
 	if err := p.updateOpts(scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
+	}
+	if err := p.updateProfilers(scope); err != nil {
+		return nil, errors.Wrap(err, codes.Inherit, "error in reading profiler settings while starting program")
 	}
 	ps, err := buildPlan(cctx, sp, p.opts)
 	if err != nil {
@@ -356,18 +435,50 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	p.PlanSpec = ps
 	s.Finish()
 
+	// Execution.
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
 	defer s.Finish()
 	return p.Program.Start(cctx, alloc)
 }
 
-func (p *AstProgram) updateOpts(scope values.Scope) error {
-	n := getPlannerPkgName(p.Ast)
-	if n == "" {
-		// No import for 'planner'. Nothing to update.
+func (p *AstProgram) updateProfilers(scope values.Scope) error {
+	pkg, ok := getPackageFromScope("profiler", scope)
+	if !ok {
 		return nil
 	}
-	lo, po, err := getPlanOptions(scope, n)
+	if pkg.Type().Nature() != semantic.Object {
+		// No import for profiler, this is useless.
+		return nil
+	}
+
+	profilerNames, err := getOptionValues(pkg.Object(), "enabledProfilers")
+	if err != nil {
+		return err
+	}
+	dedupeMap := make(map[string]bool)
+	p.Profilers = make([]execute.Profiler, 0)
+	for _, profilerName := range profilerNames {
+		if profiler, exists := execute.AllProfilers[profilerName]; !exists {
+			// profiler does not exist
+			continue
+		} else {
+			if _, exists := dedupeMap[profilerName]; exists {
+				// Ignore duplicates
+				continue
+			}
+			dedupeMap[profilerName] = true
+			p.Profilers = append(p.Profilers, profiler)
+		}
+	}
+	return nil
+}
+
+func (p *AstProgram) updateOpts(scope values.Scope) error {
+	pkg, ok := getPackageFromScope("planner", scope)
+	if !ok {
+		return nil
+	}
+	lo, po, err := getPlanOptions(pkg)
 	if err != nil {
 		return err
 	}
@@ -380,80 +491,52 @@ func (p *AstProgram) updateOpts(scope values.Scope) error {
 	return nil
 }
 
-func getPlannerPkgName(pkg *ast.Package) string {
-	for _, f := range pkg.Files {
-		for _, imp := range f.Imports {
-			if path := imp.Path.Value; path == "planner" {
-				name := path
-				if alias := imp.As; alias != nil {
-					name = alias.Name
-				}
-				return name
+func getPackageFromScope(pkgName string, scope values.Scope) (values.Package, bool) {
+	found := false
+	var foundPkg values.Package
+	scope.Range(func(k string, v values.Value) {
+		if found {
+			return
+		}
+		if pkg, ok := v.(values.Package); ok {
+			if pkg.Name() == pkgName {
+				found = true
+				foundPkg = pkg
 			}
 		}
-	}
-	return ""
+	})
+	return foundPkg, found
 }
 
-func getPlanOptions(scope values.Scope, pkgName string) (plan.LogicalOption, plan.PhysicalOption, error) {
-	// find the 'planner' package
-	plannerPkg, ok := scope.Lookup(pkgName)
-	if !ok {
-		// No import for planner, this is useless.
-		return nil, nil, nil
-	}
+func getPlanOptions(plannerPkg values.Package) (plan.LogicalOption, plan.PhysicalOption, error) {
 	if plannerPkg.Type().Nature() != semantic.Object {
 		// No import for planner, this is useless.
 		return nil, nil, nil
 	}
 
-	ls, err := getRules(plannerPkg.Object(), "disableLogicalRules")
+	ls, err := getOptionValues(plannerPkg.Object(), "disableLogicalRules")
 	if err != nil {
 		return nil, nil, err
 	}
-	ps, err := getRules(plannerPkg.Object(), "disablePhysicalRules")
+	ps, err := getOptionValues(plannerPkg.Object(), "disablePhysicalRules")
 	if err != nil {
 		return nil, nil, err
 	}
 	return plan.RemoveLogicalRules(ls...), plan.RemovePhysicalRules(ps...), nil
 }
 
-func getRules(plannerPkg values.Object, optionName string) ([]string, error) {
-	value, ok := plannerPkg.Get(optionName)
+func getOptionValues(pkg values.Object, optionName string) ([]string, error) {
+	value, ok := pkg.Get(optionName)
 	if !ok {
 		// No value in package.
 		return []string{}, nil
 	}
 
-	// TODO(affo): the rules are arrays of strings as defined in the 'planner' package.
-	//  During evaluation, the interpreter should raise an error if the user tries to assign
-	//  an option of a type to another. So we should be able to rely on the fact that the type
-	//  for value is fixed. At the moment is it not so.
-	//  So, we have to check and return an error to avoid a panic.
-	//  See (https://github.com/influxdata/flux/issues/1829).
-	if t := value.Type().Nature(); t != semantic.Array {
-		return nil, fmt.Errorf("'planner.%s' must be an array of string, got %s", optionName, t.String())
-	}
 	rules := value.Array()
-	if et := rules.Type().ElementType().Nature(); et != semantic.String {
-		return nil, fmt.Errorf("'planner.%s' must be an array of string, got an array of %s", optionName, et.String())
-	}
 	noRules := rules.Len()
 	rs := make([]string, noRules)
 	rules.Range(func(i int, v values.Value) {
 		rs[i] = v.Str()
 	})
 	return rs, nil
-}
-
-// WalkIR applies the function `f` to each operation in the compiled spec.
-// WARNING: this function evaluates the AST using an unlimited allocator.
-// In case of dynamic queries this could lead to unexpected memory usage.
-func WalkIR(ctx context.Context, astPkg *ast.Package, f func(o *flux.Operation) error) error {
-	p := CompileAST(astPkg, time.Now())
-	if sp, _, err := p.getSpec(ctx, new(memory.Allocator)); err != nil {
-		return err
-	} else {
-		return sp.Walk(f)
-	}
 }

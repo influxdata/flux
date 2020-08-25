@@ -92,3 +92,8 @@ func registerRule(ruleMap map[string]Rule, rules ...Rule) {
 		ruleMap[name] = rule
 	}
 }
+
+func ClearRegisteredRules() {
+	ruleNameToLogicalRule = make(map[string]Rule)
+	ruleNameToPhysicalRule = make(map[string]Rule)
+}

@@ -16,9 +16,9 @@ type Compiler struct {
 	Spec *flux.Spec `json:"spec"`
 }
 
-func (c Compiler) Compile(ctx context.Context) (flux.Program, error) {
+func (c Compiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	planner := plan.PlannerBuilder{}.Build()
-	ps, err := planner.Plan(c.Spec)
+	ps, err := planner.Plan(ctx, c.Spec)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,7 @@
 package plan_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -128,7 +129,7 @@ func TestPlanTraversal(t *testing.T) {
 
 			simpleRule := plantest.SimpleRule{}
 			thePlanner := plan.NewPhysicalPlanner(plan.OnlyPhysicalRules(&simpleRule))
-			_, err := thePlanner.Plan(planSpec)
+			_, err := thePlanner.Plan(context.Background(), planSpec)
 			if err != nil {
 				t.Fatalf("Could not plan: %v", err)
 			}

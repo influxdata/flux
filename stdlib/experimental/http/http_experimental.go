@@ -6,11 +6,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
@@ -20,15 +22,7 @@ import (
 // http get mirrors the http post originally completed for alerts & notifications
 var get = values.NewFunction(
 	"get",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"url":     semantic.String,
-			"headers": semantic.Tvar(1),
-			"timeout": semantic.Duration,
-		},
-		Required: []string{"url"},
-		Return:   semantic.NewObjectPolyType(map[string]semantic.PolyType{"statusCode": semantic.Int, "headers": semantic.Object, "body": semantic.Bytes}, semantic.LabelSet{"statusCode", "headers", "body"}, nil),
-	}),
+	runtime.MustLookupBuiltinType("experimental/http", "get"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		// Get and validate URL
 		uV, ok := args.Get("url")
@@ -45,7 +39,7 @@ var get = values.NewFunction(
 			return nil, err
 		}
 		if err := validator.Validate(u); err != nil {
-			return nil, err
+			return nil, errors.New(codes.Invalid, "no such host")
 		}
 
 		// http.NewDefaultClient() does default to 30
@@ -70,7 +64,7 @@ var get = values.NewFunction(
 		if ok && !header.IsNull() {
 			var rangeErr error
 			header.Object().Range(func(k string, v values.Value) {
-				if v.Type() == semantic.String {
+				if v.Type().Nature() == semantic.String {
 					req.Header.Set(k, v.Str())
 				} else {
 					rangeErr = errors.Newf(codes.Invalid, "header value %q must be a string", k)
@@ -98,6 +92,12 @@ var get = values.NewFunction(
 			req = req.WithContext(ccctx)
 			response, err := dc.Do(req)
 			if err != nil {
+				// Alias the DNS lookup error so as not to disclose the
+				// DNS server address. This error is private in the net/http
+				// package, so string matching is used.
+				if strings.HasSuffix(err.Error(), "no such host") {
+					return 0, nil, nil, errors.New(codes.Invalid, "no such host")
+				}
 				return 0, nil, nil, err
 			}
 			body, err := ioutil.ReadAll(response.Body)
@@ -135,5 +135,6 @@ func headerToObject(header http.Header) (headerObj values.Object) {
 }
 
 func init() {
-	flux.RegisterPackageValue("experimental/http", "get", get)
+	runtime.RegisterPackageValue("experimental/http", "get", get)
+
 }

@@ -1,9 +1,14 @@
 package universe_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"github.com/influxdata/flux/dependencies/dependenciestest"
+	"github.com/influxdata/flux/internal/gen"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -77,7 +82,7 @@ func TestFill_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mydb",
+							Bucket: influxdb.NameOrID{Name: "mydb"},
 						},
 					},
 					{
@@ -406,6 +411,40 @@ func TestFill_Process(t *testing.T) {
 			}},
 		},
 		{
+			name: "fill previous multiple buffers",
+			spec: &universe.FillProcedureSpec{
+				DefaultCost: plan.DefaultCost{},
+				Column:      "_value",
+				UsePrevious: true,
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), nil},
+						{execute.Time(2), "A"},
+						{execute.Time(3), nil},
+						{execute.Time(4), "B"},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TString},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil},
+					{execute.Time(2), "A"},
+					{execute.Time(3), "A"},
+					{execute.Time(4), "B"},
+				},
+			}},
+		},
+		{
 			name: "fill previous empty table",
 			spec: &universe.FillProcedureSpec{
 				DefaultCost: plan.DefaultCost{},
@@ -427,19 +466,139 @@ func TestFill_Process(t *testing.T) {
 				Data: [][]interface{}(nil),
 			}},
 		},
+		{
+			name: "null group key",
+			spec: &universe.FillProcedureSpec{
+				Column: "tag0",
+				Value:  values.New(0.0),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), nil, 2.0},
+					{execute.Time(2), nil, nil},
+					{execute.Time(3), nil, 4.0},
+					{execute.Time(4), nil, nil},
+				},
+				GroupKey: execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "tag0", Type: flux.TFloat},
+					},
+					[]values.Value{values.NewNull(semantic.BasicFloat)},
+				),
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 0.0, 2.0},
+					{execute.Time(2), 0.0, nil},
+					{execute.Time(3), 0.0, 4.0},
+					{execute.Time(4), 0.0, nil},
+				},
+				KeyCols:   []string{"tag0"},
+				KeyValues: []interface{}{0.0},
+			}},
+		},
+		{
+			name: "non null group key",
+			spec: &universe.FillProcedureSpec{
+				Column: "tag0",
+				Value:  values.New(0.0),
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, 2.0},
+					{execute.Time(2), 1.0, nil},
+					{execute.Time(3), 1.0, 4.0},
+					{execute.Time(4), 1.0, nil},
+				},
+				GroupKey: execute.NewGroupKey(
+					[]flux.ColMeta{
+						{Label: "tag0", Type: flux.TFloat},
+					},
+					[]values.Value{values.NewFloat(1.0)},
+				),
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "tag0", Type: flux.TFloat},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), 1.0, 2.0},
+					{execute.Time(2), 1.0, nil},
+					{execute.Time(3), 1.0, 4.0},
+					{execute.Time(4), 1.0, nil},
+				},
+				KeyCols:   []string{"tag0"},
+				KeyValues: []interface{}{1.0},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				nil,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					return universe.NewFillTransformation(d, c, tc.spec)
+				func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					ctx := dependenciestest.Default().Inject(context.Background())
+					return universe.NewFillTransformation(ctx, tc.spec, id, alloc)
 				},
 			)
 		})
 	}
+}
+
+func BenchmarkFill_Values(b *testing.B) {
+	b.Run("1000000", func(b *testing.B) {
+		benchmarkFill(b, 1000000)
+	})
+}
+
+func benchmarkFill(b *testing.B, n int) {
+	b.ReportAllocs()
+	spec := &universe.FillProcedureSpec{
+		Column: "_value",
+		Value:  values.NewFloat(0),
+	}
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: n,
+				Alloc:     alloc,
+				Tags: []gen.Tag{
+					{Name: "_measurement", Cardinality: 1},
+					{Name: "_field", Cardinality: 1},
+					{Name: "t0", Cardinality: 1},
+					{Name: "t1", Cardinality: 1},
+					{Name: "t2", Cardinality: 1},
+					{Name: "t3", Cardinality: 1},
+					{Name: "t4", Cardinality: 1},
+					{Name: "t5", Cardinality: 1},
+				},
+				Nulls: 0.4,
+			}
+			return gen.Input(context.Background(), schema)
+		},
+		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			return universe.NewFillTransformation(context.Background(), spec, id, alloc)
+		},
+	)
 }

@@ -1,10 +1,13 @@
 package plan
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 )
 
 // LogicalPlanner translates a flux.Spec into a plan.Spec and applies any
@@ -15,7 +18,7 @@ import (
 // the actual data being processed.
 type LogicalPlanner interface {
 	CreateInitialPlan(spec *flux.Spec) (*Spec, error)
-	Plan(*Spec) (*Spec, error)
+	Plan(context.Context, *Spec) (*Spec, error)
 }
 
 // NewLogicalPlanner returns a new logical plan with the given options.
@@ -81,7 +84,7 @@ func RemoveLogicalRules(rules ...string) LogicalOption {
 	})
 }
 
-// Disables integrity checks in the logical planner
+// DisableIntegrityChecks disables integrity checks in the logical planner.
 func DisableIntegrityChecks() LogicalOption {
 	return logicalOption(func(lp *logicalPlanner) {
 		lp.disableIntegrityChecks = true
@@ -94,8 +97,8 @@ func (l *logicalPlanner) CreateInitialPlan(spec *flux.Spec) (*Spec, error) {
 }
 
 // Plan transforms the given naive plan by applying rules.
-func (l *logicalPlanner) Plan(logicalPlan *Spec) (*Spec, error) {
-	newLogicalPlan, err := l.heuristicPlanner.Plan(logicalPlan)
+func (l *logicalPlanner) Plan(ctx context.Context, logicalPlan *Spec) (*Spec, error) {
+	newLogicalPlan, err := l.heuristicPlanner.Plan(ctx, logicalPlan)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +197,7 @@ func (v *fluxSpecVisitor) addYieldName(pn Node) error {
 	name := yieldSpec.YieldName()
 	_, isDup := v.yieldNames[name]
 	if isDup {
-		return fmt.Errorf("duplicate yield name \"%v\" found on plan node: %v", name, pn.ID())
+		return errors.Newf(codes.Invalid, "found more than one call to yield() with the name %q", name)
 	}
 
 	v.yieldNames[name] = struct{}{}

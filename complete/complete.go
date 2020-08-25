@@ -6,14 +6,9 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
-
-type functionType interface {
-	Signature() semantic.FunctionPolySignature
-}
 
 // FunctionSuggestion provides suggestion information about a function.
 type FunctionSuggestion struct {
@@ -78,17 +73,23 @@ func (c Completer) FunctionSuggestion(name string) (FunctionSuggestion, error) {
 		return s, fmt.Errorf("name ( %s ) is not a function", name)
 	}
 
-	funcType, ok := v.PolyType().(functionType)
-	if !ok {
-		return s, errors.New("could not cast function type")
+	ft := v.Type()
+	l, err := ft.NumArguments()
+	if err != nil {
+		return s, err
 	}
+	params := make(map[string]string, l)
 
-	sig := funcType.Signature()
-
-	params := make(map[string]string, len(sig.Parameters))
-
-	for k, v := range sig.Parameters {
-		params[k] = v.Nature().String()
+	for i := 0; i < l; i++ {
+		p, err := ft.Argument(i)
+		if err != nil {
+			return s, err
+		}
+		pt, err := p.TypeOf()
+		if err != nil {
+			return s, err
+		}
+		params[string(p.Name())] = pt.Nature().String()
 	}
 
 	s = FunctionSuggestion{
@@ -98,11 +99,6 @@ func (c Completer) FunctionSuggestion(name string) (FunctionSuggestion, error) {
 	return s, nil
 }
 
-// DefaultCompleter creates a completer with builtin scope
-func DefaultCompleter() Completer {
-	return NewCompleter(flux.Prelude())
-}
-
 func isFunction(v values.Value) bool {
-	return v.PolyType().Nature() == semantic.Function
+	return v.Type().Nature() == semantic.Function
 }

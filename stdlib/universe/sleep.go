@@ -4,16 +4,16 @@ import (
 	"context"
 	"time"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("universe", "sleep", sleepFunc)
+	runtime.RegisterPackageValue("universe", "sleep", sleepFunc)
 }
 
 const (
@@ -23,15 +23,7 @@ const (
 
 var sleepFunc = values.NewFunction(
 	"sleep",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			vArg:        semantic.Tvar(1),
-			durationArg: semantic.Duration,
-		},
-		PipeArgument: vArg,
-		Required:     semantic.LabelSet{vArg, durationArg},
-		Return:       semantic.Tvar(1),
-	}),
+	runtime.MustLookupBuiltinType("universe", "sleep"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCallContext(sleep, ctx, args)
 	},
@@ -54,7 +46,7 @@ func sleep(ctx context.Context, args interpreter.Arguments) (values.Value, error
 	if err != nil {
 		return nil, err
 	} else if d.Type().Nature() != semantic.Duration {
-		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", durationArg, semantic.Duration, v.PolyType().Nature())
+		return nil, errors.Newf(codes.Invalid, "keyword argument %q should be of kind %v, but got %v", durationArg, semantic.Duration, v.Type().Nature())
 	}
 
 	timer := time.NewTimer(d.Duration().Duration())

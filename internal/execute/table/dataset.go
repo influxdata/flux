@@ -32,11 +32,11 @@ func (d *dataset) SetTriggerSpec(spec plan.TriggerSpec) {
 }
 
 func (d *dataset) UpdateWatermark(mark execute.Time) error {
-	return nil
+	return d.ts.UpdateWatermark(d.id, mark)
 }
 
 func (d *dataset) UpdateProcessingTime(time execute.Time) error {
-	return nil
+	return d.ts.UpdateProcessingTime(d.id, time)
 }
 
 func (d *dataset) RetractTable(key flux.GroupKey) error {

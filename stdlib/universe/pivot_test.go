@@ -25,7 +25,7 @@ func TestPivot_NewQuery(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "testdb",
+							Bucket: influxdb.NameOrID{Name: "testdb"},
 						},
 					},
 					{
@@ -1363,7 +1363,7 @@ func TestPivot2_Process_VariousSchemas(t *testing.T) {
 	store := executetest.NewDataStore()
 	d.AddTransformation(store)
 
-	tables, err := gen.Input(gen.Schema{
+	tables, err := gen.Input(context.Background(), gen.Schema{
 		Tags: []gen.Tag{
 			{Name: "_measurement", Cardinality: 1},
 			{Name: "_field", Cardinality: 10},
@@ -1429,7 +1429,7 @@ func benchmarkPivot(b *testing.B, n int) {
 					{Name: "t1", Cardinality: 50},
 				},
 			}
-			return gen.Input(schema)
+			return gen.Input(context.Background(), schema)
 		},
 		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 			// cache := execute.NewTableBuilderCache(alloc)

@@ -1495,7 +1495,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "length_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -3119,7 +3119,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "replaceAll_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -4795,7 +4795,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "replace_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -6419,7 +6419,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "subset_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -8395,7 +8395,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "substring_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -9915,7 +9915,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "title_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -11435,7 +11435,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "toLower_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -12955,7 +12955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "toUpper_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -14475,7 +14475,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "trim_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

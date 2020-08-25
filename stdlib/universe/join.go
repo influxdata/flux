@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -21,16 +22,8 @@ const JoinKind = "join"
 const MergeJoinKind = "merge-join"
 
 func init() {
-	joinSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"tables": semantic.NewObjectPolyType(nil, nil, semantic.AllLabels()),
-			"on":     semantic.NewArrayPolyType(semantic.String),
-			"method": semantic.String,
-		},
-		Required: semantic.LabelSet{"tables"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("universe", JoinKind, flux.FunctionValue(JoinKind, createJoinOpSpec, joinSignature))
+	joinSignature := runtime.MustLookupBuiltinType("universe", "join")
+	runtime.RegisterPackageValue("universe", JoinKind, flux.MustValue(flux.FunctionValue(JoinKind, createJoinOpSpec, joinSignature)))
 	flux.RegisterOpSpec(JoinKind, newJoinOp)
 	//TODO(nathanielc): Allow for other types of join implementations
 	plan.RegisterProcedureSpec(MergeJoinKind, newMergeJoinProcedure, JoinKind)
@@ -124,9 +117,9 @@ func createJoinOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 		if err != nil {
 			return
 		}
-		if operation.PolyType().Nature() != semantic.Object {
+		if operation.Type().Nature() != semantic.Array {
 			err = errors.Newf(codes.Invalid, "expected %q to be object type; instead got %v",
-				name, operation.PolyType().Nature())
+				name, operation.Type().Nature())
 			return
 		}
 		table, ok := operation.(*flux.TableObject)

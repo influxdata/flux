@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"context"
 	"math"
 
 	"github.com/influxdata/flux"
@@ -8,7 +9,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -27,22 +28,11 @@ type WindowOpSpec struct {
 var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
 
 func init() {
-	windowSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"every":       semantic.Duration,
-			"period":      semantic.Duration,
-			"offset":      semantic.Duration,
-			"timeColumn":  semantic.String,
-			"startColumn": semantic.String,
-			"stopColumn":  semantic.String,
-			"createEmpty": semantic.Bool,
-		},
-		nil,
-	)
+	windowSignature := runtime.MustLookupBuiltinType("universe", "window")
 
-	flux.RegisterPackageValue("universe", WindowKind, flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature))
+	runtime.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature)))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)
-	flux.RegisterPackageValue("universe", "inf", infinityVar)
+	runtime.RegisterPackageValue("universe", "inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
 	plan.RegisterPhysicalRules(WindowTriggerPhysicalRule{})
 	execute.RegisterTransformation(WindowKind, createWindowTransformation)
@@ -59,6 +49,9 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		return nil, err
 	}
 	if everySet {
+		if every.IsNegative() {
+			return nil, errors.New(codes.Invalid, `every parameter must be nonnegative`)
+		}
 		spec.Every = every
 	}
 	period, periodSet, err := args.GetDuration("period")
@@ -159,6 +152,10 @@ func (s *WindowProcedureSpec) Kind() plan.ProcedureKind {
 func (s *WindowProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(WindowProcedureSpec)
 	ns.Window = s.Window
+	ns.TimeColumn = s.TimeColumn
+	ns.StartColumn = s.StartColumn
+	ns.StopColumn = s.StopColumn
+	ns.CreateEmpty = s.CreateEmpty
 	return ns
 }
 
@@ -419,7 +416,7 @@ func (WindowTriggerPhysicalRule) Pattern() plan.Pattern {
 // Rewrite modifies a window's trigger spec so long as it doesn't have any
 // window descendents that occur earlier in the plan and as long as none
 // of its descendents merge multiple streams together like union and join.
-func (WindowTriggerPhysicalRule) Rewrite(window plan.Node) (plan.Node, bool, error) {
+func (WindowTriggerPhysicalRule) Rewrite(ctx context.Context, window plan.Node) (plan.Node, bool, error) {
 	// This rule's pattern ensures us only one predecessor
 	if !hasValidPredecessors(window.Predecessors()[0]) {
 		return window, false, nil

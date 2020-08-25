@@ -1,0 +1,145 @@
+#!/bin/sh
+
+# Some base vars.
+SED_SUBST=""
+TOP_DIR=`pwd`
+
+# This is an internal arg allowing the makefile to reconfigure without doing a
+# substitution.
+NO_SUBST=""
+
+# Do we include the go interface?
+GO_INTERFACE=""
+WITH_COLM=""
+USER_ARGS=""
+
+prev=""
+for option
+do
+	if test -n "$prev"; then
+		option="$prev=$option"
+		prev=""
+	fi
+	optarg=`echo '' $option | sed 's/^.*=//'`
+	case "$option" in
+		--no-subst)
+			NO_SUBST=yes
+		;;
+		--enable-go-interface)
+			GO_INTERFACE=yes
+			USER_ARGS="$USER_ARGS $option"
+		;;
+		--with-colm)
+			prev=$option
+		;;
+		--with-colm=*)
+			WITH_COLM=$optarg
+			USER_ARGS="$USER_ARGS $option"
+		;;
+		--*|-*)
+			echo "error: option $option not recognized" >&2;
+			exit 1;
+		;;
+	esac
+done
+
+if test -n "$prev"; then
+	echo "error: option $prev requires an argument" >&2;
+	exit 1;
+fi
+
+
+if test "$GO_INTERFACE" = yes && test -z "$WITH_COLM"; then
+	echo "error: asked for go interface but did not configure with colm" >&2;
+	exit 1;
+fi
+
+if test -n "$GO_INTERFACE"; then
+	INTERFACE_TARGET=build-interface
+else
+	INTERFACE_TARGET=clean-interface
+fi
+
+#
+# Verify we got the expected version of colm.
+#
+EXPECTED=0.14.1
+COLM_VERSION=`$WITH_COLM/bin/colm --version | awk 'NR == 1 { print $3; }'`
+if test "$COLM_VERSION" != $EXPECTED; then
+	echo "error: expected colm version $EXPECTED but got:" >&2
+	$WITH_COLM/bin/colm --version | sed 's/^/    /' >&2
+	exit 1
+fi
+
+BINARY_TARGET=""
+if test -n "$WITH_COLM"; then
+	BINARY_TARGET=build-binary
+fi
+
+# Every var we want available when rewriting the makefile, or when rewriting
+# files from the makefile (such as scripts), we must add as an entry into sed
+# subst.
+SED_SUBST="$SED_SUBST -e 's|@TOP_DIR@|$TOP_DIR|g'"
+SED_SUBST="$SED_SUBST -e 's|@BINARY_TARGET@|$BINARY_TARGET|g'"
+SED_SUBST="$SED_SUBST -e 's|@INTERFACE_TARGET@|$INTERFACE_TARGET|g'"
+SED_SUBST="$SED_SUBST -e 's|@WITH_COLM@|$WITH_COLM|g'"
+SED_SUBST="$SED_SUBST -e 's|@GO_INTERFACE@|$GO_INTERFACE|g'"
+
+MAKEFILES="
+	Makefile.in
+	parseflux/Makefile.in
+	influxql/Makefile.in
+	tableflux/Makefile.in
+"
+
+#
+# Create the substitution script. This file is responsible for rewriting files,
+# including the Makefile, at configure time. We generate a script (as opposed
+# to running this directly) so that it can be available for the Makefile to run
+# whenever the inputs change.
+#
+# We use make for this script so that we do not need to BUILD up a SED_SUBST
+# argument in a sytax that is both valid sh and make, at the same time allowing
+# substitutions with spaces.
+#
+test -f .config.subst && rm -f .config.subst
+{
+	echo "#!/usr/bin/make -f"
+	echo "SED_SUBST= $SED_SUBST"
+	echo ".PHONY: all"
+	echo "all:"
+	for fn in $MAKEFILES; do
+		dest=`echo '' $fn | sed 's,\.in,,'`
+		echo "	@if test -f $dest; then rm -f $dest; fi"
+		echo "	@$TOP_DIR/sedsubst +w $dest $fn \$(SED_SUBST)"
+		echo "	@echo \"\" >> $dest"
+		echo "	@echo \"SED_SUBST = \$(SED_SUBST)\" >> $dest"
+		echo "	@echo \"\" >> $dest"
+		echo "	@echo \"Makefile: Makefile.in $TOP_DIR/.config.subst\" >> $dest"
+		echo "	@echo \"	cd $TOP_DIR && ./.config.subst\" >> $dest"
+		echo "	@echo \"\" >> $dest"
+		echo "	@echo \"$TOP_DIR/.config.subst: $TOP_DIR/configure\" >> $dest"
+		echo "	@echo \"	cd $TOP_DIR && ./.config.reconf\" >> $dest"
+		echo "	@chmod -w $dest"
+	done
+} \
+> .config.subst
+chmod +x-w .config.subst
+
+#
+# Create the reconfigure script. This allows us to re-run configure with the
+# same arguments from the makefile when the ./configure script changes.
+#
+test -f .config.reconf && rm -f .config.reconf
+{
+	echo "#!/bin/sh"
+	echo "./configure --no-subst $USER_ARGS"
+} \
+> .config.reconf
+chmod +x-w .config.reconf
+
+# Run substitution.
+if [ "x$NO_SUBST" = x ]; then
+	./.config.subst
+fi
+

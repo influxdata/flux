@@ -2881,7 +2881,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "join_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

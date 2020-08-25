@@ -1,0 +1,32 @@
+COLM = @WITH_COLM@/bin/colm
+TOP_DIR = @TOP_DIR@
+
+all: @BINARY_TARGET@ @INTERFACE_TARGET@
+
+build-binary: tableflux
+
+tableflux: program.lm tableflux.lm ../flux.lm $(COLM)
+	$(COLM) -I.. -o $@ $<
+	rm -f tableflux.c
+
+build-interface: embedded.c call.go call.c
+
+embedded.c: embedded.lm tableflux.lm ../flux.lm $(COLM)
+	$(COLM) -I.. -c -o $@ $<
+
+# Ensure Makefile is rewritten when its source changes.
+call.go: call.go.in Makefile
+	@$(TOP_DIR)/sedsubst -w $@ $< $(SED_SUBST)
+
+call.c: call.c.in Makefile
+	@$(TOP_DIR)/sedsubst -w $@ $< $(SED_SUBST)
+
+clean: clean-binary clean-interface
+
+clean-binary:
+	rm -f tableflux
+
+clean-interface:
+	rm -f call.go call.c embedded.c
+
+.PHONY: build build-binary build-interface clean clean-binary clean-interface

@@ -17,25 +17,24 @@ import (
 // one must use the provided functions (getRecord/getColumn).
 // TODO(affo): we decided not to expose the schema, for now.
 var (
-	TableType = semantic.NewObjectPolyType(
-		map[string]semantic.PolyType{
-			"schema": semantic.NewArrayPolyType(SchemaType),
+	SchemaMonoType = semantic.NewObjectType([]semantic.PropertyType{
+		{
+			Key:   []byte("label"),
+			Value: semantic.BasicString,
 		},
-		semantic.LabelSet{"schema"},
-		semantic.LabelSet{"schema"},
-	)
-	TableMonoType, _ = TableType.MonoType()
-	SchemaType       = semantic.NewObjectPolyType(
-		map[string]semantic.PolyType{
-			"label":   semantic.String,
-			"grouped": semantic.Bool,
-			// TODO(affo): we cannot express types as values in Flux, by now, so we use strings.
-			"type": semantic.String,
+		{
+			Key:   []byte("grouped"),
+			Value: semantic.BasicBool,
 		},
-		semantic.LabelSet{"label", "type", "grouped"},
-		semantic.LabelSet{"label", "type", "grouped"},
-	)
-	SchemaMonoType, _ = SchemaType.MonoType()
+		{
+			Key:   []byte("type"),
+			Value: semantic.BasicString,
+		},
+	})
+	TableMonoType = semantic.NewObjectType([]semantic.PropertyType{{
+		Key:   []byte("schema"),
+		Value: semantic.NewArrayType(SchemaMonoType),
+	}})
 )
 
 // Table is a values.Value that represents a table in Flux.
@@ -51,7 +50,7 @@ func NewTable(tbl flux.Table) (*Table, error) {
 		return nil, err
 	}
 	t := &Table{BufferedTable: bt}
-	t.schema = values.NewArray(SchemaMonoType)
+	t.schema = values.NewArray(semantic.NewArrayType(SchemaMonoType))
 	for _, c := range tbl.Cols() {
 		t.schema.Append(values.NewObjectWithValues(map[string]values.Value{
 			"label":   values.New(c.Label),
@@ -85,12 +84,8 @@ func (t *Table) Range(fn func(name string, v values.Value)) {
 	fn("schema", t.schema)
 }
 
-func (t *Table) Type() semantic.Type {
+func (t *Table) Type() semantic.MonoType {
 	return TableMonoType
-}
-
-func (t *Table) PolyType() semantic.PolyType {
-	return TableType
 }
 
 func (t *Table) IsNull() bool {

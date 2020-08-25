@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/moving_average"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -22,13 +23,8 @@ type RelativeStrengthIndexOpSpec struct {
 }
 
 func init() {
-	relativeStrengthIndexSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"n":       semantic.Int,
-		"columns": semantic.NewArrayPolyType(semantic.String),
-	},
-		[]string{"n"},
-	)
-	flux.RegisterPackageValue("universe", RelativeStrengthIndexKind, flux.FunctionValue(RelativeStrengthIndexKind, createRelativeStrengthIndexOpSpec, relativeStrengthIndexSignature))
+	relativeStrengthIndexSignature := runtime.MustLookupBuiltinType("universe", "relativeStrengthIndex")
+	runtime.RegisterPackageValue("universe", RelativeStrengthIndexKind, flux.MustValue(flux.FunctionValue(RelativeStrengthIndexKind, createRelativeStrengthIndexOpSpec, relativeStrengthIndexSignature)))
 	flux.RegisterOpSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexOp)
 	plan.RegisterProcedureSpec(RelativeStrengthIndexKind, newRelativeStrengthIndexProcedure, RelativeStrengthIndexKind)
 	execute.RegisterTransformation(RelativeStrengthIndexKind, createRelativeStrengthIndexTransformation)

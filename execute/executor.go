@@ -12,6 +12,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -24,7 +25,7 @@ type Executor interface {
 	// may return zero or more values. The returned channel must not require itself to
 	// be read so the executor must allocate enough space in the channel so if the channel
 	// is unread that it will not block.
-	Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error)
+	Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error)
 }
 
 type executor struct {
@@ -58,7 +59,7 @@ type executionState struct {
 
 	results map[string]flux.Result
 	sources []Source
-	metaCh  chan flux.Metadata
+	metaCh  chan metadata.Metadata
 
 	transports []Transport
 
@@ -66,7 +67,7 @@ type executionState struct {
 	logger     *zap.Logger
 }
 
-func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan flux.Metadata, error) {
+func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocator) (map[string]flux.Result, <-chan metadata.Metadata, error) {
 	es, err := e.createExecutionState(ctx, p, a)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "failed to initialize execute state")
@@ -108,7 +109,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 	// Only sources can be a MetadataNode at the moment so allocate enough
 	// space for all of them to report metadata. Not all of them will necessarily
 	// report metadata.
-	es.metaCh = make(chan flux.Metadata, len(es.sources))
+	es.metaCh = make(chan metadata.Metadata, len(es.sources))
 
 	return v.es, nil
 }

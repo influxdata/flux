@@ -112,9 +112,7 @@ func TestBufferedTable(t *testing.T) {
 						Columns:  cols,
 					}
 				}()
-				return TableIterator(
-					[]flux.Table{tbl1, tbl2, tbl3},
-				)
+				return table.Iterator{tbl1, tbl2, tbl3}
 			},
 			IsDone: func(tbl flux.Table) bool {
 				return tbl.(interface{ IsDone() bool }).IsDone()

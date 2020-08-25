@@ -1,13 +1,14 @@
 package bigtable
 
 import (
-	"cloud.google.com/go/bigtable"
 	"context"
 	"fmt"
+
+	"cloud.google.com/go/bigtable"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 	"google.golang.org/api/option"
@@ -23,17 +24,8 @@ type FromBigtableOpSpec struct {
 }
 
 func init() {
-	fromBigtableSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"token":    semantic.String,
-			"project":  semantic.String,
-			"instance": semantic.String,
-			"table":    semantic.String,
-		},
-		Required: semantic.LabelSet{"token", "project", "instance", "table"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("experimental/bigtable", "from", flux.FunctionValue(FromBigtableKind, createFromBigtableOpSpec, fromBigtableSignature))
+	fromBigtableSignature := runtime.MustLookupBuiltinType("experimental/bigtable", "from")
+	runtime.RegisterPackageValue("experimental/bigtable", "from", flux.MustValue(flux.FunctionValue(FromBigtableKind, createFromBigtableOpSpec, fromBigtableSignature)))
 	flux.RegisterOpSpec(FromBigtableKind, newFromBigtableOp)
 	plan.RegisterProcedureSpec(FromBigtableKind, newFromBigtableProcedure, FromBigtableKind)
 	plan.RegisterPhysicalRules(BigtableFilterRewriteRule{}, BigtableLimitRewriteRule{})
@@ -249,7 +241,7 @@ func (r BigtableFilterRewriteRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.FilterKind, plan.Pat(FromBigtableKind))
 }
 
-func (r BigtableFilterRewriteRule) Rewrite(filter plan.Node) (plan.Node, bool, error) {
+func (r BigtableFilterRewriteRule) Rewrite(ctx context.Context, filter plan.Node) (plan.Node, bool, error) {
 	query := filter.Predecessors()[0]
 
 	node, changed := AddFilterToNode(query, filter)
@@ -266,7 +258,7 @@ func (r BigtableLimitRewriteRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.LimitKind, plan.Pat(FromBigtableKind))
 }
 
-func (r BigtableLimitRewriteRule) Rewrite(limit plan.Node) (plan.Node, bool, error) {
+func (r BigtableLimitRewriteRule) Rewrite(ctx context.Context, limit plan.Node) (plan.Node, bool, error) {
 	query := limit.Predecessors()[0]
 
 	node, changed := AddLimitToNode(query, limit)

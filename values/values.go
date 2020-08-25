@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"runtime/debug"
-	"strconv"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -14,8 +13,7 @@ import (
 )
 
 type Typer interface {
-	Type() semantic.Type
-	PolyType() semantic.PolyType
+	Type() semantic.MonoType
 }
 
 type Value interface {
@@ -41,15 +39,12 @@ type ValueStringer interface {
 }
 
 type value struct {
-	t semantic.Type
+	t semantic.MonoType
 	v interface{}
 }
 
-func (v value) Type() semantic.Type {
+func (v value) Type() semantic.MonoType {
 	return v.t
-}
-func (v value) PolyType() semantic.PolyType {
-	return v.t.PolyType()
 }
 func (v value) IsNull() bool {
 	return v.v == nil
@@ -103,7 +98,7 @@ func (v value) Function() Function {
 	return v.v.(Function)
 }
 func (v value) Equal(r Value) bool {
-	if v.Type() != r.Type() {
+	if v.Type().Nature() != r.Type().Nature() {
 		return false
 	}
 
@@ -147,19 +142,67 @@ func (v value) String() string {
 
 var (
 	// InvalidValue is a non nil value who's type is semantic.Invalid
-	InvalidValue = value{t: semantic.Invalid}
+	InvalidValue = value{}
 
 	// Null is an untyped nil value.
-	Null = value{t: semantic.Nil}
+	Null = null{}
 )
 
-// New constructs a new Value by inferring the type from the interface. If the interface
+// Extract the primitive value from the Value interface.
+func Unwrap(v Value) interface{} {
+	if v.IsNull() {
+		return nil
+	}
+	switch n := v.Type().Nature(); n {
+	case semantic.String:
+		return v.Str()
+	case semantic.Bytes:
+		return v.Bytes()
+	case semantic.Int:
+		return v.Int()
+	case semantic.UInt:
+		return v.UInt()
+	case semantic.Float:
+		return v.Float()
+	case semantic.Bool:
+		return v.Bool()
+	case semantic.Time:
+		return v.Time()
+	case semantic.Duration:
+		return v.Duration()
+	case semantic.Regexp:
+		return v.Regexp()
+	case semantic.Array:
+		arr := v.Array()
+		a := make([]interface{}, arr.Len())
+		arr.Range(func(i int, v Value) {
+			val := Unwrap(v)
+			a[i] = val
+		})
+		return a
+	case semantic.Object:
+		obj := v.Object()
+		o := make(map[string]interface{}, obj.Len())
+		obj.Range(func(k string, v Value) {
+			val := Unwrap(v)
+			o[k] = val
+		})
+		return o
+	case semantic.Function:
+		// there is no primitive value for a Function object, just return itself.
+		return v
+	default:
+		panic(errors.Newf(codes.Unknown, "cannot unwrap a %v type value", n))
+	}
+}
+
+// New constructs a new Value by inferring the type from the interface.
+// Note this method will panic if passed a nil value. If the interface
 // does not translate to a valid Value type, then InvalidValue is returned.
 func New(v interface{}) Value {
 	if v == nil {
 		return Null
 	}
-
 	switch v := v.(type) {
 	case string:
 		return NewString(v)
@@ -184,141 +227,59 @@ func New(v interface{}) Value {
 	}
 }
 
-func NewNull(t semantic.Type) Value {
+func NewNull(t semantic.MonoType) Value {
 	return value{
 		t: t,
 		v: nil,
 	}
 }
 
-func NewFromString(t semantic.Type, s string) (Value, error) {
-	var err error
-	v := value{t: t}
-	switch t {
-	case semantic.String:
-		v.v = s
-	case semantic.Int:
-		v.v, err = strconv.ParseInt(s, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.UInt:
-		v.v, err = strconv.ParseUint(s, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Float:
-		v.v, err = strconv.ParseFloat(s, 64)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Bool:
-		v.v, err = strconv.ParseBool(s)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Time:
-		v.v, err = ParseTime(s)
-		if err != nil {
-			return nil, err
-		}
-	case semantic.Duration:
-		v.v, err = ParseDuration(s)
-		if err != nil {
-			return nil, err
-		}
-
-	default:
-		return nil, errors.New(codes.Invalid, "invalid type for value stringer")
-	}
-	return v, nil
-}
-
 func NewString(v string) Value {
 	return value{
-		t: semantic.String,
+		t: semantic.BasicString,
 		v: v,
 	}
 }
 func NewBytes(v []byte) Value {
 	return value{
-		t: semantic.Bytes,
+		t: semantic.BasicBytes,
 		v: v,
 	}
 }
 func NewInt(v int64) Value {
 	return value{
-		t: semantic.Int,
+		t: semantic.BasicInt,
 		v: v,
 	}
 }
 func NewUInt(v uint64) Value {
 	return value{
-		t: semantic.UInt,
+		t: semantic.BasicUint,
 		v: v,
 	}
 }
 func NewFloat(v float64) Value {
 	return value{
-		t: semantic.Float,
+		t: semantic.BasicFloat,
 		v: v,
 	}
 }
 func NewTime(v Time) Value {
 	return value{
-		t: semantic.Time,
+		t: semantic.BasicTime,
 		v: v,
 	}
 }
 func NewDuration(v Duration) Value {
 	return value{
-		t: semantic.Duration,
+		t: semantic.BasicDuration,
 		v: v,
 	}
 }
 func NewRegexp(v *regexp.Regexp) Value {
 	return value{
-		t: semantic.Regexp,
+		t: semantic.BasicRegexp,
 		v: v,
-	}
-}
-
-// AssignableTo returns true if type V is assignable to type T.
-func AssignableTo(V, T semantic.Type) bool {
-	switch tn := T.Nature(); tn {
-	case semantic.Int,
-		semantic.UInt,
-		semantic.Float,
-		semantic.String,
-		semantic.Bool,
-		semantic.Time,
-		semantic.Duration:
-		vn := V.Nature()
-		return vn == tn || vn == semantic.Nil
-	case semantic.Array:
-		if V.Nature() != semantic.Array {
-			return false
-		}
-		// Exact match is required at the moment.
-		return V.ElementType() == T.ElementType()
-	case semantic.Object:
-		if V.Nature() != semantic.Object {
-			return false
-		}
-		properties := V.Properties()
-		for name, ttyp := range T.Properties() {
-			vtyp, ok := properties[name]
-			if !ok {
-				vtyp = semantic.Nil
-			}
-
-			if !AssignableTo(vtyp, ttyp) {
-				return false
-			}
-		}
-		return true
-	default:
-		return V.Nature() == T.Nature()
 	}
 }
 
@@ -328,34 +289,30 @@ func UnexpectedKind(got, exp semantic.Nature) error {
 
 // CheckKind panics if got != exp.
 func CheckKind(got, exp semantic.Nature) {
-	if got == exp {
-		return
-	}
-
-	// Try to see if the two natures are functionally
-	// equivalent to see if we are allowed to assign
-	// this type to the other type.
-	equiv := func(l, r semantic.Nature) bool {
-		switch l {
-		case semantic.Nil:
-			switch r {
-			case semantic.Int,
-				semantic.UInt,
-				semantic.Float,
-				semantic.String,
-				semantic.Bool,
-				semantic.Time,
-				semantic.Duration:
-				return true
-			}
-		}
-		return false
-	}
-
-	// If got and exp are not equivalent in either
-	// direction, then panic because we got the wrong
-	// kind.
-	if !equiv(got, exp) && !equiv(exp, got) {
+	if got != exp {
 		panic(UnexpectedKind(got, exp))
 	}
 }
+
+// isTimeable checks if value v is Timeable
+func IsTimeable(v Value) bool {
+	return v.Type().Nature() == semantic.Time || v.Type().Nature() == semantic.Duration
+}
+
+type null struct{}
+
+func (n null) Type() semantic.MonoType { return semantic.MonoType{} }
+func (n null) IsNull() bool            { return true }
+func (n null) Str() string             { panic(UnexpectedKind(semantic.Invalid, semantic.String)) }
+func (n null) Bytes() []byte           { panic(UnexpectedKind(semantic.Invalid, semantic.Bytes)) }
+func (n null) Int() int64              { panic(UnexpectedKind(semantic.Invalid, semantic.Int)) }
+func (n null) UInt() uint64            { panic(UnexpectedKind(semantic.Invalid, semantic.UInt)) }
+func (n null) Float() float64          { panic(UnexpectedKind(semantic.Invalid, semantic.Float)) }
+func (n null) Bool() bool              { panic(UnexpectedKind(semantic.Invalid, semantic.Bool)) }
+func (n null) Time() Time              { panic(UnexpectedKind(semantic.Invalid, semantic.Time)) }
+func (n null) Duration() Duration      { panic(UnexpectedKind(semantic.Invalid, semantic.Duration)) }
+func (n null) Regexp() *regexp.Regexp  { panic(UnexpectedKind(semantic.Invalid, semantic.Regexp)) }
+func (n null) Array() Array            { panic(UnexpectedKind(semantic.Invalid, semantic.Array)) }
+func (n null) Object() Object          { panic(UnexpectedKind(semantic.Invalid, semantic.Object)) }
+func (n null) Function() Function      { panic(UnexpectedKind(semantic.Invalid, semantic.Function)) }
+func (n null) Equal(Value) bool        { return false }

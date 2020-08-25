@@ -3,12 +3,17 @@ package universe
 import (
 	"context"
 
+	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -53,15 +58,14 @@ var SchemaMutationOps = []flux.OperationKind{}
 // should not have their own ProcedureSpec.
 type MutationRegistrar struct {
 	Kind   flux.OperationKind
-	Args   map[string]semantic.PolyType
+	Type   semantic.MonoType
 	Create flux.CreateOperationSpec
 	New    flux.NewOperationSpec
 }
 
 func (m MutationRegistrar) Register() {
-	signature := flux.FunctionSignature(m.Args, nil)
-
-	flux.RegisterPackageValue("universe", string(m.Kind), flux.FunctionValue(string(m.Kind), m.Create, signature))
+	t := runtime.MustLookupBuiltinType("universe", string(m.Kind))
+	runtime.RegisterPackageValue("universe", string(m.Kind), flux.MustValue(flux.FunctionValue(string(m.Kind), m.Create, t)))
 	flux.RegisterOpSpec(m.Kind, m.New)
 
 	// Add to list of SchemaMutations which should map to a
@@ -73,56 +77,26 @@ func (m MutationRegistrar) Register() {
 // To register a new mutation, add an entry to this list.
 var Registrars = []MutationRegistrar{
 	{
-		Kind: RenameKind,
-		Args: map[string]semantic.PolyType{
-			"columns": semantic.Object,
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"column": semantic.String,
-				},
-				Required: semantic.LabelSet{"column"},
-				Return:   semantic.String,
-			}),
-		},
+		Kind:   RenameKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "rename"),
 		Create: createRenameOpSpec,
 		New:    newRenameOp,
 	},
 	{
-		Kind: DropKind,
-		Args: map[string]semantic.PolyType{
-			"columns": semantic.NewArrayPolyType(semantic.String),
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"column": semantic.String,
-				},
-				Required: semantic.LabelSet{"column"},
-				Return:   semantic.Bool,
-			}),
-		},
+		Kind:   DropKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "drop"),
 		Create: createDropOpSpec,
 		New:    newDropOp,
 	},
 	{
-		Kind: KeepKind,
-		Args: map[string]semantic.PolyType{
-			"columns": semantic.NewArrayPolyType(semantic.String),
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"column": semantic.String,
-				},
-				Required: semantic.LabelSet{"column"},
-				Return:   semantic.Bool,
-			}),
-		},
+		Kind:   KeepKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "keep"),
 		Create: createKeepOpSpec,
 		New:    newKeepOp,
 	},
 	{
-		Kind: DuplicateKind,
-		Args: map[string]semantic.PolyType{
-			"column": semantic.String,
-			"as":     semantic.String,
-		},
+		Kind:   DuplicateKind,
+		Type:   runtime.MustLookupBuiltinType("universe", "duplicate"),
 		Create: createDuplicateOpSpec,
 		New:    newDuplicateOp,
 	},
@@ -133,8 +107,8 @@ func init() {
 		r.Register()
 	}
 
-	plan.RegisterProcedureSpec(SchemaMutationKind, newSchemaMutationProcedure, SchemaMutationOps...)
-	execute.RegisterTransformation(SchemaMutationKind, createSchemaMutationTransformation)
+	plan.RegisterProcedureSpec(SchemaMutationKind, newDualImplSpec(newSchemaMutationProcedure), SchemaMutationOps...)
+	execute.RegisterTransformation(SchemaMutationKind, createDualImplTf(createSchemaMutationTransformation, createDeprecatedSchemaMutationTransformation))
 }
 
 func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
@@ -179,7 +153,7 @@ func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 			if err != nil {
 				return
 			}
-			if v.Type() != semantic.String {
+			if v.Type().Nature() != semantic.String {
 				err = errors.Newf(codes.Invalid, "rename error: columns object contains non-string value of type %s", v.Type())
 				return
 			}
@@ -423,7 +397,7 @@ func (s *SchemaMutationProcedureSpec) Kind() plan.ProcedureKind {
 
 func (s *SchemaMutationProcedureSpec) Copy() plan.ProcedureSpec {
 	newMutations := make([]SchemaMutation, len(s.Mutations))
-	for i, m := range newMutations {
+	for i, m := range s.Mutations {
 		newMutations[i] = m.Copy()
 	}
 
@@ -445,86 +419,74 @@ func newSchemaMutationProcedure(qs flux.OperationSpec, pa plan.Administration) (
 
 type schemaMutationTransformation struct {
 	d        execute.Dataset
-	cache    execute.TableBuilderCache
+	cache    table.BuilderCache
 	ctx      context.Context
 	mutators []SchemaMutator
 }
 
 func createSchemaMutationTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-
-	t, err := NewSchemaMutationTransformation(a.Context(), spec, d, cache)
-	if err != nil {
-		return nil, nil, err
-	}
-	return t, d, nil
-}
-
-func NewSchemaMutationTransformation(ctx context.Context, spec plan.ProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*schemaMutationTransformation, error) {
 	s, ok := spec.(*SchemaMutationProcedureSpec)
 	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
+		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
 	}
+	return NewSchemaMutationTransformation(a.Context(), s, id, a.Allocator())
+}
 
-	mutators := make([]SchemaMutator, len(s.Mutations))
-	for i, mutation := range s.Mutations {
+func NewSchemaMutationTransformation(ctx context.Context, spec *SchemaMutationProcedureSpec, id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset, error) {
+	mutators := make([]SchemaMutator, len(spec.Mutations))
+	for i, mutation := range spec.Mutations {
 		m, err := mutation.Mutator()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		mutators[i] = m
 	}
 
-	return &schemaMutationTransformation{
-		d:        d,
-		cache:    cache,
+	t := &schemaMutationTransformation{
+		cache: table.BuilderCache{
+			New: func(key flux.GroupKey) table.Builder {
+				return table.NewBufferedBuilder(key, mem)
+			},
+		},
 		mutators: mutators,
 		ctx:      ctx,
-	}, nil
+	}
+	t.d = table.NewDataset(id, &t.cache)
+	return t, t.d, nil
 }
 
 func (t *schemaMutationTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	ctx := NewBuilderContext(tbl)
 	for _, m := range t.mutators {
-		err := m.Mutate(t.ctx, ctx)
-		if err != nil {
+		if err := m.Mutate(t.ctx, ctx); err != nil {
 			return err
 		}
 	}
 
-	builder, created := t.cache.TableBuilder(ctx.Key())
-	if created {
-		for _, c := range ctx.Cols() {
-			_, err := builder.AddCol(c)
-			if err != nil {
-				return err
-			}
-		}
-	} else {
-		// We are appending to an existing table, due to dropping columns in the group key.
-		// Make sure that tables are compatible.
-		if len(ctx.Cols()) != len(builder.Cols()) {
-			key := builder.Key().String()
-			return errors.New(codes.Invalid, "requested operation merges tables with different numbers of columns for group key "+key)
-		}
-		for i, cm := range ctx.Cols() {
-			bcm := builder.Cols()[i]
-			if cm != bcm {
-				key := builder.Key().String()
-				return errors.New(codes.Invalid, "requested operation merges tables with different schemas for group key "+key)
+	mutTable, err := t.mutateTable(tbl, ctx)
+	if err != nil {
+		tbl.Done()
+		return err
+	}
+	builder, _ := table.GetBufferedBuilder(mutTable.Key(), &t.cache)
+	return builder.AppendTable(mutTable)
+}
+
+func (t *schemaMutationTransformation) mutateTable(in flux.Table, ctx *BuilderContext) (flux.Table, error) {
+	// Check the schema for columns with the same name.
+	cols := ctx.Cols()
+	for i, c := range cols {
+		for j := range cols[:i] {
+			if cols[j].Label == c.Label {
+				return nil, errors.Newf(codes.FailedPrecondition, "column %d and %d have the same name (%q) which is not allowed", j, i, c.Label)
 			}
 		}
 	}
 
-	return tbl.Do(func(cr flux.ColReader) error {
-		for i := 0; i < cr.Len(); i++ {
-			if err := execute.AppendMappedRecordWithNulls(i, cr, builder, ctx.ColMap()); err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	return &mutateTable{
+		in:  in,
+		ctx: ctx,
+	}, nil
 }
 
 func (t *schemaMutationTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
@@ -541,4 +503,30 @@ func (t *schemaMutationTransformation) UpdateProcessingTime(id execute.DatasetID
 
 func (t *schemaMutationTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
+}
+
+type mutateTable struct {
+	in  flux.Table
+	ctx *BuilderContext
+}
+
+func (m *mutateTable) Key() flux.GroupKey   { return m.ctx.Key() }
+func (m *mutateTable) Cols() []flux.ColMeta { return m.ctx.Cols() }
+func (m *mutateTable) Empty() bool          { return m.in.Empty() }
+func (m *mutateTable) Done()                { m.in.Done() }
+
+func (m *mutateTable) Do(f func(flux.ColReader) error) error {
+	return m.in.Do(func(cr flux.ColReader) error {
+		indices := m.ctx.ColMap()
+		buffer := &arrow.TableBuffer{
+			GroupKey: m.ctx.Key(),
+			Columns:  m.ctx.Cols(),
+			Values:   make([]array.Interface, len(indices)),
+		}
+		for j, idx := range indices {
+			buffer.Values[j] = table.Values(cr, idx)
+			buffer.Values[j].Retain()
+		}
+		return f(buffer)
+	})
 }

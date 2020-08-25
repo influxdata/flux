@@ -7,6 +7,12 @@ builtin assertEmpty
 builtin diff
 
 option loadStorage = (csv) => c.from(csv: csv)
+    |> map(fn: (r) => ({r with
+    _field: if exists r._field then r._field else die(msg: "test input table does not have _field column"),
+    _measurement: if exists r._measurement then r._measurement else die(msg: "test input table does not have _measurement column"),
+    _time: if exists r._time then r._time else die(msg: "test input table does not have _time column")
+    }))
+
 option loadMem = (csv) => c.from(csv: csv)
 
 inspect = (case) => {

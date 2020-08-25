@@ -1,0 +1,12 @@
+h2o_temperature,location=santa_monica,state=CA surface_degrees=65,bottom_degrees=50 1582383660
+h2o_temperature,location=santa_monica,state=CA surface_degrees=64,bottom_degrees=49 1582385460
+h2o_temperature,location=santa_monica,state=CA surface_degrees=63,bottom_degrees=49 1582387260
+h2o_temperature,location=santa_monica,state=CA surface_degrees=62,bottom_degrees=49 1582389060
+h2o_temperature,location=santa_monica,state=CA surface_degrees=61,bottom_degrees=48 1582390860
+h2o_temperature,location=santa_monica,state=CA surface_degrees=60,bottom_degrees=48 1582392660
+h2o_temperature,location=santa_monica,state=CA surface_degrees=60,bottom_degrees=48 1582393560
+h2o_temperature,location=coyote_creek,state=CA surface_degrees=55,bottom_degrees=51 1582387500
+h2o_temperature,location=coyote_creek,state=CA surface_degrees=53,bottom_degrees=50 1582391100
+h2o_temperature,location=puget_sound,state=WA surface_degrees=55,bottom_degrees=40 1582391400
+h2o_temperature,location=puget_sound,state=WA surface_degrees=54,bottom_degrees=40 1582393200
+

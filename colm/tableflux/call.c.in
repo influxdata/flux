@@ -1,0 +1,72 @@
+#include <colm/colm.h>
+#include <colm/input.h>
+#include <colm/tree.h>
+#include <colm/program.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/* This is the structure in embedded.c which contains the compiled colm
+ * program. */
+extern struct colm_sections colm_object;
+extern int colm_export_result_ok;
+extern int colm_export_result_flux;
+extern int colm_export_result_err;
+extern int colm_export_result_log;
+
+char *unparse_tree( struct colm_program *prg, struct colm_tree *tree )
+{
+	struct colm_str_collect collect;
+	struct colm_tree **sp;
+	char *string;
+
+	/* Using the printing to a string. */
+	init_str_collect( &collect );
+	colm_print_tree_collect( prg, prg->stack_root, &collect, tree, 0 );
+
+	/* Convert to a string we can return to Go. */
+	string = malloc( collect.length + 1 );
+	memcpy( string, collect.data, collect.length );
+	string[collect.length] = 0;
+
+	str_collect_destroy( &collect );
+
+	return string;
+}
+
+int tableflux_call( const char *tableflux, char **out_flux,
+		char **out_err, char **out_log )
+{
+	int argc;
+	const char *argv[3];
+	struct colm_program *prg;
+	int exit_status;
+	int out_ok;
+	struct colm_tree *ok, *flux, *err, *log;
+
+	/* Set up the args to the colm program. We are passing the input text as an
+	 * argument string. */
+	argc = 2;
+	argv[0] = "tableflux";
+	argv[1] = tableflux;
+	argv[2] = 0;
+
+	prg = colm_new_program( &colm_object );
+	colm_set_debug( prg, 0 );
+	colm_run_program( prg, argc, argv );
+
+	/* Fetch the result. */
+	ok = colm_get_global( prg, colm_export_result_ok );
+	flux = colm_get_global( prg, colm_export_result_flux );
+	err = colm_get_global( prg, colm_export_result_err );
+	log = colm_get_global( prg, colm_export_result_log );
+
+	out_ok = ok != 0 ? 1 : 0;
+	*out_flux = unparse_tree( prg, flux );
+	*out_err = unparse_tree( prg, err );
+	*out_log = unparse_tree( prg, log );
+
+	colm_delete_program( prg );
+
+	return out_ok;
+}

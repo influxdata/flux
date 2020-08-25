@@ -2,10 +2,6 @@ package values
 
 import (
 	"fmt"
-
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/semantic"
 )
 
 type Scope interface {
@@ -17,11 +13,6 @@ type Scope interface {
 
 	// Set binds a variable in the current scope.
 	Set(name string, v Value)
-	// SetOption binds a variable in the package option scope.
-	// Setting an option must occur on the specific package value.
-	// If the package cannot be found no option is set, in which case the boolean return is false.
-	// An error is reported if the specified package is not a package value.
-	SetOption(pkg, name string, v Value) (bool, error)
 
 	// Nest creates a new scope by nesting the current scope.
 	// If the passed in object is not nil, its values will be added to the new nested scope.
@@ -52,58 +43,49 @@ type Scope interface {
 
 type scope struct {
 	parent      Scope
-	values      Object
+	values      map[string]Value
 	returnValue Value
 }
 
 // NewScope creates a new empty scope with no parent.
 func NewScope() Scope {
 	return &scope{
-		values: NewObject(),
+		values: make(map[string]Value),
 	}
 }
 
-//NewNestedScope creates a new scope with bindings from obj and a parent.
+// NewNestedScope creates a new scope with bindings from obj and a parent.
 func NewNestedScope(parent Scope, obj Object) Scope {
-	if obj == nil {
-		obj = NewObject()
+	var values map[string]Value
+	if obj != nil {
+		values = make(map[string]Value, obj.Len())
+		obj.Range(func(name string, v Value) {
+			values[name] = v
+		})
 	}
 	return &scope{
 		parent: parent,
-		values: obj,
+		values: values,
 	}
 }
 
 func (s *scope) Lookup(name string) (Value, bool) {
-	v, ok := s.values.Get(name)
+	v, ok := s.values[name]
 	if !ok && s.parent != nil {
 		return s.parent.Lookup(name)
 	}
 	return v, ok
 }
 func (s *scope) LocalLookup(name string) (Value, bool) {
-	return s.values.Get(name)
+	v, ok := s.values[name]
+	return v, ok
 }
 
 func (s *scope) Set(name string, v Value) {
-	s.values.Set(name, v)
-}
-
-func (s *scope) SetOption(pkg, name string, v Value) (bool, error) {
-	pv, ok := s.LocalLookup(pkg)
-	if !ok {
-		parent := s.Pop()
-		if parent != nil {
-			return parent.SetOption(pkg, name, v)
-		}
-		return false, nil
+	if s.values == nil {
+		s.values = make(map[string]Value)
 	}
-	p, ok := pv.(Package)
-	if !ok {
-		return false, errors.Newf(codes.Invalid, "cannot set option %q is not a package", pkg)
-	}
-	p.SetOption(name, v)
-	return true, nil
+	s.values[name] = v
 }
 
 func (s *scope) Nest(obj Object) Scope {
@@ -116,20 +98,22 @@ func (s *scope) Pop() Scope {
 
 func (s *scope) Size() int {
 	if s.parent == nil {
-		return s.values.Len()
+		return len(s.values)
 	}
-	return s.values.Len() + s.parent.Size()
+	return len(s.values) + s.parent.Size()
 }
 
 func (s *scope) Range(f func(k string, v Value)) {
-	s.values.Range(f)
+	s.LocalRange(f)
 	if s.parent != nil {
 		s.parent.Range(f)
 	}
 }
 
 func (s *scope) LocalRange(f func(k string, v Value)) {
-	s.values.Range(f)
+	for k, v := range s.values {
+		f(k, v)
+	}
 }
 
 func (s *scope) SetReturn(v Value) {
@@ -141,18 +125,15 @@ func (s *scope) Return() Value {
 }
 
 func (s *scope) Copy() Scope {
-	obj := NewObjectWithBacking(s.values.Len())
-	s.values.Range(func(k string, v Value) {
-		obj.Set(k, v)
-	})
-	var parent Scope
+	var pc Scope
 	if s.parent != nil {
-		parent = s.parent.Copy()
+		pc = s.parent.Copy()
 	}
-	return &scope{
-		values: obj,
-		parent: parent,
-	}
+	ns := NewNestedScope(pc, nil)
+	s.LocalRange(func(k string, v Value) {
+		ns.Set(k, v)
+	})
+	return ns
 }
 
 // FormattedScope produces a fmt.Formatter for pretty printing a scope.
@@ -179,24 +160,4 @@ func (s scopeFormatter) Format(state fmt.State, _ rune) {
 		state.Write([]byte("} -> "))
 	}
 	state.Write([]byte("nil ]"))
-}
-
-// BuildExternAssignments constructs nested semantic.ExternAssignment nodes mirroring the nested structure of the scope.
-func BuildExternAssignments(node semantic.Node, scope Scope) semantic.Node {
-	var n = node
-	for s := scope; s != nil; s = s.Pop() {
-		extern := &semantic.Extern{
-			Block: &semantic.ExternBlock{
-				Node: n,
-			},
-		}
-		s.LocalRange(func(k string, v Value) {
-			extern.Assignments = append(extern.Assignments, &semantic.ExternalVariableAssignment{
-				Identifier: &semantic.Identifier{Name: k},
-				ExternType: v.PolyType(),
-			})
-		})
-		n = extern
-	}
-	return n
 }

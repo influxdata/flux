@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 )
 
 const MaxKind = "max"
@@ -16,9 +17,9 @@ type MaxOpSpec struct {
 }
 
 func init() {
-	maxSignature := execute.SelectorSignature(nil, nil)
+	maxSignature := runtime.MustLookupBuiltinType("universe", "max")
 
-	flux.RegisterPackageValue("universe", MaxKind, flux.FunctionValue(MaxKind, createMaxOpSpec, maxSignature))
+	runtime.RegisterPackageValue("universe", MaxKind, flux.MustValue(flux.FunctionValue(MaxKind, createMaxOpSpec, maxSignature)))
 	flux.RegisterOpSpec(MaxKind, newMaxOp)
 	plan.RegisterProcedureSpec(MaxKind, newMaxProcedure, MaxKind)
 	execute.RegisterTransformation(MaxKind, createMaxTransformation)

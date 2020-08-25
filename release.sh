@@ -21,6 +21,7 @@ git_local_tags () { git show-ref --tags | grep -v '{}' | grep -v 'origin'| grep 
 # check if local tags are different from remote tags
 if ! diff -q <(git_remote_tags) <(git_local_tags) &>/dev/null; then
     echo "Error: local tags do not match remote. Exiting release script."
+    diff -u <(git_remote_tags) <(git_local_tags)
     exit 1
 fi
 

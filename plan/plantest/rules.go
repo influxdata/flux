@@ -1,11 +1,11 @@
 package plantest
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 )
 
@@ -19,7 +19,12 @@ func (sr *SimpleRule) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-func (sr *SimpleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+	for _, nid := range sr.SeenNodes {
+		if nid == node.ID() {
+			return node, false, nil
+		}
+	}
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
 	return node, false, nil
 }
@@ -28,24 +33,21 @@ func (sr *SimpleRule) Name() string {
 	return "simple"
 }
 
-// MergeFromRangePhysicalRule merges a from and a subsequent range.
-type MergeFromRangePhysicalRule struct{}
-
-func (sr *MergeFromRangePhysicalRule) Pattern() plan.Pattern {
-	return plan.Pat(universe.RangeKind, plan.Pat(influxdb.FromKind))
+// FunctionRule is a simple rule intended to invoke a Rewrite function.
+type FunctionRule struct {
+	RewriteFn func(ctx context.Context, node plan.Node) (plan.Node, bool, error)
 }
 
-func (sr *MergeFromRangePhysicalRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
-	mergedSpec := node.Predecessors()[0].ProcedureSpec().Copy().(*influxdb.FromProcedureSpec)
-	mergedNode, err := plan.MergeToPhysicalNode(node, node.Predecessors()[0], mergedSpec)
-	if err != nil {
-		return nil, false, err
-	}
-	return mergedNode, true, nil
+func (fr *FunctionRule) Name() string {
+	return "function"
 }
 
-func (sr *MergeFromRangePhysicalRule) Name() string {
-	return "fromRangeRule"
+func (fr *FunctionRule) Pattern() plan.Pattern {
+	return plan.Any()
+}
+
+func (fr *FunctionRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+	return fr.RewriteFn(ctx, node)
 }
 
 // SmashPlanRule adds an `Intruder` as predecessor of the given `Node` without
@@ -73,7 +75,7 @@ func (spp SmashPlanRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (spp SmashPlanRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (spp SmashPlanRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	var changed bool
 	if len(spp.Kind) > 0 || node == spp.Node {
 		node.AddPredecessors(spp.Intruder)
@@ -110,7 +112,7 @@ func (ccr CreateCycleRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (ccr CreateCycleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
+func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
 	var changed bool
 	if len(ccr.Kind) > 0 || node == ccr.Node {
 		node.Predecessors()[0].AddPredecessors(node)
@@ -123,13 +125,40 @@ func (ccr CreateCycleRule) Rewrite(node plan.Node) (plan.Node, bool, error) {
 	return node.ShallowCopy(), changed, nil
 }
 
+// MultiRoot matches a set of plan nodes at the root and stores the NodeIDs of
+// nodes it has visited in SeenNodes.
+type MultiRootRule struct {
+	SeenNodes []plan.NodeID
+}
+
+func (sr *MultiRootRule) Pattern() plan.Pattern {
+	return plan.OneOf(
+		[]plan.ProcedureKind{
+			universe.MinKind,
+			universe.MaxKind,
+			universe.MeanKind,
+		},
+		plan.Any())
+}
+
+func (sr *MultiRootRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+	sr.SeenNodes = append(sr.SeenNodes, node.ID())
+	return node, false, nil
+}
+
+func (sr *MultiRootRule) Name() string {
+	return "multiroot"
+}
+
 // RuleTestCase allows for concise creation of test cases that exercise rules
 type RuleTestCase struct {
-	Name     string
-	Rules    []plan.Rule
-	Before   *PlanSpec
-	After    *PlanSpec
-	NoChange bool
+	Name          string
+	Context       context.Context
+	Rules         []plan.Rule
+	Before        *PlanSpec
+	After         *PlanSpec
+	NoChange      bool
+	ValidateError error
 }
 
 // PhysicalRuleTestHelper will run a rule test case.
@@ -138,21 +167,37 @@ func PhysicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 
 	before := CreatePlanSpec(tc.Before)
 	var after *plan.Spec
-	if tc.NoChange {
+	if tc.NoChange || tc.ValidateError != nil {
 		after = CreatePlanSpec(tc.Before.Copy())
 	} else {
 		after = CreatePlanSpec(tc.After)
 	}
 
-	// Disable validation so that we can avoid having to push a range into every from
-	physicalPlanner := plan.NewPhysicalPlanner(
+	opts := []plan.PhysicalOption{
 		plan.OnlyPhysicalRules(tc.Rules...),
-		plan.DisableValidation(),
-	)
+	}
+	if tc.ValidateError == nil {
+		// Disable validation so that we can avoid having to push a range into every from
+		opts = append(opts, plan.DisableValidation())
+	}
+	physicalPlanner := plan.NewPhysicalPlanner(opts...)
 
-	pp, err := physicalPlanner.Plan(before)
+	ctx := tc.Context
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	pp, err := physicalPlanner.Plan(ctx, before)
 	if err != nil {
+		if tc.ValidateError != nil {
+			if got, want := err, tc.ValidateError; !cmp.Equal(want, got) {
+				t.Fatalf("unexpected planner error -want/+got:\n%s", cmp.Diff(want, got))
+			}
+			return
+		}
 		t.Fatal(err)
+	} else if tc.ValidateError != nil {
+		t.Fatal("expected planner error")
 	}
 
 	type testAttrs struct {
@@ -199,7 +244,12 @@ func LogicalRuleTestHelper(t *testing.T, tc *RuleTestCase) {
 		plan.OnlyLogicalRules(tc.Rules...),
 	)
 
-	pp, err := logicalPlanner.Plan(before)
+	ctx := tc.Context
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
+	pp, err := logicalPlanner.Plan(ctx, before)
 	if err != nil {
 		t.Fatal(err)
 	}

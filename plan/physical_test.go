@@ -1,6 +1,7 @@
 package plan_test
 
 import (
+	"context"
 	"math"
 	"testing"
 
@@ -28,7 +29,7 @@ func TestPhysicalOptions(t *testing.T) {
 		inputPlan := plantest.CreatePlanSpec(spec)
 
 		thePlanner := plan.NewPhysicalPlanner(options...)
-		outputPlan, err := thePlanner.Plan(inputPlan)
+		outputPlan, err := thePlanner.Plan(context.Background(), inputPlan)
 		if err != nil {
 			t.Fatalf("Physical planning failed: %v", err)
 		}
@@ -70,7 +71,7 @@ func TestPhysicalIntegrityCheckOption(t *testing.T) {
 		),
 		plan.DisableValidation(),
 	)
-	_, err := planner.Plan(inputPlan)
+	_, err := planner.Plan(context.Background(), inputPlan)
 	if err != nil {
 		t.Fatalf("unexpected fail: %v", err)
 	}
@@ -78,7 +79,7 @@ func TestPhysicalIntegrityCheckOption(t *testing.T) {
 	// let's smash the plan
 	planner = plan.NewPhysicalPlanner(
 		plan.OnlyPhysicalRules(plantest.SmashPlanRule{Intruder: intruder, Node: node1}))
-	_, err = planner.Plan(inputPlan)
+	_, err = planner.Plan(context.Background(), inputPlan)
 	if err == nil {
 		t.Fatal("unexpected pass")
 	}
@@ -86,7 +87,7 @@ func TestPhysicalIntegrityCheckOption(t *testing.T) {
 	// let's introduce a cycle
 	planner = plan.NewPhysicalPlanner(
 		plan.OnlyPhysicalRules(plantest.CreateCycleRule{Node: node1}))
-	_, err = planner.Plan(inputPlan)
+	_, err = planner.Plan(context.Background(), inputPlan)
 	if err == nil {
 		t.Fatal("unexpected pass")
 	}

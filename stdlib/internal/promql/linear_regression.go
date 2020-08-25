@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,12 +21,9 @@ type LinearRegressionOpSpec struct {
 }
 
 func init() {
-	linearRegressionSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"predict": semantic.Bool,
-		"fromNow": semantic.Float,
-	}, nil)
+	linearRegressionSignature := runtime.MustLookupBuiltinType("internal/promql", LinearRegressionKind)
 
-	flux.RegisterPackageValue("internal/promql", LinearRegressionKind, flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature))
+	runtime.RegisterPackageValue("internal/promql", LinearRegressionKind, flux.MustValue(flux.FunctionValue(LinearRegressionKind, createLinearRegressionOpSpec, linearRegressionSignature)))
 	flux.RegisterOpSpec(LinearRegressionKind, newLinearRegressionOp)
 	plan.RegisterProcedureSpec(LinearRegressionKind, newLinearRegressionProcedure, LinearRegressionKind)
 	execute.RegisterTransformation(LinearRegressionKind, createLinearRegressionTransformation)
@@ -151,7 +149,7 @@ func (t *linearRegressionTransformation) Process(id execute.DatasetID, tbl flux.
 		return fmt.Errorf("value column not found (cols: %v): %s", cols, execute.DefaultValueColLabel)
 	}
 
-	if key.Value(stopIdx).Type() != semantic.Time {
+	if key.Value(stopIdx).Type().Nature() != semantic.Time {
 		return fmt.Errorf("stop column is not of time type")
 	}
 

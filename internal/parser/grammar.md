@@ -74,11 +74,11 @@ The parser directly implements the following grammar.
                                    | regex_lit
                                    | duration_lit
                                    | pipe_receive_lit
-                                   | ObjectLiteral
+                                   | RecordLiteral
                                    | ArrayLiteral
                                    | ParenExpression .
-    ObjectLiteral                  = "{" ObjectLiteralBody "}"
-    ObjectLiteralBody              = [ ObjectBody ]
+    RecordLiteral                  = "{" RecordLiteralBody "}"
+    RecordLiteralBody              = [ RecordBody ]
     ArrayLiteral                   = "[" ExpressionList "]" .
     ParenExpression                = "(" ParenExpressionBody .
     ParenExpressionBody            = ")" FunctionExpressionSuffix
@@ -93,9 +93,9 @@ The parser directly implements the following grammar.
     FunctionBodyExpression         = Block | Expression .
     Block                          = "{" StatementList "}" .
     ExpressionList                 = [ Expression { "," Expression } ] .
-    ObjectBody                     = identifier ObjectBodySuffix 
+    RecordBody                     = identifier RecordBodySuffix 
                                    | string_lit PropertyListSuffix .
-    ObjectBodySuffix               = "with" PropertyList
+    RecordBodySuffix               = "with" PropertyList
                                    | PropertyListSuffix .
     PropertyListSuffix             = PropertySuffix { "," PropertyList } .
     PropertyList                   = [ Property { "," Property } ] .

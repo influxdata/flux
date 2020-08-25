@@ -100,6 +100,39 @@ func TestTimeFns(t *testing.T) {
 	}
 }
 
+func TestNilErrors(t *testing.T) {
+	testCases := []string{
+		"second",
+		"minute",
+		"hour",
+		"weekDay",
+		"monthDay",
+		"yearDay",
+		"month",
+		"year",
+		"week",
+		"quarter",
+		"millisecond",
+		"microsecond",
+		"nanosecond",
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc, func(t *testing.T) {
+			fluxFn := SpecialFns[tc]
+			fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewString("")})
+			fluxArg.Set("t", nil)
+			_, err := fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+			if err == nil {
+				t.Errorf("%s did not error", tc)
+			}
+			if err.Error() != "argument t was nil" {
+				t.Errorf("expected: argument t was nil, got: %v", err.Error())
+			}
+		})
+	}
+}
+
 func TestTruncate(t *testing.T) {
 	testCases := []struct {
 		name string
@@ -153,4 +186,38 @@ func TestTruncate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestTruncateNilErrors(t *testing.T) {
+	tc := struct {
+		name string
+		time string
+		unit string
+		want string
+	}{
+		name: "second",
+		time: "2019-06-03T13:59:01.000000000Z",
+		unit: "1s",
+		want: "2019-06-03T13:59:01.000000000Z",
+	}
+	t.Run(tc.name, func(t *testing.T) {
+		fluxFn := SpecialFns["truncate"]
+		time, err := values.ParseTime(tc.time)
+		if err != nil {
+			t.Fatal(err)
+		}
+		unit, err := values.ParseDuration(tc.unit)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fluxArg := values.NewObjectWithValues(map[string]values.Value{"t": values.NewTime(time), "unit": values.NewDuration(unit)})
+		fluxArg.Set("t", nil)
+		_, err = fluxFn.Call(dependenciestest.Default().Inject(context.Background()), fluxArg)
+		if err == nil {
+			t.Errorf("%s did not error", tc)
+		}
+		if err.Error() != "argument t was nil" {
+			t.Errorf("expected: argument t was nil, got: %v", err.Error())
+		}
+	})
 }

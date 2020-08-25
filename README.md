@@ -3,53 +3,71 @@
 [![CircleCI](https://circleci.com/gh/influxdata/flux/tree/master.svg?style=svg)](https://circleci.com/gh/influxdata/flux/tree/master)
 
 
-Flux is a lightweight scripting language for querying databases (like InfluxDB) and working with data. It's part of InfluxDB 1.7 and 2.0, but can be run independently of those.
-This repo represents the language definition and an implementation of the language core.
+Flux is a lightweight scripting language for querying databases (like [InfluxDB](https://github.com/influxdata/influxdb)) and working with data.
+It is part of InfluxDB 1.7 and 2.0, but can be run independently of those.
+This repository contains the language definition and an implementation of the language core.
 
 ## Specification
 
 A complete specification can be found in [SPEC.md](./docs/SPEC.md).
 The specification contains many examples to start learning Flux.
 
+## Requirements
+
+Building Flux requires the following:
+
+* Go 1.12 or greater with module support enabled
+* Latest stable version of Rust and Cargo (can be installed with [rustup](https://rustup.rs/))
+* Clang
+
 ## Getting Started
 
-Flux is currently available in InfluxDB 1.7 and 2.0 or through the REPL that can be compiled from this repository.
+Flux is currently available in InfluxDB 1.7 and 2.0, or through the REPL that can be compiled from this repository.
 
-To compile the REPL, use the following command:
+To build Flux, first install the `pkg-config` utility, and ensure the GNU `pkg-config` utility is also installed.
+
+```
+# On Debian/Ubuntu
+$ sudo apt-get install -y clang pkg-config
+# On Mac OS X with Homebrew
+$ brew install pkg-config
+# Install the pkg-config wrapper utility
+$ go get github.com/influxdata/pkg-config
+# Ensure the GOBIN directory is on your PATH
+$ export PATH=${GOPATH}/bin:${PATH}
+```
+
+To ensure that `pkg-config` is configured correctly, you can use `which -a`.
+
+```
+$ which -a pkg-config
+/home/user/go/bin/pkg-config
+/usr/bin/pkg-config
+```
+
+To compile and use the REPL, use the following command:
 
 ```
 $ go build ./cmd/flux
 $ ./flux repl
 ```
 
-If you create or change any flux functions, you will need to rebuild the stdlib:
-```
-$ go generate ./stdlib
-```
+If you do not want to add the wrapper `pkg-config` to your `PATH`, you can also set `PKG_CONFIG` and Go will use it.
 
-Your new Flux's code should be formatted to coexist nicely with the existing codebase with go fmt.  For example, if you add code to stdlib/universe:
 ```
-$ go fmt ./stdlib/universe/
+$ export PKG_CONFIG=/home/user/go/bin/pkg-config
+$ go build ./cmd/flux
+$ ./flux repl
 ```
-
-Don't forget to add your tests and make sure they work. Here is an example showing how to run the tests for the stdlib/universe package:
-```
-$ go test ./stdlib/universe/
-```
-
-
-
->NOTE: The Flux REPL above does not contain the ability to connect to InfluxDB.
-To connect to InfluxDB, please read the [InfluxDB 2.0](https://v2.docs.influxdata.com/v2.0/query-data/get-started/) query documentation or the [InfluxDB 1.7](http://docs.influxdata.com/flux/) documentation.
 
 From within the REPL, you can run any Flux expression.
-Additionally, you can also load a file directly into the REPL by typing `@` followed by the filename.
+You can also load a file directly into the REPL by typing `@` followed by the filename.
 
 ```
 > @my_file_to_load.flux
 ```
 
-### Basic Syntax
+## Basic Syntax
 
 Here are a few examples of the language to get an idea of the syntax.
 
@@ -146,6 +164,31 @@ The above examples give only a taste of what is possible with Flux.
 See the complete [documentation](https://v2.docs.influxdata.com/v2.0/query-data/get-started/) for more complete examples and instructions for how to use Flux with InfluxDB 2.0.
 
 ## Contributing
+
 Flux welcomes contributions to the language and the runtime.
 
-If you are interested in contributing, please read out [contributing readme](https://github.com/influxdata/flux/blob/master/CONTRIBUTING.md) for information about how to contribute.
+If you are interested in contributing, please read the [contributing guide](https://github.com/influxdata/flux/blob/master/CONTRIBUTING.md) for more information.
+
+### Development basics
+
+If you modify any Rust code, you will need to force Go to rebuild the library.
+
+```
+$ go generate ./libflux/go/libflux
+```
+
+If you create or change any Flux functions, you will need to rebuild the stdlib and inform Go that it must rebuild libflux:
+```
+$ go generate ./stdlib ./libflux/go/libflux
+```
+
+Your new Flux's code should be formatted to coexist nicely with the existing codebase with go fmt.  For example, if you add code to stdlib/universe:
+```
+$ go fmt ./stdlib/universe/
+```
+
+Don't forget to add your tests and make sure they work. Here is an example showing how to run the tests for the stdlib/universe package:
+```
+$ go test ./stdlib/universe/
+```
+

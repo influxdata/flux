@@ -7,22 +7,33 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/values"
 )
 
 // newOrderedObject creates a object with sorted keys order
 func newOrderedObject(vs map[string]values.Value) values.Object {
-	obj := values.NewObjectWithBacking(len(vs))
 	keys := make([]string, 0, len(vs))
-	for k := range vs {
-		keys = append(keys, k)
+	for key := range vs {
+		keys = append(keys, key)
 	}
 	sort.Strings(keys)
-	for _, k := range keys {
-		obj.Set(k, vs[k])
+
+	properties := make([]semantic.PropertyType, 0, len(keys))
+	for _, key := range keys {
+		value := vs[key]
+		properties = append(properties, semantic.PropertyType{
+			Key:   []byte(key),
+			Value: value.Type(),
+		})
 	}
-	return obj
+
+	object := values.NewObject(semantic.NewObjectType(properties))
+	object.Range(func(name string, _ values.Value) {
+		object.Set(name, vs[name])
+	})
+	return object
 }
 
 func TestSet_Process(t *testing.T) {

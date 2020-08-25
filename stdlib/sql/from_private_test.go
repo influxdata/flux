@@ -26,6 +26,54 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok snowflake",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "snowflake",
+				DataSourceName: "username:password@accountname.us-east-1/dbname",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlserver (URL connection string)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "sqlserver://sa:mypass@localhost:1234?database=master",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlserver (ADO connection string)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "server=localhost;user id=sa;database=master;",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlserver (ADO connection string, Azure auth option)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "server=localhost;user id=sa;database=master;azure auth=ENV",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok sqlserver (ADO connection string, Azure inline params)",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "sqlserver",
+				DataSourceName: "server=localhost;user id=sa;database=master;azure tenant id=77e7d537;azure client id=58879ce8;azure client secret=0123456789",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
+			Name: "ok awsathena",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "awsathena",
+				DataSourceName: "s3://bucket/?accessID=ABCD123&region=us-west-1&secretAccessKey=PWD007&db=test",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",
@@ -71,12 +119,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 		}, {
 			Name: "no such host",
 			Spec: &FromSQLProcedureSpec{
-				DriverName:     "sqlmock",
-				DataSourceName: "sqlmock://test:password@notfound/pqgotest?sslmode=verify-full",
+				DriverName: "sqlmock",
+				// Using 'invalid.' for DNS name as its guaranteed not to exist
+				// https://tools.ietf.org/html/rfc6761#section-6.4
+				DataSourceName: "sqlmock://test:password@notfound.invalid./pqgotest?sslmode=verify-full",
 				Query:          "",
 			},
 			V:      url.PrivateIPValidator{},
-			ErrMsg: "no such host",
+			ErrMsg: "data source did not pass url validation",
 		},
 	}
 	testCases.Run(t, createFromSQLSource)
@@ -148,14 +198,6 @@ func TestFromSqliteUrlValidation(t *testing.T) {
 				Query:          "",
 			},
 			ErrMsg: "sql driver sqlite4 not supported",
-		}, {
-			Name: "bad sqlite path1",
-			Spec: &FromSQLProcedureSpec{
-				DriverName:     "sqlite3",
-				DataSourceName: ":cool_pragma",
-				Query:          "",
-			},
-			ErrMsg: "invalid data source url: parse :cool_pragma: missing protocol scheme",
 		}, {
 			Name: "bad sqlite path2",
 			Spec: &FromSQLProcedureSpec{

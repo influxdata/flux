@@ -7,7 +7,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -36,16 +35,6 @@ func (c *SelectorConfig) ReadArgs(args flux.Arguments) error {
 		c.Column = DefaultSelectorConfig.Column
 	}
 	return nil
-}
-
-// SelectorSignature returns a function signature common to all selector functions,
-// with any additional arguments.
-func SelectorSignature(args map[string]semantic.PolyType, required []string) semantic.FunctionPolySignature {
-	if args == nil {
-		args = make(map[string]semantic.PolyType)
-	}
-	args["column"] = semantic.String
-	return flux.FunctionSignature(args, required)
 }
 
 type rowSelectorTransformation struct {

@@ -121,6 +121,16 @@ func (*RegexpLiteral) node()          {}
 func (*StringLiteral) node()          {}
 func (*UnsignedIntegerLiteral) node() {}
 
+func (*NamedType) node()      {}
+func (*TvarType) node()       {}
+func (*ArrayType) node()      {}
+func (*RecordType) node()     {}
+func (*FunctionType) node()   {}
+func (*PropertyType) node()   {}
+func (*ParameterType) node()  {}
+func (*TypeConstraint) node() {}
+func (*TypeExpression) node() {}
+
 // BaseNode holds the attributes every expression or statement should have
 type BaseNode struct {
 	Loc    *SourceLocation `json:"location,omitempty"`
@@ -158,6 +168,229 @@ type Error struct {
 
 func (e Error) Error() string {
 	return e.Msg
+}
+
+type TypeExpression struct {
+	BaseNode
+	Ty          MonoType          `json:"ty"`
+	Constraints []*TypeConstraint `json:"constraints"`
+}
+
+type TypeConstraint struct {
+	BaseNode
+	Tvar  *Identifier   `json:"tvar"`
+	Kinds []*Identifier `json:"kinds"`
+}
+
+func (TypeConstraint) Type() string {
+	return "TypeConstraint"
+}
+func (c *TypeConstraint) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(TypeConstraint)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.Tvar = c.Tvar.Copy().(*Identifier)
+	//nc.Kinds = c.Kinds.Copy().([]*Identifier)
+	for k := range c.Kinds {
+		nc.Kinds = append(nc.Kinds, c.Kinds[k])
+	}
+	return nc
+}
+
+func (TypeExpression) Type() string {
+	return "TypeExpression"
+}
+func (c *TypeExpression) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(TypeExpression)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.Ty = c.Ty.Copy().(MonoType)
+	for cnstr := range c.Constraints {
+		nc.Constraints = append(nc.Constraints, c.Constraints[cnstr])
+	}
+	return nc
+}
+
+type MonoType interface {
+	monotype()
+	Node
+}
+
+func (NamedType) monotype()    {}
+func (TvarType) monotype()     {}
+func (ArrayType) monotype()    {}
+func (RecordType) monotype()   {}
+func (FunctionType) monotype() {}
+
+type NamedType struct {
+	BaseNode
+	ID *Identifier `json:"name"`
+}
+
+func (NamedType) Type() string {
+	return "NamedType"
+}
+func (nt *NamedType) Copy() Node {
+	if nt == nil {
+		return nt
+	}
+	nc := new(NamedType)
+	*nc = *nt
+	nc.BaseNode = nt.BaseNode.Copy()
+
+	nc.ID = nt.ID.Copy().(*Identifier)
+	return nc
+}
+
+type TvarType struct {
+	BaseNode
+	ID *Identifier `json:"name"`
+}
+
+func (c *TvarType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(TvarType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.ID = c.ID.Copy().(*Identifier)
+	return nc
+}
+func (TvarType) Type() string {
+	return "TvarType"
+}
+
+type ArrayType struct {
+	BaseNode
+	ElementType MonoType `json:"element"`
+}
+
+func (ArrayType) Type() string {
+	return "ArrayType"
+}
+func (c *ArrayType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(ArrayType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.ElementType = c.ElementType.Copy().(*ArrayType)
+	return nc
+}
+
+type RecordType struct {
+	BaseNode
+	Properties []*PropertyType `json:"properties"`
+	Tvar       *Identifier     `json:"tvar,omitempty"`
+}
+
+func (RecordType) Type() string {
+	return "RecordType"
+}
+func (c *RecordType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(RecordType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	for p := range c.Properties {
+		nc.Properties = append(nc.Properties, c.Properties[p])
+	}
+	nc.Tvar = c.Tvar.Copy().(*Identifier)
+	return nc
+}
+
+type PropertyType struct {
+	BaseNode
+	Name *Identifier `json:"name"`
+	Ty   MonoType    `json:"monotype"`
+}
+
+func (PropertyType) Type() string {
+	return "PropertyType"
+}
+func (c *PropertyType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(PropertyType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.Name = c.Name.Copy().(*Identifier)
+	nc.Ty = c.Ty.Copy().(MonoType)
+	return nc
+}
+
+type FunctionType struct {
+	BaseNode
+	Parameters []*ParameterType `json:"parameters"`
+	Return     MonoType         `json:"return"`
+}
+
+func (FunctionType) Type() string {
+	return "FunctionType"
+}
+func (c *FunctionType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(FunctionType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	for param := range c.Parameters {
+		_ = append(nc.Parameters, c.Parameters[param])
+	}
+	nc.Return = c.Return.Copy().(MonoType)
+
+	return nc
+}
+
+type ParameterKind string
+
+const (
+	Required ParameterKind = "Required"
+	Optional ParameterKind = "Optional"
+	Pipe     ParameterKind = "Pipe"
+)
+
+type ParameterType struct {
+	BaseNode
+	Name *Identifier   `json:"name,omitempty"`
+	Ty   MonoType      `json:"monotype"`
+	Kind ParameterKind `json:"-"`
+}
+
+func (c *ParameterType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(ParameterType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.Name = c.Name.Copy().(*Identifier)
+	nc.Ty = c.Ty.Copy().(MonoType)
+	nc.Kind = c.Kind
+	return nc
+}
+func (p *ParameterType) Type() string {
+	return string(p.Kind)
 }
 
 // Package represents a complete package source tree
@@ -414,8 +647,7 @@ func (s *OptionStatement) Copy() Node {
 type BuiltinStatement struct {
 	BaseNode
 	ID *Identifier `json:"id"`
-	// TODO(nathanielc): Add type expression here
-	// Type TypeExpression
+	//Ty TypeExpression `json:"ty"`
 }
 
 // Type is the abstract type

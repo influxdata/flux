@@ -17,30 +17,50 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/lang/execdeps"
+	"github.com/influxdata/flux/libflux/go/libflux"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
 type REPL struct {
-	scope   values.Scope
-	querier Querier
-	ctx     context.Context
-	deps    flux.Dependencies
+	ctx  context.Context
+	deps flux.Dependencies
+
+	scope    values.Scope
+	itrp     *interpreter.Interpreter
+	analyzer *libflux.Analyzer
+	importer interpreter.Importer
 
 	cancelMu   sync.Mutex
 	cancelFunc context.CancelFunc
 }
 
-type Querier interface {
-	Query(ctx context.Context, deps flux.Dependencies, compiler flux.Compiler) (flux.ResultIterator, error)
+var prelude = []string{
+	"universe",
+	"influxdata/influxdb",
 }
 
-func New(ctx context.Context, deps flux.Dependencies, q Querier) *REPL {
+func New(ctx context.Context, deps flux.Dependencies) *REPL {
+	scope := values.NewScope()
+	importer := runtime.StdLib()
+	for _, p := range prelude {
+		pkg, err := importer.ImportPackageObject(p)
+		if err != nil {
+			panic(err)
+		}
+		pkg.Range(scope.Set)
+	}
 	return &REPL{
-		scope:   values.NewScope(),
-		querier: q,
-		ctx:     ctx,
-		deps:    deps,
+		ctx:      ctx,
+		deps:     deps,
+		scope:    scope,
+		itrp:     interpreter.NewInterpreter(nil),
+		analyzer: libflux.NewAnalyzer("main"),
+		importer: importer,
 	}
 }
 
@@ -122,36 +142,41 @@ func (r *REPL) input(t string) {
 	}
 }
 
-// executeLine processes a line of input.
-// If the input evaluates to a valid value, that value is returned.
-func (r *REPL) executeLine(t string) error {
+func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
 	if t == "" {
-		return nil
+		return nil, nil
 	}
 
 	if t[0] == '@' {
 		q, err := LoadQuery(t)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		t = q
 	}
 
-	ses, scope, err := flux.Eval(r.ctx, t, func(ns values.Scope) {
-		// copy values saved in the cached scope to the new interpreter's scope
-		r.scope.Range(func(k string, v values.Value) {
-			ns.Set(k, v)
-		})
-	})
+	pkg, err := r.analyzeLine(t)
+	if err != nil {
+		return nil, err
+	}
+
+	deps := execdeps.DefaultExecutionDependencies()
+	r.ctx = deps.Inject(r.ctx)
+
+	return r.itrp.Eval(r.ctx, pkg, r.scope, r.importer)
+}
+
+// executeLine processes a line of input.
+// If the input evaluates to a valid value, that value is returned.
+func (r *REPL) executeLine(t string) error {
+	ses, err := r.Eval(t)
 	if err != nil {
 		return err
 	}
-	r.scope = scope
 
 	for _, se := range ses {
 		if _, ok := se.Node.(*semantic.ExpressionStatement); ok {
-			if se.Value.Type() == flux.TableObjectMonoType {
-				t := se.Value.(*flux.TableObject)
+			if t, ok := se.Value.(*flux.TableObject); ok {
 				now, ok := r.scope.Lookup("now")
 				if !ok {
 					return fmt.Errorf("now option not set")
@@ -176,36 +201,54 @@ func (r *REPL) executeLine(t string) error {
 	return nil
 }
 
-func (r *REPL) doQuery(cx context.Context, spec *flux.Spec, deps flux.Dependencies) error {
+func (r *REPL) analyzeLine(t string) (*semantic.Package, error) {
+	pkg, err := r.analyzer.Analyze(libflux.ParseString(t))
+	if err != nil {
+		return nil, err
+	}
+
+	bs, err := pkg.MarshalFB()
+	if err != nil {
+		return nil, err
+	}
+	return semantic.DeserializeFromFlatBuffer(bs)
+}
+
+func (r *REPL) doQuery(ctx context.Context, spec *flux.Spec, deps flux.Dependencies) error {
 	// Setup cancel context
-	ctx, cancelFunc := context.WithCancel(cx)
+	ctx, cancelFunc := context.WithCancel(ctx)
 	r.setCancel(cancelFunc)
 	defer cancelFunc()
 	defer r.clearCancel()
 
-	replCompiler := Compiler{
+	c := Compiler{
 		Spec: spec,
 	}
 
-	results, err := r.querier.Query(ctx, deps, replCompiler)
+	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		return err
 	}
-	defer results.Release()
+	alloc := &memory.Allocator{}
 
-	for results.More() {
-		result := results.Next()
+	qry, err := program.Start(deps.Inject(ctx), alloc)
+	if err != nil {
+		return err
+	}
+	defer qry.Done()
+
+	for result := range qry.Results() {
 		tables := result.Tables()
 		fmt.Println("Result:", result.Name())
-		err := tables.Do(func(tbl flux.Table) error {
+		if err := tables.Do(func(tbl flux.Table) error {
 			_, err := execute.NewFormatter(tbl, nil).WriteTo(os.Stdout)
 			return err
-		})
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 	}
-	return results.Err()
+	qry.Done()
+	return qry.Err()
 }
 
 func getFluxFiles(path string) ([]string, error) {

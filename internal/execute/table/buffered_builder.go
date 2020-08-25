@@ -34,34 +34,33 @@ func GetBufferedBuilder(key flux.GroupKey, cache *BuilderCache) (builder *Buffer
 	return builder, created
 }
 
+// AppendTable will append all of the table buffers inside of
+// a table to this BufferedBuilder.
+//
+// This method will take care of normalizing the schema in the case
+// where there is an empty table with no buffers.
+func (b *BufferedBuilder) AppendTable(tbl flux.Table) error {
+	mem := b.getAllocator()
+	if err := b.normalizeTableSchema(tbl.Cols(), mem); err != nil {
+		return err
+	}
+	return tbl.Do(func(reader flux.ColReader) error {
+		return b.appendBuffer(reader, mem)
+	})
+}
+
 // AppendBuffer will append a new buffer to this table builder.
 // It ensures the schemas are compatible and will backfill previous
 // buffers with nil for new columns that didn't previously exist.
 func (b *BufferedBuilder) AppendBuffer(cr flux.ColReader) error {
-	if len(b.Buffers) == 0 {
-		// If there are no buffers, then take the columns
-		// from the column reader and append the buffer directly.
-		b.Columns = cr.Cols()
-		buffer := &arrow.TableBuffer{
-			GroupKey: b.GroupKey,
-			Columns:  b.Columns,
-			Values:   make([]array.Interface, len(b.Columns)),
-		}
-		for j := range buffer.Values {
-			buffer.Values[j] = Values(cr, j)
-			buffer.Values[j].Retain()
-		}
-		b.Buffers = []*arrow.TableBuffer{buffer}
-		return nil
-	}
-
-	// Normalize the columns by adding any missing ones
-	// and ensuring the existing columns are the same.
 	mem := b.getAllocator()
 	if err := b.normalizeTableSchema(cr.Cols(), mem); err != nil {
 		return err
 	}
+	return b.appendBuffer(cr, mem)
+}
 
+func (b *BufferedBuilder) appendBuffer(cr flux.ColReader, mem memory.Allocator) error {
 	// Construct a table buffer and put the arrays in the correct index.
 	buffer := &arrow.TableBuffer{
 		GroupKey: b.GroupKey,
@@ -89,6 +88,13 @@ func (b *BufferedBuilder) AppendBuffer(cr flux.ColReader) error {
 // the same name have the same type. This returns an error if there
 // is a schema collision.
 func (b *BufferedBuilder) normalizeTableSchema(cols []flux.ColMeta, mem memory.Allocator) error {
+	// If there are no columns set for this builder, inherit the ones
+	// that were passed in.
+	if b.Columns == nil {
+		b.Columns = cols
+		return nil
+	}
+
 	for _, c := range cols {
 		idx := execute.ColIdx(c.Label, b.Columns)
 		if idx < 0 {

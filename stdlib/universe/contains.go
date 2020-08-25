@@ -3,11 +3,10 @@ package universe
 import (
 	"context"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
@@ -17,14 +16,7 @@ import (
 func MakeContainsFunc() values.Function {
 	return values.NewFunction(
 		"contains",
-		semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-			Parameters: map[string]semantic.PolyType{
-				"value": semantic.Tvar(1),
-				"set":   semantic.NewArrayPolyType(semantic.Tvar(1)),
-			},
-			Required: semantic.LabelSet{"value", "set"},
-			Return:   semantic.Bool,
-		}),
+		runtime.MustLookupBuiltinType("universe", "contains"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
 			a := interpreter.NewArguments(args)
 			v, err := a.GetRequired("value")
@@ -32,7 +24,7 @@ func MakeContainsFunc() values.Function {
 				return nil, err
 			}
 
-			setarg, err := a.GetRequiredArray("set", v.Type().Nature())
+			setarg, err := a.GetRequiredArrayAllowEmpty("set", v.Type().Nature())
 			if err != nil {
 				return nil, err
 			}
@@ -58,5 +50,5 @@ func MakeContainsFunc() values.Function {
 }
 
 func init() {
-	flux.RegisterPackageValue("universe", "contains", MakeContainsFunc())
+	runtime.RegisterPackageValue("universe", "contains", MakeContainsFunc())
 }

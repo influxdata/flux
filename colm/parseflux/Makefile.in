@@ -1,0 +1,15 @@
+COLM = @WITH_COLM@/bin/colm
+
+all: @BINARY_TARGET@
+
+build-binary: parseflux
+
+parseflux: parseflux.lm ../flux.lm $(COLM)
+	$(COLM) -I.. -o $@ $<
+
+clean: clean-binary
+
+clean-binary:
+	rm -f parseflux
+
+.PHONY: all clean build-binary clean-binary

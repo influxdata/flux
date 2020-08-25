@@ -6,14 +6,13 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/stdlib/experimental"
 
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/values"
 	"github.com/influxdata/flux/values/valuestest"
 )
@@ -25,42 +24,14 @@ func TestJoin(t *testing.T) {
 		left, right []flux.Table
 		want        []*executetest.Table
 		wantErr     bool
+		skip        string
 	}{
 		{
 			name: "multiple column readers",
 			// fn: (left, right) => ({left with w: right._value})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "_value",
-									},
-								},
-							},
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right._value})`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.RowWiseTable{
@@ -124,37 +95,8 @@ func TestJoin(t *testing.T) {
 			name: "rows with same time",
 			// fn: (left, right) => ({left with w: right._value})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "_value",
-									},
-								},
-							},
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right._value})`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -214,28 +156,8 @@ func TestJoin(t *testing.T) {
 			name: "multiple tables",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => left`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -338,7 +260,7 @@ func TestJoin(t *testing.T) {
 						{execute.Time(12), "11", "22", int64(55)},
 					},
 				},
-				&executetest.Table{
+				{
 					KeyCols: []string{"tag1", "tag2"},
 					ColMeta: []flux.ColMeta{
 						{Label: "_time", Type: flux.TTime},
@@ -357,37 +279,8 @@ func TestJoin(t *testing.T) {
 			name: "nulls",
 			// fn: (left, right) => ({left with w: right.w})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "w",
-									},
-								},
-							},
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right.w})`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -442,37 +335,8 @@ func TestJoin(t *testing.T) {
 			name: "regular",
 			// fn: (left, right) => ({left with w: right.w})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							With: &semantic.IdentifierExpression{Name: "left"},
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "w"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "w",
-									},
-								},
-							},
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({left with w: right.w})`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -528,28 +392,8 @@ func TestJoin(t *testing.T) {
 			name: "no matches",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => left`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -598,28 +442,8 @@ func TestJoin(t *testing.T) {
 			name: "no matches",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, "(left, right) => left"),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -656,43 +480,8 @@ func TestJoin(t *testing.T) {
 			name: "modify group key",
 			// fn: (left, right) => ({A: right.B, B: left.A})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "A"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "right"},
-										Property: "B",
-									},
-								},
-								{
-									Key: &semantic.Identifier{Name: "B"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "left"},
-										Property: "A",
-									},
-								},
-							},
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({A: right.B, B: left.A})`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -732,36 +521,8 @@ func TestJoin(t *testing.T) {
 			name: "modify group key",
 			// fn: (left, right) => ({A: left.A})
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.ObjectExpression{
-							Properties: []*semantic.Property{
-								{
-									Key: &semantic.Identifier{Name: "A"},
-									Value: &semantic.MemberExpression{
-										Object:   &semantic.IdentifierExpression{Name: "left"},
-										Property: "A",
-									},
-								},
-							},
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => ({A: left.A})`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -801,28 +562,8 @@ func TestJoin(t *testing.T) {
 			name: "left semijoin",
 			// fn: (left, right) => left
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "left",
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => left`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -874,28 +615,8 @@ func TestJoin(t *testing.T) {
 			name: "right semijoin",
 			// fn: (left, right) => right
 			fn: interpreter.ResolvedFunction{
-				Fn: &semantic.FunctionExpression{
-					Block: &semantic.FunctionBlock{
-						Parameters: &semantic.FunctionParameters{
-							List: []*semantic.FunctionParameter{
-								{
-									Key: &semantic.Identifier{
-										Name: "left",
-									},
-								},
-								{
-									Key: &semantic.Identifier{
-										Name: "right",
-									},
-								},
-							},
-						},
-						Body: &semantic.IdentifierExpression{
-							Name: "right",
-						},
-					},
-				},
-				Scope: valuestest.NowScope(),
+				Fn:    executetest.FunctionExpression(t, `(left, right) => right`),
+				Scope: valuestest.Scope(),
 			},
 			left: []flux.Table{
 				&executetest.Table{
@@ -946,7 +667,11 @@ func TestJoin(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		tc := tc
+
 		t.Run(tc.name, func(t *testing.T) {
+			if tc.skip != "" {
+				t.Skip(tc.skip)
+			}
 			l := execute.DatasetID(executetest.RandomDatasetID())
 			r := execute.DatasetID(executetest.RandomDatasetID())
 

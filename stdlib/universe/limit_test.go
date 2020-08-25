@@ -1,6 +1,7 @@
 package universe_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/influxdata/flux"
@@ -263,7 +264,7 @@ func benchmarkLimit(b *testing.B, n, l int) {
 					{Name: "t1", Cardinality: 50},
 				},
 			}
-			return gen.Input(schema)
+			return gen.Input(context.Background(), schema)
 		},
 		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
 			return universe.NewLimitTransformation(spec, id)

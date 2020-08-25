@@ -10,7 +10,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	_ "github.com/lib/pq"
 )
 
@@ -26,16 +26,8 @@ type FromSQLOpSpec struct {
 }
 
 func init() {
-	fromSQLSignature := semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			"driverName":     semantic.String,
-			"dataSourceName": semantic.String,
-			"query":          semantic.String,
-		},
-		Required: semantic.LabelSet{"driverName", "dataSourceName", "query"},
-		Return:   flux.TableObjectType,
-	}
-	flux.RegisterPackageValue("sql", "from", flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature))
+	fromSQLSignature := runtime.MustLookupBuiltinType("sql", "from")
+	runtime.RegisterPackageValue("sql", "from", flux.MustValue(flux.FunctionValue(FromSQLKind, createFromSQLOpSpec, fromSQLSignature)))
 	flux.RegisterOpSpec(FromSQLKind, newFromSQLOp)
 	plan.RegisterProcedureSpec(FromSQLKind, newFromSQLProcedure, FromSQLKind)
 	execute.RegisterSource(FromSQLKind, createFromSQLSource)
@@ -127,6 +119,12 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewSqliteRowReader
 	case "postgres", "sqlmock":
 		newRowReader = NewPostgresRowReader
+	case "snowflake":
+		newRowReader = NewSnowflakeRowReader
+	case "mssql", "sqlserver":
+		newRowReader = NewMssqlRowReader
+	case "awsathena":
+		newRowReader = NewAwsAthenaRowReader
 	default:
 		return nil, errors.Newf(codes.Invalid, "sql driver %s not supported", spec.DriverName)
 	}
@@ -152,7 +150,7 @@ type sqlIterator struct {
 }
 
 func (c *sqlIterator) connect(ctx context.Context) (*sql.DB, error) {
-	db, err := sql.Open(c.spec.DriverName, c.spec.DataSourceName)
+	db, err := getOpenFunc(c.spec.DriverName, c.spec.DataSourceName)()
 	if err != nil {
 		return nil, err
 	}

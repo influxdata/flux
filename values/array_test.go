@@ -8,9 +8,9 @@ import (
 )
 
 func TestArrayEqual(t *testing.T) {
-	r := values.NewArray(semantic.Int)
+	r := values.NewArray(semantic.NewArrayType(semantic.BasicInt))
 	r.Append(values.NewInt(1))
-	l := values.NewArray(semantic.Int)
+	l := values.NewArray(semantic.NewArrayType(semantic.BasicInt))
 	l.Append(values.NewInt(1))
 
 	if !l.Equal(r) {

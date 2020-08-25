@@ -1162,7 +1162,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "changes_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -2927,7 +2927,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "dayOfMonth_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -4692,7 +4692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "dayOfWeek_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -6457,7 +6457,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "daysInMonth_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -7294,7 +7294,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "emptyTable_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -8655,7 +8655,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "extrapolatedRate_counter_rate_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -10016,7 +10016,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "extrapolatedRate_nocounter_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -11377,7 +11377,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "extrapolatedRate_norate_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -12895,7 +12895,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "testing",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "histogramQuantile_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -14256,7 +14256,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "holtWinters_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -16021,7 +16021,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "hour_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -17330,7 +17330,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "instantRate_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -18900,7 +18900,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "labelReplace_empty_dst_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -20470,7 +20470,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "labelReplace_full_string_match_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -22040,7 +22040,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "labelReplace_multiple_groups_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -23610,7 +23610,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "labelReplace_src_empty_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -25180,7 +25180,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "labelReplace_src_nonexistent_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -26750,7 +26750,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "labelReplace_src_not_matched_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -28320,7 +28320,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "labelReplace_sub_string_match_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -29681,7 +29681,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "linearRegression_nopredict_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -31042,7 +31042,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "linearRegression_predict_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -32807,7 +32807,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "minute_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -34572,7 +34572,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "month_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -35830,7 +35830,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "quantile_neg_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -37070,7 +37070,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "quantile_pos_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -38310,7 +38310,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "quantile_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -39497,7 +39497,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "resets_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -40841,7 +40841,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "timestamp_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -42606,7 +42606,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "internal/promql",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "year_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

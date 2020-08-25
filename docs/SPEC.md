@@ -47,7 +47,7 @@ The following terms are used to denote specific Unicode character classes:
     unicode_letter = /* a Unicode code point classified as "Letter" */ .
     unicode_digit  = /* a Unicode code point classified as "Number, decimal digit" */ .
 
-In The Unicode Standard 8.0, Section 4.5 "General Category" defines a set of character categories.
+[The Unicode Standard 8.0](https://www.unicode.org/versions/Unicode8.0.0/), Section 4.5 "General Category" defines a set of character categories.
 Flux treats all characters in any of the Letter categories Lu, Ll, Lt, Lm, or Lo as Unicode letters, and those in the Number category Nd as Unicode digits.
 
 #### Letters and digits
@@ -61,7 +61,7 @@ The underscore character _ (U+005F) is considered a letter.
 
 #### Comments
 
-Comment serve as documentation.
+Comments serve as documentation.
 Comments begin with the character sequence `//` and stop at the end of the line.
 
 Comments cannot start inside string or regexp literals.
@@ -405,7 +405,7 @@ The default value is set using the time zone of the running process.
 ### Types
 
 A type defines a set of values and operations on those values.
-Types are never explicitly declared as part of the syntax.
+Types are never explicitly declared as part of the syntax except as part of a [builtin statement](#built-ins).
 Types are always inferred from the usage of the value.
 Type inference follows a Hindley-Milner style inference system.
 
@@ -507,18 +507,22 @@ An _array type_ represents a sequence of values of any other type.
 All values in the array must be of the same type.
 The length of an array is the number of elements in the array.
 
-##### Object types
+##### Record types
 
-An _object type_ represents a set of unordered key and value pairs.
+An _record type_ represents a set of unordered key and value pairs.
 The key must always be a string.
-The value may be any other type, and need not be the same as other values within the object.
+The value may be any other type, and need not be the same as other values within the record.
+
+Keys on a record may only be referenced statically.
+
+Type inference will determine the properties that are present on a record.
+If type inference determines all the properties on a record it is said to be bounded.
+Not all keys may be known on the type of a record in which case the record is said to be unbounded.
+An unbounded record may contain any property in addition to the properties it is known to contain.
 
 ##### Function types
 
 A _function type_ represents a set of all functions with the same argument and result types.
-
-
-[IMPL#249](https://github.com/influxdata/platform/issues/249) Specify type inference rules
 
 ##### Generator types
 
@@ -529,27 +533,30 @@ The generated values may be of any other type but must all be the same type.
 
 #### Polymorphism
 
-Flux types can be polymorphic, meaning that a type may take on many different types.
-Flux supports let-polymorphism and structural polymorphism.
+Flux functions can be polymorphic, meaning they can be applied to arguments of different types.
+Flux supports parametric, record, and ad hoc polymorphism.
 
-Let-polymorphism is the concept that each time an identifier is referenced is may take on a different type.
-For example:
+##### Parametric Polymorphism
 
-    add = (a,b) => a + b
-    add(a:1,b:2) // 3
-    add(a:1.5,b:2.0) // 3.5
+Parametric polymorphism is the notion that a function can be applied uniformly to arguments of any type.
+The identity function is one such example.
 
-The identifiers `a` and `b` in the body of the `add` function are used as both `int` and `float` types.
-This is let-polymorphism, each different use of an identifier may have a different type.
+    f = (x) => x
+    f(x: 1)
+    f(x: 1.1)
+    f(x: "1")
+    f(x: true)
+    f(x: f)
 
-Structural polymorphism is the concept that structures (objects in Flux) can be used by the same function even if the structures themselves are different.
-For example:
+##### Record Polymorphism
+
+Record polymorphism is the notion that a function can be applied to different types of records.
 
     john = {name:"John", lastName:"Smith"}
     jane = {name:"Jane", age:44}
 
-    // John and Jane are objects with different types.
-    // We can still define a function that can operate on both objects safely.
+    // John and Jane are records with different types.
+    // We can still define a function that can operate on both records safely.
 
     // name returns the name of a person
     name = (person) => person.name
@@ -561,9 +568,81 @@ For example:
 
     name(person:device) // Type error, "device" does not have a property name.
 
-This is structural polymorphism, objects of differing types can be used as the same type so long as they both contain the necessary properties. The necessary properties are determined by the use of the object.
+Records of differing types can be passed to the same function so long as they contain the necessary properties.
+The necessary properties are determined by the use of the record.
 
-This form of polymorphism means that these checks are performed during type inference and not during runtime. Type errors are found and reported before runtime.
+##### Ad hoc Polymorphism
+
+Ad hoc polymorphism is the notion that a function can be applied to arguments of different types, with different behavior depending on the type.
+
+    add = (a, b) => a + b
+
+    // Integer addition
+    add(a: 1, b: 1)
+
+    // String concatenation
+    add(a: "str", b: "ing")
+
+    // Addition not defined for boolean data types
+    add(a: true, b: false)
+
+#### Type constraints
+
+Type constraints are a type system concept used to implement static ad hoc polymorphism.
+For example, `add = (a, b) => a + b` is a function that is defined only for `Addable` types.
+If one were to pass a record to `add` like so:
+
+    add(a: {}, b: {})
+
+the result would be a compile-time type error because records are not addable.
+Like types, constraints are never explicitly declared but rather inferred from the context.
+
+##### Addable Constraint
+
+Addable types are those the binary arithmetic operator `+` accepts.
+Int, Uint, Float, and String types are Addable.
+
+##### Subtractable Constraint
+
+Subtractable types are those the binary arithmetic operator `-` accepts.
+Int, Uint, and Float types are Subtractable.
+
+##### Divisible Constraint
+
+Divisible types are those the binary arithmetic operator `\` accepts.
+Int, Uint, and Float types are Divisible.
+
+##### Numeric Constraint
+
+Int, Uint, and Float types are Numeric.
+
+##### Comparable Constraint
+
+Comparable types are those the binary comparison operators `<`, `<=`, `>`, or `>=` accept.
+Int, Uint, Float, String, Duration, and Time types are Comparable.
+
+##### Equatable Constraint
+
+Equatable types are those that can be compared for equality using the `==` or `!=` operators.
+Bool, Int, Uint, Float, String, Duration, Time, Bytes, Array, and Record types are Equatable.
+
+##### Nullable Constraint
+
+Nullable types are those that can be null.
+Bool, Int, Uint, Float, String, Duration, and Time types are Nullable.
+
+##### Record Constraint
+
+Records are the only types that fall under this constraint.
+
+##### Negatable Constraint
+
+Negatable types ore those the unary arithmetic operator `-` accepts.
+Int, Uint, Float, and Duration types are Negatable.
+
+##### Timeable Constraint
+
+Duration and Time types are Timeable.
 
 ### Blocks
 
@@ -680,16 +759,16 @@ Literals construct a value.
             | regex_lit
             | duration_lit
             | pipe_receive_lit
-            | ObjectLiteral
+            | RecordLiteral
             | ArrayLiteral
             | FunctionLiteral .
 
-##### Object literals
+##### Record literals
 
-Object literals construct a value with the object type.
+Record literals construct a value with the record type.
 
-    ObjectLiteral  = "{" ObjectBody "}" .
-    ObjectBody     = WithProperties | PropertyList .
+    RecordLiteral  = "{" RecordBody "}" .
+    RecordBody     = WithProperties | PropertyList .
     WithProperties = identifier "with"  PropertyList .
     PropertyList   = [ Property { "," Property } ] .
     Property       = identifier [ ":" Expression ]
@@ -795,14 +874,15 @@ Index expressions access a value from an array based on a numeric index.
 
 #### Member expressions
 
-Member expressions access a property of an object.
-They are specified via an expression of the form `obj.k` or `obj["k"]`.
-The property being accessed must be either an identifer or a string literal.
-In either case the literal value is the name of the property being accessed, the identifer is not evaluated.
-It is not possible to access an object's property using an arbitrary expression.
+Member expressions access a property of a record.
+They are specified via an expression of the form `rec.k` or `rec["k"]`.
+The property being accessed must be either an identifier or a string literal.
+In either case the literal value is the name of the property being accessed, the identifier is not evaluated.
+It is not possible to access an record's property using an arbitrary expression.
 
-If `obj` contains an entry with property `k`, both `obj.k` and `obj["k"]` return the value associated with `k`.
-If `obj` does **not** contain an entry with property `k`, both `obj.k` and `obj["k"]` return _null_.
+If `rec` contains an entry with property `k`, both `rec.k` and `rec["k"]` return the value associated with `k`.
+If `rec` is bounded and does *not* contain a property `k`, both `rec.k` and `rec["k"]` report a type checking error.
+If `rec` is unbounded and does *not* contain a property `k`, both `rec.k` and `rec["k"]` return _null_.
 
     MemberExpression        = DotExpression  | MemberBracketExpression
     DotExpression           = "." identifer
@@ -834,19 +914,20 @@ The precedence of the operators is given in the table below. Operators with a lo
 |     1    |  `a()`         |       Function call       |
 |          |  `a[]`         |  Member or index access   |
 |          |   `.`          |       Member access       |
-|     2    |   `^`          |       Exponentiation      |
-|     3    | `*` `/` `%`    | Multiplication, division, |
+|     2    |  `|>`          |       Pipe forward        |
+|     3    |   `^`          |       Exponentiation      |
+|     4    | `*` `/` `%`    | Multiplication, division, |
 |          |                | and modulo                |
-|     4    | `+` `-`        | Addition and subtraction  |
-|     5    |`==` `!=`       |   Comparison operators    |
+|     5    | `+` `-`        | Addition and subtraction  |
+|     6    |`==` `!=`       |   Comparison operators    |
 |          | `<` `<=`       |                           |
 |          | `>` `>=`       |                           |
 |          |`=~` `!~`       |                           |
-|     6    | `not`          | Unary logical operator    |
+|     7    | `not`          | Unary logical operator    |
 |          | `exists`       | Null check operator       |
-|     7    |  `and`         |        Logical AND        |
-|     8    |  `or`          |        Logical OR         |
-|     9    | `if/then/else` |        Conditional        |
+|     8    |  `and`         |        Logical AND        |
+|     9    |  `or`          |        Logical OR         |
+|     10   | `if/then/else` |        Conditional        |
 
 The operator precedence is encoded directly into the grammar as the following.
 
@@ -970,82 +1051,6 @@ Examples:
     f()
     a
 
-#### Named types
-
-A named type can be created using a type assignment statement.
-A named type is equivalent to the type it describes and may be used interchangeably.
-
-    TypeAssignement   = "type" identifier "=" TypeExpression
-    TypeExpression    = identifier
-                      | TypeParameter
-                      | ObjectType
-                      | ArrayType
-                      | GeneratorType
-                      | FunctionType .
-    TypeParameter     = "'" identifier .
-    ObjectType        = "{" PropertyTypeList [";" ObjectUpperBound ] "}" .
-    ObjectUpperBound  = "any" | PropertyTypeList .
-    PropertyTypeList  = PropertyType [ "," PropertyType ] .
-    PropertyType      = identifier ":" TypeExpression
-                      | string_lit ":" TypeExpression .
-    ArrayType         = "[]" TypeExpression .
-    GeneratorType     = "[...]" TypeExpression .
-    FunctionType      = ParameterTypeList "->" TypeExpression
-    ParameterTypeList = "(" [ ParameterType { "," ParameterType } ] ")" .
-    ParameterType     = identifier ":" [ pipe_receive_lit ] TypeExpression .
-
-Named types are a separate namespace from values.
-It is possible for a value and a type to have the same identifier.
-The following named types are built-in.
-
-    bool     // boolean
-    int      // integer
-    uint     // unsigned integer
-    float    // floating point number
-    duration // duration of time
-    time     // time
-    string   // utf-8 encoded string
-    regexp   // regular expression
-    bytes    // sequence of byte values
-    type     // a type that itself describes a type
-
-
-When an object's upper bound is not specified, it is assumed to be equal to its lower bound.
-
-Parameters to function types define whether the parameter is a pipe forward parameter and whether the parameter has a default value.
-The `<-` indicates the parameter is the pipe forward parameter.
-
-Examples:
-
-    // alias the bool type
-    type boolean = bool
-
-    // define a person as an object type
-    type person = {
-        name: string,
-        age: int,
-    }
-
-    // Define addition on ints
-    type intAdd = (a: int, b: int) -> int
-
-    // Define polymorphic addition
-    type add = (a: 'a, b: 'a) -> 'a
-
-    // Define funcion with pipe parameter
-    type bar = (foo: <-string) -> string
-
-    // Define object type with an empty lower bound and an explicit upper bound
-    type address = {
-        ;
-        street: string,
-        city: string,
-        state: string,
-        country: string,
-        province: string,
-        zip: int,
-    }
-
 ### Side Effects
 
 Side effects can occur in two ways.
@@ -1082,11 +1087,29 @@ These preassigned values are defined in the source files for the various built-i
 When a built-in value is not expressible in Flux its value may be defined by the hosting environment.
 All such values must have a corresponding builtin statement to declare the existence and type of the built-in value.
 
-    BuiltinStatement = "builtin" identifer ":" TypeExpression
+    BuiltinStatement = "builtin" identifer ":" TypeExpression .
+    TypeExpression   = MonoType ["where" Constraints] .
+
+    MonoType = Tvar | Basic | Array | Record | Function .
+    Tvar     = "A" … "Z" .
+    Basic    = "int" | "uint" | "float" | "string" | "bool" | "time" | "duration" | "bytes" | "regexp" .
+    Array    = "[" MonoType "]" .
+    Record   = ( "{" [Properties] "}" ) | ( "{" Tvar "with" Properties "}" ) .
+    Function = "(" [Parameters] ")" "=>" MonoType .
+
+    Properties = Property { "," Property } .
+    Property   = identifier ":" MonoType .
+
+    Parameters = Parameter { "," Parameter } .
+    Parameter  = [ "<-" | "?" ] identifier ":" MonoType .
+
+    Constraints = Constraint { "," Constraint } .
+    Constraint  = Tvar ":" Kinds .
+    Kinds       = identifier { "+" identifier } .
 
 Example
 
-    builtin from : (bucket: string, bucketID: string) -> stream
+    builtin filter : (<-tables: [T], fn: (r: T) => bool) => [T]
 
 ### Date/Time constants
 
@@ -1177,7 +1200,7 @@ All calls to `systemTime` within a single evaluation of a Flux script return the
 ### Intervals
 
 Intervals is a function that produces a set of time intervals over a range of time.
-An interval is an object with `start` and `stop` properties that correspond to the inclusive start and exclusive stop times of the time interval.
+An interval is a record with `start` and `stop` properties that correspond to the inclusive start and exclusive stop times of the time interval.
 The return value of `intervals` is another function that accepts `start` and `stop` time parameters and returns an interval generator.
 The generator is then used to produce the set of intervals.
 The set of intervals will include all intervals that intersect with the initial range of time.
@@ -1199,7 +1222,7 @@ Intervals has the following parameters:
 | every  | duration                     | Every is the duration between starts of each of the intervals. Defaults to the value of the `period` duration.                                                                                                          |
 | period | duration                     | Period is the length of each interval. It can be negative, indicating the start and stop boundaries are reversed. Defaults to the value of the `every` duration.                                                        |
 | offset | duration                     | Offset is the duration by which to shift the window boundaries. It can be negative, indicating that the offset goes backwards in time. Defaults to 0, which will align window end boundaries with the `every` duration. |
-| filter | (interval: interval) -> bool | Filter accepts an interval object and returns a boolean value. Defaults to include all intervals.                                                                                                                       |
+| filter | (interval: interval) => bool | Filter accepts an interval record and returns a boolean value. Defaults to include all intervals.                                                                                                                       |
 
 The Nth interval start date is the initial start date plus the offset plus an Nth multiple of the every parameter.
 Each interval stop date is equal to the interval start date plus the period duration.
@@ -1209,7 +1232,7 @@ It is not possible to mix months and nanoseconds in an interval.
 
 The intervals function has the following signature:
 
-    (start: time, stop: time) -> (start: time, stop: time) -> [...]interval
+    (start: time, stop: time) => (start: time, stop: time) => [...]interval
 
 Examples:
 
@@ -1355,7 +1378,7 @@ The data model consists of tables, records, columns and streams.
 
 ### Record
 
-A record is a tuple of named values and is represented using an object type.
+A record is a tuple of named values and is represented using an record type.
 
 ### Column
 
@@ -1424,13 +1447,16 @@ Again, by interpreting a _null_ operand as an unknown value, we have the followi
 * _null_ and true = _null_
 * _null_ and _null_ = _null_
 
-And finally, because records are represented using object types, attempting to access a column whose value is unknown or missing from a record will also return _null_.
-
 Note according to the definitions above, it is not possible to check whether or not an expression is _null_ using the `==` and `!=` operators as these operators will return _null_ if any of their operands are _null_.
 In order to perform such a check, Flux provides a built-in `exists` operator defined as follows:
 
 * `exists x` returns false if `x` is _null_
 * `exists x` returns true if `x` is not _null_
+
+The exists operator can also be applied to records as follows:
+
+* `exists rec.x` returns false if `x` is not a property of `rec`
+* `exists rec.x` returns true if `x` is a property of `rec`
 
 ### Transformations
 
@@ -1448,7 +1474,7 @@ Transformations are represented using function types.
 Some transformations, for instance `map` and `filter`, are represented using higher-order functions (functions that accepts other functions).
 When specifying the function passed in, _make sure that you use the same names for its parameters_.
 
-`filter`, for instance, accepts argument `fn` which is of type `(r: record) -> bool`.
+`filter`, for instance, accepts argument `fn` which is of type `(r: A) => bool where A: Record`.
 An invocation of `filter` must take a function with one argument named `r`:
 
 ```
@@ -1649,13 +1675,13 @@ The default behavior of aggregates is to skip over _null_ values.
 An arbitrary aggregate function `fn` is expressed logically using the reduce function:
 
     fn = (column, tables=<-) => reduce(fn: (r, accumulator) => {
-        return if exists(r.column) then ... else ...
+        return if exists r.column then ... else ...
     }, identity: ...)
 
 For example, the `sum` transformation is logically equivalent to:
 
     sum = (column, tables=<-) => reduce(fn: (r, accumulator) => {
-        return if exists(r.column) then accumulator + r.column else accumulator
+        return if exists r.column then accumulator + r.column else accumulator
     }, identity: 0)
 
 ##### AggregateWindow
@@ -1670,7 +1696,7 @@ AggregateWindow has the following properties:
 | Name        | Type                                            | Description                                                                                                                                                     |
 | ----        | ----                                            | -----------                                                                                                                                                     |
 | every       | duration                                        | Every specifies the window size to aggregate.                                                                                                                   |
-| fn          | (tables: <-stream, columns: []string) -> stream | Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section that accept a singular `column` parameter can be provided.      |
+| fn          | (tables: <-stream, columns: []string) => stream | Fn specifies the aggregate operation to perform. Any of the functions in this Aggregate section that accept a singular `column` parameter can be provided.      |
 | column      | string                                          | Columns specifies column to aggregate. Defaults to "_value".                                                                                                    |
 | timeSrc     | string                                          | TimeSrc is the name of a column from the group key to use as the source for the aggregated time. Defaults to "_stop".                                           |
 | timeDst     | string                                          | TimeDst is the name of a new column in which the aggregated time is placed. Defaults to "_time".                                                                |
@@ -2112,10 +2138,10 @@ The default is to drop empty tables.
 
 Filter has the following properties:
 
-| Name    | Type                | Description                                                                                        |
-| ----    | ----                | -----------                                                                                        |
-| fn      | (r: record) -> bool | Fn is a predicate function. Records which evaluate to true, will be included in the output tables. |
-| onEmpty | string              | The behavior for empty tables. This can be `keep` or `drop`. The default is `drop`.
+| Name    | Type                           | Description                                                                                        |
+| ----    | ----                           | -----------                                                                                        |
+| fn      | (r: A) => bool where A: Record | Fn is a predicate function. Records which evaluate to true, will be included in the output tables. |
+| onEmpty | string                         | The behavior for empty tables. This can be `keep` or `drop`. The default is `drop`.
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2292,9 +2318,9 @@ When the output record drops a column that was part of the group key that column
 
 Map has the following properties:
 
-| Name | Type                  | Description                                                            |
-| ---- | ----                  | -----------                                                            |
-| fn   | (r: record) -> record | Function to apply to each record. The return value must be an object.  |
+| Name | Type                                  | Description                                                          |
+| ---- | ----                                  | -----------                                                          |
+| fn   | (r: A) => B where A: Record, B:Record | Function to apply to each record. The return value must be a record. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2326,16 +2352,16 @@ from(bucket:"telegraf/autogen")
 
 #### Reduce
 
-Reduce aggregates records in each table according to the reducer `fn`.  The output for each table will be the group key of the table, plus columns corresponding to each field in the reducer object.  
+Reduce aggregates records in each table according to the reducer `fn`.  The output for each table will be the group key of the table, plus columns corresponding to each field in the reducer record.
 
 If the reducer record contains a column with the same name as a group key column, then the group key column's value is overwritten, and the outgoing group key is changed.  However, if two reduced tables write to the same destination group key, then the function will error.
 
 Reduce has the following properties:
 
-| Name     | Type                  | Description                                                                                               |
-| ----     | ----                  | -----------                                                                                               |
-| fn       | (r: record, accumulator: 'a) -> 'a | Function to apply to each record with a reducer object of type 'a.  |
-| identity | 'a                  | an initial value to use when creating a reducer. May be used more than once in asynchronous processing use cases.|
+| Name     | Type                                        | Description                                                                                                       |
+| ----     | ----                                        | -----------                                                                                                       |
+| fn       | (r: A, accumulator: B) => B where B: Record | Function to apply to each record with a reducer record of type B.                                                 |
+| identity | B                                           | An initial value to use when creating a reducer. May be used more than once in asynchronous processing use cases. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2420,8 +2446,8 @@ Rename has the following properties:
 
 | Name    | Type                       | Description                                                                                    |
 | ----    | ----                       | -----------                                                                                    |
-| columns | object                     | Columns is a map of old column names to new names. Cannot be used with `fn`.                   |
-| fn      | (column: string) -> string | Fn defines a function mapping between old and new column names. Cannot be used with `columns`. |
+| columns | record                     | Columns is a map of old column names to new names. Cannot be used with `fn`.                   |
+| fn      | (column: string) => string | Fn defines a function mapping between old and new column names. Cannot be used with `columns`. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2454,7 +2480,7 @@ Drop has the following properties:
 | Name    | Type                     | Description                                                                                           |
 | ----    | ----                     | -----------                                                                                           |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.          |
-| fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are dropped. Cannot be used with `columns`. |
+| fn      | (column: string) => bool | Fn is a predicate function, columns that evaluate to true are dropped. Cannot be used with `columns`. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2489,7 +2515,7 @@ Keep has the following properties:
 | Name    | Type                     | Description                                                                                        |
 | ----    | ----                     | -----------                                                                                        |
 | columns | []string                 | Columns is an array of column to exclude from the resulting table. Cannot be used with `fn`.       |
-| fn      | (column: string) -> bool | Fn is a predicate function, columns that evaluate to true are kept. Cannot be used with `columns`. |
+| fn      | (column: string) => bool | Fn is a predicate function, columns that evaluate to true are kept. Cannot be used with `columns`. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2737,7 +2763,7 @@ KeyValues has the following properties:
 | Name       | Type                         | Description                                                                                      |
 | ----       | ----                         | -----------                                                                                      |
 | keyColumns | []string                     | KeyColumns is a list of columns from which values are extracted.                                 |
-| fn         | (schema: schema) -> []string | Fn is a schema function that may by used instead of `keyColumns` to identify the set of columns. |
+| fn         | (schema: schema) => []string | Fn is a schema function that may by used instead of `keyColumns` to identify the set of columns. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -2809,7 +2835,7 @@ Window has the following properties:
 | every       | duration                                   | Every is the duration of time between windows. Defaults to `period`'s value. One of `every`, `period` or `intervals` must be provided.                                                                                                         |
 | period      | duration                                   | Period is the duration of the window. Period is the length of each interval. It can be negative, indicating the start and stop boundaries are reversed. Defaults to `every`'s value. One of `every`, `period` or `intervals` must be provided. |
 | offset      | duration                                   | Offset is the duration by which to shift the window boundaries. It can be negative, indicating that the offset goes backwards in time. Defaults to 0, which will align window end boundaries with the `every` duration.                                |
-| intervals   | (start: time, stop: time) -> [...]interval | Intervals is a set of intervals to be used as the windows. One of `every`, `period` or `intervals` must be provided. When `intervals` is provided, `every`, `period`, and `offset` must be zero.                                              |
+| intervals   | (start: time, stop: time) => [...]interval | Intervals is a set of intervals to be used as the windows. One of `every`, `period` or `intervals` must be provided. When `intervals` is provided, `every`, `period`, and `offset` must be zero.                                              |
 | timeColumn  | string                                     | TimeColumn is the name of the time column to use.  Defaults to `_time`.                                                                                                                                                                       |
 | startColumn | string                                     | StartColumn is the name of the column containing the window start time. Defaults to `_start`.                                                                                                                                                 |
 | stopColumn  | string                                     | StopColumn is the name of the column containing the window stop time. Defaults to `_stop`.                                                                                                                                                    |
@@ -2941,7 +2967,7 @@ Join has the following properties:
 
 | Name   | Type     | Description                                                                         |
 | ----   | ----     | -----------                                                                         |
-| tables | object   | Tables is the map of streams to be joined.                                          |
+| tables | record   | Tables is the map of streams to be joined.                                          |
 | on     | []string | On is the list of columns on which to join.                                         |
 | method | string   | Method must be one of: inner, cross, left, right, or full. Defaults to `"inner"`  . |
 
@@ -3912,10 +3938,10 @@ affect the state count.
 
 StateCount has the following parameters:
 
-| Name   | Type                | Description                                                                                  |
-| ----   | ----                | -----------                                                                                  |
-| fn     | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                  |
-| column | string              | Column is the name of the column to use to output the state count. Defaults to `stateCount`. |
+| Name   | Type                           | Description                                                                                  |
+| ----   | ----                           | -----------                                                                                  |
+| fn     | (r: A) => bool where A: Record | Fn is a function that returns true when the record is in the desired state.                  |
+| column | string                         | Column is the name of the column to use to output the state count. Defaults to `stateCount`. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -3950,12 +3976,12 @@ is not met, it returns an error.
 
 StateDuration has the following parameters:
 
-| Name       | Type                | Description                                                                                     |
-| ----       | ----                | -----------                                                                                     |
-| fn         | (r: record) -> bool | Fn is a function that returns true when the record is in the desired state.                     |
-| column     | string              | Column is the name of the column to use to output the state value. Defaults to `stateDuration`. |
-| timeColumn | string              | TimeColumn is the name of the column used to extract timestamps. Defaults to `_time`.           |
-| unit       | duration            | Unit is the dimension of the output value. Defaults to `1s`.                                    |
+| Name       | Type                           | Description                                                                                     |
+| ----       | ----                           | -----------                                                                                     |
+| fn         | (r: A) => bool where A: Record | Fn is a function that returns true when the record is in the desired state.                     |
+| column     | string                         | Column is the name of the column to use to output the state value. Defaults to `stateDuration`. |
+| timeColumn | string                         | TimeColumn is the name of the column used to extract timestamps. Defaults to `_time`.           |
+| unit       | duration                       | Unit is the dimension of the output value. Defaults to `1s`.                                    |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -3972,19 +3998,19 @@ from(bucket: "telegraf/autogen")
 The To operation takes data from a stream and writes it to a bucket.
 To has the following properties:
 
-| Name       | Type                  | Description                                                                                                                                                                                                                        |
-| ----       | ----                  | -----------                                                                                                                                                                                                                        |
-| bucket     | string                | Bucket is the bucket name into which data will be written.                                                                                                                                                                         |
-| bucketID   | string                | BucketID is the bucket ID into which data will be written.                                                                                                                                                                         |
-| org        | string                | Org is the organization name of the bucket.                                                                                                                                                                                        |
-| orgID      | string                | OrgID is the organization ID of the bucket.                                                                                                                                                                                        |
-| host       | string                | Host is the location of a remote host to write to. Defaults to `""`.                                                                                                                                                               |
-| token      | string                | Token is the authorization token to use when writing to a remote host. Defaults to `""`.                                                                                                                                           |
-| timeColumn | string                | TimeColumn is the name of the time column of the output.  Defaults to `"_time"`.                                                                                                                                                   |
-| tagColumns | []string              | TagColumns is a list of columns to be used as tags in the output. Defaults to all columns of type string, excluding all value columns and the `_field` column if present.                                                          |
-| fieldFn    | (r: record) -> record | Function that takes a record from the input table and returns an object. For each record from the input table `fieldFn` returns on object that maps output field key to output value. Default: `(r) => ({ [r._field]: r._value })` |
+| Name       | Type                                    | Description                                                                                                                                                                                                                      |
+| ----       | ----                                    | -----------                                                                                                                                                                                                                      |
+| bucket     | string                                  | Bucket is the bucket name into which data will be written.                                                                                                                                                                       |
+| bucketID   | string                                  | BucketID is the bucket ID into which data will be written.                                                                                                                                                                       |
+| org        | string                                  | Org is the organization name of the bucket.                                                                                                                                                                                      |
+| orgID      | string                                  | OrgID is the organization ID of the bucket.                                                                                                                                                                                      |
+| host       | string                                  | Host is the location of a remote host to write to. Defaults to `""`.                                                                                                                                                             |
+| token      | string                                  | Token is the authorization token to use when writing to a remote host. Defaults to `""`.                                                                                                                                         |
+| timeColumn | string                                  | TimeColumn is the name of the time column of the output.  Defaults to `"_time"`.                                                                                                                                                 |
+| tagColumns | []string                                | TagColumns is a list of columns to be used as tags in the output. Defaults to all columns of type string, excluding all value columns and the `_field` column if present.                                                        |
+| fieldFn    | (r: A) => B where A: Record , B: Record | Function that takes a record from the input table and returns a record. For each record from the input table `fieldFn` returns a record that maps output field key to output value. Default: `(r) => ({ [r._field]: r._value })` |
 
-TODO(nathanielc): The fieldFn is not valid and needs to change. It uses dynamic object keys which is not allowed.
+TODO(nathanielc): The fieldFn is not valid and needs to change. It uses dynamic record keys which is not allowed.
 
 Either `bucket` or `bucketID` is required.
 Both are mutually exclusive.
@@ -4090,9 +4116,9 @@ is found, the function errors.
 
 It has the following parameters:
 
-| Name | Type                  | Description                                                                     |
-| ---- | ----                  | -----------                                                                     |
-| fn   | (key: object) -> bool | Fn is a predicate function. The result is the first table for which fn is true. |
+| Name | Type                             | Description                                                                     |
+| ---- | ----                             | -----------                                                                     |
+| fn   | (key: A) => bool where A: Record | Fn is a predicate function. The result is the first table for which fn is true. |
 
 _NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
 
@@ -4150,6 +4176,60 @@ r0 = from(bucket:"telegraf/autogen")
     |> filter(fn:(r) => r._measurement == "cpu")
     |> tableFind(fn: (key) => key._field == "usage_idle")
     |> getRecord(idx: 0)
+
+// use values
+x = r0._field + "--" + r0._measurement
+```
+
+##### FindColumn
+
+FindColumn extracts the first table from a stream of tables where the group key
+values match a given predicate, and from that table extracts a specified column.
+The column is returned as an array. The function returns an empty array if no
+table is found, or if the column label is not present in the set of columns.
+
+It has the following parameters:
+
+| Name   | Type                             | Description                                                                                    |
+| ----   | ----                             | -----------                                                                                    |
+| fn     | (key: A) => bool where A: Record | Fn is a predicate function. The column is extracted from the first table for which fn is true. |
+| column | string                           | Column is the name of the column to extract.                                                   |
+
+_NOTE_: make sure that `fn`'s parameter names match the ones specified above (see [why](#Transformations)).
+
+Example:
+
+```
+vs = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> findColumn(fn: (key) => key._field == "usage_idle", column: "_value")
+
+// use values
+x = vs[0] + vs[1]
+```
+
+##### FindRecord
+
+FindRecord extracts the first table from a stream of tables where the group key
+values match a given predicate, and from that table extracts a record at a
+specified index. The record is returned as a record value. The function returns an
+empty record if no table is found, or if the index is out of bounds.
+
+It has the following parameters:
+
+| Name | Type                             | Description                                                                                    |
+| ---- | ----                             | -----------                                                                                    |
+| fn   | (key: A) => bool where A: Record | Fn is a predicate function. The record is extracted from the first table for which fn is true. |
+| idx  | int                              | Idx is the index of the record to extract.                                                     |
+
+Example:
+
+```
+r0 = from(bucket:"telegraf/autogen")
+    |> range(start: -5m)
+    |> filter(fn:(r) => r._measurement == "cpu")
+    |> findRecord(fn: (key) => key._field == "usage_idle", idx: 0)
 
 // use values
 x = r0._field + "--" + r0._measurement
@@ -4454,9 +4534,9 @@ Example: `trimSuffix(v: "abc_123", suffix: "123")` returns the string `abc_`.
 
 ##### compile
 
-Parse a regular expression and return, if successful, a Regexp object that can be used to match against text.
+Parse a regular expression and return, if successful, a regular expression value that can be used to match against text.
 
-Example: `compile(v: "abcd")` returns the Regex object `abcd`.
+Example: `compile(v: "abcd")` returns the regular expression value `abcd`.
 
 ##### findString
 
@@ -4474,7 +4554,7 @@ Example: `findStringIndex(r: regexp.compile("ab?"), v: "tablett")` returns the i
 
 Return the source text used to compile the regular expression.
 
-Example: `getString(v: regexp.compile("abcd"))` returns the Regex object `abcd`.
+Example: `getString(v: regexp.compile("abcd"))` returns the regular expression value `abcd`.
 
 ##### matchRegexString
 

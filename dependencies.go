@@ -87,13 +87,14 @@ func GetDependencies(ctx context.Context) Dependencies {
 // NewDefaultDependencies produces a set of dependencies.
 // Not all dependencies have valid defaults and will not be set.
 func NewDefaultDependencies() Deps {
+	validator := url.PassValidator{}
 	return Deps{
 		Deps: WrappedDeps{
-			HTTPClient: http.NewLimitedDefaultClient(),
+			HTTPClient: http.NewLimitedDefaultClient(validator),
 			// Default to having no filesystem, no secrets, and no url validation (always pass).
 			FilesystemService: nil,
 			SecretService:     secret.EmptySecretService{},
-			URLValidator:      url.PassValidator{},
+			URLValidator:      validator,
 		},
 	}
 }

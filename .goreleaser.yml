@@ -5,7 +5,6 @@ builds:
     - darwin
     goarch:
     - amd64
-    - 386
     - arm
     - arm64
     goarm:
@@ -13,12 +12,19 @@ builds:
     - 7
     ignore:
       - goos: darwin
-        goarch: 386
+        goarch: 386 
+      - goos: darwin
+        goarch: arm
+      - goos: darwin
+        goarch: arm64 
       - goos: windows
         goarch: 386
     main: ./cmd/flux
     env:
       - GO111MODULE=on
+      - CGO_ENABLED=1
+      - CC=xcc
+      - PKG_CONFIG=/go/bin/pkg-config
     ldflags: -s -w -X main.commit={{.Commit}}
     binary: flux
 

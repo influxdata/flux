@@ -3,18 +3,16 @@ package universe_test
 import (
 	"context"
 	"errors"
-	"regexp"
 	"testing"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
-	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
-	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values/valuestest"
@@ -30,7 +28,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -62,7 +60,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -92,7 +90,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -122,7 +120,7 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
@@ -153,30 +151,15 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "drop1",
 						Spec: &universe.DropOpSpec{
 							Predicate: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.RegexpMatchOperator,
-											Left: &semantic.IdentifierExpression{
-												Name: "column",
-											},
-											Right: &semantic.RegexpLiteral{
-												Value: regexp.MustCompile(`reg*`),
-											},
-										},
-									},
-								},
-								Scope: valuestest.NowScope(),
+								Fn:    executetest.FunctionExpression(t, "(column) => column =~ /reg*/"),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -201,30 +184,15 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "keep1",
 						Spec: &universe.KeepOpSpec{
 							Predicate: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-										},
-										Body: &semantic.BinaryExpression{
-											Operator: ast.RegexpMatchOperator,
-											Left: &semantic.IdentifierExpression{
-												Name: "column",
-											},
-											Right: &semantic.RegexpLiteral{
-												Value: regexp.MustCompile(`reg*`),
-											},
-										},
-									},
-								},
-								Scope: valuestest.NowScope(),
+								Fn:    executetest.FunctionExpression(t, "(column) => column =~ /reg*/"),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -249,24 +217,15 @@ func TestSchemaMutions_NewQueries(t *testing.T) {
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
-							Bucket: "mybucket",
+							Bucket: influxdb.NameOrID{Name: "mybucket"},
 						},
 					},
 					{
 						ID: "rename1",
 						Spec: &universe.RenameOpSpec{
 							Fn: interpreter.ResolvedFunction{
-								Fn: &semantic.FunctionExpression{
-									Block: &semantic.FunctionBlock{
-										Parameters: &semantic.FunctionParameters{
-											List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-										},
-										Body: &semantic.StringLiteral{
-											Value: "new_name",
-										},
-									},
-								},
-								Scope: valuestest.NowScope(),
+								Fn:    executetest.FunctionExpression(t, `(column) => "new_name"`),
+								Scope: valuestest.Scope(),
 							},
 						},
 					},
@@ -480,7 +439,19 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("requested operation merges tables with different numbers of columns for group key {a=one}"),
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TString},
+					{Label: "c", Type: flux.TFloat},
+				},
+				KeyCols: []string{"a"},
+				Data: [][]interface{}{
+					{"one", 3.0},
+					{"one", 13.0},
+					{"one", nil},
+					{"one", nil},
+				},
+			}},
 		},
 		{
 			name: "drop key col merge error column type",
@@ -517,7 +488,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("requested operation merges tables with different schemas for group key {a=one}"),
+			wantErr: errors.New("schema collision detected: column \"c\" is both of type string and float"),
 		},
 		{
 			name: "drop no exist",
@@ -668,7 +639,19 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("requested operation merges tables with different numbers of columns for group key {a=one}"),
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "a", Type: flux.TString},
+					{Label: "c", Type: flux.TFloat},
+				},
+				KeyCols: []string{"a"},
+				Data: [][]interface{}{
+					{"one", 3.0},
+					{"one", 13.0},
+					{"one", nil},
+					{"one", nil},
+				},
+			}},
 		},
 		{
 			name: "keep one key col merge error column type",
@@ -705,7 +688,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					},
 				},
 			},
-			wantErr: errors.New("requested operation merges tables with different schemas for group key {a=one}"),
+			wantErr: errors.New("schema collision detected: column \"c\" is both of type string and float"),
 		},
 		{
 			name: "duplicate single col",
@@ -749,17 +732,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []universe.SchemaMutation{
 					&universe.RenameOpSpec{
 						Fn: interpreter.ResolvedFunction{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.StringLiteral{
-										Value: "new_name",
-									},
-								},
-							},
-							Scope: valuestest.NowScope(),
+							Fn:    executetest.FunctionExpression(t, `(column) => "new_name"`),
+							Scope: valuestest.Scope(),
 						},
 					},
 				},
@@ -776,7 +750,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 					{21.0, 22.0, 23.0},
 				},
 			}},
-			wantErr: errors.New("table builder already has column with label new_name"),
+			wantErr: errors.New("column 0 and 1 have the same name (\"new_name\") which is not allowed"),
 		},
 		{
 			name: "drop predicate (column) => column ~= /reg/",
@@ -784,23 +758,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []universe.SchemaMutation{
 					&universe.DropOpSpec{
 						Predicate: interpreter.ResolvedFunction{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.RegexpMatchOperator,
-										Left: &semantic.IdentifierExpression{
-											Name: "column",
-										},
-										Right: &semantic.RegexpLiteral{
-											Value: regexp.MustCompile(`server*`),
-										},
-									},
-								},
-							},
-							Scope: valuestest.NowScope(),
+							Fn:    executetest.FunctionExpression(t, `(column) => column =~ /server*/`),
+							Scope: valuestest.Scope(),
 						},
 					},
 				},
@@ -834,23 +793,8 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				Mutations: []universe.SchemaMutation{
 					&universe.KeepOpSpec{
 						Predicate: interpreter.ResolvedFunction{
-							Fn: &semantic.FunctionExpression{
-								Block: &semantic.FunctionBlock{
-									Parameters: &semantic.FunctionParameters{
-										List: []*semantic.FunctionParameter{{Key: &semantic.Identifier{Name: "column"}}},
-									},
-									Body: &semantic.BinaryExpression{
-										Operator: ast.RegexpMatchOperator,
-										Left: &semantic.IdentifierExpression{
-											Name: "column",
-										},
-										Right: &semantic.RegexpLiteral{
-											Value: regexp.MustCompile(`server*`),
-										},
-									},
-								},
-							},
-							Scope: valuestest.NowScope(),
+							Fn:    executetest.FunctionExpression(t, `(column) => column =~ /server*/`),
+							Scope: valuestest.Scope(),
 						},
 					},
 				},
@@ -998,7 +942,7 @@ func TestDropRenameKeep_Process(t *testing.T) {
 				},
 			}},
 			want: []*executetest.Table{{
-				ColMeta: []flux.ColMeta(nil),
+				ColMeta: []flux.ColMeta{},
 				Data:    [][]interface{}(nil),
 			}},
 		},
@@ -1555,18 +1499,19 @@ func TestDropRenameKeep_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			// t.Skip("https://github.com/influxdata/flux/issues/2490")
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-					ctx := dependenciestest.Default().Inject(context.Background())
-					tr, err := universe.NewSchemaMutationTransformation(ctx, tc.spec, d, c)
+				func(id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
+					spec := tc.spec.(*universe.SchemaMutationProcedureSpec)
+					tr, d, err := universe.NewSchemaMutationTransformation(context.Background(), spec, id, mem)
 					if err != nil {
 						t.Fatal(err)
 					}
-					return tr
+					return tr, d
 				},
 			)
 		})
@@ -1606,3 +1551,69 @@ func TestRenameDrop_PushDown(t *testing.T) {
 	plantest.PhysicalPlan_PushDown_TestHelper(t, spec, root, false, want)
 }
 */
+
+func BenchmarkKeep_Values(b *testing.B) {
+	b.Run("1000", func(b *testing.B) {
+		benchmarkSchemaMutator(b, 1000, &universe.KeepOpSpec{
+			Columns: []string{"_measurement", "t0"},
+		})
+	})
+}
+
+func BenchmarkDrop_Values(b *testing.B) {
+	b.Run("1000", func(b *testing.B) {
+		benchmarkSchemaMutator(b, 1000, &universe.DropOpSpec{
+			Columns: []string{"_measurement", "_field"},
+		})
+	})
+}
+
+func BenchmarkRename_Values(b *testing.B) {
+	b.Run("1000", func(b *testing.B) {
+		benchmarkSchemaMutator(b, 1000, &universe.RenameOpSpec{
+			Columns: map[string]string{
+				"_measurement": "m",
+				"_field":       "f",
+			},
+		})
+	})
+}
+
+func BenchmarkDuplicate_Values(b *testing.B) {
+	b.Run("1000", func(b *testing.B) {
+		benchmarkSchemaMutator(b, 1000, &universe.DuplicateOpSpec{
+			Column: "_value",
+			As:     "_prev_value",
+		})
+	})
+}
+
+func benchmarkSchemaMutator(b *testing.B, n int, m universe.SchemaMutation) {
+	b.ReportAllocs()
+	spec := &universe.SchemaMutationProcedureSpec{
+		Mutations: []universe.SchemaMutation{m},
+	}
+	executetest.ProcessBenchmarkHelper(b,
+		func(alloc *memory.Allocator) (flux.TableIterator, error) {
+			schema := gen.Schema{
+				NumPoints: n,
+				Alloc:     alloc,
+				Tags: []gen.Tag{
+					{Name: "_measurement", Cardinality: 1},
+					{Name: "_field", Cardinality: 6},
+					{Name: "t0", Cardinality: 100},
+					{Name: "t1", Cardinality: 50},
+				},
+				Nulls: 0.1,
+			}
+			return gen.Input(context.Background(), schema)
+		},
+		func(id execute.DatasetID, alloc *memory.Allocator) (execute.Transformation, execute.Dataset) {
+			t, d, err := universe.NewSchemaMutationTransformation(context.Background(), spec, id, alloc)
+			if err != nil {
+				b.Fatal(err)
+			}
+			return t, d
+		},
+	)
+}

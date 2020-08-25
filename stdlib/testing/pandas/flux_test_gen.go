@@ -1582,7 +1582,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "capitalize_strings_toUpper_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -3188,7 +3188,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "cat_strings_joinStr_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -4898,7 +4898,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "center_strings_joinStr_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -6558,7 +6558,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "contains_filter_by_regex_match_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -8165,7 +8165,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "count_string_countStr_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -10439,7 +10439,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "endswith_strings_regexp_hasSuffix_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -12256,7 +12256,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "extract_regexp_findStringIndex_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -14038,7 +14038,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "extract_regexp_findString_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -15662,7 +15662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "get_strings_substring_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -17268,7 +17268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "ljust_string_joinStr_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -18788,7 +18788,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "lower_strings_toLower_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -20360,7 +20360,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "lstrip_string_trimLeft_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -22019,7 +22019,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "partition_strings_splitN_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -23591,7 +23591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "repeat_strings_repeat_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -25267,7 +25267,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "replace_strings_replace_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -26839,7 +26839,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "rstrip_string_trimRight_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -28744,7 +28744,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "regexp",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "startswith_strings_regexp_hasPrefix_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -30491,7 +30491,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "strip_strings_trimLeftRight_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
@@ -32011,7 +32011,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Value: "strings",
 			},
 		}},
-		Metadata: "parser-type=go",
+		Metadata: "parser-type=rust",
 		Name:     "title_strings_title_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{

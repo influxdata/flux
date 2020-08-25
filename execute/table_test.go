@@ -6,10 +6,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/apache/arrow/go/arrow/array"
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
@@ -179,19 +182,6 @@ func TestTablesEqual(t *testing.T) {
 	}
 }
 
-type TableIterator struct {
-	Tables []flux.Table
-}
-
-func (ti TableIterator) Do(f func(flux.Table) error) error {
-	for _, tbl := range ti.Tables {
-		if err := f(tbl); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func TestColListTable(t *testing.T) {
 	executetest.RunTableTests(t, executetest.TableTest{
 		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
@@ -234,9 +224,7 @@ func TestColListTable(t *testing.T) {
 			_, _ = b2.AddCol(flux.ColMeta{Label: "_value", Type: flux.TFloat})
 			tbl2, _ := b2.Table()
 			b2.Release()
-			return TableIterator{
-				Tables: []flux.Table{tbl1, tbl2},
-			}
+			return table.Iterator{tbl1, tbl2}
 		},
 		IsDone: func(tbl flux.Table) bool {
 			return tbl.(*execute.ColListTable).IsDone()
@@ -326,7 +314,7 @@ func TestColListTable_SetNil(t *testing.T) {
 func TestCopyTable(t *testing.T) {
 	alloc := &memory.Allocator{}
 
-	input, err := gen.Input(gen.Schema{
+	input, err := gen.Input(context.Background(), gen.Schema{
 		Tags: []gen.Tag{
 			{Name: "t0", Cardinality: 1},
 		},
@@ -386,6 +374,206 @@ func TestCopyTable(t *testing.T) {
 	}
 }
 
+func TestColListTableBuilder_AppendValues(t *testing.T) {
+	for _, tt := range []struct {
+		name   string
+		typ    flux.ColType
+		values array.Interface
+		want   *executetest.Table
+	}{
+		{
+			name: "Ints",
+			typ:  flux.TInt,
+			values: func() array.Interface {
+				b := array.NewInt64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TInt,
+				}},
+				Data: [][]interface{}{
+					{int64(2)}, {int64(3)}, {nil}, {int64(8)}, {nil}, {int64(6)},
+				},
+			},
+		},
+		{
+			name: "UInts",
+			typ:  flux.TUInt,
+			values: func() array.Interface {
+				b := array.NewUint64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TUInt,
+				}},
+				Data: [][]interface{}{
+					{uint64(2)}, {uint64(3)}, {nil}, {uint64(8)}, {nil}, {uint64(6)},
+				},
+			},
+		},
+		{
+			name: "Floats",
+			typ:  flux.TFloat,
+			values: func() array.Interface {
+				b := array.NewFloat64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TFloat,
+				}},
+				Data: [][]interface{}{
+					{2.0}, {3.0}, {nil}, {8.0}, {nil}, {6.0},
+				},
+			},
+		},
+		{
+			name: "Strings",
+			typ:  flux.TString,
+			values: func() array.Interface {
+				b := arrow.NewStringBuilder(&memory.Allocator{})
+				b.AppendString("a")
+				b.AppendString("d")
+				b.AppendNull()
+				b.AppendString("b")
+				b.AppendNull()
+				b.AppendString("e")
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TString,
+				}},
+				Data: [][]interface{}{
+					{"a"}, {"d"}, {nil}, {"b"}, {nil}, {"e"},
+				},
+			},
+		},
+		{
+			name: "Bools",
+			typ:  flux.TBool,
+			values: func() array.Interface {
+				b := array.NewBooleanBuilder(memory.DefaultAllocator)
+				b.Append(true)
+				b.Append(false)
+				b.AppendNull()
+				b.Append(false)
+				b.AppendNull()
+				b.Append(true)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TBool,
+				}},
+				Data: [][]interface{}{
+					{true}, {false}, {nil}, {false}, {nil}, {true},
+				},
+			},
+		},
+		{
+			name: "Times",
+			typ:  flux.TTime,
+			values: func() array.Interface {
+				b := array.NewInt64Builder(memory.DefaultAllocator)
+				b.Append(2)
+				b.Append(3)
+				b.AppendNull()
+				b.Append(8)
+				b.AppendNull()
+				b.Append(6)
+				return b.NewArray()
+			}(),
+			want: &executetest.Table{
+				ColMeta: []flux.ColMeta{{
+					Label: "_value",
+					Type:  flux.TTime,
+				}},
+				Data: [][]interface{}{
+					{execute.Time(2)}, {execute.Time(3)}, {nil}, {execute.Time(8)}, {nil}, {execute.Time(6)},
+				},
+			},
+		},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			key := execute.NewGroupKey(nil, nil)
+			b := execute.NewColListTableBuilder(key, &memory.Allocator{})
+			if _, err := b.AddCol(flux.ColMeta{Label: "_value", Type: tt.typ}); err != nil {
+				t.Fatal(err)
+			}
+
+			switch tt.typ {
+			case flux.TBool:
+				if err := b.AppendBools(0, tt.values.(*array.Boolean)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TInt:
+				if err := b.AppendInts(0, tt.values.(*array.Int64)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TUInt:
+				if err := b.AppendUInts(0, tt.values.(*array.Uint64)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TFloat:
+				if err := b.AppendFloats(0, tt.values.(*array.Float64)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TString:
+				if err := b.AppendStrings(0, tt.values.(*array.Binary)); err != nil {
+					t.Fatal(err)
+				}
+			case flux.TTime:
+				if err := b.AppendTimes(0, tt.values.(*array.Int64)); err != nil {
+					t.Fatal(err)
+				}
+			default:
+				execute.PanicUnknownType(tt.typ)
+			}
+
+			table, err := b.Table()
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := executetest.ConvertTable(table)
+			if err != nil {
+				t.Fatal(err)
+			}
+			got.Normalize()
+			tt.want.Normalize()
+
+			if !cmp.Equal(tt.want, got) {
+				t.Fatalf("unexpected output -want/+got:\n%s", cmp.Diff(tt.want, got))
+			}
+		})
+	}
+}
+
 func TestCopyTable_Empty(t *testing.T) {
 	in := &executetest.Table{
 		GroupKey: execute.NewGroupKey(
@@ -411,4 +599,39 @@ func TestCopyTable_Empty(t *testing.T) {
 	if !cpy.Empty() {
 		t.Fatal("expected copied table to be empty, but it wasn't")
 	}
+}
+
+func TestEmptyWindowTable(t *testing.T) {
+	executetest.RunTableTests(t, executetest.TableTest{
+		NewFn: func(ctx context.Context, alloc *memory.Allocator) flux.TableIterator {
+			// Prime the allocator with an allocation to avoid
+			// an error happening for no allocations.
+			// No allocations is expected but the table tests check that
+			// an allocation happened.
+			alloc.Free(alloc.Allocate(1))
+
+			key := execute.NewGroupKey(
+				[]flux.ColMeta{
+					{Label: "_measurement", Type: flux.TString},
+					{Label: "_field", Type: flux.TString},
+				},
+				[]values.Value{
+					values.NewString("m0"),
+					values.NewString("f0"),
+				},
+			)
+			cols := []flux.ColMeta{
+				{Label: "_measurement", Type: flux.TString},
+				{Label: "_field", Type: flux.TString},
+				{Label: "_time", Type: flux.TTime},
+				{Label: "_value", Type: flux.TInt},
+			}
+			return table.Iterator{
+				execute.NewEmptyTable(key, cols),
+			}
+		},
+		IsDone: func(tbl flux.Table) bool {
+			return true
+		},
+	})
 }

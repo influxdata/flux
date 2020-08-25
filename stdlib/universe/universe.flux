@@ -74,6 +74,8 @@ builtin yield
 builtin tableFind
 builtin getColumn
 builtin getRecord
+builtin findColumn
+builtin findRecord
 
 // type conversion functions
 builtin bool
@@ -94,6 +96,7 @@ builtin length // length function for arrays
 builtin linearBins
 builtin logarithmicBins
 builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration
+builtin die // die returns a fatal error from within a flux script
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>

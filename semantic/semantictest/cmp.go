@@ -13,7 +13,12 @@ import (
 var CmpOptions = []cmp.Option{
 	cmp.Comparer(func(x, y *regexp.Regexp) bool { return x.String() == y.String() }),
 	cmp.Transformer("Value", TransformValue),
-
+	cmp.Transformer("MonoType", func(mt semantic.MonoType) string {
+		return mt.String()
+	}),
+	cmp.Transformer("PolyType", func(pt semantic.PolyType) string {
+		return pt.String()
+	}),
 	cmpopts.IgnoreUnexported(semantic.ArrayExpression{}),
 	cmpopts.IgnoreUnexported(semantic.Package{}),
 	cmpopts.IgnoreUnexported(semantic.File{}),
@@ -27,11 +32,8 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.ReturnStatement{}),
 	cmpopts.IgnoreUnexported(semantic.NativeVariableAssignment{}),
 	cmpopts.IgnoreUnexported(semantic.MemberAssignment{}),
-	cmpopts.IgnoreUnexported(semantic.Extern{}),
-	cmpopts.IgnoreUnexported(semantic.ExternalVariableAssignment{}),
 	cmpopts.IgnoreUnexported(semantic.ArrayExpression{}),
 	cmpopts.IgnoreUnexported(semantic.FunctionExpression{}),
-	cmpopts.IgnoreUnexported(semantic.FunctionBlock{}),
 	cmpopts.IgnoreUnexported(semantic.FunctionParameters{}),
 	cmpopts.IgnoreUnexported(semantic.FunctionParameter{}),
 	cmpopts.IgnoreUnexported(semantic.BinaryExpression{}),
@@ -56,6 +58,46 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.StringExpression{}),
 	cmpopts.IgnoreUnexported(semantic.TextPart{}),
 	cmpopts.IgnoreUnexported(semantic.InterpolatedPart{}),
+
+	cmpopts.IgnoreFields(semantic.ArrayExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.Package{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.File{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.PackageClause{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.ImportDeclaration{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.Block{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.OptionStatement{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.BuiltinStatement{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.TestStatement{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.ExpressionStatement{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.ReturnStatement{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.NativeVariableAssignment{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.MemberAssignment{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.ArrayExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.FunctionExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.FunctionParameters{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.FunctionParameter{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.BinaryExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.CallExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.ConditionalExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.LogicalExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.MemberExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.IndexExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.ObjectExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.UnaryExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.Property{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.IdentifierExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.Identifier{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.BooleanLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.DateTimeLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.DurationLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.IntegerLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.FloatLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.RegexpLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.StringLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.UnsignedIntegerLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.StringExpression{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.TextPart{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.InterpolatedPart{}, "Loc"),
 }
 
 func TransformValue(v values.Value) map[string]interface{} {
@@ -124,6 +166,11 @@ func TransformValue(v values.Value) map[string]interface{} {
 		return map[string]interface{}{
 			"type":     semantic.Object.String(),
 			"elements": elements,
+		}
+	case semantic.Function:
+		// Just use the function type when comparing functions
+		return map[string]interface{}{
+			"type": v.Type().String(),
 		}
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))

@@ -1,8 +1,10 @@
 package universe_test
  
 import "testing"
+import c "csv"
 
 option now = () => (2030-01-01T00:00:00Z)
+option testing.loadStorage = (csv) => c.from(csv: csv)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string

@@ -1,6 +1,4 @@
-// +build libflux
-
-package semantic
+package semantic_test
 
 import (
 	"errors"
@@ -13,59 +11,59 @@ import (
 	flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/internal/fbsemantic"
 	"github.com/influxdata/flux/parser"
-	"github.com/influxdata/flux/semantic/internal/fbsemantic"
-	"github.com/influxdata/flux/semantic/types"
+	"github.com/influxdata/flux/runtime"
+	"github.com/influxdata/flux/semantic"
 )
 
 var cmpOpts = []cmp.Option{
 	cmp.AllowUnexported(
-		ArrayExpression{},
-		BinaryExpression{},
-		Block{},
-		CallExpression{},
-		ConditionalExpression{},
-		DateTimeLiteral{},
-		DurationLiteral{},
-		ExpressionStatement{},
-		File{},
-		FloatLiteral{},
-		FunctionBlock{},
-		FunctionExpression{},
-		FunctionParameters{},
-		FunctionParameter{},
-		IdentifierExpression{},
-		Identifier{},
-		ImportDeclaration{},
-		IndexExpression{},
-		IntegerLiteral{},
-		InterpolatedPart{},
-		LogicalExpression{},
-		MemberAssignment{},
-		MemberExpression{},
-		NativeVariableAssignment{},
-		ObjectExpression{},
-		OptionStatement{},
-		Package{},
-		PackageClause{},
-		RegexpLiteral{},
-		Property{},
-		ReturnStatement{},
-		StringExpression{},
-		StringLiteral{},
-		TestStatement{},
-		TextPart{},
-		UnaryExpression{},
+		semantic.ArrayExpression{},
+		semantic.BinaryExpression{},
+		semantic.Block{},
+		semantic.CallExpression{},
+		semantic.ConditionalExpression{},
+		semantic.DateTimeLiteral{},
+		semantic.DurationLiteral{},
+		semantic.ExpressionStatement{},
+		semantic.File{},
+		semantic.FloatLiteral{},
+		semantic.FunctionExpression{},
+		semantic.FunctionParameters{},
+		semantic.FunctionParameter{},
+		semantic.IdentifierExpression{},
+		semantic.Identifier{},
+		semantic.ImportDeclaration{},
+		semantic.IndexExpression{},
+		semantic.IntegerLiteral{},
+		semantic.InterpolatedPart{},
+		semantic.LogicalExpression{},
+		semantic.MemberAssignment{},
+		semantic.MemberExpression{},
+		semantic.NativeVariableAssignment{},
+		semantic.ObjectExpression{},
+		semantic.OptionStatement{},
+		semantic.Package{},
+		semantic.PackageClause{},
+		semantic.RegexpLiteral{},
+		semantic.Property{},
+		semantic.ReturnStatement{},
+		semantic.StringExpression{},
+		semantic.StringLiteral{},
+		semantic.TestStatement{},
+		semantic.TextPart{},
+		semantic.UnaryExpression{},
 	),
 	cmp.Transformer("regexp", func(re *regexp.Regexp) string {
 		return re.String()
 	}),
 	// Just ignore types when comparing against Go semantic graph, since
 	// Go does not annotate expressions nodes with types directly.
-	cmp.Transformer("", func(ty *types.MonoType) int {
+	cmp.Transformer("", func(ty semantic.MonoType) int {
 		return 0
 	}),
-	cmp.Transformer("", func(ty *types.PolyType) int {
+	cmp.Transformer("", func(ty semantic.PolyType) int {
 		return 0
 	}),
 }
@@ -73,7 +71,7 @@ var cmpOpts = []cmp.Option{
 func TestDeserializeFromFlatBuffer(t *testing.T) {
 	tcs := []struct {
 		name     string
-		fbFn     func() (string, []byte)
+		fbFn     func() (*semantic.Package, []byte)
 		polyType string
 	}{
 		{
@@ -91,14 +89,8 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			src, fb := tc.fbFn()
-			astPkg := parser.ParseSource(src)
-			want, err := New(astPkg)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			got, err := DeserializeFromFlatBuffer(fb)
+			want, fb := tc.fbFn()
+			got, err := semantic.DeserializeFromFlatBuffer(fb)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -108,7 +100,7 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 			}
 
 			// Make sure the polytype looks as expected
-			pt := got.Files[0].Body[0].(*NativeVariableAssignment).Typ
+			pt := got.Files[0].Body[0].(*semantic.NativeVariableAssignment).Typ
 			if diff := cmp.Diff(tc.polyType, pt.String()); diff != "" {
 				t.Fatalf("unexpected polytype: -want/+got:\n%v", diff)
 			}
@@ -116,7 +108,7 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 	}
 }
 
-func getUnaryOpFlatBuffer() (string, []byte) {
+func getUnaryOpFlatBuffer() (*semantic.Package, []byte) {
 	src := `x = -3.5`
 	b := flatbuffers.NewBuilder(256)
 
@@ -125,8 +117,6 @@ func getUnaryOpFlatBuffer() (string, []byte) {
 	fty := getFBBasicType(b, fbsemantic.TypeFloat)
 	fbsemantic.FloatLiteralStart(b)
 	fbsemantic.FloatLiteralAddLoc(b, litLoc)
-	fbsemantic.FloatLiteralAddTypType(b, fbsemantic.MonoTypeBasic)
-	fbsemantic.FloatLiteralAddTyp(b, fty)
 	fbsemantic.FloatLiteralAddValue(b, 3.5)
 	floatval := fbsemantic.FloatLiteralEnd(b)
 
@@ -157,10 +147,53 @@ func getUnaryOpFlatBuffer() (string, []byte) {
 	fbsemantic.NativeVariableAssignmentAddInit_type(b, fbsemantic.ExpressionUnaryExpression)
 	nva := fbsemantic.NativeVariableAssignmentEnd(b)
 
-	return src, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
+	want := &semantic.Package{
+		Package: "main",
+		Files: []*semantic.File{{
+			Loc: semantic.Loc{
+				Start:  ast.Position{Line: 1, Column: 1},
+				End:    ast.Position{Line: 1, Column: 9},
+				Source: `x = -3.5`,
+			},
+			Body: []semantic.Statement{
+				&semantic.NativeVariableAssignment{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 1},
+						End:    ast.Position{Line: 1, Column: 9},
+						Source: `x = -3.5`,
+					},
+					Identifier: &semantic.Identifier{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 1},
+							End:    ast.Position{Line: 1, Column: 2},
+							Source: `x`,
+						},
+						Name: "x",
+					},
+					Init: &semantic.UnaryExpression{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 5},
+							End:    ast.Position{Line: 1, Column: 9},
+							Source: `-3.5`,
+						},
+						Operator: ast.SubtractionOperator,
+						Argument: &semantic.FloatLiteral{
+							Loc: semantic.Loc{
+								Start:  ast.Position{Line: 1, Column: 6},
+								End:    ast.Position{Line: 1, Column: 9},
+								Source: `3.5`,
+							},
+							Value: 3.5,
+						},
+					},
+				},
+			},
+		}},
+	}
+	return want, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
 }
 
-func getFnExprFlatBuffer() (string, []byte) {
+func getFnExprFlatBuffer() (*semantic.Package, []byte) {
 	src := `f = (a, b=<-, c=72) => { return c }`
 	b := flatbuffers.NewBuilder(256)
 
@@ -202,8 +235,6 @@ func getFnExprFlatBuffer() (string, []byte) {
 	intTy := getFBBasicType(b, fbsemantic.TypeInt)
 	fbsemantic.IntegerLiteralStart(b)
 	fbsemantic.IntegerLiteralAddLoc(b, dloc)
-	fbsemantic.IntegerLiteralAddTypType(b, fbsemantic.MonoTypeBasic)
-	fbsemantic.IntegerLiteralAddTyp(b, intTy)
 	fbsemantic.IntegerLiteralAddValue(b, 72)
 	def := fbsemantic.IntegerLiteralEnd(b)
 
@@ -252,11 +283,15 @@ func getFnExprFlatBuffer() (string, []byte) {
 	fbsemantic.BlockAddBody(b, stmts)
 	body := fbsemantic.BlockEnd(b)
 
+	funTy := getFnMonoType(b)
+
 	exprLoc := getFBLoc(b, "1:5", "1:36", src)
 	fbsemantic.FunctionExpressionStart(b)
 	fbsemantic.FunctionExpressionAddBody(b, body)
 	fbsemantic.FunctionExpressionAddParams(b, params)
 	fbsemantic.FunctionExpressionAddLoc(b, exprLoc)
+	fbsemantic.FunctionExpressionAddTyp(b, funTy)
+	fbsemantic.FunctionExpressionAddTypType(b, fbsemantic.MonoTypeFun)
 	fe := fbsemantic.FunctionExpressionEnd(b)
 
 	str := b.CreateString("f")
@@ -276,7 +311,159 @@ func getFnExprFlatBuffer() (string, []byte) {
 	fbsemantic.NativeVariableAssignmentAddInit_type(b, fbsemantic.ExpressionFunctionExpression)
 	nva := fbsemantic.NativeVariableAssignmentEnd(b)
 
-	return src, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
+	want := &semantic.Package{
+		Package: "main",
+		Files: []*semantic.File{{
+			Loc: semantic.Loc{
+				Start:  ast.Position{Line: 1, Column: 1},
+				End:    ast.Position{Line: 1, Column: 36},
+				Source: `f = (a, b=<-, c=72) => { return c }`,
+			},
+			Body: []semantic.Statement{
+				&semantic.NativeVariableAssignment{
+					Loc: semantic.Loc{
+						Start:  ast.Position{Line: 1, Column: 1},
+						End:    ast.Position{Line: 1, Column: 36},
+						Source: `f = (a, b=<-, c=72) => { return c }`,
+					},
+					Identifier: &semantic.Identifier{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 1},
+							End:    ast.Position{Line: 1, Column: 2},
+							Source: `f`,
+						},
+						Name: "f",
+					},
+					Init: &semantic.FunctionExpression{
+						Loc: semantic.Loc{
+							Start:  ast.Position{Line: 1, Column: 5},
+							End:    ast.Position{Line: 1, Column: 36},
+							Source: `(a, b=<-, c=72) => { return c }`,
+						},
+						Parameters: &semantic.FunctionParameters{
+							Loc: semantic.Loc{
+								Start:  ast.Position{Line: 1, Column: 5},
+								End:    ast.Position{Line: 1, Column: 36},
+								Source: `(a, b=<-, c=72) => { return c }`,
+							},
+							List: []*semantic.FunctionParameter{
+								{
+									Loc: semantic.Loc{
+										Start:  ast.Position{Line: 1, Column: 6},
+										End:    ast.Position{Line: 1, Column: 7},
+										Source: `a`,
+									},
+									Key: &semantic.Identifier{
+										Loc: semantic.Loc{
+											Start:  ast.Position{Line: 1, Column: 6},
+											End:    ast.Position{Line: 1, Column: 7},
+											Source: `a`,
+										},
+										Name: "a",
+									},
+								},
+								{
+									Loc: semantic.Loc{
+										Start:  ast.Position{Line: 1, Column: 9},
+										End:    ast.Position{Line: 1, Column: 13},
+										Source: `b=<-`,
+									},
+									Key: &semantic.Identifier{
+										Loc: semantic.Loc{
+											Start:  ast.Position{Line: 1, Column: 9},
+											End:    ast.Position{Line: 1, Column: 10},
+											Source: `b`,
+										},
+										Name: "b",
+									},
+								},
+								{
+									Loc: semantic.Loc{
+										Start:  ast.Position{Line: 1, Column: 15},
+										End:    ast.Position{Line: 1, Column: 19},
+										Source: `c=72`,
+									},
+									Key: &semantic.Identifier{
+										Loc: semantic.Loc{
+											Start:  ast.Position{Line: 1, Column: 15},
+											End:    ast.Position{Line: 1, Column: 16},
+											Source: `c`,
+										},
+										Name: "c",
+									},
+								},
+							},
+							Pipe: &semantic.Identifier{
+								Loc: semantic.Loc{
+									Start:  ast.Position{Line: 1, Column: 9},
+									End:    ast.Position{Line: 1, Column: 10},
+									Source: `b`,
+								},
+								Name: "b",
+							},
+						},
+						Defaults: &semantic.ObjectExpression{
+							Loc: semantic.Loc{
+								Start:  ast.Position{Line: 1, Column: 5},
+								End:    ast.Position{Line: 1, Column: 36},
+								Source: `(a, b=<-, c=72) => { return c }`,
+							},
+							Properties: []*semantic.Property{
+								{
+									Loc: semantic.Loc{
+										Start:  ast.Position{Line: 1, Column: 15},
+										End:    ast.Position{Line: 1, Column: 19},
+										Source: `c=72`,
+									},
+									Key: &semantic.Identifier{
+										Loc: semantic.Loc{
+											Start:  ast.Position{Line: 1, Column: 15},
+											End:    ast.Position{Line: 1, Column: 16},
+											Source: `c`,
+										},
+										Name: "c",
+									},
+									Value: &semantic.IntegerLiteral{
+										Loc: semantic.Loc{
+											Start:  ast.Position{Line: 1, Column: 17},
+											End:    ast.Position{Line: 1, Column: 19},
+											Source: `72`,
+										},
+										Value: 72,
+									},
+								},
+							},
+						},
+						Block: &semantic.Block{
+							Loc: semantic.Loc{
+								Start:  ast.Position{Line: 1, Column: 24},
+								End:    ast.Position{Line: 1, Column: 36},
+								Source: `{ return c }`,
+							},
+							Body: []semantic.Statement{
+								&semantic.ReturnStatement{
+									Loc: semantic.Loc{
+										Start:  ast.Position{Line: 1, Column: 26},
+										End:    ast.Position{Line: 1, Column: 34},
+										Source: `return c`,
+									},
+									Argument: &semantic.IdentifierExpression{
+										Loc: semantic.Loc{
+											Start:  ast.Position{Line: 1, Column: 33},
+											End:    ast.Position{Line: 1, Column: 34},
+											Source: `c`,
+										},
+										Name: "c",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}},
+	}
+	return want, doStatementBoilerplate(b, fbsemantic.StatementNativeVariableAssignment, nva, asnLoc)
 }
 
 func getFBBasicType(b *flatbuffers.Builder, t fbsemantic.Type) flatbuffers.UOffsetT {
@@ -303,8 +490,6 @@ func getFnPolyType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
 	// The type of `(a, b=<-, c=72) => { return c }`
 	// is `forall [t0, t1] (a: t0, <-b: t1, ?c: int) -> int`
 
-	intTy := getFBBasicType(b, fbsemantic.TypeInt)
-
 	fbsemantic.VarStart(b)
 	fbsemantic.VarAddI(b, 0)
 	t0 := fbsemantic.VarEnd(b)
@@ -318,6 +503,26 @@ func getFnPolyType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
 	varsVec := b.EndVector(2)
 	fbsemantic.PolyTypeStartConsVector(b, 0)
 	consVec := b.EndVector(0)
+
+	fun := getFnMonoType(b)
+
+	fbsemantic.PolyTypeStart(b)
+	fbsemantic.PolyTypeAddVars(b, varsVec)
+	fbsemantic.PolyTypeAddCons(b, consVec)
+	fbsemantic.PolyTypeAddExprType(b, fbsemantic.MonoTypeFun)
+	fbsemantic.PolyTypeAddExpr(b, fun)
+	return fbsemantic.PolyTypeEnd(b)
+}
+
+func getFnMonoType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
+	intTy := getFBBasicType(b, fbsemantic.TypeInt)
+
+	fbsemantic.VarStart(b)
+	fbsemantic.VarAddI(b, 0)
+	t0 := fbsemantic.VarEnd(b)
+	fbsemantic.VarStart(b)
+	fbsemantic.VarAddI(b, 1)
+	t1 := fbsemantic.VarEnd(b)
 
 	an := b.CreateString("a")
 	fbsemantic.ArgumentStart(b)
@@ -351,14 +556,7 @@ func getFnPolyType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
 	fbsemantic.FunAddArgs(b, args)
 	fbsemantic.FunAddRetnType(b, fbsemantic.MonoTypeBasic)
 	fbsemantic.FunAddRetn(b, intTy)
-	fun := fbsemantic.FunEnd(b)
-
-	fbsemantic.PolyTypeStart(b)
-	fbsemantic.PolyTypeAddVars(b, varsVec)
-	fbsemantic.PolyTypeAddCons(b, consVec)
-	fbsemantic.PolyTypeAddExprType(b, fbsemantic.MonoTypeFun)
-	fbsemantic.PolyTypeAddExpr(b, fun)
-	return fbsemantic.PolyTypeEnd(b)
+	return fbsemantic.FunEnd(b)
 }
 
 func doStatementBoilerplate(builder *flatbuffers.Builder, stmtType fbsemantic.Statement, stmtOffset, locOffset flatbuffers.UOffsetT) []byte {
@@ -456,10 +654,10 @@ func source(src string, loc *ast.SourceLocation) string {
 // for comparing NativeVariableAssignments with
 // PolyTypes provided by a test case.
 type MyAssignement struct {
-	loc
+	semantic.Loc
 
-	Identifier *Identifier
-	Init       Expression
+	Identifier *semantic.Identifier
+	Init       semantic.Expression
 
 	Typ string
 }
@@ -467,14 +665,14 @@ type MyAssignement struct {
 // transformGraph takes a semantic graph produced by Go, and modifies it
 // so it looks like something produced by Rust.
 // The differences do not affect program behavior at runtime.
-func transformGraph(pkg *Package) error {
-	Walk(&transformingVisitor{}, pkg)
+func transformGraph(pkg *semantic.Package) error {
+	semantic.Walk(&transformingVisitor{}, pkg)
 	return nil
 }
 
 type transformingVisitor struct{}
 
-func (tv *transformingVisitor) Visit(node Node) Visitor {
+func (tv *transformingVisitor) Visit(node semantic.Node) semantic.Visitor {
 	return tv
 }
 
@@ -515,67 +713,30 @@ func toMonthsAndNanos(ds []ast.Duration) []ast.Duration {
 	return outDurs
 }
 
-func (tv *transformingVisitor) Done(node Node) {
+func (tv *transformingVisitor) Done(node semantic.Node) {
 	switch n := node.(type) {
-	case *CallExpression:
+	case *semantic.CallExpression:
 		// Rust call expr args are just an array, so there's no location info.
 		n.Arguments.Source = ""
-	case *DurationLiteral:
+	case *semantic.DurationLiteral:
 		// Rust duration literals use the months + nanos representation,
 		// Go uses AST units.
 		n.Values = toMonthsAndNanos(n.Values)
-	case *File:
+	case *semantic.File:
 		if len(n.Body) == 0 {
 			n.Body = nil
 		}
-	case *FunctionBlock:
-		if e, ok := n.Body.(Expression); ok {
-			// The Rust semantic graph has only block-style function bodies
-			l := e.Location()
-			l.Source = ""
-			n.Body = &Block{
-				loc: loc(l),
-				Body: []Statement{
-					&ReturnStatement{
-						loc:      loc(e.Location()),
-						Argument: e,
-					},
-				},
-			}
-		} else {
-			// Blocks in Rust models blocks as linked lists, so we don't have a location for the
-			// entire block including the curly braces.  It uses location of the statements instead.
-			bl := n.Body.(*Block)
-			nStmts := len(bl.Body)
-			bl.Start = bl.Body[0].Location().Start
-			bl.End = bl.Body[nStmts-1].Location().End
-			bl.Source = ""
-		}
+	case *semantic.FunctionExpression:
+		// Blocks in Rust models blocks as linked lists, so we don't have a location for the
+		// entire block including the curly braces.  It uses location of the statements instead.
+		nStmts := len(n.Block.Body)
+		n.Block.Start = n.Block.Body[0].Location().Start
+		n.Block.End = n.Block.Body[nStmts-1].Location().End
+		n.Block.Source = ""
 	}
 }
 
 var tvarRegexp *regexp.Regexp = regexp.MustCompile("t[0-9]+")
-
-// canonicalizeType returns a string representation of the given type
-// that reindexes in the numbers in type variables starting from zero.
-func canonicalizeType(pt *types.PolyType) string {
-	tvm, err := pt.GetCanonicalMapping()
-	if err != nil {
-		panic(err)
-	}
-	tstr := pt.String()
-	return tvarRegexp.ReplaceAllStringFunc(tstr, func(in string) string {
-		n, err := strconv.Atoi(in[1:])
-		if err != nil {
-			panic(err)
-		}
-		nn, ok := tvm[uint64(n)]
-		if !ok {
-			panic(fmt.Sprintf("could not find tvar mapping for %v", in))
-		}
-		return fmt.Sprintf("t%v", nn)
-	})
-}
 
 // canonicalizeError reindexes type variable numbers in error messages
 // starting from zero, so that tests don't fail when the stdlib is updated.
@@ -597,6 +758,33 @@ func canonicalizeError(errMsg string) string {
 		t := fmt.Sprintf("t%v", nn)
 		return t
 	})
+}
+
+type exprTypeChecker struct {
+	errs []error
+}
+
+func (e *exprTypeChecker) Visit(node semantic.Node) semantic.Visitor {
+	return e
+}
+
+func (e *exprTypeChecker) Done(node semantic.Node) {
+	nva, ok := node.(*semantic.NativeVariableAssignment)
+	if !ok {
+		return
+	}
+	pty := nva.Typ.String()
+	initTy := nva.Init.TypeOf().String()
+	if !strings.Contains(pty, initTy) {
+		err := fmt.Errorf("expected RHS of assignment for %q to have a type contained by %q, but it had %q", nva.Identifier.Name, pty, initTy)
+		e.errs = append(e.errs, err)
+	}
+}
+
+func checkExprTypes(pkg *semantic.Package) []error {
+	v := new(exprTypeChecker)
+	semantic.Walk(v, pkg)
+	return v.errs
 }
 
 func TestFlatBuffersRoundTrip(t *testing.T) {
@@ -627,7 +815,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "option with member assignment error",
 			fluxSrc: `option o.m = "hello"`,
-			err:     errors.New("undeclared variable o"),
+			err:     errors.New("error @1:8-1:9: undefined identifier o"),
 		},
 		{
 			name: "option with member assignment",
@@ -638,15 +826,17 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "builtin statement",
 			fluxSrc: `builtin foo`,
-			err:     errors.New("builtin identifier foo not defined"),
+			err:     errors.New("error @1:1-1:12: undefined builtin identifier foo"),
 		},
 		{
 			name: "test statement",
 			fluxSrc: `
-                import "testing"
-                test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
+		       import "testing"
+		       test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
 			types: map[string]string{
-				"t": "forall [t0, t1, t2] where t1: Row, t2: Row () -> {fn: (<-table: t0) -> t0 | input: [t2] | want: [t1]}",
+				"t": "forall [t0, t1, t2, t3, t4, t5] where t5: Record () -> {fn: (<-table: t0) -> t0 | " +
+					"input: [{_field: t1 | _field: t1 | _measurement: t2 | _measurement: t2 | _time: t3 | _time: t3 | t4}] " +
+					"| want: [t5]}",
 			},
 		},
 		{
@@ -873,7 +1063,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		{
 			name:    "exists operator",
 			fluxSrc: `e = exists {foo: 30}.bar`,
-			err:     errors.New("cannot unify {{}} with {bar:t0 | t1}"),
+			err:     errors.New("type error @1:12-1:21: record is missing label bar"),
 		},
 		{
 			name:    "exists operator with tvar",
@@ -892,7 +1082,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				"f": "forall [t0, t1] (r: {foo: t0 | t1}) -> bool",
 				// Note: t1 is unused in the monotype, and t2 is not quantified.
 				// Type of ff should be the same as f.
-				"ff": "forall [t0, t1] (r: {foo: t0 | t2}) -> bool",
+				"ff": "forall [t0, t2] (r: {foo: t0 | t1}) -> bool",
 			},
 		},
 		{
@@ -923,13 +1113,43 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				"d": "forall [] duration",
 			},
 		},
+		{
+			name:    "regexp literal",
+			fluxSrc: `re = /foo/`,
+			types: map[string]string{
+				"re": "forall [] regexp",
+			},
+		},
+		{
+			name:    "float literal",
+			fluxSrc: `f = 3.0`,
+			types: map[string]string{
+				"f": "forall [] float",
+			},
+		},
+		{
+			name: "typical query",
+			fluxSrc: `
+				v = {
+					bucket: "telegraf",
+					windowPeriod: 15s,
+					timeRangeStart: -5m
+				}
+				q = from(bucket: v.bucket)
+					|> filter(fn: (r) => r._measurement == "disk")
+					|> filter(fn: (r) => r._field == "used_percent")`,
+			types: map[string]string{
+				"v": "forall [] {bucket: string | timeRangeStart: duration | windowPeriod: duration}",
+				"q": "forall [t0, t1] [{_field: string | _measurement: string | _time: time | _value: t0 | t1}]",
+			},
+		},
 	}
 	for _, tc := range tcs {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			astPkg := parser.ParseSource(tc.fluxSrc)
-			want, err := New(astPkg)
+			want, err := semantic.New(astPkg)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -937,7 +1157,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			got, err := AnalyzeSource(tc.fluxSrc)
+			got, err := runtime.AnalyzeSource(tc.fluxSrc)
 			if err != nil {
 				if tc.err == nil {
 					t.Fatal(err)
@@ -951,12 +1171,20 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 				t.Fatalf("expected error %q, but got nothing", tc.err)
 			}
 
+			errs := checkExprTypes(got)
+			if len(errs) > 0 {
+				for _, e := range errs {
+					t.Error(e)
+				}
+				t.Fatal("found errors in expression types")
+			}
+
 			// Create a special comparison option to compare the types
 			// of NativeVariableAssignments using the expected types in the map
 			// provided by the test case.
-			assignCmp := cmp.Transformer("assign", func(nva *NativeVariableAssignment) *MyAssignement {
+			assignCmp := cmp.Transformer("assign", func(nva *semantic.NativeVariableAssignment) *MyAssignement {
 				var typStr string
-				if nva.Typ == nil {
+				if nva.Typ.IsNil() == true {
 					// This is the assignment from Go.
 					var ok bool
 					typStr, ok = tc.types[nva.Identifier.Name]
@@ -965,10 +1193,10 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 					}
 				} else {
 					// This is the assignment from Rust.
-					typStr = canonicalizeType(nva.Typ)
+					typStr = nva.Typ.CanonicalString()
 				}
 				return &MyAssignement{
-					loc:        nva.loc,
+					Loc:        nva.Loc,
 					Identifier: nva.Identifier,
 					Init:       nva.Init,
 					Typ:        typStr,

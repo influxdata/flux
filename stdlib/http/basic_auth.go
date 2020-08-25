@@ -5,14 +5,13 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 )
 
 func init() {
-	flux.RegisterPackageValue("http", "basicAuth", basicAuthFunc)
+	runtime.RegisterPackageValue("http", "basicAuth", basicAuthFunc)
 }
 
 const (
@@ -22,14 +21,7 @@ const (
 
 var basicAuthFunc = values.NewFunction(
 	"basicAuth",
-	semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-		Parameters: map[string]semantic.PolyType{
-			basicAuthUsernameArg: semantic.String,
-			basicAuthPasswordArg: semantic.String,
-		},
-		Required: semantic.LabelSet{basicAuthUsernameArg, basicAuthPasswordArg},
-		Return:   semantic.String,
-	}),
+	runtime.MustLookupBuiltinType("http", "basicAuth"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
 		return interpreter.DoFunctionCall(BasicAuth, args)
 	},

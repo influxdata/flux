@@ -5,81 +5,83 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
+// Package is an importable package that can be used from another
+// section of code. The package itself cannot have its attributes
+// modified after creation, but the options may be changed.
 type Package struct {
-	name        string
-	object      values.Object
-	options     values.Object
+	// name is the name of the package.
+	name string
+
+	// path is the canonical import path that is used to import this package.
+	path string
+
+	// object contains the object properties of this package.
+	object values.Object
+
+	// sideEffects contains the side effects caused by this package.
+	// This is currently unused.
 	sideEffects []SideEffect
 }
 
-func NewPackageWithValues(name string, obj values.Object) *Package {
-	if obj == nil {
-		obj = values.NewObject()
-	}
+func NewPackageWithValues(name, path string, obj values.Object) *Package {
 	return &Package{
-		name:    name,
-		options: values.NewObject(),
-		object:  obj,
+		name:   name,
+		path:   path,
+		object: obj,
 	}
 }
 
 func NewPackage(name string) *Package {
-	return NewPackageWithValues(name, nil)
+	obj := values.NewObject(semantic.NewObjectType(nil))
+	return NewPackageWithValues(name, "", obj)
 }
 
 func (p *Package) Copy() *Package {
-	object := values.NewObjectWithBacking(p.object.Len())
-	p.object.Range(func(k string, v values.Value) {
-		object.Set(k, v)
-	})
-	options := values.NewObjectWithBacking(p.options.Len())
-	p.options.Range(func(k string, v values.Value) {
-		options.Set(k, v)
-	})
-	sideEffects := make([]SideEffect, len(p.sideEffects))
-	copy(sideEffects, p.sideEffects)
+	var sideEffects []SideEffect
+	if len(p.sideEffects) > 0 {
+		sideEffects = make([]SideEffect, len(p.sideEffects))
+		copy(sideEffects, p.sideEffects)
+	}
 	return &Package{
 		name:        p.name,
-		object:      object,
-		options:     options,
+		object:      p.object,
 		sideEffects: sideEffects,
 	}
 }
+
+// Name returns the package name.
 func (p *Package) Name() string {
 	return p.name
 }
+
+// Path returns the canonical import path for this package.
+func (p *Package) Path() string {
+	return p.path
+}
+
 func (p *Package) SideEffects() []SideEffect {
 	return p.sideEffects
 }
-func (p *Package) Type() semantic.Type {
+func (p *Package) Type() semantic.MonoType {
 	return p.object.Type()
 }
-func (p *Package) PolyType() semantic.PolyType {
-	return p.object.PolyType()
-}
 func (p *Package) Get(name string) (values.Value, bool) {
-	v, ok := p.object.Get(name)
-	if !ok {
-		return p.options.Get(name)
-	}
-	return v, true
+	return p.object.Get(name)
 }
 func (p *Package) Set(name string, v values.Value) {
-	p.object.Set(name, v)
-}
-func (p *Package) SetOption(name string, v values.Value) {
-	p.options.Set(name, v)
+	panic(errors.New(codes.Internal, "package members cannot be modified"))
 }
 func (p *Package) Len() int {
 	return p.object.Len()
 }
 func (p *Package) Range(f func(name string, v values.Value)) {
 	p.object.Range(f)
-	p.options.Range(f)
 }
 func (p *Package) IsNull() bool {
 	return false
@@ -152,7 +154,7 @@ func (p *Package) String() string {
 		}
 		builder.WriteString(k)
 		builder.WriteString(": ")
-		builder.WriteString(fmt.Sprintf("%v", v.PolyType()))
+		builder.WriteString(fmt.Sprintf("%v", v.Type()))
 		i++
 	})
 	builder.WriteRune('}')

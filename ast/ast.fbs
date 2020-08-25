@@ -1,5 +1,71 @@
 namespace fbast;
 
+union MonoType {
+  NamedType,
+  TvarType,
+  ArrayType,
+  RecordType,
+  FunctionType,
+}
+
+table NamedType {
+  base_node:BaseNode;
+  id:Identifier;
+}
+
+table TvarType {
+  base_node:BaseNode;
+  id:Identifier;
+}
+
+table ArrayType {
+  base_node:BaseNode;
+  element:MonoType;
+}
+
+table PropertyType {
+  base_node:BaseNode;
+  id:Identifier;
+  monotype:MonoType;
+}
+
+table RecordType {
+  base_node:BaseNode;
+  properties:[PropertyType];
+  tvar:Identifier;
+}
+
+enum ParameterKind : byte {
+  Required,
+  Optional,
+  Pipe,
+}
+
+table ParameterType {
+  base_node:BaseNode;
+  id:Identifier;
+  monotype:MonoType;
+  kind:ParameterKind;
+}
+
+table FunctionType {
+  base_node:BaseNode;
+  parameters:[ParameterType];
+  monotype:MonoType;
+}
+
+table TypeConstraint {
+  base_node:BaseNode;
+  tvar:Identifier;
+  kinds:[Identifier];
+}
+
+table TypeExpression {
+  base_node:BaseNode;
+  monotype:MonoType;
+  constraints:[TypeConstraint];
+}
+
 union Statement {
   BadStatement,
   VariableAssignment,

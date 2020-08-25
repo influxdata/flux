@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
 
 	"github.com/influxdata/flux"
@@ -25,13 +25,8 @@ type LabelReplaceOpSpec struct {
 }
 
 func init() {
-	labelReplaceSignature := flux.FunctionSignature(map[string]semantic.PolyType{
-		"source":      semantic.String,
-		"destination": semantic.String,
-		"regex":       semantic.String,
-		"replacement": semantic.String,
-	}, []string{"source", "destination", "regex", "replacement"})
-	flux.RegisterPackageValue("internal/promql", "labelReplace", flux.FunctionValue(LabelReplaceKind, createLabelReplaceOpSpec, labelReplaceSignature))
+	labelReplaceSignature := runtime.MustLookupBuiltinType("internal/promql", "labelReplace")
+	runtime.RegisterPackageValue("internal/promql", "labelReplace", flux.MustValue(flux.FunctionValue(LabelReplaceKind, createLabelReplaceOpSpec, labelReplaceSignature)))
 	flux.RegisterOpSpec(LabelReplaceKind, func() flux.OperationSpec { return &LabelReplaceOpSpec{} })
 	plan.RegisterProcedureSpec(LabelReplaceKind, newLabelReplaceProcedure, LabelReplaceKind)
 	execute.RegisterTransformation(LabelReplaceKind, createLabelReplaceTransformation)

@@ -1,0 +1,8 @@
+table | bottom_degrees | location     | surface_degrees | _time               
+==============================================================================
+    0 |             50 | santa_monica |              65 | 2020-02-22T16:00:00Z
+    1 |             51 | coyote_creek |              55 | 2020-02-22T17:00:00Z
+    2 |             49 | santa_monica |              63 | 2020-02-22T17:00:00Z
+    3 |             50 | coyote_creek |              53 | 2020-02-22T18:00:00Z
+    4 |             40 | puget_sound  |              55 | 2020-02-22T18:00:00Z
+    5 |             48 | santa_monica |              61 | 2020-02-22T18:00:00Z

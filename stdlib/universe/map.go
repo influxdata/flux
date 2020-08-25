@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -23,21 +24,9 @@ type MapOpSpec struct {
 }
 
 func init() {
-	mapSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"fn": semantic.NewFunctionPolyType(semantic.FunctionPolySignature{
-				Parameters: map[string]semantic.PolyType{
-					"r": semantic.Tvar(1),
-				},
-				Required: semantic.LabelSet{"r"},
-				Return:   semantic.Tvar(2),
-			}),
-			"mergeKey": semantic.Bool,
-		},
-		[]string{"fn"},
-	)
+	mapSignature := runtime.MustLookupBuiltinType("universe", "map")
 
-	flux.RegisterPackageValue("universe", MapKind, flux.FunctionValue(MapKind, createMapOpSpec, mapSignature))
+	runtime.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
 	flux.RegisterOpSpec(MapKind, newMapOp)
 	plan.RegisterProcedureSpec(MapKind, newMapProcedure, MapKind)
 	execute.RegisterTransformation(MapKind, createMapTransformation)
@@ -131,10 +120,7 @@ type mapTransformation struct {
 }
 
 func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*mapTransformation, error) {
-	fn, err := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
-	if err != nil {
-		return nil, err
-	}
+	fn := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &mapTransformation{
 		d:        d,
 		cache:    cache,
@@ -151,99 +137,42 @@ func (t *mapTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey
 func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	// Prepare the functions for the column types.
 	cols := tbl.Cols()
-	if err := t.fn.Prepare(cols); err != nil {
+	fn, err := t.fn.Prepare(cols)
+	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
 		return err
 	}
 
-	// Determine the properties from type inference.
-	// TODO(jsternberg): Type inference doesn't currently get all of the properties
-	// when with is used, so this will likely return an incomplete set that we have
-	// to complete when we read the first column. This pass should get the columns
-	// that are directly referenced which are the ones capable of changing and the
-	// only ones that can be a null value.
-	// TODO (adam): these are a pointer to a property list that is definitely shared by the type checking code (semantic/types.go NewObjectType)
-	unsafeProperties := t.fn.Type().Properties()
-	properties := make(map[string]semantic.Type)
+	// TODO(jsternberg): Use type inference. The original algorithm
+	// didn't really use type inference at all so I removed its usage
+	// in favor of the real returned type.
 
 	var on map[string]bool
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
 		for i := 0; i < l; i++ {
-			m, err := t.fn.Eval(t.ctx, i, cr)
+			m, err := fn.Eval(t.ctx, i, cr)
 			if err != nil {
 				return errors.Wrap(err, codes.Inherit, "failed to evaluate map function")
 			}
 
-			// Merge in the types that we may have missed because type inference omitted them.
-			if i == 0 {
-				// Merge in the missing properties from the type.
-				// This will catch all of the non-referenced keys that are
-				// merged in from the merge key or with.
-				for k, typ := range m.Type().Properties() {
-					// TODO(jsternberg): Type inference can sometimes tell us something is nil
-					// when it actually has a value because of a bug in type inference.
-					// If the property is missing or null, then take whatever the first value
-					// is. This won't catch all situations, but we'll have to consider it good
-					// enough until type inference works in this scenario.
-					if t, ok := unsafeProperties[k]; !ok || t == semantic.Nil {
-						properties[k] = typ
-					} else {
-						properties[k] = unsafeProperties[k]
-					}
-				}
-			}
-
 			// If we haven't determined the columns to group on, do that now.
 			if on == nil {
-				on = make(map[string]bool, len(tbl.Key().Cols()))
-				for _, c := range tbl.Key().Cols() {
-					if !t.mergeKey {
-						// If the label isn't included in the properties,
-						// then it wasn't returned by the eval.
-						if _, ok := properties[c.Label]; !ok {
-							continue
-						}
-					}
-					on[c.Label] = true
+				var err error
+				on, err = t.groupOn(tbl.Key(), m.Type())
+				if err != nil {
+					return err
 				}
 			}
 
 			key := groupKeyForObject(i, cr, m, on)
 			builder, created := t.cache.TableBuilder(key)
 			if created {
-				if t.mergeKey {
-					if err := execute.AddTableKeyCols(tbl.Key(), builder); err != nil {
-						return err
-					}
-				}
-
-				// Add columns from function in sorted order.
-				keys := make([]string, 0, len(properties))
-				for k := range properties {
-					keys = append(keys, k)
-				}
-				sort.Strings(keys)
-
-				for _, k := range keys {
-					if t.mergeKey && tbl.Key().HasCol(k) {
-						continue
-					}
-
-					n := properties[k].Nature()
-					if n == semantic.Nil {
-						// If the column is null, then do not add it as a column.
-						continue
-					}
-
-					if _, err := builder.AddCol(flux.ColMeta{
-						Label: k,
-						Type:  execute.ConvertFromKind(n),
-					}); err != nil {
-						return err
-					}
+				if err := t.createSchema(fn, builder, m); err != nil {
+					return err
 				}
 			}
+
 			for j, c := range builder.Cols() {
 				v, ok := m.Get(c.Label)
 				if !ok {
@@ -263,6 +192,123 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	})
 }
 
+func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map[string]bool, error) {
+	on := make(map[string]bool, len(key.Cols()))
+	for _, c := range key.Cols() {
+		if t.mergeKey {
+			on[c.Label] = true
+			continue
+		}
+
+		// If the label isn't included in the properties,
+		// then it wasn't returned by the eval.
+		n, err := m.NumProperties()
+		if err != nil {
+			return nil, err
+		}
+
+		for i := 0; i < n; i++ {
+			Record, err := m.RecordProperty(i)
+			if err != nil {
+				return nil, err
+			}
+
+			if Record.Name() == c.Label {
+				on[c.Label] = true
+				break
+			}
+		}
+	}
+	return on, nil
+}
+
+// createSchema will create the schema for a table based on the object.
+// This should only be called when a table is created anew.
+//
+// TODO(jsternberg): I am pretty sure this method and its usage don't
+// match with the spec, but it is a faithful reproduction of the current
+// map behavior. When we get around to rewriting portions of map, this
+// should be rewritten to use the inferred type from type inference
+// and it should be capable of consolidating schemas from non-uniform
+// tables.
+func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute.TableBuilder, m values.Object) error {
+	if t.mergeKey {
+		if err := execute.AddTableKeyCols(b.Key(), b); err != nil {
+			return err
+		}
+	}
+
+	returnType := fn.Type()
+
+	numProps, err := returnType.NumProperties()
+	if err != nil {
+		return err
+	}
+
+	props := make(map[string]semantic.Nature, numProps)
+	// Deduplicate the properties in the return type.
+	// Scan properties in reverse order to ensure we only
+	// add visible properties to the list.
+	for i := numProps - 1; i >= 0; i-- {
+		prop, err := returnType.RecordProperty(i)
+		if err != nil {
+			return err
+		}
+		typ, err := prop.TypeOf()
+		if err != nil {
+			return err
+		}
+		props[prop.Name()] = typ.Nature()
+	}
+
+	// Add columns from function in sorted order.
+	n, err := m.Type().NumProperties()
+	if err != nil {
+		return err
+	}
+
+	keys := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		Record, err := m.Type().RecordProperty(i)
+		if err != nil {
+			return err
+		}
+		keys = append(keys, Record.Name())
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		if t.mergeKey && b.Key().HasCol(k) {
+			continue
+		}
+
+		v, ok := m.Get(k)
+		if !ok {
+			continue
+		}
+
+		nature := v.Type().Nature()
+
+		if kind, ok := props[k]; ok && kind != semantic.Invalid {
+			nature = kind
+		}
+		if nature == semantic.Invalid {
+			continue
+		}
+		ty := execute.ConvertFromKind(nature)
+		if ty == flux.TInvalid {
+			return errors.Newf(codes.Invalid, `map object property "%s" is %v type which is not supported in a flux table`, k, nature)
+		}
+		if _, err := b.AddCol(flux.ColMeta{
+			Label: k,
+			Type:  ty,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[string]bool) flux.GroupKey {
 	cols := make([]flux.ColMeta, 0, len(on))
 	vs := make([]values.Value, 0, len(on))
@@ -270,12 +316,16 @@ func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[strin
 		if !on[c.Label] {
 			continue
 		}
-		cols = append(cols, c)
 		v, ok := obj.Get(c.Label)
 		if ok {
 			vs = append(vs, v)
+			cols = append(cols, flux.ColMeta{
+				Label: c.Label,
+				Type:  flux.ColumnType(v.Type()),
+			})
 		} else {
 			vs = append(vs, execute.ValueForRow(cr, i, j))
+			cols = append(cols, c)
 		}
 	}
 	return execute.NewGroupKey(cols, vs)

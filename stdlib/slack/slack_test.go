@@ -11,42 +11,40 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
-	"github.com/influxdata/flux/values"
+	"github.com/influxdata/flux/runtime"
 )
 
 func TestSlack(t *testing.T) {
 	ctx := dependenciestest.Default().Inject(context.Background())
-	_, scope, err := flux.Eval(ctx, `
+	_, scope, err := runtime.Eval(ctx, `
 import "csv"
 import "slack"
 
+option url = "http://fakeurl.com/fakeyfake"
+option token = "faketoken"
+
 data = "
-#datatype,string,string,string,string,string,string,string
-#group,false,false,false,false,false,false,false
-#default,_result,,,
-,result,qusername,qchannel,qworkspace,qtext,qiconEmoji,qiconEmoji,qcolor
-,,fakeUser0,fakeChannel,workspace,this is a lot of text yay,\"#FF0000\"
+#datatype,string,string,string
+#group,false,false,false
+#default,_result,,
+,result,qchannel,qtext,qcolor
+,,fakeChannel,this is a lot of text yay,\"#FF0000\"
 "
 
 process = slack.endpoint(url:url, token:token)( mapFn: 
 	(r) => {
-		return {username:r.qusername,channel:r.qchannel,workspace:r.qorkspace,text:r.qtext,iconEmoji:r.qiconEmoji,color:r.color}
+		return {channel:r.qchannel,text:r.qtext,color:r.color}
 	}
 )
 
 csv.from(csv:data) |> process()
 
-`, func(s values.Scope) {
-		s.Set("url", values.New("http://fakeurl.com/fakeyfake"))
-		s.Set("token", values.New("faketoken"))
-
-	})
+`)
 
 	if err != nil {
 		t.Error(err)
@@ -66,7 +64,7 @@ func NewServer(t *testing.T) *Server {
 	s := new(Server)
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sr := Request{
-			URL:           r.URL.String(), //r.URL.String(),
+			URL:           r.URL.String(), // r.URL.String(),
 			Authorization: r.Header.Get("Authorization"),
 		}
 		dec := json.NewDecoder(r.Body)
@@ -103,9 +101,6 @@ type Request struct {
 
 type PostData struct {
 	Channel     string       `json:"channel"`
-	Workspace   string       `json:"workspace"`
-	Icon        string       `json:"icon_emoji"`
-	Username    string       `json:"username"`
 	Text        string       `json:"text"`
 	Attachments []Attachment `json:"attachments"`
 }
@@ -122,35 +117,28 @@ func TestSlackPost(t *testing.T) {
 	defer s.Close()
 
 	testCases := []struct {
-		name      string
-		color     string
-		text      string
-		channel   string
-		URL       string
-		token     string
-		username  string
-		workspace string
-		icon      string
+		name    string
+		color   string
+		text    string
+		channel string
+		URL     string
+		token   string
 	}{
 		{
-			name:     "....",
-			color:    `warning`,
-			text:     "aaaaaaab",
-			channel:  "general",
-			URL:      s.URL,
-			token:    "faketoken",
-			username: "username",
-			icon:     ":thumbsup:",
+			name:    "....",
+			color:   `warning`,
+			text:    "aaaaaaab",
+			channel: "general",
+			URL:     s.URL,
+			token:   "faketoken",
 		},
 		{
-			name:     "....",
-			color:    `#ffffff`,
-			text:     "qaaaaaaab",
-			channel:  "general",
-			URL:      s.URL,
-			token:    "faketoken",
-			username: "username",
-			icon:     ":thumbsup:",
+			name:    "....",
+			color:   `#ffffff`,
+			text:    "qaaaaaaab",
+			channel: "general",
+			URL:     s.URL,
+			token:   "faketoken",
 		},
 	}
 
@@ -162,40 +150,24 @@ func TestSlackPost(t *testing.T) {
 import "slack"
 
 endpoint = slack.endpoint(url:url, token:token)(mapFn: (r) => {
-	return {username:r.fusername,channel:r.qchannel,workspace:r.qworkspace,text:r.qtext,iconEmoji:r.qiconEmoji,color:r.wcolor}
+	return {channel:r.qchannel,text:r.qtext,color:r.wcolor}
 })
 
 csv.from(csv:data) |> endpoint()`
-			prog, err := lang.Compile(fluxString, time.Now(), lang.WithExtern(&ast.File{Body: []ast.Statement{
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "url",
-					},
-					Init: &ast.StringLiteral{
-						Value: tc.URL,
-					},
-				},
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "token",
-					},
-					Init: &ast.StringLiteral{
-						Value: tc.token,
-					},
-				},
-				&ast.VariableAssignment{
-					ID: &ast.Identifier{
-						Name: "data",
-					},
-					Init: &ast.StringLiteral{
-						Value: `#datatype,string,string,string,string,string,string,string,string
-#group,false,false,false,false,false,false,false,false
-#default,_result,,,,,,,
-,result,,fusername,qchannel,qworkspace,qtext,qiconEmoji,wcolor
-,,,` + strings.Join([]string{tc.username, tc.channel, tc.workspace, tc.text, tc.icon, tc.color}, ","),
-					},
-				},
-			}}))
+			extern := `
+url = "` + tc.URL + `"
+token = "` + tc.token + `"
+data = "
+#datatype,string,string,string,string,string
+#group,false,false,false,false,false
+#default,_result,,,,
+,result,,qchannel,qtext,wcolor
+,,,` + strings.Join([]string{tc.channel, tc.text, tc.color}, ",") + `"`
+			extHdl, err := runtime.Default.Parse(extern)
+			if err != nil {
+				t.Fatal(err)
+			}
+			prog, err := lang.Compile(fluxString, runtime.Default, time.Now(), lang.WithExtern(extHdl))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -259,15 +231,6 @@ csv.from(csv:data) |> endpoint()`
 			}
 			if req.PostData.Attachments[0].Color != tc.color {
 				t.Errorf("got color %s, expected %s", req.PostData.Attachments[0].Color, tc.color)
-			}
-			if req.PostData.Username != tc.username {
-				t.Errorf("got username %s, expected %s", req.PostData.Username, tc.username)
-			}
-			if req.PostData.Workspace != tc.workspace {
-				t.Errorf("got workspace %s, expected %s", req.PostData.Workspace, tc.workspace)
-			}
-			if req.PostData.Icon != tc.icon {
-				t.Errorf("got icon-emoji %s, expected %s", req.PostData.Icon, tc.icon)
 			}
 		})
 	}

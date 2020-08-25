@@ -1,6 +1,7 @@
 package universe
 
 import (
+	"context"
 	"sort"
 
 	"github.com/apache/arrow/go/arrow/array"
@@ -12,6 +13,7 @@ import (
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -29,15 +31,9 @@ type GroupOpSpec struct {
 }
 
 func init() {
-	groupSignature := flux.FunctionSignature(
-		map[string]semantic.PolyType{
-			"mode":    semantic.String,
-			"columns": semantic.NewArrayPolyType(semantic.String),
-		},
-		nil,
-	)
+	groupSignature := runtime.MustLookupBuiltinType("universe", "group")
 
-	flux.RegisterPackageValue("universe", GroupKind, flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature))
+	runtime.RegisterPackageValue("universe", GroupKind, flux.MustValue(flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature)))
 	flux.RegisterOpSpec(GroupKind, newGroupOp)
 	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
 	plan.RegisterLogicalRules(MergeGroupRule{})
@@ -241,7 +237,7 @@ func (t *groupTransformation) getTableKey(tbl flux.Table) (flux.GroupKey, bool, 
 
 func (t *groupTransformation) appendTable(ab *table.BufferedBuilder, tbl flux.Table) error {
 	// Read the table and append each of the columns.
-	return tbl.Do(ab.AppendBuffer)
+	return ab.AppendTable(tbl)
 }
 
 // groupByRow will determine which table each row belongs to
@@ -380,7 +376,7 @@ func (r MergeGroupRule) Pattern() plan.Pattern {
 	return plan.Pat(GroupKind, plan.Pat(GroupKind, plan.Any()))
 }
 
-func (r MergeGroupRule) Rewrite(lastGroup plan.Node) (plan.Node, bool, error) {
+func (r MergeGroupRule) Rewrite(ctx context.Context, lastGroup plan.Node) (plan.Node, bool, error) {
 	firstGroup := lastGroup.Predecessors()[0]
 	lastSpec := lastGroup.ProcedureSpec().(*GroupProcedureSpec)
 

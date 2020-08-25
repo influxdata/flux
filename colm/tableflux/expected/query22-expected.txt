@@ -1,0 +1,6 @@
+table | _time                | location     | state | bottom_degrees
+====================================================================
+    0 | 2020-02-22T17:01:00Z | santa_monica | CA    |             48
+    0 | 2020-02-22T17:31:00Z | santa_monica | CA    |             48
+    1 | 2020-02-22T17:10:00Z | puget_sound  | WA    |             40
+    1 | 2020-02-22T17:40:00Z | puget_sound  | WA    |             40

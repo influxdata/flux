@@ -1,0 +1,10 @@
+table | _time                | bottom_degrees | group_id | location     | row_id | state | surface_degrees
+==========================================================================================================
+    0 | 2020-02-22T16:00:00Z |             49 |        0 | santa_monica |      2 | CA    |              64
+    0 | 2020-02-22T17:00:00Z |             49 |        1 | santa_monica |      2 | CA    |              63
+    0 | 2020-02-22T17:00:00Z |             49 |        1 | santa_monica |      3 | CA    |              62
+    0 | 2020-02-22T18:00:00Z |             48 |        2 | santa_monica |      2 | CA    |              61
+    0 | 2020-02-22T18:00:00Z |             48 |        2 | santa_monica |      3 | CA    |              60
+    0 | 2020-02-22T18:00:00Z |             48 |        2 | santa_monica |      4 | CA    |              60
+    0 | 2020-02-22T18:00:00Z |             40 |        3 | puget_sound  |      1 | WA    |              55
+    0 | 2020-02-22T18:00:00Z |             40 |        3 | puget_sound  |      2 | WA    |              54

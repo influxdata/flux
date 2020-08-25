@@ -10,6 +10,10 @@ builtin post
 // header value.
 builtin basicAuth
 
+// PathEscape escapes the string so it can be safely placed inside a URL path segment
+// replacing special characters (including /) with %XX sequences as needed.
+builtin pathEscape
+
 endpoint =  (url) =>
     (mapFn) =>
         (tables=<-) =>

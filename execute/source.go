@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
 )
 
@@ -17,7 +17,7 @@ type Node interface {
 // processed.
 type MetadataNode interface {
 	Node
-	Metadata() flux.Metadata
+	Metadata() metadata.Metadata
 }
 
 type Source interface {
