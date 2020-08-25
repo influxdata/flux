@@ -46,7 +46,9 @@ outData = "
 
 t_integral = (table=<-) =>
 	(table
+		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
 		|> integral(unit: 10s))
+		|> drop(columns: ["_start", "_stop"])
 
 test _integral = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})
