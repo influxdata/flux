@@ -27,6 +27,8 @@ import (
 	"github.com/influxdata/flux/stdlib/csv"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
+	"github.com/opentracing/opentracing-go"
+	"github.com/opentracing/opentracing-go/mocktracer"
 )
 
 func init() {
@@ -783,6 +785,81 @@ option planner.disableLogicalRules = ["removeCountRule"]`},
 
 			if err := plantest.ComparePlansShallow(tc.want, program.PlanSpec); err != nil {
 				t.Errorf("unexpected plans: %v", err)
+			}
+		})
+	}
+}
+
+func TestQueryTracing(t *testing.T) {
+	// temporarily install a mock tracer to see which spans are created.
+	oldTracer := opentracing.GlobalTracer()
+	defer opentracing.SetGlobalTracer(oldTracer)
+	mockTracer := mocktracer.New()
+	opentracing.SetGlobalTracer(mockTracer)
+
+	plainCtx := context.Background()
+	for _, ctx := range []context.Context{flux.WithExperimentalTracingEnabled(plainCtx), plainCtx} {
+		// Clear spans from previous run
+		mockTracer.Reset()
+		var name string
+		if flux.IsExperimentalTracingEnabled(ctx) {
+			name = "tracing enabled"
+		} else {
+			name = "tracing disabled"
+		}
+		t.Run(name, func(t *testing.T) {
+			// Run a query
+			c := lang.FluxCompiler{
+				Query: `
+					import "experimental/array"
+					array.from(rows: [{key: 1, value: 2}, {key: 3, value: 4}])
+					  |> filter(fn: (r) => r.value == 2)
+					  |> map(fn: (r) => ({r with foo: "hi"}))`,
+			}
+
+			prog, err := c.Compile(ctx, runtime.Default)
+			if err != nil {
+				t.Fatal(err)
+			}
+			q, err := prog.Start(ctx, &memory.Allocator{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer q.Done()
+			for r := range q.Results() {
+				if err := r.Tables().Do(func(flux.Table) error {
+					return nil
+				}); err != nil {
+					t.Fatal(err)
+				}
+			}
+			if err := q.Err(); err != nil {
+				t.Fatal(err)
+			}
+
+			// If tracing was enabled, then we should see spans for each
+			// source and transformation. If tracing is not enabled, we should
+			// not have those spans.
+			gotOps := make(map[string]struct{})
+			for _, span := range mockTracer.FinishedSpans() {
+				gotOps[span.OperationName] = struct{}{}
+			}
+			wantOps := []string{
+				"*array.tableSource",
+				"*universe.filterTransformation",
+				"*universe.mapTransformation",
+			}
+			for _, wantOp := range wantOps {
+				_, ok := gotOps[wantOp]
+				if flux.IsExperimentalTracingEnabled(ctx) {
+					if !ok {
+						t.Errorf("expected to find span %q but it wasn't there", wantOp)
+					}
+				} else {
+					if ok {
+						t.Errorf("did not expect to find span %q but it was found", wantOp)
+					}
+				}
 			}
 		})
 	}
