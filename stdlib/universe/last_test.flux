@@ -49,6 +49,7 @@ outData = "
 t_last = (table=<-) =>
 	(table
 		|> last())
+		|> drop(columns: ["_start", "_stop"])
 
 test _last = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_last})

@@ -1499,7 +1499,6 @@ func TestDropRenameKeep_Process(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// t.Skip("https://github.com/influxdata/flux/issues/2490")
 			executetest.ProcessTestHelper2(
 				t,
 				tc.data,

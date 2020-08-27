@@ -17,7 +17,6 @@ import (
 func TestDiff_Process(t *testing.T) {
 
 	testCases := []struct {
-		skip    bool
 		name    string
 		spec    *fluxtesting.DiffProcedureSpec
 		data0   []*executetest.Table // data from parent 0
@@ -299,10 +298,6 @@ func TestDiff_Process(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip {
-				t.Skip()
-			}
-
 			id0 := executetest.RandomDatasetID()
 			id1 := executetest.RandomDatasetID()
 

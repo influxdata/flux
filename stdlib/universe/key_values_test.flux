@@ -45,6 +45,7 @@ outData = "
 t_key_values = (table=<-) =>
 	(table
 		|> keyValues(keyColumns: ["_value"]))
+		|> drop(columns: ["_start", "_stop"])
 
 test _key_values = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_key_values})

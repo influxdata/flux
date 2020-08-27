@@ -2,9 +2,6 @@ package influxql_test
 
 import "testing"
 import "internal/influxql"
-import c "csv"
-
-option testing.loadStorage = (csv) => c.from(csv: csv)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double

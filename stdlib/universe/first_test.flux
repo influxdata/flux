@@ -49,6 +49,7 @@ outData = "
 t_first = (table=<-) =>
 	(table
 		|> first())
+		|> drop(columns: ["_start", "_stop"])
 
 test _first = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_first})

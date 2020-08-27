@@ -20,7 +20,6 @@ import (
 )
 
 func TestPagerduty(t *testing.T) {
-	t.Skip("https://github.com/influxdata/flux/issues/2532")
 	ctx := dependenciestest.Default().Inject(context.Background())
 	_, _, err := runtime.Eval(ctx, `
 import "csv"

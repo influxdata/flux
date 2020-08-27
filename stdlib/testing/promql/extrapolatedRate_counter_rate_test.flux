@@ -1,9 +1,13 @@
 package promql_test
+
 import "testing"
 import "internal/promql"
+import c "csv"
 
 option now = () =>
 	(2030-01-01T00:00:00Z)
+// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155
+option testing.loadStorage = (csv) => c.from(csv: csv)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,double,string

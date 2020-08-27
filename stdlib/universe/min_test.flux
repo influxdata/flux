@@ -49,6 +49,7 @@ outData = "
 t_min = (table=<-) =>
 	(table
 		|> min())
+		|> drop(columns: ["_start", "_stop"])
 
 test _min = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_min})

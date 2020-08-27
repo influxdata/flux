@@ -22,7 +22,6 @@ import (
 
 type TestCase struct {
 	name          string
-	skip          bool
 	encoded       []byte
 	result        *executetest.Result
 	err           error
@@ -1244,9 +1243,6 @@ func TestResultDecoder(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip {
-				t.Skip()
-			}
 			decoder := csv.NewResultDecoder(tc.decoderConfig)
 			result, err := decoder.Decode(bytes.NewReader(tc.encoded))
 			if err != nil {
@@ -1420,9 +1416,6 @@ func TestResultEncoder(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip {
-				t.Skip()
-			}
 			encoder := csv.NewResultEncoder(tc.encoderConfig)
 			var got bytes.Buffer
 			n, err := encoder.Encode(&got, tc.result)
