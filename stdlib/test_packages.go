@@ -6,7 +6,10 @@ import (
 	ast "github.com/influxdata/flux/ast"
 	anomalydetection "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
 	statsmodels "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
+<<<<<<< HEAD
 	rows "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
+=======
+>>>>>>> aca94af7f031d9b34d33fd6d9e15000247ecd58c
 	date "github.com/influxdata/flux/stdlib/date"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
 	aggregate "github.com/influxdata/flux/stdlib/experimental/aggregate"
@@ -35,7 +38,10 @@ var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
 	pkgs = append(pkgs, anomalydetection.FluxTestPackages...)
 	pkgs = append(pkgs, statsmodels.FluxTestPackages...)
+<<<<<<< HEAD
 	pkgs = append(pkgs, rows.FluxTestPackages...)
+=======
+>>>>>>> aca94af7f031d9b34d33fd6d9e15000247ecd58c
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
