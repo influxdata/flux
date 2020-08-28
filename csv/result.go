@@ -2,6 +2,7 @@
 package csv
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
@@ -78,6 +79,10 @@ type ResultDecoderConfig struct {
 	// Allocator is the memory allocator that will be used during decoding.
 	// The default is to use an unlimited allocator when this is not set.
 	Allocator *memory.Allocator
+	// Context is the context for this ResultDecoder.
+	// When the context is canceled, the decoder will also be canceled.
+	// This defaults to context.Background.
+	Context context.Context
 }
 
 func (d *ResultDecoder) Decode(r io.Reader) (flux.Result, error) {
@@ -218,6 +223,11 @@ func (r *resultDecoder) Abort(error) {
 }
 
 func (r *resultDecoder) Do(f func(flux.Table) error) error {
+	ctx := r.c.Context
+	if ctx == nil {
+		ctx = context.Background()
+	}
+
 	var extraLine []string
 	var meta tableMetadata
 	newMeta := true
@@ -256,7 +266,11 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 		if err := f(b); err != nil {
 			return err
 		}
-		<-b.done
+		select {
+		case <-b.done:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 		// track whether we hit the EOF
 		r.eof = b.eof
 		// track any extra line that was read
