@@ -143,7 +143,10 @@ func (c *CSVSource) Run(ctx context.Context) {
 		// transformation. Unlike other sources, tables from csv sources
 		// are not read-only. They contain mutable state and therefore
 		// cannot be shared among goroutines.
-		decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{Allocator: c.alloc})
+		decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{
+			Allocator: c.alloc,
+			Context:   ctx,
+		})
 		result, decodeErr := decoder.Decode(strings.NewReader(c.tx))
 		if decodeErr != nil {
 			err = decodeErr

@@ -2,6 +2,7 @@ package csv_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -184,3 +185,59 @@ func TestFromCSV_Run(t *testing.T) {
 		},
 	)
 }
+
+func TestFromCSV_RunCancel(t *testing.T) {
+	var csvTextBuilder strings.Builder
+	csvTextBuilder.WriteString(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_measurement,host,_value
+`)
+	for i := 0; i < 1500; i++ {
+		// The csv must contain over 1000 rows so that we are triggering multiple buffers.
+		csvTextBuilder.WriteString(",,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42\n")
+	}
+	spec := &csv.FromCSVProcedureSpec{
+		CSV: csvTextBuilder.String(),
+	}
+
+	id := executetest.RandomDatasetID()
+	a := mock.AdministrationWithContext(context.Background())
+	s, err := csv.CreateSource(spec, id, a)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Add a do-nothing transformation which never reads our table.
+	// We want to produce a table and send it with the expectation
+	// that our source might not read it.
+	s.AddTransformation(noopTransformation{})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		s.Run(ctx)
+		close(done)
+	}()
+
+	// Canceling the context should free the runner.
+	cancel()
+
+	timer := time.NewTimer(time.Second)
+	defer timer.Stop()
+
+	select {
+	case <-timer.C:
+		t.Fatal("csv.from did not cancel when the context was terminated")
+	case <-done:
+	}
+}
+
+type noopTransformation struct{}
+
+func (n noopTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error { return nil }
+func (n noopTransformation) Process(id execute.DatasetID, tbl flux.Table) error         { return nil }
+func (n noopTransformation) UpdateWatermark(id execute.DatasetID, t execute.Time) error { return nil }
+func (n noopTransformation) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
+	return nil
+}
+func (n noopTransformation) Finish(id execute.DatasetID, err error) {}
