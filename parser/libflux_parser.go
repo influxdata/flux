@@ -10,13 +10,17 @@ func parseFile(f *token.File, src []byte) (*ast.File, error) {
 	astFile := libflux.Parse(f.Name(), string(src))
 	defer astFile.Free()
 
-	data, err := astFile.MarshalFB()
+	data, err := astFile.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	pkg := ast.DeserializeFromFlatBuffer(data)
-	file := pkg.Files[0]
+	node, err := ast.UnmarshalNode(data)
+	if err != nil {
+		return nil, err
+	}
+
+	file := node.(*ast.Package).Files[0]
 
 	// The go parser will not fill in the imports if there are
 	// none so we remove them here to retain compatibility.
