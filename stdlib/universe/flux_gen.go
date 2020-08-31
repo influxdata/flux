@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   326,
 				},
 				File:   "universe.flux",
-				Source: "package universe\n\nimport \"system\"\nimport \"date\"\nimport \"math\"\nimport \"strings\"\nimport \"regexp\"\n\n// now is a function option whose default behaviour is to return the current system time\noption now = system.time\n\n// Booleans\nbuiltin true : bool\nbuiltin false : bool\n\n// Transformation functions\nbuiltin chandeMomentumOscillator : (<-tables: [A],  n: int, ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin columns : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin count : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B] where A: Record, B: Record\nbuiltin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin derivative : (<-tables: [A], ?unit: duration, ?nonNegative: bool, ?columns: [string], ?timeColumn: string) => [B] where A: Record, B: Record\nbuiltin die : (msg: string) => A\nbuiltin difference : (<-tables: [T], ?nonNegative: bool, ?columns: [string], ?keepFirst: bool) => [R] where T: Record, R: Record\nbuiltin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin duplicate : (<-tables: [A], column: string, as: string) => [B] where A: Record, B: Record\nbuiltin elapsed : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?columnName: string) => [B] where A: Record, B: Record\nbuiltin exponentialMovingAverage : (<-tables: [{ B with _value: A}], n: int) => [{ B with _value: A }] where A: Numeric\nbuiltin fill : (<-tables: [A], ?column: string, ?value: B, ?usePrevious: bool) => [C] where A: Record, C: Record\nbuiltin filter : (<-tables: [A], fn: (r: A) => bool, ?onEmpty: string) => [A] where A: Record\nbuiltin first : ( <-tables: [A], ?column: string) => [A] where A: Record\nbuiltin group : (<-tables: [A], ?mode: string, ?columns: [string]) => [A] where A: Record\nbuiltin histogram : (<-tables: [A], ?column: string, ?upperBoundColumn: string, ?countColumn: string, bins: [float], ?normalize: bool) => [B] where A: Record, B: Record\nbuiltin histogramQuantile : (<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string, ?minValue: float) => [B] where A: Record, B: Record\nbuiltin holtWinters : (<-tables: [A], n: int, interval: duration, ?withFit: bool, ?column: string, ?timeColumn: string, ?seasonality: int) => [B] where A: Record, B: Record\nbuiltin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record\nbuiltin integral : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string) => [B] where A: Record, B: Record\nbuiltin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record\nbuiltin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record\nbuiltin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record\nbuiltin keyValues : (<-tables: [A], ?keyColumns: [string]) => [{C with _key: string , _value: B}] where A: Record, C: Record\nbuiltin keys : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin last : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin limit : (<-tables: [A], n: int, ?offset: int) => [A]\nbuiltin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]\nbuiltin max : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin min : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A: Record, C: Record\nbuiltin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric\nbuiltin quantile : (<-tables: [A], ?column: string, q: float, ?compression: float, ?method: string) => [A] where A: Record\nbuiltin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B] where A: Record, B: Record\nbuiltin range : (<-tables: [A], start: B, ?stop: C, ?timeColumn: string, ?startColumn: string, ?stopColumn: string) => [D] where A: Record, D: Record\nbuiltin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C] where A: Record, B: Record, C: Record\nbuiltin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C] where A: Record, B: Record, C: Record\nbuiltin sample : (<-tables: [A], n: int, ?pos: int, ?column: string) => [A] where A: Record\nbuiltin set : (<-tables: [A], key: string, value: string) => [A] where A: Record\nbuiltin tail : (<-tables: [A], n: int, ?offset: int) => [A]\nbuiltin timeShift : (<-tables: [A], duration: duration, ?columns: [string]) => [A]\nbuiltin skew : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin spread : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin sort : (<-tables: [A], ?columns: [string], ?desc: bool) => [A] where A: Record\nbuiltin stateTracking : (<-tables: [A], fn: (r: A) => bool, ?countColumn: string, ?durationColumn: string, ?durationUnit: duration, ?timeColumn: string) => [B] where A: Record, B: Record\nbuiltin stddev : (<-tables: [A], ?column: string, ?mode: string) => [B] where A: Record, B: Record\nbuiltin sum : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin tripleExponentialDerivative : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric, B: Record\nbuiltin union : (tables: [[A]]) => [A] where A: Record\nbuiltin unique : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin window : (<-tables: [A], ?every: duration, ?period: duration, ?offset: duration, ?timeColumn: string, ?startColumn: string, ?stopColumn: string, ?createEmpty: bool) => [B] where A: Record, B: Record\nbuiltin yield : (<-tables: [A], ?name: string) => [A] where A: Record\n\n// stream/table index functions\nbuiltin tableFind : (<-tables: [A], fn: (key: B) => bool) => [A] where A: Record, B: Record\nbuiltin getColumn : (<-table: [A], column: string) => [B] where A: Record\nbuiltin getRecord : (<-table: [A], idx: int) => A where A: Record\nbuiltin findColumn : (<-tables: [A], fn: (key: B) => bool, column: string) => [C] where A: Record, B: Record\nbuiltin findRecord : (<-tables: [A], fn: (key: B) => bool, idx: int) => A where A: Record, B: Record\n\n// type conversion functions\nbuiltin bool : (v: A) => bool\nbuiltin bytes : (v: A) => bool\nbuiltin duration : (v: A) => duration\nbuiltin float : (v: A) => float\nbuiltin int : (v: A) => int\nbuiltin string : (v: A) => string\nbuiltin time : (v: A) => time\nbuiltin uint : (v: A) => uint\n\n// contains function\nbuiltin contains : (value: A, set: [A]) => bool where A: Nullable\n\n// other builtins\nbuiltin inf : duration\nbuiltin length : (arr: [A]) => int\nbuiltin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]\nbuiltin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]\n\n// sleep is the identity function with the side effect of delaying execution by a specified duration\nbuiltin sleep : (<-v: A, duration: duration) => A\n// die returns a fatal error from within a flux script\nbuiltin die : (msg: string) => A\n\n// Time weighted average where values at the beginning and end of the range are linearly interpolated.\ntimeWeightedAvg = (tables=<-, unit) => tables\n    |> integral(unit: unit, interpolate: \"linear\")\n    |> map(fn: (r) => ({ r with _value: (r._value * float(v: uint(v: unit))) / float(v: int(v: r._stop) - int(v: r._start)) }))\n\n// covariance function with automatic join\ncov = (x,y,on,pearsonr=false) =>\n    join(\n        tables:{x:x, y:y},\n        on:on,\n    )\n    |> covariance(pearsonr:pearsonr, columns:[\"_value_x\",\"_value_y\"])\n\npearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)\n\n// AggregateWindow applies an aggregate function to fixed windows of time.\n// The procedure is to window the data, perform an aggregate operation,\n// and then undo the windowing to produce an output table for every input table.\naggregateWindow = (every, fn, column=\"_value\", timeSrc=\"_stop\",timeDst=\"_time\", createEmpty=true, tables=<-) =>\n    tables\n        |> window(every:every, createEmpty: createEmpty)\n        |> fn(column:column)\n        |> duplicate(column:timeSrc,as:timeDst)\n        |> window(every:inf, timeColumn:timeDst)\n\n// Increase returns the total non-negative difference between values in a table.\n// A main usage case is tracking changes in counter values which may wrap over time when they hit\n// a threshold or are reset. In the case of a wrap/reset,\n// we can assume that the absolute delta between two points will be at least their non-negative difference.\nincrease = (tables=<-, columns=[\"_value\"]) =>\n    tables\n        |> difference(nonNegative: true, columns:columns)\n        |> cumulativeSum(columns: columns)\n\n// median returns the 50th percentile.\nmedian = (method=\"estimate_tdigest\", compression=0.0, column=\"_value\", tables=<-) =>\n    tables\n        |> quantile(q:0.5, method: method, compression: compression, column: column)\n\n// stateCount computes the number of consecutive records in a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state count will be incremented\n// When a point evaluates as false, the state count is reset.\n//\n// The state count will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state count.\nstateCount = (fn, column=\"stateCount\", tables=<-) =>\n    tables\n        |> stateTracking(countColumn:column, fn:fn)\n\n// stateDuration computes the duration of a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state duration will be\n// incremented by the duration between points. When a point evaluates as false,\n// the state duration is reset.\n//\n// The state duration will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state duration.\n//\n// Note that as the first point in the given state has no previous point, its\n// state duration will be 0.\n//\n// The duration is represented as an integer in the units specified.\nstateDuration = (fn, column=\"stateDuration\", timeColumn=\"_time\", unit=1s, tables=<-) =>\n    tables\n        |> stateTracking(durationColumn:column, timeColumn:timeColumn, fn:fn, durationUnit:unit)\n\n// _sortLimit is a helper function, which sorts and limits a table.\n_sortLimit = (n, desc, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> sort(columns:columns, desc:desc)\n        |> limit(n:n)\n\n// top sorts a table by columns and keeps only the top n records.\ntop = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:true)\n\n// top sorts a table by columns and keeps only the bottom n records.\nbottom = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:false)\n\n// _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,\n// then it selects the highest or lowest records based on the column and the _sortLimit function.\n// The default reducer assumes no reducing needs to be performed.\n_highestOrLowest = (n, _sortLimit, reducer, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> group(columns:groupColumns)\n        |> reducer()\n        |> group(columns:[])\n        |> _sortLimit(n:n, columns:[column])\n\n// highestMax returns the top N records from all groups using the maximum of each group.\nhighestMax = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> max(column:column),\n                _sortLimit: top,\n            )\n\n// highestAverage returns the top N records from all groups using the average of each group.\nhighestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: top,\n            )\n\n// highestCurrent returns the top N records from all groups using the last value of each group.\nhighestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: top,\n            )\n\n// lowestMin returns the bottom N records from all groups using the minimum of each group.\nlowestMin = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> min(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestAverage returns the bottom N records from all groups using the average of each group.\nlowestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestCurrent returns the bottom N records from all groups using the last value of each group.\nlowestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: bottom,\n            )\n\n// timedMovingAverage constructs a simple moving average over windows of 'period' duration\n// eg: A 5 year moving average would be called as such:\n//    movingAverage(1y, 5y)\ntimedMovingAverage = (every, period, column=\"_value\", tables=<-) =>\n    tables\n        |> window(every: every, period: period)\n        |> mean(column:column)\n        |> duplicate(column: \"_stop\", as: \"_time\")\n        |> window(every: inf)\n\n// Double Exponential Moving Average computes the double exponential moving averages of the `_value` column.\n// eg: A 5 point double exponential moving average would be called as such:\n// from(bucket: \"telegraf/autogen\"):\n//    |> range(start: -7d)\n//    |> doubleEMA(n: 5)\ndoubleEMA = (n, tables=<-) =>\n    tables\n          |> exponentialMovingAverage(n:n)\n          |> duplicate(column:\"_value\", as:\"__ema\")\n          |> exponentialMovingAverage(n:n)\n          |> map(fn: (r) => ({r with _value: 2.0*r.__ema - r._value}))\n          |> drop(columns: [\"__ema\"])\n\n\n// Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.\n// eg: A 5 point triple exponential moving average would be called as such:\n// from(bucket: \"telegraf/autogen\"):\n//    |> range(start: -7d)\n//    |> tripleEMA(n: 5)\ntripleEMA = (n, tables=<-) =>\n\ttables\n\t\t|> exponentialMovingAverage(n:n)\n\t\t|> duplicate(column:\"_value\", as:\"__ema1\")\n\t\t|> exponentialMovingAverage(n:n)\n\t\t|> duplicate(column:\"_value\", as:\"__ema2\")\n\t\t|> exponentialMovingAverage(n:n)\n\t\t|> map(fn: (r) => ({r with _value: 3.0*r.__ema1 - 3.0*r.__ema2 + r._value}))\n\t\t|> drop(columns: [\"__ema1\", \"__ema2\"])\n\n// truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map\n// Change from _time to timeColumn once Flux Issue 1122 is resolved\ntruncateTimeColumn = (timeColumn=\"_time\", unit, tables=<-) =>\n    tables\n        |> map(fn:(r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))\n\n// kaufmansER computes Kaufman's Efficiency Ratios of the `_value` column\nkaufmansER = (n, tables=<-) =>\n    tables\n        |> chandeMomentumOscillator(n: n)\n        |> map(fn:(r) => ({r with _value: (math.abs(x: r._value)/100.0)}))\n\ntoString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))\ntoInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))\ntoUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))\ntoFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))\ntoBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))\ntoTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))",
+				Source: "package universe\n\nimport \"system\"\nimport \"date\"\nimport \"math\"\nimport \"strings\"\nimport \"regexp\"\n\n// now is a function option whose default behaviour is to return the current system time\noption now = system.time\n\n// Booleans\nbuiltin true : bool\nbuiltin false : bool\n\n// Transformation functions\nbuiltin chandeMomentumOscillator : (<-tables: [A],  n: int, ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin columns : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin count : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B] where A: Record, B: Record\nbuiltin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin derivative : (<-tables: [A], ?unit: duration, ?nonNegative: bool, ?columns: [string], ?timeColumn: string) => [B] where A: Record, B: Record\nbuiltin die : (msg: string) => A\nbuiltin difference : (<-tables: [T], ?nonNegative: bool, ?columns: [string], ?keepFirst: bool) => [R] where T: Record, R: Record\nbuiltin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin duplicate : (<-tables: [A], column: string, as: string) => [B] where A: Record, B: Record\nbuiltin elapsed : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?columnName: string) => [B] where A: Record, B: Record\nbuiltin exponentialMovingAverage : (<-tables: [{ B with _value: A}], n: int) => [{ B with _value: A }] where A: Numeric\nbuiltin fill : (<-tables: [A], ?column: string, ?value: B, ?usePrevious: bool) => [C] where A: Record, C: Record\nbuiltin filter : (<-tables: [A], fn: (r: A) => bool, ?onEmpty: string) => [A] where A: Record\nbuiltin first : ( <-tables: [A], ?column: string) => [A] where A: Record\nbuiltin group : (<-tables: [A], ?mode: string, ?columns: [string]) => [A] where A: Record\nbuiltin histogram : (<-tables: [A], ?column: string, ?upperBoundColumn: string, ?countColumn: string, bins: [float], ?normalize: bool) => [B] where A: Record, B: Record\nbuiltin histogramQuantile : (<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string, ?minValue: float) => [B] where A: Record, B: Record\nbuiltin holtWinters : (<-tables: [A], n: int, interval: duration, ?withFit: bool, ?column: string, ?timeColumn: string, ?seasonality: int) => [B] where A: Record, B: Record\nbuiltin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record\nbuiltin integral : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string, ?interpolate: string) => [B] where A: Record, B: Record\nbuiltin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record\nbuiltin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record\nbuiltin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record\nbuiltin keyValues : (<-tables: [A], ?keyColumns: [string]) => [{C with _key: string , _value: B}] where A: Record, C: Record\nbuiltin keys : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin last : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin limit : (<-tables: [A], n: int, ?offset: int) => [A]\nbuiltin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]\nbuiltin max : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin min : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A: Record, C: Record\nbuiltin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric\nbuiltin quantile : (<-tables: [A], ?column: string, q: float, ?compression: float, ?method: string) => [A] where A: Record\nbuiltin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B] where A: Record, B: Record\nbuiltin range : (<-tables: [A], start: B, ?stop: C, ?timeColumn: string, ?startColumn: string, ?stopColumn: string) => [D] where A: Record, D: Record\nbuiltin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C] where A: Record, B: Record, C: Record\nbuiltin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record\nbuiltin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C] where A: Record, B: Record, C: Record\nbuiltin sample : (<-tables: [A], n: int, ?pos: int, ?column: string) => [A] where A: Record\nbuiltin set : (<-tables: [A], key: string, value: string) => [A] where A: Record\nbuiltin tail : (<-tables: [A], n: int, ?offset: int) => [A]\nbuiltin timeShift : (<-tables: [A], duration: duration, ?columns: [string]) => [A]\nbuiltin skew : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin spread : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin sort : (<-tables: [A], ?columns: [string], ?desc: bool) => [A] where A: Record\nbuiltin stateTracking : (<-tables: [A], fn: (r: A) => bool, ?countColumn: string, ?durationColumn: string, ?durationUnit: duration, ?timeColumn: string) => [B] where A: Record, B: Record\nbuiltin stddev : (<-tables: [A], ?column: string, ?mode: string) => [B] where A: Record, B: Record\nbuiltin sum : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record\nbuiltin tripleExponentialDerivative : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric, B: Record\nbuiltin union : (tables: [[A]]) => [A] where A: Record\nbuiltin unique : (<-tables: [A], ?column: string) => [A] where A: Record\nbuiltin window : (<-tables: [A], ?every: duration, ?period: duration, ?offset: duration, ?timeColumn: string, ?startColumn: string, ?stopColumn: string, ?createEmpty: bool) => [B] where A: Record, B: Record\nbuiltin yield : (<-tables: [A], ?name: string) => [A] where A: Record\n\n// stream/table index functions\nbuiltin tableFind : (<-tables: [A], fn: (key: B) => bool) => [A] where A: Record, B: Record\nbuiltin getColumn : (<-table: [A], column: string) => [B] where A: Record\nbuiltin getRecord : (<-table: [A], idx: int) => A where A: Record\nbuiltin findColumn : (<-tables: [A], fn: (key: B) => bool, column: string) => [C] where A: Record, B: Record\nbuiltin findRecord : (<-tables: [A], fn: (key: B) => bool, idx: int) => A where A: Record, B: Record\n\n// type conversion functions\nbuiltin bool : (v: A) => bool\nbuiltin bytes : (v: A) => bool\nbuiltin duration : (v: A) => duration\nbuiltin float : (v: A) => float\nbuiltin int : (v: A) => int\nbuiltin string : (v: A) => string\nbuiltin time : (v: A) => time\nbuiltin uint : (v: A) => uint\n\n// contains function\nbuiltin contains : (value: A, set: [A]) => bool where A: Nullable\n\n// other builtins\nbuiltin inf : duration\nbuiltin length : (arr: [A]) => int\nbuiltin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]\nbuiltin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]\n\n// sleep is the identity function with the side effect of delaying execution by a specified duration\nbuiltin sleep : (<-v: A, duration: duration) => A\n// die returns a fatal error from within a flux script\nbuiltin die : (msg: string) => A\n\n// Time weighted average where values at the beginning and end of the range are linearly interpolated.\ntimeWeightedAvg = (tables=<-, unit) => tables\n    |> integral(unit: unit, interpolate: \"linear\")\n    |> map(fn: (r) => ({ r with _value: (r._value * float(v: uint(v: unit))) / float(v: int(v: r._stop) - int(v: r._start)) }))\n\n// covariance function with automatic join\ncov = (x,y,on,pearsonr=false) =>\n    join(\n        tables:{x:x, y:y},\n        on:on,\n    )\n    |> covariance(pearsonr:pearsonr, columns:[\"_value_x\",\"_value_y\"])\n\npearsonr = (x,y,on) => cov(x:x, y:y, on:on, pearsonr:true)\n\n// AggregateWindow applies an aggregate function to fixed windows of time.\n// The procedure is to window the data, perform an aggregate operation,\n// and then undo the windowing to produce an output table for every input table.\naggregateWindow = (every, fn, column=\"_value\", timeSrc=\"_stop\",timeDst=\"_time\", createEmpty=true, tables=<-) =>\n    tables\n        |> window(every:every, createEmpty: createEmpty)\n        |> fn(column:column)\n        |> duplicate(column:timeSrc,as:timeDst)\n        |> window(every:inf, timeColumn:timeDst)\n\n// Increase returns the total non-negative difference between values in a table.\n// A main usage case is tracking changes in counter values which may wrap over time when they hit\n// a threshold or are reset. In the case of a wrap/reset,\n// we can assume that the absolute delta between two points will be at least their non-negative difference.\nincrease = (tables=<-, columns=[\"_value\"]) =>\n    tables\n        |> difference(nonNegative: true, columns:columns)\n        |> cumulativeSum(columns: columns)\n\n// median returns the 50th percentile.\nmedian = (method=\"estimate_tdigest\", compression=0.0, column=\"_value\", tables=<-) =>\n    tables\n        |> quantile(q:0.5, method: method, compression: compression, column: column)\n\n// stateCount computes the number of consecutive records in a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state count will be incremented\n// When a point evaluates as false, the state count is reset.\n//\n// The state count will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state count.\nstateCount = (fn, column=\"stateCount\", tables=<-) =>\n    tables\n        |> stateTracking(countColumn:column, fn:fn)\n\n// stateDuration computes the duration of a given state.\n// The state is defined via the function fn. For each consecutive point for\n// which the expression evaluates as true, the state duration will be\n// incremented by the duration between points. When a point evaluates as false,\n// the state duration is reset.\n//\n// The state duration will be added as an additional column to each record. If the\n// expression evaluates as false, the value will be -1. If the expression\n// generates an error during evaluation, the point is discarded, and does not\n// affect the state duration.\n//\n// Note that as the first point in the given state has no previous point, its\n// state duration will be 0.\n//\n// The duration is represented as an integer in the units specified.\nstateDuration = (fn, column=\"stateDuration\", timeColumn=\"_time\", unit=1s, tables=<-) =>\n    tables\n        |> stateTracking(durationColumn:column, timeColumn:timeColumn, fn:fn, durationUnit:unit)\n\n// _sortLimit is a helper function, which sorts and limits a table.\n_sortLimit = (n, desc, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> sort(columns:columns, desc:desc)\n        |> limit(n:n)\n\n// top sorts a table by columns and keeps only the top n records.\ntop = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:true)\n\n// top sorts a table by columns and keeps only the bottom n records.\nbottom = (n, columns=[\"_value\"], tables=<-) =>\n    tables\n        |> _sortLimit(n:n, columns:columns, desc:false)\n\n// _highestOrLowest is a helper function, which reduces all groups into a single group by specific tags and a reducer function,\n// then it selects the highest or lowest records based on the column and the _sortLimit function.\n// The default reducer assumes no reducing needs to be performed.\n_highestOrLowest = (n, _sortLimit, reducer, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> group(columns:groupColumns)\n        |> reducer()\n        |> group(columns:[])\n        |> _sortLimit(n:n, columns:[column])\n\n// highestMax returns the top N records from all groups using the maximum of each group.\nhighestMax = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> max(column:column),\n                _sortLimit: top,\n            )\n\n// highestAverage returns the top N records from all groups using the average of each group.\nhighestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: top,\n            )\n\n// highestCurrent returns the top N records from all groups using the last value of each group.\nhighestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: top,\n            )\n\n// lowestMin returns the bottom N records from all groups using the minimum of each group.\nlowestMin = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                // TODO(nathanielc): Once max/min support selecting based on multiple columns change this to pass all columns.\n                reducer: (tables=<-) => tables |> min(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestAverage returns the bottom N records from all groups using the average of each group.\nlowestAverage = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> mean(column:column),\n                _sortLimit: bottom,\n            )\n\n// lowestCurrent returns the bottom N records from all groups using the last value of each group.\nlowestCurrent = (n, column=\"_value\", groupColumns=[], tables=<-) =>\n    tables\n        |> _highestOrLowest(\n                n:n,\n                column:column,\n                groupColumns:groupColumns,\n                reducer: (tables=<-) => tables |> last(column:column),\n                _sortLimit: bottom,\n            )\n\n// timedMovingAverage constructs a simple moving average over windows of 'period' duration\n// eg: A 5 year moving average would be called as such:\n//    movingAverage(1y, 5y)\ntimedMovingAverage = (every, period, column=\"_value\", tables=<-) =>\n    tables\n        |> window(every: every, period: period)\n        |> mean(column:column)\n        |> duplicate(column: \"_stop\", as: \"_time\")\n        |> window(every: inf)\n\n// Double Exponential Moving Average computes the double exponential moving averages of the `_value` column.\n// eg: A 5 point double exponential moving average would be called as such:\n// from(bucket: \"telegraf/autogen\"):\n//    |> range(start: -7d)\n//    |> doubleEMA(n: 5)\ndoubleEMA = (n, tables=<-) =>\n    tables\n          |> exponentialMovingAverage(n:n)\n          |> duplicate(column:\"_value\", as:\"__ema\")\n          |> exponentialMovingAverage(n:n)\n          |> map(fn: (r) => ({r with _value: 2.0*r.__ema - r._value}))\n          |> drop(columns: [\"__ema\"])\n\n\n// Triple Exponential Moving Average computes the triple exponential moving averages of the `_value` column.\n// eg: A 5 point triple exponential moving average would be called as such:\n// from(bucket: \"telegraf/autogen\"):\n//    |> range(start: -7d)\n//    |> tripleEMA(n: 5)\ntripleEMA = (n, tables=<-) =>\n\ttables\n\t\t|> exponentialMovingAverage(n:n)\n\t\t|> duplicate(column:\"_value\", as:\"__ema1\")\n\t\t|> exponentialMovingAverage(n:n)\n\t\t|> duplicate(column:\"_value\", as:\"__ema2\")\n\t\t|> exponentialMovingAverage(n:n)\n\t\t|> map(fn: (r) => ({r with _value: 3.0*r.__ema1 - 3.0*r.__ema2 + r._value}))\n\t\t|> drop(columns: [\"__ema1\", \"__ema2\"])\n\n// truncateTimeColumn takes in a time column t and a Duration unit and truncates each value of t to the given unit via map\n// Change from _time to timeColumn once Flux Issue 1122 is resolved\ntruncateTimeColumn = (timeColumn=\"_time\", unit, tables=<-) =>\n    tables\n        |> map(fn:(r) => ({r with _time: date.truncate(t: r._time, unit: unit)}))\n\n// kaufmansER computes Kaufman's Efficiency Ratios of the `_value` column\nkaufmansER = (n, tables=<-) =>\n    tables\n        |> chandeMomentumOscillator(n: n)\n        |> map(fn:(r) => ({r with _value: (math.abs(x: r._value)/100.0)}))\n\ntoString   = (tables=<-) => tables |> map(fn:(r) => ({r with _value: string(v:r._value)}))\ntoInt      = (tables=<-) => tables |> map(fn:(r) => ({r with _value: int(v:r._value)}))\ntoUInt     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: uint(v:r._value)}))\ntoFloat    = (tables=<-) => tables |> map(fn:(r) => ({r with _value: float(v:r._value)}))\ntoBool     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: bool(v:r._value)}))\ntoTime     = (tables=<-) => tables |> map(fn:(r) => ({r with _value: time(v:r._value)}))",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -10546,11 +10546,11 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 124,
+							Column: 146,
 							Line:   38,
 						},
 						File:   "universe.flux",
-						Source: "(<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string) => [B] where A: Record, B: Record",
+						Source: "(<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string, ?interpolate: string) => [B] where A: Record, B: Record",
 						Start: ast.Position{
 							Column: 20,
 							Line:   38,
@@ -10562,13 +10562,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 113,
+								Column: 135,
 								Line:   38,
 							},
 							File:   "universe.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 104,
+								Column: 126,
 								Line:   38,
 							},
 						},
@@ -10578,13 +10578,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 113,
+									Column: 135,
 									Line:   38,
 								},
 								File:   "universe.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 107,
+									Column: 129,
 									Line:   38,
 								},
 							},
@@ -10596,13 +10596,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 105,
+									Column: 127,
 									Line:   38,
 								},
 								File:   "universe.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 104,
+									Column: 126,
 									Line:   38,
 								},
 							},
@@ -10614,13 +10614,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 124,
+								Column: 146,
 								Line:   38,
 							},
 							File:   "universe.flux",
 							Source: "B: Record",
 							Start: ast.Position{
-								Column: 115,
+								Column: 137,
 								Line:   38,
 							},
 						},
@@ -10630,13 +10630,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 124,
+									Column: 146,
 									Line:   38,
 								},
 								File:   "universe.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 118,
+									Column: 140,
 									Line:   38,
 								},
 							},
@@ -10648,13 +10648,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 116,
+									Column: 138,
 									Line:   38,
 								},
 								File:   "universe.flux",
 								Source: "B",
 								Start: ast.Position{
-									Column: 115,
+									Column: 137,
 									Line:   38,
 								},
 							},
@@ -10667,11 +10667,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 97,
+								Column: 119,
 								Line:   38,
 							},
 							File:   "universe.flux",
-							Source: "(<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string) => [B]",
+							Source: "(<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string, ?interpolate: string) => [B]",
 							Start: ast.Position{
 								Column: 20,
 								Line:   38,
@@ -10975,35 +10975,53 @@ var pkgAST = &ast.Package{
 								Name: "string",
 							},
 						},
-					}},
-					Return: &ast.ArrayType{
+					}, &ast.ParameterType{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 97,
+									Column: 111,
 									Line:   38,
 								},
 								File:   "universe.flux",
-								Source: "[B]",
+								Source: "?interpolate: string",
 								Start: ast.Position{
-									Column: 94,
+									Column: 91,
 									Line:   38,
 								},
 							},
 						},
-						ElementType: &ast.TvarType{
+						Kind: "Optional",
+						Name: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 96,
+										Column: 103,
 										Line:   38,
 									},
 									File:   "universe.flux",
-									Source: "B",
+									Source: "interpolate",
 									Start: ast.Position{
-										Column: 95,
+										Column: 92,
+										Line:   38,
+									},
+								},
+							},
+							Name: "interpolate",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 111,
+										Line:   38,
+									},
+									File:   "universe.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 105,
 										Line:   38,
 									},
 								},
@@ -11013,13 +11031,65 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 96,
+											Column: 111,
+											Line:   38,
+										},
+										File:   "universe.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 105,
+											Line:   38,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 119,
+									Line:   38,
+								},
+								File:   "universe.flux",
+								Source: "[B]",
+								Start: ast.Position{
+									Column: 116,
+									Line:   38,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 118,
+										Line:   38,
+									},
+									File:   "universe.flux",
+									Source: "B",
+									Start: ast.Position{
+										Column: 117,
+										Line:   38,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 118,
 											Line:   38,
 										},
 										File:   "universe.flux",
 										Source: "B",
 										Start: ast.Position{
-											Column: 95,
+											Column: 117,
 											Line:   38,
 										},
 									},

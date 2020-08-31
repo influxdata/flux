@@ -35,7 +35,7 @@ builtin histogram : (<-tables: [A], ?column: string, ?upperBoundColumn: string, 
 builtin histogramQuantile : (<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string, ?minValue: float) => [B] where A: Record, B: Record
 builtin holtWinters : (<-tables: [A], n: int, interval: duration, ?withFit: bool, ?column: string, ?timeColumn: string, ?seasonality: int) => [B] where A: Record, B: Record
 builtin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record
-builtin integral : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string) => [B] where A: Record, B: Record
+builtin integral : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string, ?interpolate: string) => [B] where A: Record, B: Record
 builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
 builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
 builtin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record
