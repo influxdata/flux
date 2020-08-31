@@ -65,6 +65,7 @@ outData = "
 t_shift_negative_duration = (table=<-) =>
 	(table
 		|> timeShift(duration: -5m))
+		|> drop(columns: ["_start", "_stop"])
 
 test _shift_negative_duration = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift_negative_duration})

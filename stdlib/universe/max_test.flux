@@ -49,6 +49,7 @@ outData = "
 t_max = (table=<-) =>
 	(table
 		|> max())
+		|> drop(columns: ["_start", "_stop"])
 
 test _max = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_max})

@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   27,
 				},
 				File:   "http.flux",
-				Source: "package http\n\nimport \"experimental\"\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post\n\n// basicAuth will take a username/password combination and return the authorization\n// header value.\nbuiltin basicAuth\n\n// PathEscape escapes the string so it can be safely placed inside a URL path segment\n// replacing special characters (including /) with %XX sequences as needed.\nbuiltin pathEscape\n\nendpoint =  (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+				Source: "package http\n\nimport \"experimental\"\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post\n\n// basicAuth will take a username/password combination and return the authorization\n// header value.\nbuiltin basicAuth\n\n// PathEscape escapes the string so it can be safely placed inside a URL path segment\n// replacing special characters (including /) with %XX sequences as needed.\nbuiltin pathEscape\n\nendpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -143,7 +143,7 @@ var pkgAST = &ast.Package{
 						Line:   27,
 					},
 					File:   "http.flux",
-					Source: "endpoint =  (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+					Source: "endpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
 					Start: ast.Position{
 						Column: 1,
 						Line:   17,
@@ -179,7 +179,7 @@ var pkgAST = &ast.Package{
 						File:   "http.flux",
 						Source: "(url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
 						Start: ast.Position{
-							Column: 13,
+							Column: 12,
 							Line:   17,
 						},
 					},
@@ -1360,13 +1360,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 17,
+								Column: 16,
 								Line:   17,
 							},
 							File:   "http.flux",
 							Source: "url",
 							Start: ast.Position{
-								Column: 14,
+								Column: 13,
 								Line:   17,
 							},
 						},
@@ -1376,13 +1376,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
+									Column: 16,
 									Line:   17,
 								},
 								File:   "http.flux",
 								Source: "url",
 								Start: ast.Position{
-									Column: 14,
+									Column: 13,
 									Line:   17,
 								},
 							},

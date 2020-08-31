@@ -1,10 +1,8 @@
 package universe_test
  
 import "testing"
-import c "csv"
 
 option now = () => (2030-01-01T00:00:00Z)
-option testing.loadStorage = (csv) => c.from(csv: csv)
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -30,20 +28,21 @@ outData = "
 #group,false,false,true,true,true,true,false
 #default,_result,,,,,,
 ,result,table,_start,_stop,host,name,_value
+,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_field
+,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_measurement
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_start
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_stop
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_time
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_value
-,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_field
-,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,_measurement
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,host
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk0,name
+
+,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_field
+,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_measurement
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_start
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_stop
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_time
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_value
-,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_field
-,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,_measurement
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,host
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,name
 "
@@ -52,6 +51,7 @@ t_columns = (table=<-) =>
 	(table
 		|> range(start: 2018-05-20T19:53:26Z)
 		|> columns())
+		|> sort()
 
 test _columns = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_columns})

@@ -65,6 +65,7 @@ outData = "
 t_shift = (table=<-) =>
 	(table
 		|> timeShift(duration: 120s))
+		|> drop(columns: ["_start", "_stop"])
 
 test _shift = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shift})
