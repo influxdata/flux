@@ -1,31 +1,30 @@
 package universe_test
 
 import "testing"
-import c "csv"
 
 option now = () => (2030-01-01T00:00:00Z)
-option testing.loadStorage = (csv) => c.from(csv: csv)
 
 inData = "
-#datatype,string,long,dateTime:RFC3339,double,string,string
-#group,false,false,false,false,true,true
-#default,_result,,,,,
-,result,table,_time,_value,_measurement,user
-,,0,2018-05-22T19:53:26Z,0,CPU,user1
-,,0,2018-05-22T19:53:36Z,1,CPU,user1
-,,1,2018-05-22T19:53:26Z,4,CPU,user2
-,,1,2018-05-22T19:53:36Z,20,CPU,user2
-,,1,2018-05-22T19:53:46Z,7,CPU,user2
-,,2,2018-05-22T19:53:26Z,1,RAM,user1"
+#datatype,string,long,dateTime:RFC3339,double,string,string,string
+#group,false,false,false,false,true,true,true
+#default,_result,,,,,,
+,result,table,_time,_value,_measurement,user,_field
+,,0,2018-05-22T19:53:26Z,0,CPU,user1,f1
+,,0,2018-05-22T19:53:36Z,1,CPU,user1,f1
+,,1,2018-05-22T19:53:26Z,4,CPU,user2,f1
+,,1,2018-05-22T19:53:36Z,20,CPU,user2,f1
+,,1,2018-05-22T19:53:46Z,7,CPU,user2,f1
+,,2,2018-05-22T19:53:26Z,1,RAM,user1,f1
+"
 
 outData = "
-#datatype,string,long,dateTime:RFC3339,double,string,string
-#group,false,false,false,false,true,true
-#default,_result,,,,,
-,result,table,_time,_value,_measurement,user
-,,0,2018-05-22T19:53:26Z,0,CPU,user1
-,,0,2018-05-22T19:53:36Z,1,CPU,user1
-,,1,2018-05-22T19:53:26Z,1,RAM,user1
+#datatype,string,long,dateTime:RFC3339,double,string,string,string
+#group,false,false,false,false,true,true,true
+#default,_result,,,,,,
+,result,table,_time,_value,_measurement,user,_field
+,,0,2018-05-22T19:53:26Z,0,CPU,user1,f1
+,,0,2018-05-22T19:53:36Z,1,CPU,user1,f1
+,,1,2018-05-22T19:53:26Z,1,RAM,user1,f1
 "
 
 t_dynamic = (table=<-) => {

@@ -57,6 +57,7 @@ outData = "
 t_sample = (table=<-) =>
 	(table
 		|> sample(n: 3, pos: 1))
+		|> drop(columns: ["_start", "_stop"])
 
 test _sample = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sample})

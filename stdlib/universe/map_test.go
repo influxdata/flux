@@ -116,7 +116,6 @@ func TestMap_NewQuery(t *testing.T) {
 func TestMap_Process(t *testing.T) {
 	builtIns := runtime.Prelude()
 	testCases := []struct {
-		skip    string
 		name    string
 		spec    *universe.MapProcedureSpec
 		data    []flux.Table
@@ -937,9 +936,6 @@ f
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip != "" {
-				t.Skip(tc.skip)
-			}
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,

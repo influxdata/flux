@@ -47,5 +47,6 @@ t_map = (table=<-) =>
 				array: arr[0] + r._value,
 			})))
 
+
 test _map = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

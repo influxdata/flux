@@ -14,7 +14,7 @@ builtin basicAuth
 // replacing special characters (including /) with %XX sequences as needed.
 builtin pathEscape
 
-endpoint =  (url) =>
+endpoint = (url) =>
     (mapFn) =>
         (tables=<-) =>
             tables

@@ -7,6 +7,7 @@ builtin assertEmpty
 builtin diff
 
 option loadStorage = (csv) => c.from(csv: csv)
+    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)
     |> map(fn: (r) => ({r with
     _field: if exists r._field then r._field else die(msg: "test input table does not have _field column"),
     _measurement: if exists r._measurement then r._measurement else die(msg: "test input table does not have _measurement column"),
