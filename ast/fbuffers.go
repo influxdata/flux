@@ -367,16 +367,14 @@ func (e IndexExpression) FromBuf(buf *fbast.IndexExpression) *IndexExpression {
 
 func (e FunctionExpression) FromBuf(buf *fbast.FunctionExpression) *FunctionExpression {
 	e.BaseNode.FromBuf(buf.BaseNode(nil))
-	if buf.ParamsLength() > 0 {
-		e.Params = make([]*Property, buf.ParamsLength())
-		for i := 0; i < buf.ParamsLength(); i++ {
-			fbp := new(fbast.Property)
-			if !buf.Params(fbp, i) {
-				e.BaseNode.Errors = append(e.BaseNode.Errors,
-					Error{fmt.Sprintf("Encountered error in deserializing FunctionExpression.Params[%d]", i)})
-			} else {
-				e.Params[i] = Property{}.FromBuf(fbp)
-			}
+	e.Params = make([]*Property, 0, buf.ParamsLength())
+	for i := 0; i < buf.ParamsLength(); i++ {
+		fbp := new(fbast.Property)
+		if !buf.Params(fbp, i) {
+			e.BaseNode.Errors = append(e.BaseNode.Errors,
+				Error{fmt.Sprintf("Encountered error in deserializing FunctionExpression.Params[%d]", i)})
+		} else {
+			e.Params = append(e.Params, Property{}.FromBuf(fbp))
 		}
 	}
 	t := new(flatbuffers.Table)
