@@ -5,12 +5,14 @@ import (
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 )
 
 // Operation denotes a single operation in a query.
 type Operation struct {
-	ID   OperationID   `json:"id"`
-	Spec OperationSpec `json:"spec"`
+	ID     OperationID     `json:"id"`
+	Spec   OperationSpec   `json:"spec"`
+	Source OperationSource `json:"source"`
 }
 
 func (o *Operation) UnmarshalJSON(data []byte) error {
@@ -69,6 +71,12 @@ type NewOperationSpec func() OperationSpec
 type OperationSpec interface {
 	// Kind returns the kind of the operation.
 	Kind() OperationKind
+}
+
+// OperationSource specifies the source location that created
+// an operation.
+type OperationSource struct {
+	Stack []interpreter.StackEntry `json:"stack"`
 }
 
 // OperationID is a unique ID within a query for the operation.

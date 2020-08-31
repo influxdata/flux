@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"math"
+
+	"github.com/influxdata/flux/interpreter"
 )
 
 // PhysicalPlanner performs transforms a logical plan to a physical plan,
@@ -179,6 +181,7 @@ func (physicalConverterRule) Rewrite(ctx context.Context, pn Node) (Node, bool, 
 		bounds: ln.bounds,
 		id:     ln.id,
 		Spec:   pspec,
+		Source: ln.Source,
 	}
 
 	ReplaceNode(pn, &newNode)
@@ -197,8 +200,9 @@ type PhysicalProcedureSpec interface {
 type PhysicalPlanNode struct {
 	edges
 	bounds
-	id   NodeID
-	Spec PhysicalProcedureSpec
+	id     NodeID
+	Spec   PhysicalProcedureSpec
+	Source []interpreter.StackEntry
 
 	// The trigger spec defines how and when a transformation
 	// sends its tables to downstream operators
@@ -234,6 +238,10 @@ func (ppn *PhysicalPlanNode) ReplaceSpec(newSpec ProcedureSpec) error {
 // Kind returns the procedure kind for this plan node.
 func (ppn *PhysicalPlanNode) Kind() ProcedureKind {
 	return ppn.Spec.Kind()
+}
+
+func (ppn *PhysicalPlanNode) CallStack() []interpreter.StackEntry {
+	return ppn.Source
 }
 
 func (ppn *PhysicalPlanNode) ShallowCopy() Node {

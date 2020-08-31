@@ -2,11 +2,16 @@ package execute
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"sync"
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -22,6 +27,7 @@ type consecutiveTransport struct {
 
 	t        Transformation
 	messages MessageQueue
+	stack    []interpreter.StackEntry
 
 	finished chan struct{}
 	errMu    sync.Mutex
@@ -31,18 +37,45 @@ type consecutiveTransport struct {
 	inflight       int32
 }
 
-func newConsecutiveTransport(dispatcher Dispatcher, t Transformation) *consecutiveTransport {
+func newConsecutiveTransport(dispatcher Dispatcher, t Transformation, n plan.Node) *consecutiveTransport {
 	return &consecutiveTransport{
 		dispatcher: dispatcher,
 		t:          t,
 		// TODO(nathanielc): Have planner specify message queue initial buffer size.
 		messages: newMessageQueue(64),
+		stack:    n.CallStack(),
 		finished: make(chan struct{}),
 	}
 }
 
+func (t *consecutiveTransport) sourceInfo() string {
+	if len(t.stack) == 0 {
+		return ""
+	}
+
+	// Learn the filename from the bottom of the stack.
+	// We want the top most entry (deepest in the stack)
+	// from the primary file. We can retrieve the filename
+	// for the primary file by looking at the bottom of the
+	// stack and then finding the top-most entry with that
+	// filename.
+	filename := t.stack[len(t.stack)-1].Location.File
+	for i := 0; i < len(t.stack); i++ {
+		entry := t.stack[i]
+		if entry.Location.File == filename {
+			return fmt.Sprintf("@%s: %s", entry.Location, entry.FunctionName)
+		}
+	}
+	entry := t.stack[0]
+	return fmt.Sprintf("@%s: %s", entry.Location, entry.FunctionName)
+}
 func (t *consecutiveTransport) setErr(err error) {
 	t.errMu.Lock()
+	msg := "runtime error"
+	if srcInfo := t.sourceInfo(); srcInfo != "" {
+		msg += " " + srcInfo
+	}
+	err = errors.Wrap(err, codes.Inherit, msg)
 	t.errValue = err
 	t.errMu.Unlock()
 }
@@ -164,7 +197,7 @@ PROCESS:
 			if t.tryTransition(running, finished) {
 				// Call Finish if we have not already
 				if !f {
-					t.t.Finish(m.SrcDatasetID(), err)
+					t.t.Finish(m.SrcDatasetID(), t.err())
 				}
 				// We are finished
 				close(t.finished)
