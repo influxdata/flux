@@ -251,6 +251,7 @@ func (es *executionState) do(ctx context.Context) {
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
+			ctx := ctx
 			if flux.IsExperimentalTracingEnabled(ctx) {
 				span, ctxWithSpan := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(src).String())
 				ctx = ctxWithSpan
