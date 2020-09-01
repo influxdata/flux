@@ -2,14 +2,15 @@ package interpreter_test
 
 import (
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/repl"
 	"github.com/influxdata/flux/runtime"
@@ -32,10 +33,11 @@ sideEffect = () => 0 |> testutil.yield()
 
 // TestEval tests whether a program can run to completion or not
 func TestEval(t *testing.T) {
+	any := `.+`
 	testCases := []struct {
 		name    string
 		query   string
-		wantErr bool
+		wantErr string
 		want    []values.Value
 	}{
 		{
@@ -53,14 +55,14 @@ func TestEval(t *testing.T) {
 			query: `
 				r = makeRecord(o: {a: "foo", b: 42})
 				"r._value = ${r._value}"`,
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name: "string interpolation field has wrong type",
 			query: `
 				r = makeRecord(o: {a: "foo", b: 42})
 				"r._value = ${r.b}"`,
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name:  "call builtin function",
@@ -72,12 +74,12 @@ func TestEval(t *testing.T) {
 		{
 			name:    "call function with fail",
 			query:   "fail()",
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name:    "call function with duplicate args",
 			query:   "plusOne(x:1.0, x:2.0)",
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name: "binary expressions",
@@ -279,7 +281,7 @@ func TestEval(t *testing.T) {
 				i = -1
 				x = a[i]
 			`,
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name: "array index expression out of bounds high",
@@ -288,7 +290,7 @@ func TestEval(t *testing.T) {
 				i = 3 
 				x = a[i]
 			`,
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name: "array with complex index expression",
@@ -326,14 +328,14 @@ func TestEval(t *testing.T) {
 			query: `
                 true and fail()
             `,
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name: "no short circuit logical or",
 			query: `
                 false or fail()
             `,
-			wantErr: true,
+			wantErr: any,
 		},
 		{
 			name: "conditional true",
@@ -383,6 +385,19 @@ func TestEval(t *testing.T) {
 				values.NewBool(false),
 			},
 		},
+		{
+			name:    "invalid function parameter",
+			query:   `from(bucket: "telegraf") |> window(every: 0s)`,
+			wantErr: `error calling function "window" @\d+:\d+-\d+:\d+: parameter "every" must be nonzero`,
+		},
+		{
+			// tests that we don't nest error messages when
+			// a function call fails and gets piped into another
+			// function.
+			name:    "nested function error",
+			query:   `from(bucket: "telegraf") |> window(every: 0s) |> mean()`,
+			wantErr: `error calling function "window" @\d+:\d+-\d+:\d+: parameter "every" must be nonzero`,
+		},
 	}
 
 	for _, tc := range testCases {
@@ -393,18 +408,22 @@ func TestEval(t *testing.T) {
 			ctx := dependenciestest.Default().Inject(context.Background())
 			sideEffects, _, err := runtime.Eval(ctx, src)
 			if err != nil {
-				if !tc.wantErr {
-					t.Fatal(err)
+				if tc.wantErr == "" {
+					t.Fatalf("unexpected error: %s", err)
 				}
 
 				// We expect an error, so it should be a non-internal Flux error.
-				fluxErr, ok := err.(*errors.Error)
-				if !ok {
-					t.Fatalf("expected error of type %T, got %T", fluxErr, err)
-				} else if fluxErr.Code == codes.Internal {
-					t.Fatalf("expected error to have code other than %s", codes.Internal)
+				if code := flux.ErrorCode(err); code == codes.Internal || code == codes.Unknown {
+					t.Errorf("expected non-internal error code, got %s", code)
+				}
+
+				re := regexp.MustCompile(tc.wantErr)
+				if got := err.Error(); !re.MatchString(got) {
+					t.Errorf("expected error to match pattern %q, but error was %q", tc.wantErr, got)
 				}
 				return
+			} else if tc.wantErr != "" {
+				t.Fatal("expected error")
 			}
 
 			vs := getSideEffectsValues(sideEffects)
@@ -666,4 +685,44 @@ func getSideEffectsValues(ses []interpreter.SideEffect) []values.Value {
 		vs[i] = se.Value
 	}
 	return vs
+}
+
+func TestStack(t *testing.T) {
+	src := `from(bucket: "telegraf") |> range(start: -5m) |> aggregateWindow(every: 1m, fn: mean)`
+	ctx := dependenciestest.Default().Inject(context.Background())
+	sideEffects, _, err := runtime.Eval(ctx, src)
+	if err != nil {
+		t.Fatal(err)
+	} else if len(sideEffects) != 1 {
+		t.Fatalf("expected 1 side effect, got %d", len(sideEffects))
+	}
+
+	to, ok := sideEffects[0].Value.(*flux.TableObject)
+	if !ok {
+		t.Fatal("expected side effect to be a table object")
+	}
+
+	want := []interpreter.StackEntry{
+		{
+			FunctionName: "window",
+			Location: ast.SourceLocation{
+				File:   "universe.flux",
+				Start:  ast.Position{Line: 119, Column: 12},
+				End:    ast.Position{Line: 119, Column: 49},
+				Source: `window(every:inf, timeColumn:timeDst)`,
+			},
+		},
+		{
+			FunctionName: "aggregateWindow",
+			Location: ast.SourceLocation{
+				Start:  ast.Position{Line: 1, Column: 50},
+				End:    ast.Position{Line: 1, Column: 86},
+				Source: `aggregateWindow(every: 1m, fn: mean)`,
+			},
+		},
+	}
+	got := to.Source.Stack
+	if !cmp.Equal(want, got) {
+		t.Fatalf("unexpected stack -want/+got:\n%s", cmp.Diff(want, got))
+	}
 }

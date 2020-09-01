@@ -288,12 +288,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		}
 		return value, nil
 	case *semantic.CallExpression:
-		v, err := itrp.doCall(ctx, e, scope)
-		if err != nil {
-			// Determine function name
-			return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q", functionName(e))
-		}
-		return v, nil
+		return itrp.doCall(ctx, e, scope)
 	case *semantic.MemberExpression:
 		obj, err := itrp.doExpression(ctx, e.Object, scope)
 		if err != nil {
@@ -595,7 +590,7 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	}
 	ft := callee.Type()
 	if ft.Nature() != semantic.Function {
-		return nil, errors.Newf(codes.Invalid, "cannot call function, value is of type %v", callee.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot call function: %s: value is of type %v", call.Callee.Location(), callee.Type())
 	}
 	argObj, err := itrp.doArguments(ctx, call.Arguments, scope, ft, call.Pipe)
 	if err != nil {
@@ -612,10 +607,16 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 		f = af
 	}
 
-	// Call the function
+	// Call the function. We attach source location information
+	// to this call so it can be available for the function if needed.
+	// We do not attach this source location information when evaluating
+	// arguments as this source location information is only
+	// for the currently called function.
+	fname := functionName(call)
+	ctx = withStackEntry(ctx, fname, call.Location())
 	value, err := f.Call(ctx, argObj)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
 	}
 
 	if f.HasSideEffect() {
@@ -1464,4 +1465,54 @@ func (a *arguments) listUnused() []string {
 		})
 	}
 	return unused
+}
+
+type contextKey int
+
+const (
+	callStackKey contextKey = iota
+)
+
+// StackEntry describes a single entry in the call stack.
+type StackEntry struct {
+	FunctionName string
+	Location     ast.SourceLocation
+}
+
+// stackElement describes a single entry in the call stack.
+type stackElement struct {
+	parent *stackElement
+	entry  StackEntry
+	depth  int
+}
+
+// Stack retrieves the call stack for a given context.
+func Stack(ctx context.Context) []StackEntry {
+	e, ok := ctx.Value(callStackKey).(*stackElement)
+	if !ok {
+		return nil
+	}
+
+	stack := make([]StackEntry, 0, e.depth+1)
+	for e != nil {
+		stack = append(stack, e.entry)
+		e = e.parent
+	}
+	return stack
+}
+
+// withStackEntry will attach StackEntry information
+// to the context to be retrieved by Stack.
+func withStackEntry(ctx context.Context, name string, loc ast.SourceLocation) context.Context {
+	stack := &stackElement{
+		entry: StackEntry{
+			FunctionName: name,
+			Location:     loc,
+		},
+	}
+	if parent := ctx.Value(callStackKey); parent != nil {
+		stack.parent = parent.(*stackElement)
+		stack.depth = stack.parent.depth + 1
+	}
+	return context.WithValue(ctx, callStackKey, stack)
 }
