@@ -47,15 +47,15 @@ func (e *Error) Unwrap() error {
 	return e.Err
 }
 
-func New(code codes.Code, msg ...interface{}) error {
+func New(code codes.Code, msg ...interface{}) *Error {
 	return Wrap(nil, code, msg...)
 }
 
-func Newf(code codes.Code, fmtStr string, args ...interface{}) error {
+func Newf(code codes.Code, fmtStr string, args ...interface{}) *Error {
 	return Wrapf(nil, code, fmtStr, args...)
 }
 
-func Wrap(err error, code codes.Code, msg ...interface{}) error {
+func Wrap(err error, code codes.Code, msg ...interface{}) *Error {
 	var s string
 	if len(msg) > 0 {
 		s = fmt.Sprint(msg...)
@@ -67,7 +67,7 @@ func Wrap(err error, code codes.Code, msg ...interface{}) error {
 	}
 }
 
-func Wrapf(err error, code codes.Code, format string, a ...interface{}) error {
+func Wrapf(err error, code codes.Code, format string, a ...interface{}) *Error {
 	return &Error{
 		Code: code,
 		Msg:  fmt.Sprintf(format, a...),
@@ -119,4 +119,27 @@ func DocURL(err error) string {
 			return ""
 		}
 	}
+}
+
+// WithDocURL will annotate an error with a DocURL.
+// If the error is an Error and the DocURL is not filled,
+// it will be set. If the error is not an Error or the DocURL
+// is filled, it will wrap the error and set the DocURL
+// on the wrapper error.
+func WithDocURL(err error, docURL string) *Error {
+	if e, ok := err.(*Error); ok && e.DocURL == "" {
+		e.DocURL = docURL
+		return e
+	}
+	return &Error{
+		Code:   codes.Inherit,
+		DocURL: docURL,
+		Err:    err,
+	}
+}
+
+// WithDocURL can be used to add a documentation URL to the error.
+func (e *Error) WithDocURL(docURL string) *Error {
+	e.DocURL = docURL
+	return e
 }

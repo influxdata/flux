@@ -49,6 +49,16 @@ func TestWindow_NewQuery(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:    "negative every window",
+			Raw:     `from(bucket:"mybucket") |> window(every:-1h)`,
+			WantErr: true,
+		},
+		{
+			Name:    "zero every window",
+			Raw:     `from(bucket:"mybucket") |> window(every:0s)`,
+			WantErr: true,
+		},
 	}
 	for _, tc := range tests {
 		tc := tc

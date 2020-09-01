@@ -88,6 +88,7 @@ type TableObject struct {
 	args    Arguments
 	Kind    OperationKind
 	Spec    OperationSpec
+	Source  OperationSource
 	Parents []*TableObject
 }
 
@@ -97,8 +98,9 @@ func (t *TableObject) Operation(ider IDer) *Operation {
 	}
 
 	return &Operation{
-		ID:   ider.ID(t),
-		Spec: t.Spec,
+		ID:     ider.ID(t),
+		Spec:   t.Spec,
+		Source: t.Source,
 	}
 }
 func (t *TableObject) IsNull() bool {
@@ -290,10 +292,10 @@ func (f *function) HasSideEffect() bool {
 }
 
 func (f *function) Call(ctx context.Context, args values.Object) (values.Value, error) {
-	return interpreter.DoFunctionCall(f.call, args)
+	return interpreter.DoFunctionCallContext(f.call, ctx, args)
 }
 
-func (f *function) call(args interpreter.Arguments) (values.Value, error) {
+func (f *function) call(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
 	returnType, err := f.t.ReturnType()
 	if err != nil {
 		return nil, err
@@ -306,11 +308,15 @@ func (f *function) call(args interpreter.Arguments) (values.Value, error) {
 		return nil, err
 	}
 
+	stack := interpreter.Stack(ctx)
 	t := &TableObject{
-		t:       returnType,
-		args:    arguments,
-		Kind:    spec.Kind(),
-		Spec:    spec,
+		t:    returnType,
+		args: arguments,
+		Kind: spec.Kind(),
+		Spec: spec,
+		Source: OperationSource{
+			Stack: stack,
+		},
 		Parents: a.parents,
 	}
 	return t, nil

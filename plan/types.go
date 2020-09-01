@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/interpreter"
 )
 
 type Planner interface {
@@ -36,6 +37,12 @@ type Node interface {
 
 	// Kind returns the type of procedure represented by this node.
 	Kind() ProcedureKind
+
+	// CallStack returns the list of StackEntry values that created this
+	// Node. A Node may have no associated call stack. This happens
+	// when a Node is constructed from a planner rule and not from a
+	// source location.
+	CallStack() []interpreter.StackEntry
 
 	// Helper methods for manipulating a plan
 	// These methods are used during planning
