@@ -385,6 +385,55 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 	}
 }
 
+func TestWindow_StartStop(t *testing.T) {
+	testcases := []struct {
+		name      string
+		every     values.Duration
+		offset    values.Duration
+		timestamp values.Time
+		wantStart values.Time
+		wantStop  values.Time
+	}{
+		{
+			name:      "one second",
+			every:     values.CreateDuration(1, 1000000000, false),
+			offset:    values.CreateDuration(1, 1000000000, false),
+			timestamp: values.Time(34214401000000000),
+			wantStart: values.Time(34214401000000000),
+			wantStop:  values.Time(34214402000000000),
+		},
+		{
+			name:      "one thousand seconds",
+			every:     values.CreateDuration(1, 1000000000000, false),
+			offset:    values.CreateDuration(1, 1000000000000, false),
+			timestamp: values.Time(35214401000000000),
+			wantStart: values.Time(35214000000000000),
+			wantStop:  values.Time(35215000000000000),
+		},
+		{
+			name:      "negative duration",
+			every:     values.CreateDuration(1, 10, true),
+			offset:    values.CreateDuration(0, 0, true),
+			timestamp: values.Time(1000),
+			wantStart: values.Time(1000),
+			wantStop:  values.Time(1010),
+		},
+	}
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := execute.WindowStart(tc.timestamp, tc.every, tc.offset)
+			if !cmp.Equal(tc.wantStart, got) {
+				t.Errorf("got unexpected window start; -want/+got:\n%v\n", cmp.Diff(tc.wantStart, got))
+			}
+
+			got = execute.WindowStop(tc.timestamp, tc.every, tc.offset)
+			if !cmp.Equal(tc.wantStop, got) {
+				t.Errorf("got unexpected window stop; -want/+got:\n%v\n", cmp.Diff(tc.wantStop, got))
+			}
+		})
+	}
+}
+
 func MustWindow(every, period, offset execute.Duration) execute.Window {
 	w, err := execute.NewWindow(every, period, offset)
 	if err != nil {

@@ -8,6 +8,10 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+const (
+	monthInNSecs = 2592000000000000
+)
+
 type Window struct {
 	Every  Duration
 	Period Duration
@@ -126,4 +130,75 @@ func truncateByMonths(t Time, d Duration) Time {
 	year, month = int(total/12), time.Month(total%12)+1
 	ts = time.Date(year, month, 1, 0, 0, 0, 0, time.UTC)
 	return values.ConvertTime(ts)
+}
+
+func WindowStart(timestamp Time, every, offset Duration) Time {
+	// separate month value from timestamp
+	_, m, _ := timestamp.Time().Date()
+	totalMonths := int64(m)
+
+	// calculate months for window start
+	modMonths := modulo(totalMonths, every.Months())
+	off := modulo(offset.Months(), every.Months())
+	months := calculateStart(totalMonths, every.Months(), modMonths, off)
+
+	// subtract the total months from the timestamp
+	nano := int64(timestamp) - (months * monthInNSecs)
+
+	// and calculate nanoseconds for window start
+	modNano := modulo(nano, every.Nanoseconds())
+	offsetNano := modulo(offset.Nanoseconds(), every.Nanoseconds())
+	nsecs := calculateStart(nano, every.Nanoseconds(), modNano, offsetNano)
+
+	// add the start months back to the start nanoseconds
+	return values.Time(nsecs + (months * monthInNSecs))
+}
+
+func WindowStop(timestamp Time, every, offset Duration) Time {
+	// separate month value from timestamp
+	_, m, _ := timestamp.Time().Date()
+	totalMonths := int64(m)
+
+	// calculate months for window start
+	modMonths := modulo(totalMonths, every.Months())
+	off := modulo(offset.Months(), every.Months())
+	months := calculateStop(totalMonths, every.Months(), modMonths, off)
+
+	// subtract the total months from the timestamp
+	nano := int64(timestamp) - (months * monthInNSecs)
+
+	// and calculate nanoseconds for window start
+	modNano := modulo(nano, every.Nanoseconds())
+	offsetNano := modulo(offset.Nanoseconds(), every.Nanoseconds())
+	nsecs := calculateStop(nano, every.Nanoseconds(), modNano, offsetNano)
+
+	// add the start months back to the start nanoseconds
+	return values.Time(nsecs + (months * monthInNSecs))
+}
+
+func calculateStart(total, every, mod, off int64) int64 {
+	beg := total - mod + off
+	if mod < off {
+		beg -= every
+	}
+	return beg
+}
+
+func calculateStop(total, every, mod, off int64) int64 {
+	end := total - mod + off
+	if mod >= off {
+		end += every
+	}
+	return end
+}
+
+func modulo(dividend, modulus int64) int64 {
+	if dividend == 0 || modulus == 0 {
+		return 0
+	}
+	r := dividend % modulus
+	if r < 0 {
+		r += modulus
+	}
+	return r
 }

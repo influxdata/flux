@@ -32,6 +32,14 @@ const (
 	fixedWidthTimeFmt = "2006-01-02T15:04:05.000000000Z"
 )
 
+func CreateDuration(months int64, nsecs int64, negative bool) Duration {
+	return Duration{
+		months,
+		nsecs,
+		negative,
+	}
+}
+
 func ConvertTime(t time.Time) Time {
 	return Time(t.UnixNano())
 }
