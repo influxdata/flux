@@ -458,7 +458,7 @@ func (p *AstProgram) updateProfilers(scope values.Scope) error {
 	dedupeMap := make(map[string]bool)
 	p.Profilers = make([]execute.Profiler, 0)
 	for _, profilerName := range profilerNames {
-		if profiler, exists := execute.AllProfilers[profilerName]; !exists {
+		if createProfilerFn, exists := execute.AllProfilers[profilerName]; !exists {
 			// profiler does not exist
 			continue
 		} else {
@@ -467,7 +467,7 @@ func (p *AstProgram) updateProfilers(scope values.Scope) error {
 				continue
 			}
 			dedupeMap[profilerName] = true
-			p.Profilers = append(p.Profilers, profiler)
+			p.Profilers = append(p.Profilers, createProfilerFn())
 		}
 	}
 	return nil
