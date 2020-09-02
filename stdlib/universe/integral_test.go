@@ -586,6 +586,99 @@ func TestIntegral_Process(t *testing.T) {
 			}},
 			wantErr: fmt.Errorf("integral function needs _start column to be part of group key"),
 		},
+		{
+			name: "single value interpolation",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            flux.ConvertDuration(1),
+				TimeColumn:      execute.DefaultTimeColLabel,
+				Interpolate:     true,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(10), execute.Time(2), 3.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(10), 30.0},
+				},
+			}},
+		},
+		{
+			name: "single value no interpolation",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            flux.ConvertDuration(1),
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(10), execute.Time(2), 3.0},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols: []string{"_start", "_stop"},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(10), 0.0},
+				},
+			}},
+		},
+		{
+			name: "no points",
+			spec: &universe.IntegralProcedureSpec{
+				Unit:            flux.ConvertDuration(1),
+				TimeColumn:      execute.DefaultTimeColLabel,
+				AggregateConfig: execute.DefaultAggregateConfig,
+			},
+			data: []flux.Table{&executetest.Table{
+				KeyCols:   []string{"_start", "_stop"},
+				KeyValues: []interface{}{execute.Time(0), execute.Time(10)},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+			}},
+			want: []*executetest.Table{{
+				KeyCols:   []string{"_start", "_stop"},
+				KeyValues: []interface{}{execute.Time(0), execute.Time(10)},
+				ColMeta: []flux.ColMeta{
+					{Label: "_start", Type: flux.TTime},
+					{Label: "_stop", Type: flux.TTime},
+					{Label: "_value", Type: flux.TFloat},
+				},
+				Data: [][]interface{}{
+					{execute.Time(0), execute.Time(10), 0.0},
+				},
+			}},
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
