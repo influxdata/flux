@@ -258,9 +258,24 @@ func (t *integralTransformation) Process(id execute.DatasetID, tbl flux.Table) e
 		if in == nil {
 			continue
 		}
-		in.interpolateStop()
-		if err := builder.AppendFloat(colMap[j], in.value()); err != nil {
-			return err
+		switch in.points {
+		case 0:
+			if err := builder.AppendFloat(colMap[j], 0.0); err != nil {
+				return err
+			}
+		case 1:
+			v := in.vs[0] * float64(in.bounds[1]-in.bounds[0])
+			if !in.interpolate {
+				v = 0
+			}
+			if err := builder.AppendFloat(colMap[j], v); err != nil {
+				return err
+			}
+		default:
+			in.interpolateStop()
+			if err := builder.AppendFloat(colMap[j], in.value()); err != nil {
+				return err
+			}
 		}
 	}
 
