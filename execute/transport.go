@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
 )
 
 type Transport interface {
@@ -232,10 +231,7 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
 		b := m.Table()
-		var span opentracing.Span
-		if flux.IsQueryTracingEnabled(ctx) {
-			span, _ = opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
-		}
+		span := StartSpanFromContext(ctx, reflect.TypeOf(t).String())
 		err = t.Process(m.SrcDatasetID(), b)
 		if span != nil {
 			span.Finish()

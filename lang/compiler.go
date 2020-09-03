@@ -274,8 +274,7 @@ type Program struct {
 	PlanSpec *plan.Spec
 	Runtime  flux.Runtime
 
-	opts      *compileOptions
-	Profilers []execute.Profiler
+	opts *compileOptions
 }
 
 func (p *Program) SetLogger(logger *zap.Logger) {
@@ -350,8 +349,10 @@ func (p *Program) readMetadata(q *query, metaCh <-chan metadata.Metadata) {
 type AstProgram struct {
 	*Program
 
-	Ast flux.ASTHandle
-	Now time.Time
+	Ast        flux.ASTHandle
+	Now        time.Time
+	Profilers  []execute.Profiler
+	tfProfiler *execute.TransformationProfiler
 }
 
 // Prepare the Ast for semantic analysis
@@ -437,6 +438,9 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 
 	// Execution.
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
+	if p.tfProfiler != nil {
+		cctx = context.WithValue(cctx, execute.TransformationProfilerContextKey, p.tfProfiler)
+	}
 	defer s.Finish()
 	return p.Program.Start(cctx, alloc)
 }
@@ -467,7 +471,11 @@ func (p *AstProgram) updateProfilers(scope values.Scope) error {
 				continue
 			}
 			dedupeMap[profilerName] = true
-			p.Profilers = append(p.Profilers, createProfilerFn())
+			profiler := createProfilerFn()
+			if tfp, ok := profiler.(*execute.TransformationProfiler); ok {
+				p.tfProfiler = tfp
+			}
+			p.Profilers = append(p.Profilers, profiler)
 		}
 	}
 	return nil

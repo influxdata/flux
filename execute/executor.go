@@ -15,7 +15,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -251,8 +250,7 @@ func (es *executionState) do(ctx context.Context) {
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
-			if flux.IsQueryTracingEnabled(ctx) {
-				span, _ := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(src).String())
+			if span := StartSpanFromContext(ctx, reflect.TypeOf(src).String()); span != nil {
 				defer span.Finish()
 			}
 			defer wg.Done()

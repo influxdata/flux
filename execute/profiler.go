@@ -1,6 +1,7 @@
 package execute
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -59,26 +60,36 @@ type TransformationProfilingSpan struct {
 	Duration time.Duration
 }
 
-func (t *TransformationProfilingSpan) finish() {
-	finish := time.Now()
-	t.Duration = finish.Sub(t.start)
+func (t *TransformationProfilingSpan) finish() time.Time {
+	finishTime := time.Now()
+	t.Duration = finishTime.Sub(t.start)
 	if t.profiler != nil && t.profiler.ch != nil {
 		t.profiler.ch <- TransformationProfilingResult{
 			Name:     t.Name,
 			Duration: t.Duration,
 		}
 	}
+	return finishTime
 }
 
 func (t *TransformationProfilingSpan) Finish() {
-	t.finish()
-	t.Span.Finish()
+	finishTime := t.finish()
+	if t.Span != nil {
+		t.Span.FinishWithOptions(opentracing.FinishOptions{
+			FinishTime: finishTime,
+		})
+	}
 }
 
 func (t *TransformationProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions) {
-	t.finish()
-	t.Span.FinishWithOptions(opts)
+	finishTime := t.finish()
+	opts.FinishTime = finishTime
+	if t.Span != nil {
+		t.Span.FinishWithOptions(opts)
+	}
 }
+
+const TransformationProfilerContextKey = "transformation-profiler"
 
 type TransformationProfiler struct {
 	results map[string]TransformationProfilingResult
@@ -154,6 +165,24 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 		return nil, err
 	}
 	return tbl, nil
+}
+
+func StartSpanFromContext(ctx context.Context, operationName string) opentracing.Span {
+	var span opentracing.Span
+	start := time.Now()
+	if flux.IsQueryTracingEnabled(ctx) {
+		span, _ = opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
+	}
+	if tfp, ok := ctx.Value(TransformationProfilerContextKey).(*TransformationProfiler); ok {
+		span = &TransformationProfilingSpan{
+			Span:     span,
+			profiler: tfp,
+			Name:     operationName,
+			start:    start,
+			Duration: 0,
+		}
+	}
+	return span
 }
 
 type QueryProfiler struct{}
