@@ -59,7 +59,7 @@ func TestRange_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from csv with range",
-			Raw:  `import "csv" csv.from(csv: "1,2") |> range(start:-4h, stop:-2h, timeColumn: "_start") |> sum()`,
+			Raw:  `import "csv" csv.from(csv: "1,2") |> range(start:-4h, stop:-2h) |> sum()`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -79,7 +79,7 @@ func TestRange_NewQuery(t *testing.T) {
 								Relative:   -2 * time.Hour,
 								IsRelative: true,
 							},
-							TimeColumn:  "_start",
+							TimeColumn:  "_time",
 							StartColumn: "_start",
 							StopColumn:  "_stop",
 						},
