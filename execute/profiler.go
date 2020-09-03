@@ -48,7 +48,7 @@ func (r *TransformationProfilingResult) Combine(o *TransformationProfilingResult
 		return errors.Newf(codes.Internal, "Cannot combine a TransformationProfilingResult for %s with another result for %s", r.Name, o.Name)
 	}
 	r.Duration = time.Duration(r.Duration.Nanoseconds() + o.Duration.Nanoseconds())
-	r.HitCount++
+	r.HitCount += o.HitCount
 	return nil
 }
 
@@ -67,6 +67,7 @@ func (t *TransformationProfilingSpan) finish() time.Time {
 		t.profiler.ch <- TransformationProfilingResult{
 			Name:     t.Name,
 			Duration: t.Duration,
+			HitCount: 1,
 		}
 	}
 	return finishTime
