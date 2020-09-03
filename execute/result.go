@@ -9,6 +9,7 @@ import (
 // result implements both the Transformation and Result interfaces,
 // mapping the pushed based Transformation API to the pull based Result interface.
 type result struct {
+	ExecutionNode
 	name string
 
 	mu     sync.Mutex

@@ -103,6 +103,7 @@ func createLimitTransformation(id execute.DatasetID, mode execute.AccumulationMo
 }
 
 type limitTransformation struct {
+	execute.ExecutionNode
 	d         *execute.PassthroughDataset
 	n, offset int
 }

@@ -58,6 +58,7 @@ func newAssertEmptyProcedure(qs flux.OperationSpec, pa plan.Administration) (pla
 }
 
 type AssertEmptyTransformation struct {
+	execute.ExecutionNode
 	failures int64
 
 	d     execute.Dataset

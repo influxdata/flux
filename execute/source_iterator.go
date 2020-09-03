@@ -31,6 +31,7 @@ func CreateSourceFromDecoder(decoder SourceDecoder, dsid DatasetID, a Administra
 }
 
 type sourceDecoder struct {
+	ExecutionNode
 	decoder SourceDecoder
 	id      DatasetID
 	ts      []Transformation

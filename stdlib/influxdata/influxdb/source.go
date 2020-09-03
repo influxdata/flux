@@ -36,6 +36,7 @@ type RemoteProcedureSpec interface {
 }
 
 type source struct {
+	execute.ExecutionNode
 	id   execute.DatasetID
 	spec RemoteProcedureSpec
 	deps flux.Dependencies

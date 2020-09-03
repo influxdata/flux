@@ -104,6 +104,7 @@ func newDiffProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proce
 }
 
 type DiffTransformation struct {
+	execute.ExecutionNode
 	mu sync.Mutex
 
 	wantID, gotID execute.DatasetID

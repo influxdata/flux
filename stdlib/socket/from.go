@@ -182,6 +182,7 @@ func NewSocketSource(spec *FromSocketProcedureSpec, rc io.ReadCloser, tp line.Ti
 }
 
 type socketSource struct {
+	execute.ExecutionNode
 	d       execute.DatasetID
 	rc      io.ReadCloser
 	decoder flux.ResultDecoder

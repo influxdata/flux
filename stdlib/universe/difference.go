@@ -125,6 +125,7 @@ func createDifferenceTransformation(id execute.DatasetID, mode execute.Accumulat
 }
 
 type differenceTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

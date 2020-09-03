@@ -94,6 +94,7 @@ func createKeysTransformation(id execute.DatasetID, mode execute.AccumulationMod
 }
 
 type keysTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

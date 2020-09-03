@@ -120,6 +120,7 @@ func (s *CovarianceProcedureSpec) TriggerSpec() plan.TriggerSpec {
 }
 
 type CovarianceTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  CovarianceProcedureSpec

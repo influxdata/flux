@@ -112,6 +112,7 @@ func createHourSelectionTransformation(id execute.DatasetID, mode execute.Accumu
 }
 
 type hourSelectionTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

@@ -96,6 +96,7 @@ func createInstantRateTransformation(id execute.DatasetID, mode execute.Accumula
 }
 
 type instantRateTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

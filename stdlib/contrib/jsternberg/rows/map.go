@@ -93,6 +93,7 @@ func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode
 }
 
 type mapTransformation struct {
+	execute.ExecutionNode
 	d   *execute.PassthroughDataset
 	ctx context.Context
 	fn  *execute.RowMapFn

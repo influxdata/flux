@@ -179,6 +179,7 @@ func createFillTransformation(id execute.DatasetID, mode execute.AccumulationMod
 }
 
 type fillTransformation struct {
+	execute.ExecutionNode
 	d     *execute.PassthroughDataset
 	ctx   context.Context
 	spec  *FillProcedureSpec

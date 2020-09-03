@@ -232,7 +232,9 @@ func TestFromCSV_RunCancel(t *testing.T) {
 	}
 }
 
-type noopTransformation struct{}
+type noopTransformation struct{
+	execute.ExecutionNode
+}
 
 func (n noopTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error { return nil }
 func (n noopTransformation) Process(id execute.DatasetID, tbl flux.Table) error         { return nil }

@@ -99,6 +99,7 @@ func createTailTransformation(id execute.DatasetID, mode execute.AccumulationMod
 }
 
 type tailTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

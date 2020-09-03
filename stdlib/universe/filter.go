@@ -140,6 +140,7 @@ func (s *FilterProcedureSpec) PlanDetails() string {
 }
 
 type filterTransformation struct {
+	execute.ExecutionNode
 	d               *execute.PassthroughDataset
 	ctx             context.Context
 	fn              *execute.RowPredicateFn

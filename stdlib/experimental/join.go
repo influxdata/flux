@@ -131,6 +131,7 @@ func createMergeJoinTransformation(id execute.DatasetID, mode execute.Accumulati
 }
 
 type mergeJoinTransformation struct {
+	execute.ExecutionNode
 	mu    sync.Mutex
 	d     execute.Dataset
 	cache *mergeJoinCache

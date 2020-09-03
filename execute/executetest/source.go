@@ -113,6 +113,7 @@ func CreateFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.A
 // AllocatingFromProcedureSpec is a procedure spec AND an execution node
 // that allocates ByteCount bytes during execution.
 type AllocatingFromProcedureSpec struct {
+	execute.ExecutionNode
 	ByteCount int
 
 	id    execute.DatasetID

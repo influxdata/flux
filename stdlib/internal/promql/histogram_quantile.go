@@ -111,6 +111,7 @@ func (s *HistogramQuantileProcedureSpec) Copy() plan.ProcedureSpec {
 }
 
 type histogramQuantileTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

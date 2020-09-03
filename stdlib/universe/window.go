@@ -210,6 +210,7 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 type fixedWindowTransformation struct {
+	execute.ExecutionNode
 	d         execute.Dataset
 	cache     execute.TableBuilderCache
 	w         execute.Window

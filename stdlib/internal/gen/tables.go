@@ -153,6 +153,7 @@ func createTablesSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a exe
 }
 
 type Source struct {
+	execute.ExecutionNode
 	id execute.DatasetID
 	ts []execute.Transformation
 

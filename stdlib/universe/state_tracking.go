@@ -148,6 +148,7 @@ func createStateTrackingTransformation(id execute.DatasetID, mode execute.Accumu
 }
 
 type stateTrackingTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

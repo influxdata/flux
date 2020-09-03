@@ -185,6 +185,7 @@ type rowCol struct {
 }
 
 type pivotTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  PivotProcedureSpec
@@ -424,6 +425,7 @@ func (t *pivotTransformation) Finish(id execute.DatasetID, err error) {
 // and it can only be used if the row key is sorted without
 // null values.
 type pivotTransformation2 struct {
+	execute.ExecutionNode
 	d      *execute.PassthroughDataset
 	ctx    context.Context
 	alloc  *memory.Allocator

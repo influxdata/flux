@@ -103,6 +103,7 @@ func createLinearRegressionTransformation(id execute.DatasetID, mode execute.Acc
 }
 
 type linearRegressionTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

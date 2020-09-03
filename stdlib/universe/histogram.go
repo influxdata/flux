@@ -133,6 +133,7 @@ func createHistogramTransformation(id execute.DatasetID, mode execute.Accumulati
 }
 
 type histogramTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

@@ -254,6 +254,7 @@ func createToMQTTTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 type ToMQTTTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  *ToMQTTProcedureSpec

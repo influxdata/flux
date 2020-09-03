@@ -65,6 +65,7 @@ func newDedupKeyProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.P
 }
 
 type DedupKeyTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 }

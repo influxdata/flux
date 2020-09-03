@@ -115,6 +115,7 @@ func createRelativeStrengthIndexTransformation(id execute.DatasetID, mode execut
 }
 
 type relativeStrengthIndexTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

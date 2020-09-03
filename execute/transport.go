@@ -223,6 +223,14 @@ PROCESS:
 	}
 }
 
+func (t *consecutiveTransport) Label() string {
+	return t.t.Label()
+}
+
+func (t *consecutiveTransport) SetLabel(label string) {
+	t.t.SetLabel(label)
+}
+
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
 func processMessage(ctx context.Context, t Transformation, m Message) (finished bool, err error) {

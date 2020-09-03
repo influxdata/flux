@@ -80,6 +80,7 @@ func newUnionProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Proc
 }
 
 type unionTransformation struct {
+	execute.ExecutionNode
 	mu sync.Mutex
 
 	parentState map[execute.DatasetID]*unionParentState

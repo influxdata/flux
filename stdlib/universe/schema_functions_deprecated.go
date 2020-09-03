@@ -11,6 +11,7 @@ import (
 )
 
 type deprecatedSchemaMutationTransformation struct {
+	execute.ExecutionNode
 	d        execute.Dataset
 	cache    execute.TableBuilderCache
 	ctx      context.Context

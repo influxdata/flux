@@ -95,6 +95,7 @@ func createDistinctTransformation(id execute.DatasetID, mode execute.Accumulatio
 }
 
 type distinctTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

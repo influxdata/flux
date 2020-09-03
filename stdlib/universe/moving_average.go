@@ -94,6 +94,7 @@ func createMovingAverageTransformation(id execute.DatasetID, mode execute.Accumu
 }
 
 type movingAverageTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

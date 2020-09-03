@@ -71,6 +71,7 @@ func createTimestampTransformation(id execute.DatasetID, mode execute.Accumulati
 }
 
 type timestampTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 }

@@ -111,6 +111,7 @@ func createReduceTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 type reduceTransformation struct {
+	execute.ExecutionNode
 	d        execute.Dataset
 	cache    execute.TableBuilderCache
 	ctx      context.Context

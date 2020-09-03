@@ -74,6 +74,7 @@ func createPassTransformation(id execute.DatasetID, mode execute.AccumulationMod
 }
 
 type passTransformation struct {
+	execute.ExecutionNode
 	d *execute.PassthroughDataset
 }
 

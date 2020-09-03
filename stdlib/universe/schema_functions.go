@@ -418,6 +418,7 @@ func newSchemaMutationProcedure(qs flux.OperationSpec, pa plan.Administration) (
 }
 
 type schemaMutationTransformation struct {
+	execute.ExecutionNode
 	d        execute.Dataset
 	cache    table.BuilderCache
 	ctx      context.Context

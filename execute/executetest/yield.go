@@ -31,6 +31,7 @@ func (y YieldProcedureSpec) YieldName() string {
 
 // yieldTransformation copies the table as it is.
 type yieldTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 }

@@ -94,6 +94,7 @@ func createSetTransformation(id execute.DatasetID, mode execute.AccumulationMode
 }
 
 type setTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

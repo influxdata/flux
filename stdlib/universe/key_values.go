@@ -108,6 +108,7 @@ func (s *KeyValuesProcedureSpec) TriggerSpec() plan.TriggerSpec {
 }
 
 type keyValuesTransformation struct {
+	execute.ExecutionNode
 	d        execute.Dataset
 	cache    execute.TableBuilderCache
 	spec     *KeyValuesProcedureSpec

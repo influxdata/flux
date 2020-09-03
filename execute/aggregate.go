@@ -10,6 +10,7 @@ import (
 )
 
 type aggregateTransformation struct {
+	ExecutionNode
 	d     Dataset
 	cache TableBuilderCache
 	agg   Aggregate

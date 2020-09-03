@@ -102,6 +102,7 @@ func createTripleExponentialDerivativeTransformation(id execute.DatasetID, mode 
 }
 
 type tripleExponentialDerivativeTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	alloc *memory.Allocator
