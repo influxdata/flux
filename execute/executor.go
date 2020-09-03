@@ -251,7 +251,7 @@ func (es *executionState) do(ctx context.Context) {
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
-			if flux.IsExperimentalTracingEnabled(ctx) {
+			if flux.IsQueryTracingEnabled(ctx) {
 				span, _ := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(src).String())
 				defer span.Finish()
 			}

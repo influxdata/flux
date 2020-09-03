@@ -798,11 +798,11 @@ func TestQueryTracing(t *testing.T) {
 	opentracing.SetGlobalTracer(mockTracer)
 
 	plainCtx := context.Background()
-	for _, ctx := range []context.Context{flux.WithExperimentalTracingEnabled(plainCtx), plainCtx} {
+	for _, ctx := range []context.Context{flux.WithQueryTracingEnabled(plainCtx), plainCtx} {
 		// Clear spans from previous run
 		mockTracer.Reset()
 		var name string
-		if flux.IsExperimentalTracingEnabled(ctx) {
+		if flux.IsQueryTracingEnabled(ctx) {
 			name = "tracing enabled"
 		} else {
 			name = "tracing disabled"
@@ -851,7 +851,7 @@ func TestQueryTracing(t *testing.T) {
 			}
 			for _, wantOp := range wantOps {
 				_, ok := gotOps[wantOp]
-				if flux.IsExperimentalTracingEnabled(ctx) {
+				if flux.IsQueryTracingEnabled(ctx) {
 					if !ok {
 						t.Errorf("expected to find span %q but it wasn't there", wantOp)
 					}
