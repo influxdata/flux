@@ -92,7 +92,12 @@ func (t *TransformationProfilingSpan) FinishWithOptions(opts opentracing.FinishO
 const TransformationProfilerContextKey = "transformation-profiler"
 
 type TransformationProfiler struct {
+	// Result aggregated by the transformation/data source name.
+	// Those names are actually their operation name. See flux/internal/spec.buildSpec.
+	// Some examples are:
+	// merged_fromRemote_range1_filter2_filter3_filter4, window5, window8, generated_yield, etc.
 	results map[string]TransformationProfilingResult
+	// Receive the profiling results from the spans.
 	ch      chan TransformationProfilingResult
 }
 
@@ -104,6 +109,7 @@ func createTransformationProfiler() Profiler {
 	go func(p *TransformationProfiler) {
 		for result := range p.ch {
 			if existingResult, exists := p.results[result.Name]; exists {
+				// Aggregate the results by name
 				existingResult.Combine(&result)
 			} else {
 				p.results[result.Name] = result
@@ -147,6 +153,10 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 			Label: "Duration",
 			Type:  flux.TInt,
 		},
+		{
+			Label: "HitCount",
+			Type:  flux.TInt,
+		},
 	}
 	for _, col := range colMeta {
 		if _, err := b.AddCol(col); err != nil {
@@ -158,6 +168,7 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 			b.AppendString(0, "profiler/transformation")
 			b.AppendString(1, result.Name)
 			b.AppendInt(2, result.Duration.Nanoseconds())
+			b.AppendInt(3, result.HitCount)
 		}
 	}
 	tbl, err := b.Table()
@@ -167,6 +178,11 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 	return tbl, nil
 }
 
+// Create a tracing span.
+// Depending on whether the Jaeger tracing and/or the transformation profiling are enabled,
+// the Span produced by this function can be very different.
+// It could be a no-op span, a Jaeger span, a no-op span wrapped by a profiling span, or
+// a Jaeger span wrapped by a profiling span.
 func StartSpanFromContext(ctx context.Context, operationName string) opentracing.Span {
 	var span opentracing.Span
 	start := time.Now()
