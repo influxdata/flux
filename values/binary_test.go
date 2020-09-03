@@ -42,8 +42,8 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: "a", op: "+", rhs: "b", want: "ab"},
 		{lhs: "a", op: "+", rhs: stringNullValue, want: stringNullValue},
 		// duration + duration
-		{lhs: values.ConvertDuration(1), op: "+", rhs: values.ConvertDuration(2), want: values.ConvertDuration(3)},
-		{lhs: values.ConvertDuration(1), op: "+", rhs: durationNullValue, want: durationNullValue},
+		{lhs: values.ConvertDurationNsecs(1), op: "+", rhs: values.ConvertDurationNsecs(2), want: values.ConvertDurationNsecs(3)},
+		{lhs: values.ConvertDurationNsecs(1), op: "+", rhs: durationNullValue, want: durationNullValue},
 		// int - int
 		{lhs: int64(6), op: "-", rhs: int64(4), want: int64(2)},
 		{lhs: int64(6), op: "-", rhs: intNullValue, want: intNullValue},
@@ -54,8 +54,8 @@ func TestBinaryOperator(t *testing.T) {
 		{lhs: 4.5, op: "-", rhs: 8.0, want: -3.5},
 		{lhs: 4.5, op: "-", rhs: floatNullValue, want: floatNullValue},
 		// duration - duration
-		{lhs: values.ConvertDuration(5), op: "-", rhs: values.ConvertDuration(3), want: values.ConvertDuration(2)},
-		{lhs: values.ConvertDuration(5), op: "-", rhs: durationNullValue, want: durationNullValue},
+		{lhs: values.ConvertDurationNsecs(5), op: "-", rhs: values.ConvertDurationNsecs(3), want: values.ConvertDurationNsecs(2)},
+		{lhs: values.ConvertDurationNsecs(5), op: "-", rhs: durationNullValue, want: durationNullValue},
 		// int * int
 		{lhs: int64(6), op: "*", rhs: int64(4), want: int64(24)},
 		{lhs: int64(6), op: "*", rhs: intNullValue, want: intNullValue},

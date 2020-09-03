@@ -147,7 +147,7 @@ func Input(ctx context.Context, schema Schema) (flux.TableIterator, error) {
 
 	g := &dataGenerator{
 		Context:   ctx,
-		Period:    values.ConvertDuration(period),
+		Period:    values.ConvertDurationNsecs(period),
 		NumPoints: numPoints,
 		Nulls:     schema.Nulls,
 		Allocator: alloc,
