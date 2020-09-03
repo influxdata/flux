@@ -78,7 +78,7 @@ func (b Bounds) Shift(d Duration) Bounds {
 
 func (b Bounds) Duration() Duration {
 	if b.IsEmpty() {
-		return values.ConvertDuration(0)
+		return values.ConvertDurationNsecs(0)
 	}
 	return b.Stop.Sub(b.Start)
 }

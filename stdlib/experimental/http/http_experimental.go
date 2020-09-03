@@ -43,7 +43,7 @@ var get = values.NewFunction(
 		}
 
 		// http.NewDefaultClient() does default to 30
-		var theTimeout = values.ConvertDuration(30 * time.Second)
+		var theTimeout = values.ConvertDurationNsecs(30 * time.Second)
 		tv, ok := args.Get("timeout")
 		if !ok {
 			// default timeout
