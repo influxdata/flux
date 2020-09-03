@@ -629,14 +629,12 @@ pub fn builtins() -> Builtins<'static> {
                 //   https://github.com/influxdata/flux/issues/2243
                 // Also, we should remove the column arguments so we can reuse A in the return type:
                 //   https://github.com/influxdata/flux/issues/2253
+
                 "range" => r#"(
-                        <-tables: [A],
+                        <-tables: [{A with _time: time}],
                         start: B,
-                        ?stop: C,
-                        ?timeColumn: string,
-                        ?startColumn: string,
-                        ?stopColumn: string
-                    ) => [D] where A: Record, D: Record "#,
+                        ?stop: C
+                    ) => [{A with _time: time, _start: time, _stop: time}]"#,
                 // This function could be updated to get better type inference:
                 //   https://github.com/influxdata/flux/issues/2254
                 "reduce" => r#"(
