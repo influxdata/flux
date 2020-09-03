@@ -14,22 +14,22 @@ func TestTime_Round(t *testing.T) {
 	}{
 		{
 			ts:   Time(time.Second + 500*time.Millisecond),
-			d:    ConvertDuration(time.Second),
+			d:    ConvertDurationNsecs(time.Second),
 			want: Time(2 * time.Second),
 		},
 		{
 			ts:   Time(time.Second + 501*time.Millisecond),
-			d:    ConvertDuration(time.Second),
+			d:    ConvertDurationNsecs(time.Second),
 			want: Time(2 * time.Second),
 		},
 		{
 			ts:   Time(time.Second + 499*time.Millisecond),
-			d:    ConvertDuration(time.Second),
+			d:    ConvertDurationNsecs(time.Second),
 			want: Time(time.Second),
 		},
 		{
 			ts:   Time(time.Second + 0*time.Millisecond),
-			d:    ConvertDuration(time.Second),
+			d:    ConvertDurationNsecs(time.Second),
 			want: Time(time.Second),
 		},
 	} {

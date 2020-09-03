@@ -393,7 +393,7 @@ func init() {
 
 				if values.IsTimeable(v) && u.Type().Nature() == semantic.Duration {
 					if v.Type().Nature() == semantic.Time {
-						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{}, false)
 						if err != nil {
 							return nil, err
 						}
@@ -403,7 +403,7 @@ func init() {
 
 					if v.Type().Nature() == semantic.Duration {
 
-						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{})
+						w, err := execute.NewWindow(u.Duration(), u.Duration(), execute.Duration{}, false)
 						if err != nil {
 							return nil, err
 						}

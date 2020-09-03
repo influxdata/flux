@@ -36,8 +36,8 @@ func ConvertTime(t time.Time) Time {
 	return Time(t.UnixNano())
 }
 
-// ConvertDuration takes a time.Duration and converts it into a Duration.
-func ConvertDuration(v time.Duration) Duration {
+// ConvertDurationNsecs takes a time.Duration and converts it into a Duration with nanoseconds.
+func ConvertDurationNsecs(v time.Duration) Duration {
 	negative := false
 	if v < 0 {
 		negative, v = true, -v
@@ -45,6 +45,18 @@ func ConvertDuration(v time.Duration) Duration {
 	return Duration{
 		negative: negative,
 		nsecs:    int64(v),
+	}
+}
+
+// ConvertDurationMonths takes a time.Duration and converts it into a Duration with months.
+func ConvertDurationMonths(v time.Duration) Duration {
+	negative := false
+	if v < 0 {
+		negative, v = true, -v
+	}
+	return Duration{
+		months:   int64(v),
+		negative: negative,
 	}
 }
 
@@ -117,12 +129,12 @@ func (t Time) Add(d Duration) Time {
 // between the two times. A positive duration indicates that the receiver
 // occurs after the other time.
 func (t Time) Sub(other Time) Duration {
-	return ConvertDuration(time.Duration(t - other))
+	return ConvertDurationNsecs(time.Duration(t - other))
 }
 
 // Remainder divides t by d and returns the remainder.
 func (t Time) Remainder(d Duration) (r Duration) {
-	return ConvertDuration(time.Duration(t) % d.Duration())
+	return ConvertDurationNsecs(time.Duration(t) % d.Duration())
 }
 
 // lessThanHalf reports whether x+x < y but avoids overflow,
@@ -196,7 +208,7 @@ func (d Duration) Normalize(interval Duration) Duration {
 	} else if offset > every {
 		offset -= every * (offset / every)
 	}
-	return ConvertDuration(time.Duration(offset))
+	return ConvertDurationNsecs(time.Duration(offset))
 }
 
 // Equal returns true if the two durations are equal.
