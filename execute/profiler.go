@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 	"github.com/opentracing/opentracing-go"
@@ -39,44 +37,26 @@ func init() {
 
 type OperatorProfilingResult struct {
 	Type     string
+	// Those labels are actually their operation name. See flux/internal/spec.buildSpec.
+	// Some examples are:
+	// merged_fromRemote_range1_filter2_filter3_filter4, window5, window8, generated_yield, etc.
 	Label    string
-	Duration time.Duration
-	HitCount int64
-}
-
-func (r *OperatorProfilingResult) Combine(o *OperatorProfilingResult) error {
-	if r.Type != o.Type {
-		return errors.Newf(codes.Internal, "Cannot combine a OperatorProfilingResult for type %s with another result for type %s", r.Type, o.Type)
-	}
-	if r.Label != o.Label {
-		return errors.Newf(codes.Internal, "Cannot combine a OperatorProfilingResult for %s with another result for %s", r.Label, o.Label)
-	}
-	r.Duration = time.Duration(r.Duration.Nanoseconds() + o.Duration.Nanoseconds())
-	r.HitCount += o.HitCount
-	return nil
+	Start time.Time
+	Stop time.Time
 }
 
 type OperatorProfilingSpan struct {
 	opentracing.Span
 	profiler *OperatorProfiler
-	Type     string
-	Label    string
-	start    time.Time
-	Duration time.Duration
+	result OperatorProfilingResult
 }
 
 func (t *OperatorProfilingSpan) finish() time.Time {
-	finishTime := time.Now()
-	t.Duration = finishTime.Sub(t.start)
+	t.result.Stop = time.Now()
 	if t.profiler != nil && t.profiler.ch != nil {
-		t.profiler.ch <- OperatorProfilingResult{
-			Type:     t.Type,
-			Label:    t.Label,
-			Duration: t.Duration,
-			HitCount: 1,
-		}
+		t.profiler.ch <- t.result
 	}
-	return finishTime
+	return t.result.Stop
 }
 
 func (t *OperatorProfilingSpan) Finish() {
@@ -99,28 +79,19 @@ func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions
 const OperatorProfilerContextKey = "operator-profiler"
 
 type OperatorProfiler struct {
-	// Result aggregated by the transformation/data source name.
-	// Those names are actually their operation name. See flux/internal/spec.buildSpec.
-	// Some examples are:
-	// merged_fromRemote_range1_filter2_filter3_filter4, window5, window8, generated_yield, etc.
-	results map[string]OperatorProfilingResult
+	results []OperatorProfilingResult
 	// Receive the profiling results from the spans.
 	ch chan OperatorProfilingResult
 }
 
 func createOperatorProfiler() Profiler {
 	p := &OperatorProfiler{
-		results: make(map[string]OperatorProfilingResult),
+		results: make([]OperatorProfilingResult, 0),
 		ch:      make(chan OperatorProfilingResult),
 	}
 	go func(p *OperatorProfiler) {
 		for result := range p.ch {
-			if existingResult, exists := p.results[result.Label]; exists {
-				// Aggregate the results by name
-				existingResult.Combine(&result)
-			} else {
-				p.results[result.Label] = result
-			}
+			p.results = append(p.results, result)
 		}
 	}(p)
 	return p
@@ -153,6 +124,14 @@ func (t OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux
 			Type:  flux.TString,
 		},
 		{
+			Label: DefaultStartColLabel,
+			Type:  flux.TTime,
+		},
+		{
+			Label: DefaultStopColLabel,
+			Type:  flux.TTime,
+		},
+		{
 			Label: "Type",
 			Type:  flux.TString,
 		},
@@ -164,10 +143,6 @@ func (t OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux
 			Label: "Duration",
 			Type:  flux.TInt,
 		},
-		{
-			Label: "HitCount",
-			Type:  flux.TInt,
-		},
 	}
 	for _, col := range colMeta {
 		if _, err := b.AddCol(col); err != nil {
@@ -177,10 +152,11 @@ func (t OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux
 	if t.results != nil && len(t.results) > 0 {
 		for _, result := range t.results {
 			b.AppendString(0, "profiler/operator")
-			b.AppendString(1, result.Type)
-			b.AppendString(2, result.Label)
-			b.AppendInt(3, result.Duration.Nanoseconds())
-			b.AppendInt(4, result.HitCount)
+			b.AppendTime(1, values.Time(result.Start.UnixNano()))
+			b.AppendTime(2, values.Time(result.Stop.UnixNano()))
+			b.AppendString(3, result.Type)
+			b.AppendString(4, result.Label)
+			b.AppendInt(5, result.Stop.Sub(result.Start).Nanoseconds())
 		}
 	}
 	tbl, err := b.Table()
@@ -205,10 +181,11 @@ func StartSpanFromContext(ctx context.Context, operationName string, label strin
 		span = &OperatorProfilingSpan{
 			Span:     span,
 			profiler: tfp,
-			Type:     operationName,
-			Label:    label,
-			start:    start,
-			Duration: 0,
+			result: OperatorProfilingResult{
+				Type:  operationName,
+				Label: label,
+				Start: start,
+			},
 		}
 	}
 	return span
