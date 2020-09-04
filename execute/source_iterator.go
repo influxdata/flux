@@ -104,6 +104,7 @@ type SourceIterator interface {
 
 // sourceIterator implements execute.Source using the SourceIterator.
 type sourceIterator struct {
+	ExecutionNode
 	id       DatasetID
 	ts       []Transformation
 	iterator SourceIterator

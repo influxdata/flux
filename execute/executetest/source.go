@@ -23,6 +23,7 @@ const FromTestKind = "from-test"
 // FromProcedureSpec is a procedure spec AND an execution Node.
 // It simulates the execution of a basic physical scan operation.
 type FromProcedureSpec struct {
+	execute.ExecutionNode
 	data []*Table
 	ts   []execute.Transformation
 }

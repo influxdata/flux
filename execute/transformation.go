@@ -21,8 +21,8 @@ type Transformation interface {
 	// Finish indicates that the Transformation is done processing. It is
 	// the last method called on the Transformation
 	Finish(id DatasetID, err error)
-	//SetLabel(label string)
-	//Label() string
+	SetLabel(label string)
+	Label() string
 }
 
 // TransformationSet is a group of transformations.

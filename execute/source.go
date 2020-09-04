@@ -23,8 +23,8 @@ type MetadataNode interface {
 type Source interface {
 	Node
 	Run(ctx context.Context)
-	//SetLabel(label string)
-	//Label() string
+	SetLabel(label string)
+	Label() string
 }
 
 type CreateSource func(spec plan.ProcedureSpec, id DatasetID, ctx Administration) (Source, error)
