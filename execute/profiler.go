@@ -36,19 +36,19 @@ func init() {
 }
 
 type OperatorProfilingResult struct {
-	Type     string
+	Type string
 	// Those labels are actually their operation name. See flux/internal/spec.buildSpec.
 	// Some examples are:
 	// merged_fromRemote_range1_filter2_filter3_filter4, window5, window8, generated_yield, etc.
-	Label    string
+	Label string
 	Start time.Time
-	Stop time.Time
+	Stop  time.Time
 }
 
 type OperatorProfilingSpan struct {
 	opentracing.Span
 	profiler *OperatorProfiler
-	result OperatorProfilingResult
+	result   OperatorProfilingResult
 }
 
 func (t *OperatorProfilingSpan) finish() time.Time {
