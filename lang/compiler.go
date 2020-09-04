@@ -349,13 +349,13 @@ func (p *Program) readMetadata(q *query, metaCh <-chan metadata.Metadata) {
 type AstProgram struct {
 	*Program
 
-	Ast        flux.ASTHandle
-	Now        time.Time
+	Ast flux.ASTHandle
+	Now time.Time
 	// A list of profilers that are profiling this query
-	Profilers  []execute.Profiler
-	// The transformation profiler that is profiling this query, if any.
-	// Note this transformation profiler is also cached in the Profilers array.
-	tfProfiler *execute.TransformationProfiler
+	Profilers []execute.Profiler
+	// The operator profiler that is profiling this query, if any.
+	// Note this operator profiler is also cached in the Profilers array.
+	tfProfiler *execute.OperatorProfiler
 }
 
 // Prepare the Ast for semantic analysis
@@ -442,10 +442,10 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	// Execution.
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
 	if p.tfProfiler != nil {
-		// If we have an active transformation profiler, put that into the execution context
+		// If we have an active operator profiler, put that into the execution context
 		// so that the data sources and the transformations can properly create spans that link
 		// to this profiler and send over their profiling data.
-		cctx = context.WithValue(cctx, execute.TransformationProfilerContextKey, p.tfProfiler)
+		cctx = context.WithValue(cctx, execute.OperatorProfilerContextKey, p.tfProfiler)
 	}
 	defer s.Finish()
 	return p.Program.Start(cctx, alloc)
@@ -478,10 +478,10 @@ func (p *AstProgram) updateProfilers(scope values.Scope) error {
 			}
 			dedupeMap[profilerName] = true
 			profiler := createProfilerFn()
-			if tfp, ok := profiler.(*execute.TransformationProfiler); ok {
-				// The transformation profiler needs to be in the context so transformations
+			if tfp, ok := profiler.(*execute.OperatorProfiler); ok {
+				// The operator profiler needs to be in the context so transformations
 				// and data sources can easily locate it when creating spans.
-				// We cache the transformation profiler here in addition to the Profilers
+				// We cache the operator profiler here in addition to the Profilers
 				// array to avoid the array look-up.
 				p.tfProfiler = tfp
 			}

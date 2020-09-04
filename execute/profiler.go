@@ -33,39 +33,45 @@ func RegisterProfilerFactories(cpfs ...CreateProfilerFunc) {
 func init() {
 	RegisterProfilerFactories(
 		createQueryProfiler,
-		createTransformationProfiler,
+		createOperatorProfiler,
 	)
 }
 
-type TransformationProfilingResult struct {
-	Name     string
+type OperatorProfilingResult struct {
+	Type     string
+	Label    string
 	Duration time.Duration
 	HitCount int64
 }
 
-func (r *TransformationProfilingResult) Combine(o *TransformationProfilingResult) error {
-	if r.Name != o.Name {
-		return errors.Newf(codes.Internal, "Cannot combine a TransformationProfilingResult for %s with another result for %s", r.Name, o.Name)
+func (r *OperatorProfilingResult) Combine(o *OperatorProfilingResult) error {
+	if r.Type != o.Type {
+		return errors.Newf(codes.Internal, "Cannot combine a OperatorProfilingResult for type %s with another result for type %s", r.Type, o.Type)
+	}
+	if r.Label != o.Label {
+		return errors.Newf(codes.Internal, "Cannot combine a OperatorProfilingResult for %s with another result for %s", r.Label, o.Label)
 	}
 	r.Duration = time.Duration(r.Duration.Nanoseconds() + o.Duration.Nanoseconds())
 	r.HitCount += o.HitCount
 	return nil
 }
 
-type TransformationProfilingSpan struct {
+type OperatorProfilingSpan struct {
 	opentracing.Span
-	profiler *TransformationProfiler
-	Name     string
+	profiler *OperatorProfiler
+	Type     string
+	Label    string
 	start    time.Time
 	Duration time.Duration
 }
 
-func (t *TransformationProfilingSpan) finish() time.Time {
+func (t *OperatorProfilingSpan) finish() time.Time {
 	finishTime := time.Now()
 	t.Duration = finishTime.Sub(t.start)
 	if t.profiler != nil && t.profiler.ch != nil {
-		t.profiler.ch <- TransformationProfilingResult{
-			Name:     t.Name,
+		t.profiler.ch <- OperatorProfilingResult{
+			Type:     t.Type,
+			Label:    t.Label,
 			Duration: t.Duration,
 			HitCount: 1,
 		}
@@ -73,7 +79,7 @@ func (t *TransformationProfilingSpan) finish() time.Time {
 	return finishTime
 }
 
-func (t *TransformationProfilingSpan) Finish() {
+func (t *OperatorProfilingSpan) Finish() {
 	finishTime := t.finish()
 	if t.Span != nil {
 		t.Span.FinishWithOptions(opentracing.FinishOptions{
@@ -82,7 +88,7 @@ func (t *TransformationProfilingSpan) Finish() {
 	}
 }
 
-func (t *TransformationProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions) {
+func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions) {
 	finishTime := t.finish()
 	opts.FinishTime = finishTime
 	if t.Span != nil {
@@ -90,41 +96,41 @@ func (t *TransformationProfilingSpan) FinishWithOptions(opts opentracing.FinishO
 	}
 }
 
-const TransformationProfilerContextKey = "transformation-profiler"
+const OperatorProfilerContextKey = "operator-profiler"
 
-type TransformationProfiler struct {
+type OperatorProfiler struct {
 	// Result aggregated by the transformation/data source name.
 	// Those names are actually their operation name. See flux/internal/spec.buildSpec.
 	// Some examples are:
 	// merged_fromRemote_range1_filter2_filter3_filter4, window5, window8, generated_yield, etc.
-	results map[string]TransformationProfilingResult
+	results map[string]OperatorProfilingResult
 	// Receive the profiling results from the spans.
-	ch      chan TransformationProfilingResult
+	ch chan OperatorProfilingResult
 }
 
-func createTransformationProfiler() Profiler {
-	p := &TransformationProfiler{
-		results: make(map[string]TransformationProfilingResult),
-		ch:      make(chan TransformationProfilingResult),
+func createOperatorProfiler() Profiler {
+	p := &OperatorProfiler{
+		results: make(map[string]OperatorProfilingResult),
+		ch:      make(chan OperatorProfilingResult),
 	}
-	go func(p *TransformationProfiler) {
+	go func(p *OperatorProfiler) {
 		for result := range p.ch {
-			if existingResult, exists := p.results[result.Name]; exists {
+			if existingResult, exists := p.results[result.Label]; exists {
 				// Aggregate the results by name
 				existingResult.Combine(&result)
 			} else {
-				p.results[result.Name] = result
+				p.results[result.Label] = result
 			}
 		}
 	}(p)
 	return p
 }
 
-func (t TransformationProfiler) Name() string {
-	return "transformation"
+func (t OperatorProfiler) Name() string {
+	return "operator"
 }
 
-func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+func (t OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
 	if t.ch != nil {
 		close(t.ch)
 		t.ch = nil
@@ -137,7 +143,7 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 			},
 		},
 		[]values.Value{
-			values.NewString("profiler/transformation"),
+			values.NewString("profiler/operator"),
 		},
 	)
 	b := NewColListTableBuilder(groupKey, alloc)
@@ -147,7 +153,11 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 			Type:  flux.TString,
 		},
 		{
-			Label: "Name",
+			Label: "Type",
+			Type:  flux.TString,
+		},
+		{
+			Label: "Label",
 			Type:  flux.TString,
 		},
 		{
@@ -166,10 +176,11 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 	}
 	if t.results != nil && len(t.results) > 0 {
 		for _, result := range t.results {
-			b.AppendString(0, "profiler/transformation")
-			b.AppendString(1, result.Name)
-			b.AppendInt(2, result.Duration.Nanoseconds())
-			b.AppendInt(3, result.HitCount)
+			b.AppendString(0, "profiler/operator")
+			b.AppendString(1, result.Type)
+			b.AppendString(2, result.Label)
+			b.AppendInt(3, result.Duration.Nanoseconds())
+			b.AppendInt(4, result.HitCount)
 		}
 	}
 	tbl, err := b.Table()
@@ -180,21 +191,22 @@ func (t TransformationProfiler) GetResult(q flux.Query, alloc *memory.Allocator)
 }
 
 // Create a tracing span.
-// Depending on whether the Jaeger tracing and/or the transformation profiling are enabled,
+// Depending on whether the Jaeger tracing and/or the operator profiling are enabled,
 // the Span produced by this function can be very different.
 // It could be a no-op span, a Jaeger span, a no-op span wrapped by a profiling span, or
 // a Jaeger span wrapped by a profiling span.
-func StartSpanFromContext(ctx context.Context, operationName string) opentracing.Span {
+func StartSpanFromContext(ctx context.Context, operationName string, label string) opentracing.Span {
 	var span opentracing.Span
 	start := time.Now()
 	if flux.IsQueryTracingEnabled(ctx) {
 		span, _ = opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
 	}
-	if tfp, ok := ctx.Value(TransformationProfilerContextKey).(*TransformationProfiler); ok {
-		span = &TransformationProfilingSpan{
+	if tfp, ok := ctx.Value(OperatorProfilerContextKey).(*OperatorProfiler); ok {
+		span = &OperatorProfilingSpan{
 			Span:     span,
 			profiler: tfp,
-			Name:     operationName,
+			Type:     operationName,
+			Label:    label,
 			start:    start,
 			Duration: 0,
 		}

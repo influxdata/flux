@@ -322,7 +322,7 @@ func RunBenchmark(
 	tx.Finish(parentID, nil)
 }
 
-type devNullStore struct{
+type devNullStore struct {
 	*execute.ExecutionNode
 }
 

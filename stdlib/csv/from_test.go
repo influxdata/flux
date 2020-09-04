@@ -232,7 +232,7 @@ func TestFromCSV_RunCancel(t *testing.T) {
 	}
 }
 
-type noopTransformation struct{
+type noopTransformation struct {
 	execute.ExecutionNode
 }
 

@@ -4,6 +4,7 @@ package execute
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -251,7 +252,7 @@ func (es *executionState) do(ctx context.Context) {
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
-			if span := StartSpanFromContext(ctx, src.Label()); span != nil {
+			if span := StartSpanFromContext(ctx, reflect.TypeOf(src).String(), src.Label()); span != nil {
 				defer span.Finish()
 			}
 			defer wg.Done()
