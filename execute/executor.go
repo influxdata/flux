@@ -4,7 +4,6 @@ package execute
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"runtime/debug"
 	"sync"
 	"time"
@@ -192,6 +191,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 
 		source, err := createSourceFn(spec, id, ec)
+		source.SetLabel(string(node.ID()))
 
 		if err != nil {
 			return err
@@ -210,6 +210,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 
 		tr, ds, err := createTransformationFn(id, DiscardingMode, spec, ec)
+		tr.SetLabel(string(node.ID()))
 
 		if err != nil {
 			return err
@@ -250,7 +251,7 @@ func (es *executionState) do(ctx context.Context) {
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
-			if span := StartSpanFromContext(ctx, reflect.TypeOf(src).String()); span != nil {
+			if span := StartSpanFromContext(ctx, src.Label()); span != nil {
 				defer span.Finish()
 			}
 			defer wg.Done()

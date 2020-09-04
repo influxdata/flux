@@ -3,7 +3,6 @@ package execute
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"sync"
 	"sync/atomic"
 
@@ -239,7 +238,7 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
 		b := m.Table()
-		span := StartSpanFromContext(ctx, reflect.TypeOf(t).String())
+		span := StartSpanFromContext(ctx, t.Label())
 		err = t.Process(m.SrcDatasetID(), b)
 		if span != nil {
 			span.Finish()
