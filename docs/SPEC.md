@@ -914,7 +914,7 @@ The precedence of the operators is given in the table below. Operators with a lo
 |     1    |  `a()`         |       Function call       |
 |          |  `a[]`         |  Member or index access   |
 |          |   `.`          |       Member access       |
-|     2    |  `|>`          |       Pipe forward        |
+|     2    |  `\|>`         |       Pipe forward        |
 |     3    |   `^`          |       Exponentiation      |
 |     4    | `*` `/` `%`    | Multiplication, division, |
 |          |                | and modulo                |
