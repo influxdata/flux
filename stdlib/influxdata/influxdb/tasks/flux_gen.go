@@ -4,7 +4,6 @@ package tasks
 
 import (
 	ast "github.com/influxdata/flux/ast"
-	parser "github.com/influxdata/flux/internal/parser"
 	runtime "github.com/influxdata/flux/runtime"
 )
 
@@ -22,31 +21,118 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 20,
-					Line:   10,
+					Column: 64,
+					Line:   20,
 				},
 				File:   "tasks.flux",
-				Source: "package tasks\n\noption lastSuccessTime = 0000-01-01T00:00:00Z\n\n// This is currently a noop, as its implementation is meant to be\n// overridden elsewhere.\n// As this function currently only returns an unimplemented error, and \n// flux has no support for doing this natively, this function is a builtin.\n// When fully implemented, it should be able to be implemented in pure flux.\nbuiltin lastSuccess",
+				Source: "package tasks\n\n// _zeroTime is a sentinel value for the zero time.\n// This is used to mark that the lastSuccessTime has not been set.\nbuiltin _zeroTime: time\n\n// lastSuccessTime is the last time this task had run successfully.\noption lastSuccessTime = _zeroTime\n\n// _lastSuccess will return the time set on the option lastSuccessTime\n// or it will return the orTime.\nbuiltin _lastSuccess: (orTime: time, lastSuccessTime: time) => time\n\n// lastSuccess will return the last successful time a task ran\n// within an influxdb task. If the task has not successfully run,\n// the orTime will be returned.\nlastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   4,
 				},
 			},
 		},
-		Body: []ast.Statement{&ast.OptionStatement{
+		Body: []ast.Statement{&ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   8,
+					},
+					File:   "tasks.flux",
+					Source: "builtin _zeroTime",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   8,
+						},
+						File:   "tasks.flux",
+						Source: "_zeroTime",
+						Start: ast.Position{
+							Column: 9,
+							Line:   8,
+						},
+					},
+				},
+				Name: "_zeroTime",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 24,
+							Line:   8,
+						},
+						File:   "tasks.flux",
+						Source: "time",
+						Start: ast.Position{
+							Column: 20,
+							Line:   8,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.NamedType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   8,
+							},
+							File:   "tasks.flux",
+							Source: "time",
+							Start: ast.Position{
+								Column: 20,
+								Line:   8,
+							},
+						},
+					},
+					ID: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   8,
+								},
+								File:   "tasks.flux",
+								Source: "time",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Name: "time",
+					},
+				},
+			},
+		}, &ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 46,
-							Line:   3,
+							Column: 35,
+							Line:   11,
 						},
 						File:   "tasks.flux",
-						Source: "lastSuccessTime = 0000-01-01T00:00:00Z",
+						Source: "lastSuccessTime = _zeroTime",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   11,
 						},
 					},
 				},
@@ -56,49 +142,49 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   3,
+								Line:   11,
 							},
 							File:   "tasks.flux",
 							Source: "lastSuccessTime",
 							Start: ast.Position{
 								Column: 8,
-								Line:   3,
+								Line:   11,
 							},
 						},
 					},
 					Name: "lastSuccessTime",
 				},
-				Init: &ast.DateTimeLiteral{
+				Init: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 46,
-								Line:   3,
+								Column: 35,
+								Line:   11,
 							},
 							File:   "tasks.flux",
-							Source: "0000-01-01T00:00:00Z",
+							Source: "_zeroTime",
 							Start: ast.Position{
 								Column: 26,
-								Line:   3,
+								Line:   11,
 							},
 						},
 					},
-					Value: parser.MustParseTime("0000-01-01T00:00:00Z"),
+					Name: "_zeroTime",
 				},
 			},
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 46,
-						Line:   3,
+						Column: 35,
+						Line:   11,
 					},
 					File:   "tasks.flux",
-					Source: "option lastSuccessTime = 0000-01-01T00:00:00Z",
+					Source: "option lastSuccessTime = _zeroTime",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   11,
 					},
 				},
 			},
@@ -107,14 +193,14 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 20,
-						Line:   10,
+						Column: 21,
+						Line:   15,
 					},
 					File:   "tasks.flux",
-					Source: "builtin lastSuccess",
+					Source: "builtin _lastSuccess",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   15,
 					},
 				},
 			},
@@ -123,32 +209,32 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 20,
-							Line:   10,
+							Column: 21,
+							Line:   15,
 						},
 						File:   "tasks.flux",
-						Source: "lastSuccess",
+						Source: "_lastSuccess",
 						Start: ast.Position{
 							Column: 9,
-							Line:   10,
+							Line:   15,
 						},
 					},
 				},
-				Name: "lastSuccess",
+				Name: "_lastSuccess",
 			},
 			Ty: ast.TypeExpression{
 				BaseNode: ast.BaseNode{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 44,
-							Line:   10,
+							Column: 68,
+							Line:   15,
 						},
 						File:   "tasks.flux",
-						Source: "(orTime: time) => time",
+						Source: "(orTime: time, lastSuccessTime: time) => time",
 						Start: ast.Position{
-							Column: 22,
-							Line:   10,
+							Column: 23,
+							Line:   15,
 						},
 					},
 				},
@@ -158,14 +244,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 44,
-								Line:   10,
+								Column: 68,
+								Line:   15,
 							},
 							File:   "tasks.flux",
-							Source: "(orTime: time) => time",
+							Source: "(orTime: time, lastSuccessTime: time) => time",
 							Start: ast.Position{
-								Column: 22,
-								Line:   10,
+								Column: 23,
+								Line:   15,
 							},
 						},
 					},
@@ -174,14 +260,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 35,
-									Line:   10,
+									Column: 36,
+									Line:   15,
 								},
 								File:   "tasks.flux",
 								Source: "orTime: time",
 								Start: ast.Position{
-									Column: 23,
-									Line:   10,
+									Column: 24,
+									Line:   15,
 								},
 							},
 						},
@@ -191,14 +277,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 29,
-										Line:   10,
+										Column: 30,
+										Line:   15,
 									},
 									File:   "tasks.flux",
 									Source: "orTime",
 									Start: ast.Position{
-										Column: 23,
-										Line:   10,
+										Column: 24,
+										Line:   15,
 									},
 								},
 							},
@@ -209,14 +295,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 35,
-										Line:   10,
+										Column: 36,
+										Line:   15,
 									},
 									File:   "tasks.flux",
 									Source: "time",
 									Start: ast.Position{
-										Column: 31,
-										Line:   10,
+										Column: 32,
+										Line:   15,
 									},
 								},
 							},
@@ -225,14 +311,84 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   10,
+											Column: 36,
+											Line:   15,
 										},
 										File:   "tasks.flux",
 										Source: "time",
 										Start: ast.Position{
-											Column: 31,
-											Line:   10,
+											Column: 32,
+											Line:   15,
+										},
+									},
+								},
+								Name: "time",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 59,
+									Line:   15,
+								},
+								File:   "tasks.flux",
+								Source: "lastSuccessTime: time",
+								Start: ast.Position{
+									Column: 38,
+									Line:   15,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   15,
+									},
+									File:   "tasks.flux",
+									Source: "lastSuccessTime",
+									Start: ast.Position{
+										Column: 38,
+										Line:   15,
+									},
+								},
+							},
+							Name: "lastSuccessTime",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 59,
+										Line:   15,
+									},
+									File:   "tasks.flux",
+									Source: "time",
+									Start: ast.Position{
+										Column: 55,
+										Line:   15,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 59,
+											Line:   15,
+										},
+										File:   "tasks.flux",
+										Source: "time",
+										Start: ast.Position{
+											Column: 55,
+											Line:   15,
 										},
 									},
 								},
@@ -245,14 +401,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 44,
-									Line:   10,
+									Column: 68,
+									Line:   15,
 								},
 								File:   "tasks.flux",
 								Source: "time",
 								Start: ast.Position{
-									Column: 40,
-									Line:   10,
+									Column: 64,
+									Line:   15,
 								},
 							},
 						},
@@ -261,14 +417,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 44,
-										Line:   10,
+										Column: 68,
+										Line:   15,
 									},
 									File:   "tasks.flux",
 									Source: "time",
 									Start: ast.Position{
-										Column: 40,
-										Line:   10,
+										Column: 64,
+										Line:   15,
 									},
 								},
 							},
@@ -276,6 +432,217 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 64,
+						Line:   20,
+					},
+					File:   "tasks.flux",
+					Source: "lastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   20,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   20,
+						},
+						File:   "tasks.flux",
+						Source: "lastSuccess",
+						Start: ast.Position{
+							Column: 1,
+							Line:   20,
+						},
+					},
+				},
+				Name: "lastSuccess",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 64,
+							Line:   20,
+						},
+						File:   "tasks.flux",
+						Source: "(orTime) => _lastSuccess(orTime, lastSuccessTime)",
+						Start: ast.Position{
+							Column: 15,
+							Line:   20,
+						},
+					},
+				},
+				Body: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 63,
+									Line:   20,
+								},
+								File:   "tasks.flux",
+								Source: "orTime, lastSuccessTime",
+								Start: ast.Position{
+									Column: 40,
+									Line:   20,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 46,
+										Line:   20,
+									},
+									File:   "tasks.flux",
+									Source: "orTime",
+									Start: ast.Position{
+										Column: 40,
+										Line:   20,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   20,
+										},
+										File:   "tasks.flux",
+										Source: "orTime",
+										Start: ast.Position{
+											Column: 40,
+											Line:   20,
+										},
+									},
+								},
+								Name: "orTime",
+							},
+							Value: nil,
+						}, &ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 63,
+										Line:   20,
+									},
+									File:   "tasks.flux",
+									Source: "lastSuccessTime",
+									Start: ast.Position{
+										Column: 48,
+										Line:   20,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 63,
+											Line:   20,
+										},
+										File:   "tasks.flux",
+										Source: "lastSuccessTime",
+										Start: ast.Position{
+											Column: 48,
+											Line:   20,
+										},
+									},
+								},
+								Name: "lastSuccessTime",
+							},
+							Value: nil,
+						}},
+						With: nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 64,
+								Line:   20,
+							},
+							File:   "tasks.flux",
+							Source: "_lastSuccess(orTime, lastSuccessTime)",
+							Start: ast.Position{
+								Column: 27,
+								Line:   20,
+							},
+						},
+					},
+					Callee: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   20,
+								},
+								File:   "tasks.flux",
+								Source: "_lastSuccess",
+								Start: ast.Position{
+									Column: 27,
+									Line:   20,
+								},
+							},
+						},
+						Name: "_lastSuccess",
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 22,
+								Line:   20,
+							},
+							File:   "tasks.flux",
+							Source: "orTime",
+							Start: ast.Position{
+								Column: 16,
+								Line:   20,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   20,
+								},
+								File:   "tasks.flux",
+								Source: "orTime",
+								Start: ast.Position{
+									Column: 16,
+									Line:   20,
+								},
+							},
+						},
+						Name: "orTime",
+					},
+					Value: nil,
+				}},
 			},
 		}},
 		Imports:  nil,
@@ -287,13 +654,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   1,
+						Line:   4,
 					},
 					File:   "tasks.flux",
 					Source: "package tasks",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   4,
 					},
 				},
 			},
@@ -303,13 +670,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   1,
+							Line:   4,
 						},
 						File:   "tasks.flux",
 						Source: "tasks",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   4,
 						},
 					},
 				},
