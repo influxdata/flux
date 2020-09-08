@@ -139,7 +139,8 @@ pub fn builtins() -> Builtins<'static> {
                 "get" => "(key: string) => string",
             },
             "influxdata/influxdb/tasks" => semantic_map! {
-                "lastSuccess" => "(orTime: time) => time",
+                "_zeroTime" => "time",
+                "_lastSuccess" => "(orTime: time, lastSuccessTime: time) => time",
             },
             "influxdata/influxdb/v1" => semantic_map! {
                 // exactly one of json and file must be specified
