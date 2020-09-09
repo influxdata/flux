@@ -15,7 +15,7 @@ import (
 	"github.com/influxdata/flux/mock"
 )
 
-func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
+func TestQueryProfiler_GetResult(t *testing.T) {
 	p := &execute.QueryProfiler{}
 	q := &mock.Query{}
 	q.SetStatistics(flux.Statistics{
