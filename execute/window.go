@@ -18,11 +18,8 @@ type Window struct {
 // and normalizes the offset to a small positive duration.
 // It also validates that the durations are valid when
 // used within a window.
-func NewWindow(every, period, offset Duration, months bool) (Window, error) {
-	if !months {
-		// Normalize nanosecond offsets to a small positive duration
-		offset = offset.Normalize(every)
-	}
+func NewWindow(every, period, offset Duration) (Window, error) {
+	offset = offset.Normalize(every)
 	w := Window{
 		Every:  every,
 		Period: period,
