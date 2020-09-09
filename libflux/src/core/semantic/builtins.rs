@@ -784,6 +784,9 @@ pub fn builtins() -> Builtins<'static> {
                         fn: (r: A) => B
                     ) => [B] where A: Record, B: Record "#,
             },
+            "contrib/sranka/opsgenie" => semantic_map! {
+                "respondersToJSON" => "(v: [string]) => string",
+            },
         },
     }
 }
