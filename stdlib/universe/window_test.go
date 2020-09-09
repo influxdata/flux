@@ -846,7 +846,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			w, err := execute.NewWindow(tc.every, tc.period, tc.offset, false)
+			w, err := execute.NewWindow(tc.every, tc.period, tc.offset)
 			if err != nil {
 				t.Fatalf("unexpected error: %s", err)
 			}

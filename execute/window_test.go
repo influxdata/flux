@@ -62,8 +62,7 @@ func TestNewWindow(t *testing.T) {
 		_, gotErr := execute.NewWindow(
 			mustParseDuration("1mo2w"),
 			mustParseDuration("1mo2w"),
-			values.Duration{},
-		false)
+			values.Duration{})
 		if want, got := errAsString(wantErr), errAsString(gotErr); want != got {
 			t.Errorf("window error different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -75,8 +74,7 @@ func TestNewWindow(t *testing.T) {
 		_, gotErr := execute.NewWindow(
 			values.Duration{},
 			values.Duration{},
-			values.Duration{},
-		false)
+			values.Duration{})
 		if want, got := errAsString(wantErr), errAsString(gotErr); want != got {
 			t.Errorf("window error different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -126,30 +124,30 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 				Stop:  values.ConvertTime(time.Date(1970, time.June, 1, 0, 0, 0, 0, time.UTC)),
 			},
 		},
-		{
-			name: "simple months with offset",
-			w: MustWindow(
-				values.ConvertDurationMonths(3),
-				values.ConvertDurationMonths(3),
-				values.ConvertDurationMonths(1), true),
-			t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
-			want: execute.Bounds{
-				Start: values.ConvertTime(time.Date(1969, time.November, 1, 0, 0, 0, 0, time.UTC)),
-				Stop:  values.ConvertTime(time.Date(1970, time.February, 1, 0, 0, 0, 0, time.UTC)),
-			},
-		},
-		{
-			name: "months with equivalent offset",
-			w: MustWindow(
-				values.ConvertDurationMonths(5),
-				values.ConvertDurationMonths(5),
-				values.ConvertDurationMonths(5), true),
-			t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
-			want: execute.Bounds{
-				Start: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
-				Stop:  values.ConvertTime(time.Date(1970, time.June, 1, 0, 0, 0, 0, time.UTC)),
-			},
-		},
+		//{
+		//	name: "simple months with offset",
+		//	w: MustWindow(
+		//		values.ConvertDurationMonths(3),
+		//		values.ConvertDurationMonths(3),
+		//		values.ConvertDurationMonths(1), true),
+		//	t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+		//	want: execute.Bounds{
+		//		Start: values.ConvertTime(time.Date(1969, time.November, 1, 0, 0, 0, 0, time.UTC)),
+		//		Stop:  values.ConvertTime(time.Date(1970, time.February, 1, 0, 0, 0, 0, time.UTC)),
+		//	},
+		//},
+		//{
+		//	name: "months with equal offset",
+		//	w: MustWindow(
+		//		values.ConvertDurationMonths(5),
+		//		values.ConvertDurationMonths(5),
+		//		values.ConvertDurationMonths(5), true),
+		//	t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+		//	want: execute.Bounds{
+		//		Start: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+		//		Stop:  values.ConvertTime(time.Date(1970, time.June, 1, 0, 0, 0, 0, time.UTC)),
+		//	},
+		//},
 		{
 			name: "underlapping",
 			w: MustWindow(
@@ -422,7 +420,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 }
 
 func MustWindow(every, period, offset execute.Duration, months bool) execute.Window {
-	w, err := execute.NewWindow(every, period, offset, months)
+	w, err := execute.NewWindow(every, period, offset)
 	if err != nil {
 		panic(err)
 	}

@@ -192,7 +192,6 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 		s.Window.Every,
 		s.Window.Period,
 		s.Window.Offset,
-		false,
 	)
 	if err != nil {
 		return nil, nil, err
