@@ -1047,6 +1047,10 @@ func writeGroups(writer *csv.Writer, row []string, cols []colMeta, key flux.Grou
 			row[j] = commentPrefix + groupAnnotation
 			continue
 		}
+		if j == resultIdx || j == tableIdx {
+			row[j] = "false"
+			continue
+		}
 		row[j] = strconv.FormatBool(key.HasCol(c.Label))
 	}
 	return writer.Write(row)
