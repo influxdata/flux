@@ -48,15 +48,15 @@ type OperatorProfilingResult struct {
 type OperatorProfilingSpan struct {
 	opentracing.Span
 	profiler *OperatorProfiler
-	result   OperatorProfilingResult
+	Result   OperatorProfilingResult
 }
 
 func (t *OperatorProfilingSpan) finish() time.Time {
-	t.result.Stop = time.Now()
+	t.Result.Stop = time.Now()
 	if t.profiler != nil && t.profiler.ch != nil {
-		t.profiler.ch <- t.result
+		t.profiler.ch <- t.Result
 	}
-	return t.result.Stop
+	return t.Result.Stop
 }
 
 func (t *OperatorProfilingSpan) Finish() {
@@ -181,7 +181,7 @@ func StartSpanFromContext(ctx context.Context, operationName string, label strin
 		span = &OperatorProfilingSpan{
 			Span:     span,
 			profiler: tfp,
-			result: OperatorProfilingResult{
+			Result: OperatorProfilingResult{
 				Type:  operationName,
 				Label: label,
 				Start: start,
