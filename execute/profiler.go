@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -82,6 +83,7 @@ type OperatorProfiler struct {
 	results []OperatorProfilingResult
 	// Receive the profiling results from the spans.
 	ch chan OperatorProfilingResult
+	mu sync.Mutex
 }
 
 func createOperatorProfiler() Profiler {
@@ -91,20 +93,22 @@ func createOperatorProfiler() Profiler {
 	}
 	go func(p *OperatorProfiler) {
 		for result := range p.ch {
+			p.mu.Lock()
 			p.results = append(p.results, result)
+			p.mu.Unlock()
 		}
 	}(p)
 	return p
 }
 
-func (t OperatorProfiler) Name() string {
+func (o *OperatorProfiler) Name() string {
 	return "operator"
 }
 
-func (t OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
-	if t.ch != nil {
-		close(t.ch)
-		t.ch = nil
+func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+	if o.ch != nil {
+		close(o.ch)
+		o.ch = nil
 	}
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
@@ -149,8 +153,9 @@ func (t OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux
 			return nil, err
 		}
 	}
-	if t.results != nil && len(t.results) > 0 {
-		for _, result := range t.results {
+	o.mu.Lock()
+	if o.results != nil && len(o.results) > 0 {
+		for _, result := range o.results {
 			b.AppendString(0, "profiler/operator")
 			b.AppendTime(1, values.Time(result.Start.UnixNano()))
 			b.AppendTime(2, values.Time(result.Stop.UnixNano()))
@@ -159,6 +164,7 @@ func (t OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux
 			b.AppendInt(5, result.Stop.Sub(result.Start).Nanoseconds())
 		}
 	}
+	o.mu.Unlock()
 	tbl, err := b.Table()
 	if err != nil {
 		return nil, err
@@ -197,11 +203,11 @@ func createQueryProfiler() Profiler {
 	return &QueryProfiler{}
 }
 
-func (s QueryProfiler) Name() string {
+func (s *QueryProfiler) Name() string {
 	return "query"
 }
 
-func (s QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+func (s *QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
 			{
