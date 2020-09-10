@@ -139,7 +139,8 @@ pub fn builtins() -> Builtins<'static> {
                 "get" => "(key: string) => string",
             },
             "influxdata/influxdb/tasks" => semantic_map! {
-                "lastSuccess" => "(orTime: time) => time",
+                "_zeroTime" => "time",
+                "_lastSuccess" => "(orTime: time, lastSuccessTime: time) => time",
             },
             "influxdata/influxdb/v1" => semantic_map! {
                 // exactly one of json and file must be specified
@@ -629,14 +630,12 @@ pub fn builtins() -> Builtins<'static> {
                 //   https://github.com/influxdata/flux/issues/2243
                 // Also, we should remove the column arguments so we can reuse A in the return type:
                 //   https://github.com/influxdata/flux/issues/2253
+
                 "range" => r#"(
-                        <-tables: [A],
+                        <-tables: [{A with _time: time}],
                         start: B,
-                        ?stop: C,
-                        ?timeColumn: string,
-                        ?startColumn: string,
-                        ?stopColumn: string
-                    ) => [D] where A: Record, D: Record "#,
+                        ?stop: C
+                    ) => [{A with _time: time, _start: time, _stop: time}]"#,
                 // This function could be updated to get better type inference:
                 //   https://github.com/influxdata/flux/issues/2254
                 "reduce" => r#"(
@@ -784,6 +783,9 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         fn: (r: A) => B
                     ) => [B] where A: Record, B: Record "#,
+            },
+            "contrib/sranka/opsgenie" => semantic_map! {
+                "respondersToJSON" => "(v: [string]) => string",
             },
         },
     }

@@ -1705,6 +1705,43 @@ func TestMultiResultEncoder(t *testing.T) {
 			encoded: nil,
 			err:     errors.New("csv encoder error: unknown column type invalid"),
 		},
+		{
+			name:   "result and table meta columns are never part of a group key #3161",
+			config: csv.DefaultEncoderConfig(),
+			results: flux.NewSliceResultIterator([]flux.Result{&executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop", "_measurement", "result", "table"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "result", Type: flux.TString},
+						{Label: "table", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							"cpu",
+							"A",
+							"B",
+							42.0,
+						},
+					},
+				}},
+			}}),
+			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
+#group,false,false,true,true,false,true,true,true,false
+#default,_result,,,,,,,,
+,result,table,_start,_stop,_time,_measurement,result,table,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,B,42
+
+`),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

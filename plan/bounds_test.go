@@ -390,7 +390,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 			spec: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plantest.CreatePhysicalMockNode("0"),
-					makeShiftNode("1", values.ConvertDuration(5)),
+					makeShiftNode("1", values.ConvertDurationNsecs(5)),
 					plantest.CreatePhysicalMockNode("2"),
 				},
 				Edges: [][2]int{
@@ -412,7 +412,7 @@ func TestBounds_ComputePlanBounds(t *testing.T) {
 					plantest.CreatePhysicalMockNode("0"),
 					makeBoundsNode("1", bounds(5, 10)),
 					plantest.CreatePhysicalMockNode("2"),
-					makeShiftNode("3", values.ConvertDuration(5)),
+					makeShiftNode("3", values.ConvertDurationNsecs(5)),
 					plantest.CreatePhysicalMockNode("4"),
 				},
 				Edges: [][2]int{

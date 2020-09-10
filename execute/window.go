@@ -19,9 +19,7 @@ type Window struct {
 // It also validates that the durations are valid when
 // used within a window.
 func NewWindow(every, period, offset Duration) (Window, error) {
-	// Normalize the offset to a small positive duration
 	offset = offset.Normalize(every)
-
 	w := Window{
 		Every:  every,
 		Period: period,

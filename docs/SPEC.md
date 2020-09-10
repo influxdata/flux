@@ -914,7 +914,7 @@ The precedence of the operators is given in the table below. Operators with a lo
 |     1    |  `a()`         |       Function call       |
 |          |  `a[]`         |  Member or index access   |
 |          |   `.`          |       Member access       |
-|     2    |  `|>`          |       Pipe forward        |
+|     2    |  `\|>`         |       Pipe forward        |
 |     3    |   `^`          |       Exponentiation      |
 |     4    | `*` `/` `%`    | Multiplication, division, |
 |          |                | and modulo                |
@@ -2415,9 +2415,6 @@ Range has the following properties:
 | ----        | ----   | -----------                                                                                                                                       |
 | start       | time   | Start inclusively specifies the lower bound (oldest) time of the range by which to filter records.                                                |
 | stop        | time   | Stop exclusively specifies the upper bound (newest) time of the range by which to filter records. Defaults to the value of the `now` option time. |
-| timeColumn  | string | Name of the time column to use. Defaults to `_time`.                                                                                              |
-| startColumn | string | StartColumn is the name of the column containing the start time. Defaults to `_start`.                                                            |
-| stopColumn  | string | StopColumn is the name of the column containing the stop time. Defaults to `_stop`.                                                               |
 
 Example:
 ```

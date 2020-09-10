@@ -51,29 +51,9 @@ func createRangeOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operat
 		spec.Stop = flux.Now
 	}
 
-	if col, ok, err := args.GetString("timeColumn"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.TimeColumn = col
-	} else {
-		spec.TimeColumn = execute.DefaultTimeColLabel
-	}
-
-	if label, ok, err := args.GetString("startColumn"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.StartColumn = label
-	} else {
-		spec.StartColumn = execute.DefaultStartColLabel
-	}
-
-	if label, ok, err := args.GetString("stopColumn"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.StopColumn = label
-	} else {
-		spec.StopColumn = execute.DefaultStopColLabel
-	}
+	spec.TimeColumn = execute.DefaultTimeColLabel
+	spec.StartColumn = execute.DefaultStartColLabel
+	spec.StopColumn = execute.DefaultStopColLabel
 
 	return spec, nil
 }

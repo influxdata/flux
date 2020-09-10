@@ -25,7 +25,7 @@ type WindowOpSpec struct {
 	CreateEmpty bool          `json:"createEmpty"`
 }
 
-var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
+var infinityVar = values.NewDuration(values.ConvertDurationNsecs(math.MaxInt64))
 
 func init() {
 	windowSignature := runtime.MustLookupBuiltinType("universe", "window")
