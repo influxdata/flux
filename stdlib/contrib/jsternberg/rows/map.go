@@ -149,9 +149,14 @@ func (t *mapTransformation) createSchema(in flux.Table, fn *execute.RowMapPrepar
 		if err != nil {
 			return nil, err
 		}
+
+		colType := flux.ColumnType(typ)
+		if colType == flux.TInvalid {
+			return nil, errors.Newf(codes.FailedPrecondition, "output column %q is an invalid type; check that all inputs exist on all series", name)
+		}
 		cols = append(cols, flux.ColMeta{
 			Label: name,
-			Type:  flux.ColumnType(typ),
+			Type:  colType,
 		})
 	}
 
