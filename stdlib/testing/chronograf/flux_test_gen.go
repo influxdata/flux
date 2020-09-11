@@ -1694,7 +1694,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						},
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -3468,7 +3468,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						},
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -5539,7 +5539,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						},
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -5640,7 +5640,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   31,
 				},
 				File:   "buckets_test.flux",
-				Source: "package chronograf_test\n\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"\n\noutData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"\n\nbuckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])\n\ntest buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n})",
+				Source: "package chronograf_test\n\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,string,string,string,string,long,dateTime:RFC3339,string,string\n#group,false,false,true,false,false,false,false,false,true,true\n#default,_result,,0389eade5af4b000,,,,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod,_time,_field,_measurement\n,,0,,A,0389eade5b34b000,,0,1970-01-01T00:00:00Z,a,aa\n,,0,,B,042ed3f42d42e000,,0,1970-01-01T00:00:00Z,b,bb\n\"\n\noutData = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,,\n,result,table,_value\n,,0,A\n,,0,B\n\"\n\nbuckets_fn = (table=<-) => table\n    |> rename(columns: {name: \"_value\"})\n    |> keep(columns: [\"_value\"])\n\ntest buckets = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: buckets_fn,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -5656,7 +5656,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   12,
 					},
 					File:   "buckets_test.flux",
-					Source: "inData = \"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"",
+					Source: "inData = \"\n#datatype,string,long,string,string,string,string,long,dateTime:RFC3339,string,string\n#group,false,false,true,false,false,false,false,false,true,true\n#default,_result,,0389eade5af4b000,,,,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod,_time,_field,_measurement\n,,0,,A,0389eade5b34b000,,0,1970-01-01T00:00:00Z,a,aa\n,,0,,B,042ed3f42d42e000,,0,1970-01-01T00:00:00Z,b,bb\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -5690,14 +5690,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   12,
 						},
 						File:   "buckets_test.flux",
-						Source: "\"\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n\"",
+						Source: "\"\n#datatype,string,long,string,string,string,string,long,dateTime:RFC3339,string,string\n#group,false,false,true,false,false,false,false,false,true,true\n#default,_result,,0389eade5af4b000,,,,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod,_time,_field,_measurement\n,,0,,A,0389eade5b34b000,,0,1970-01-01T00:00:00Z,a,aa\n,,0,,B,042ed3f42d42e000,,0,1970-01-01T00:00:00Z,b,bb\n\"",
 						Start: ast.Position{
 							Column: 10,
 							Line:   5,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,string,string,string,string,long\n#group,false,false,true,false,false,false,false\n#default,_result,,0389eade5af4b000,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod\n,,0,,A,0389eade5b34b000,,0\n,,0,,B,042ed3f42d42e000,,0\n",
+				Value: "\n#datatype,string,long,string,string,string,string,long,dateTime:RFC3339,string,string\n#group,false,false,true,false,false,false,false,false,true,true\n#default,_result,,0389eade5af4b000,,,,,,,\n,result,table,organizationID,name,id,retentionPolicy,retentionPeriod,_time,_field,_measurement\n,,0,,A,0389eade5b34b000,,0,1970-01-01T00:00:00Z,a,aa\n,,0,,B,042ed3f42d42e000,,0,1970-01-01T00:00:00Z,b,bb\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -6675,7 +6675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						},
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -8463,7 +8463,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						},
 					},
-					Params: nil,
+					Params: []*ast.Property{},
 				},
 			},
 			BaseNode: ast.BaseNode{

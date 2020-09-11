@@ -139,6 +139,7 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
     Ok(BuiltinStmt {
         loc: stmt.base.location,
         id: convert_identifier(stmt.id, fresher)?,
+        typ_expr: convert_polytype(stmt.ty, fresher)?,
     })
 }
 

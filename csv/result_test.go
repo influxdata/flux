@@ -22,7 +22,6 @@ import (
 
 type TestCase struct {
 	name          string
-	skip          bool
 	encoded       []byte
 	result        *executetest.Result
 	err           error
@@ -1244,9 +1243,6 @@ func TestResultDecoder(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip {
-				t.Skip()
-			}
 			decoder := csv.NewResultDecoder(tc.decoderConfig)
 			result, err := decoder.Decode(bytes.NewReader(tc.encoded))
 			if err != nil {
@@ -1420,9 +1416,6 @@ func TestResultEncoder(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip {
-				t.Skip()
-			}
 			encoder := csv.NewResultEncoder(tc.encoderConfig)
 			var got bytes.Buffer
 			n, err := encoder.Encode(&got, tc.result)
@@ -1711,6 +1704,43 @@ func TestMultiResultEncoder(t *testing.T) {
 			}}),
 			encoded: nil,
 			err:     errors.New("csv encoder error: unknown column type invalid"),
+		},
+		{
+			name:   "result and table meta columns are never part of a group key #3161",
+			config: csv.DefaultEncoderConfig(),
+			results: flux.NewSliceResultIterator([]flux.Result{&executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop", "_measurement", "result", "table"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "result", Type: flux.TString},
+						{Label: "table", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							"cpu",
+							"A",
+							"B",
+							42.0,
+						},
+					},
+				}},
+			}}),
+			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
+#group,false,false,true,true,false,true,true,true,false
+#default,_result,,,,,,,,
+,result,table,_start,_stop,_time,_measurement,result,table,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,B,42
+
+`),
 		},
 	}
 	for _, tc := range testCases {

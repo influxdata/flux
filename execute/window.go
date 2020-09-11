@@ -19,9 +19,7 @@ type Window struct {
 // It also validates that the durations are valid when
 // used within a window.
 func NewWindow(every, period, offset Duration) (Window, error) {
-	// Normalize the offset to a small positive duration
 	offset = offset.Normalize(every)
-
 	w := Window{
 		Every:  every,
 		Period: period,
@@ -38,7 +36,9 @@ type truncateFunc func(t Time, d Duration) Time
 func (w *Window) getTruncateFunc(d Duration) (truncateFunc, error) {
 	switch months, nsecs := d.Months(), d.Nanoseconds(); {
 	case months != 0 && nsecs != 0:
-		return nil, errors.New(codes.Invalid, "duration used as an interval cannot mix month and nanosecond units")
+		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#calendar-months-and-years"
+		return nil, errors.New(codes.Invalid, "duration used as an interval cannot mix month and nanosecond units").
+			WithDocURL(docURL)
 	case months != 0:
 		return truncateByMonths, nil
 	case nsecs != 0:

@@ -14,11 +14,11 @@ import (
 func TestNewWindow(t *testing.T) {
 	t.Run("normal offset", func(t *testing.T) {
 		want := execute.Window{
-			Every:  values.ConvertDuration(time.Minute),
-			Period: values.ConvertDuration(time.Minute),
-			Offset: values.ConvertDuration(time.Second),
+			Every:  values.ConvertDurationNsecs(time.Minute),
+			Period: values.ConvertDurationNsecs(time.Minute),
+			Offset: values.ConvertDurationNsecs(time.Second),
 		}
-		got := MustWindow(values.ConvertDuration(time.Minute), values.ConvertDuration(time.Minute), values.ConvertDuration(time.Second))
+		got := MustWindow(values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Second), false)
 		if !cmp.Equal(want, got) {
 			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -27,14 +27,14 @@ func TestNewWindow(t *testing.T) {
 	// offset larger than "every" duration will be normalized
 	t.Run("larger offset", func(t *testing.T) {
 		want := execute.Window{
-			Every:  values.ConvertDuration(time.Minute),
-			Period: values.ConvertDuration(time.Minute),
-			Offset: values.ConvertDuration(30 * time.Second),
+			Every:  values.ConvertDurationNsecs(time.Minute),
+			Period: values.ConvertDurationNsecs(time.Minute),
+			Offset: values.ConvertDurationNsecs(30 * time.Second),
 		}
 		got := MustWindow(
-			values.ConvertDuration(time.Minute),
-			values.ConvertDuration(time.Minute),
-			values.ConvertDuration(2*time.Minute+30*time.Second))
+			values.ConvertDurationNsecs(time.Minute),
+			values.ConvertDurationNsecs(time.Minute),
+			values.ConvertDurationNsecs(2*time.Minute+30*time.Second), false)
 		if !cmp.Equal(want, got) {
 			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -43,14 +43,14 @@ func TestNewWindow(t *testing.T) {
 	// Negative offset will be normalized
 	t.Run("negative offset", func(t *testing.T) {
 		want := execute.Window{
-			Every:  values.ConvertDuration(time.Minute),
-			Period: values.ConvertDuration(time.Minute),
-			Offset: values.ConvertDuration(30 * time.Second),
+			Every:  values.ConvertDurationNsecs(time.Minute),
+			Period: values.ConvertDurationNsecs(time.Minute),
+			Offset: values.ConvertDurationNsecs(30 * time.Second),
 		}
 		got := MustWindow(
-			values.ConvertDuration(time.Minute),
-			values.ConvertDuration(time.Minute),
-			values.ConvertDuration(-2*time.Minute+30*time.Second))
+			values.ConvertDurationNsecs(time.Minute),
+			values.ConvertDurationNsecs(time.Minute),
+			values.ConvertDurationNsecs(-2*time.Minute+30*time.Second), false)
 		if !cmp.Equal(want, got) {
 			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -62,8 +62,7 @@ func TestNewWindow(t *testing.T) {
 		_, gotErr := execute.NewWindow(
 			mustParseDuration("1mo2w"),
 			mustParseDuration("1mo2w"),
-			values.Duration{},
-		)
+			values.Duration{})
 		if want, got := errAsString(wantErr), errAsString(gotErr); want != got {
 			t.Errorf("window error different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -75,8 +74,7 @@ func TestNewWindow(t *testing.T) {
 		_, gotErr := execute.NewWindow(
 			values.Duration{},
 			values.Duration{},
-			values.Duration{},
-		)
+			values.Duration{})
 		if want, got := errAsString(wantErr), errAsString(gotErr); want != got {
 			t.Errorf("window error different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -93,9 +91,9 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		{
 			name: "simple",
 			w: MustWindow(
-				values.ConvertDuration(5*time.Minute),
-				values.ConvertDuration(5*time.Minute),
-				values.ConvertDuration(0)),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(0), false),
 			t: execute.Time(6 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(5 * time.Minute),
@@ -105,9 +103,9 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		{
 			name: "simple with offset",
 			w: MustWindow(
-				values.ConvertDuration(5*time.Minute),
-				values.ConvertDuration(5*time.Minute),
-				values.ConvertDuration(30*time.Second)),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second), false),
 			t: execute.Time(5 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(30 * time.Second),
@@ -115,11 +113,47 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			},
 		},
 		{
+			name: "simple months",
+			w: MustWindow(
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(0), true),
+			t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+			want: execute.Bounds{
+				Start: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+				Stop:  values.ConvertTime(time.Date(1970, time.June, 1, 0, 0, 0, 0, time.UTC)),
+			},
+		},
+		//{
+		//	name: "simple months with offset",
+		//	w: MustWindow(
+		//		values.ConvertDurationMonths(3),
+		//		values.ConvertDurationMonths(3),
+		//		values.ConvertDurationMonths(1), true),
+		//	t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+		//	want: execute.Bounds{
+		//		Start: values.ConvertTime(time.Date(1969, time.November, 1, 0, 0, 0, 0, time.UTC)),
+		//		Stop:  values.ConvertTime(time.Date(1970, time.February, 1, 0, 0, 0, 0, time.UTC)),
+		//	},
+		//},
+		//{
+		//	name: "months with equal offset",
+		//	w: MustWindow(
+		//		values.ConvertDurationMonths(5),
+		//		values.ConvertDurationMonths(5),
+		//		values.ConvertDurationMonths(5), true),
+		//	t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+		//	want: execute.Bounds{
+		//		Start: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
+		//		Stop:  values.ConvertTime(time.Date(1970, time.June, 1, 0, 0, 0, 0, time.UTC)),
+		//	},
+		//},
+		{
 			name: "underlapping",
 			w: MustWindow(
-				values.ConvertDuration(2*time.Minute),
-				values.ConvertDuration(1*time.Minute),
-				values.ConvertDuration(30*time.Second)),
+				values.ConvertDurationNsecs(2*time.Minute),
+				values.ConvertDurationNsecs(1*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second), false),
 			t: execute.Time(3 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(3*time.Minute + 30*time.Second),
@@ -129,9 +163,9 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		{
 			name: "underlapping not contained",
 			w: MustWindow(
-				values.ConvertDuration(2*time.Minute),
-				values.ConvertDuration(1*time.Minute),
-				values.ConvertDuration(30*time.Second)),
+				values.ConvertDurationNsecs(2*time.Minute),
+				values.ConvertDurationNsecs(1*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second), false),
 			t: execute.Time(2*time.Minute + 45*time.Second),
 			want: execute.Bounds{
 				Start: execute.Time(3*time.Minute + 30*time.Second),
@@ -141,9 +175,9 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		{
 			name: "overlapping",
 			w: MustWindow(
-				values.ConvertDuration(1*time.Minute),
-				values.ConvertDuration(2*time.Minute),
-				values.ConvertDuration(30*time.Second)),
+				values.ConvertDurationNsecs(1*time.Minute),
+				values.ConvertDurationNsecs(2*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second), false),
 			t: execute.Time(30 * time.Second),
 			want: execute.Bounds{
 				Start: execute.Time(-30 * time.Second),
@@ -153,9 +187,9 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		{
 			name: "partially overlapping",
 			w: MustWindow(
-				values.ConvertDuration(1*time.Minute),
-				values.ConvertDuration(3*time.Minute+30*time.Second),
-				values.ConvertDuration(30*time.Second)),
+				values.ConvertDurationNsecs(1*time.Minute),
+				values.ConvertDurationNsecs(3*time.Minute+30*time.Second),
+				values.ConvertDurationNsecs(30*time.Second), false),
 			t: execute.Time(5*time.Minute + 45*time.Second),
 			want: execute.Bounds{
 				Start: execute.Time(3 * time.Minute),
@@ -165,9 +199,9 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 		{
 			name: "partially overlapping (t on boundary)",
 			w: MustWindow(
-				values.ConvertDuration(1*time.Minute),
-				values.ConvertDuration(3*time.Minute+30*time.Second),
-				values.ConvertDuration(30*time.Second)),
+				values.ConvertDurationNsecs(1*time.Minute),
+				values.ConvertDurationNsecs(3*time.Minute+30*time.Second),
+				values.ConvertDurationNsecs(30*time.Second), false),
 			t: execute.Time(5 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(2 * time.Minute),
@@ -198,8 +232,8 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 		{
 			name: "simple",
 			w: execute.Window{
-				Every:  values.ConvertDuration(time.Minute),
-				Period: values.ConvertDuration(time.Minute),
+				Every:  values.ConvertDurationNsecs(time.Minute),
+				Period: values.ConvertDurationNsecs(time.Minute),
 			},
 			b: execute.Bounds{
 				Start: execute.Time(5 * time.Minute),
@@ -214,9 +248,9 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 		{
 			name: "simple with offset",
 			w: execute.Window{
-				Every:  values.ConvertDuration(time.Minute),
-				Period: values.ConvertDuration(time.Minute),
-				Offset: values.ConvertDuration(15 * time.Second),
+				Every:  values.ConvertDurationNsecs(time.Minute),
+				Period: values.ConvertDurationNsecs(time.Minute),
+				Offset: values.ConvertDurationNsecs(15 * time.Second),
 			},
 			b: execute.Bounds{
 				Start: execute.Time(5 * time.Minute),
@@ -240,8 +274,8 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 		{
 			name: "underlapping, bounds in gap",
 			w: execute.Window{
-				Every:  values.ConvertDuration(2 * time.Minute),
-				Period: values.ConvertDuration(time.Minute),
+				Every:  values.ConvertDurationNsecs(2 * time.Minute),
+				Period: values.ConvertDurationNsecs(time.Minute),
 			},
 			b: execute.Bounds{
 				Start: execute.Time(30 * time.Second),
@@ -252,9 +286,9 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 		{
 			name: "underlapping",
 			w: execute.Window{
-				Every:  values.ConvertDuration(2 * time.Minute),
-				Period: values.ConvertDuration(time.Minute),
-				Offset: values.ConvertDuration(30 * time.Second),
+				Every:  values.ConvertDurationNsecs(2 * time.Minute),
+				Period: values.ConvertDurationNsecs(time.Minute),
+				Offset: values.ConvertDurationNsecs(30 * time.Second),
 			},
 			b: execute.Bounds{
 				Start: execute.Time(time.Minute + 45*time.Second),
@@ -274,8 +308,8 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 		{
 			name: "overlapping",
 			w: execute.Window{
-				Every:  values.ConvertDuration(1 * time.Minute),
-				Period: values.ConvertDuration(2*time.Minute + 15*time.Second),
+				Every:  values.ConvertDurationNsecs(1 * time.Minute),
+				Period: values.ConvertDurationNsecs(2*time.Minute + 15*time.Second),
 			},
 			b: execute.Bounds{
 				Start: execute.Time(10 * time.Minute),
@@ -385,7 +419,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 	}
 }
 
-func MustWindow(every, period, offset execute.Duration) execute.Window {
+func MustWindow(every, period, offset execute.Duration, months bool) execute.Window {
 	w, err := execute.NewWindow(every, period, offset)
 	if err != nil {
 		panic(err)

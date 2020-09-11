@@ -10,8 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/asttest"
-	goparser "github.com/influxdata/flux/internal/parser"
-	"github.com/influxdata/flux/internal/token"
 	"github.com/influxdata/flux/libflux/go/libflux"
 )
 
@@ -188,7 +186,7 @@ import "my_other_pkg"
 import "yet_another_pkg"
 option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
-builtin foo
+builtin foo : int
 
 test aggregate_window_empty = () => ({
     input: testing.loadStorage(csv: inData),
@@ -254,7 +252,6 @@ re !~ /foo/
 		t.Run(tc.name, func(t *testing.T) {
 			// src -> rust AST -> rustJSONA -> Go AST -> goJSON -> Rust AST -> rustJSONB
 			// Compare rustJSONA and rustJSONB
-
 			astPkgA := libflux.ParseString(tc.fluxFile)
 			rustJSONA, err := astPkgA.MarshalJSON()
 			if err != nil {
@@ -277,25 +274,6 @@ re !~ /foo/
 				t.Fatal(err)
 			}
 			compareIndentedJSON(t, rustJSONA, rustJSONB)
-
-			// Following test can be removed when Go parser is retired and completely unused
-			// src --go-parse--> Go AST -> JSON -> Rust AST
-
-			var tok token.File
-			goASTFile := goparser.ParseFile(&tok, []byte(tc.fluxFile))
-			goAST = ast.Package{
-				Files: []*ast.File{
-					goASTFile,
-				},
-			}
-			goJSON, err = json.Marshal(&goAST)
-			if err != nil {
-				t.Fatal(err)
-			}
-			goJSON = mustIndent(t, goJSON)
-			if _, err := libflux.ParseJSON(goJSON); err != nil {
-				t.Fatal(err)
-			}
 		})
 	}
 }

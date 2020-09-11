@@ -659,9 +659,9 @@ func (c *durationConv) Call(ctx context.Context, args values.Object) (values.Val
 		}
 		d = n
 	case semantic.Int:
-		d = values.ConvertDuration(time.Duration(v.Int()))
+		d = values.ConvertDurationNsecs(time.Duration(v.Int()))
 	case semantic.UInt:
-		d = values.ConvertDuration(time.Duration(v.UInt()))
+		d = values.ConvertDurationNsecs(time.Duration(v.UInt()))
 	case semantic.Duration:
 		d = v.Duration()
 	default:

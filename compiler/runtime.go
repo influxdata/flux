@@ -10,6 +10,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -570,6 +571,23 @@ type functionValue struct {
 	fn     *semantic.FunctionExpression
 	params []functionParam
 	scope  Scope
+}
+
+// functionValue implements the interpreter.Resolver interface.
+var _ interpreter.Resolver = (*functionValue)(nil)
+
+func (f *functionValue) Resolve() (semantic.Node, error) {
+	n := f.fn.Copy()
+	localIdentifiers := make([]string, 0, 10)
+	node, err := interpreter.ResolveIdsInFunction(f.scope, f.fn, n, &localIdentifiers)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
+}
+
+func (f functionValue) Scope() values.Scope {
+	return f.scope
 }
 
 type functionParam struct {

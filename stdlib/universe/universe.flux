@@ -10,92 +10,102 @@ import "regexp"
 option now = system.time
 
 // Booleans
-builtin true
-builtin false
+builtin true : bool
+builtin false : bool
 
 // Transformation functions
-builtin chandeMomentumOscillator
-builtin columns
-builtin count
-builtin covariance
-builtin cumulativeSum
-builtin derivative
-builtin difference
-builtin distinct
-builtin drop
-builtin duplicate
-builtin elapsed
-builtin exponentialMovingAverage
-builtin fill
-builtin filter
-builtin first
-builtin group
-builtin histogram
-builtin histogramQuantile
-builtin holtWinters
-builtin hourSelection
-builtin integral
-builtin join
-builtin kaufmansAMA
-builtin keep
-builtin keyValues
-builtin keys
-builtin last
-builtin limit
-builtin map
-builtin max
-builtin mean
-builtin min
-builtin mode
-builtin movingAverage
-builtin quantile
-builtin pivot
-builtin range
-builtin reduce
-builtin relativeStrengthIndex
-builtin rename
-builtin sample
-builtin set
-builtin tail
-builtin timeShift
-builtin skew
-builtin spread
-builtin sort
-builtin stateTracking
-builtin stddev
-builtin sum
-builtin tripleExponentialDerivative
-builtin union
-builtin unique
-builtin window
-builtin yield
+builtin chandeMomentumOscillator : (<-tables: [A],  n: int, ?columns: [string]) => [B] where A: Record, B: Record
+builtin columns : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin count : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin covariance : (<-tables: [A], ?pearsonr: bool, ?valueDst: string, columns: [string]) => [B] where A: Record, B: Record
+builtin cumulativeSum : (<-tables: [A], ?columns: [string]) => [B] where A: Record, B: Record
+builtin derivative : (<-tables: [A], ?unit: duration, ?nonNegative: bool, ?columns: [string], ?timeColumn: string) => [B] where A: Record, B: Record
+builtin die : (msg: string) => A
+builtin difference : (<-tables: [T], ?nonNegative: bool, ?columns: [string], ?keepFirst: bool) => [R] where T: Record, R: Record
+builtin distinct : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin drop : (<-tables: [A], ?fn: (column: string) => bool, ?columns: [string]) => [B] where A: Record, B: Record
+builtin duplicate : (<-tables: [A], column: string, as: string) => [B] where A: Record, B: Record
+builtin elapsed : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?columnName: string) => [B] where A: Record, B: Record
+builtin exponentialMovingAverage : (<-tables: [{ B with _value: A}], n: int) => [{ B with _value: A }] where A: Numeric
+builtin fill : (<-tables: [A], ?column: string, ?value: B, ?usePrevious: bool) => [C] where A: Record, C: Record
+builtin filter : (<-tables: [A], fn: (r: A) => bool, ?onEmpty: string) => [A] where A: Record
+builtin first : ( <-tables: [A], ?column: string) => [A] where A: Record
+builtin group : (<-tables: [A], ?mode: string, ?columns: [string]) => [A] where A: Record
+builtin histogram : (<-tables: [A], ?column: string, ?upperBoundColumn: string, ?countColumn: string, bins: [float], ?normalize: bool) => [B] where A: Record, B: Record
+builtin histogramQuantile : (<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string, ?minValue: float) => [B] where A: Record, B: Record
+builtin holtWinters : (<-tables: [A], n: int, interval: duration, ?withFit: bool, ?column: string, ?timeColumn: string, ?seasonality: int) => [B] where A: Record, B: Record
+builtin hourSelection : (<-tables: [A], start: int, stop: int, ?timeColumn: string) => [A] where A: Record
+builtin integral : (<-tables: [A], ?unit: duration, ?timeColumn: string, ?column: string, ?interpolate: string) => [B] where A: Record, B: Record
+builtin join : (<-tables: A, ?method: string, ?on: [string]) => [B] where A: Record, B: Record
+builtin kaufmansAMA : (<-tables: [A], n: int, ?column: string) => [B] where A: Record, B: Record
+builtin keep : (<-tables: [A], ?columns: [string], ?fn: (column: string) => bool) => [B] where A: Record, B: Record
+builtin keyValues : (<-tables: [A], ?keyColumns: [string]) => [{C with _key: string , _value: B}] where A: Record, C: Record
+builtin keys : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin last : (<-tables: [A], ?column: string) => [A] where A: Record
+builtin limit : (<-tables: [A], n: int, ?offset: int) => [A]
+builtin map : (<-tables: [A], fn: (r: A) => B, ?mergeKey: bool) => [B]
+builtin max : (<-tables: [A], ?column: string) => [A] where A: Record
+builtin mean : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin min : (<-tables: [A], ?column: string) => [A] where A: Record
+builtin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A: Record, C: Record
+builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric
+builtin quantile : (<-tables: [A], ?column: string, q: float, ?compression: float, ?method: string) => [A] where A: Record
+builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B] where A: Record, B: Record
+builtin range : (<-tables: [A], start: B, ?stop: C, ?timeColumn: string, ?startColumn: string, ?stopColumn: string) => [D] where A: Record, D: Record
+builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C] where A: Record, B: Record, C: Record
+builtin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
+builtin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C] where A: Record, B: Record, C: Record
+builtin sample : (<-tables: [A], n: int, ?pos: int, ?column: string) => [A] where A: Record
+builtin set : (<-tables: [A], key: string, value: string) => [A] where A: Record
+builtin tail : (<-tables: [A], n: int, ?offset: int) => [A]
+builtin timeShift : (<-tables: [A], duration: duration, ?columns: [string]) => [A]
+builtin skew : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin spread : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin sort : (<-tables: [A], ?columns: [string], ?desc: bool) => [A] where A: Record
+builtin stateTracking : (<-tables: [A], fn: (r: A) => bool, ?countColumn: string, ?durationColumn: string, ?durationUnit: duration, ?timeColumn: string) => [B] where A: Record, B: Record
+builtin stddev : (<-tables: [A], ?column: string, ?mode: string) => [B] where A: Record, B: Record
+builtin sum : (<-tables: [A], ?column: string) => [B] where A: Record, B: Record
+builtin tripleExponentialDerivative : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric, B: Record
+builtin union : (tables: [[A]]) => [A] where A: Record
+builtin unique : (<-tables: [A], ?column: string) => [A] where A: Record
+builtin window : (<-tables: [A], ?every: duration, ?period: duration, ?offset: duration, ?timeColumn: string, ?startColumn: string, ?stopColumn: string, ?createEmpty: bool) => [B] where A: Record, B: Record
+builtin yield : (<-tables: [A], ?name: string) => [A] where A: Record
 
 // stream/table index functions
-builtin tableFind
-builtin getColumn
-builtin getRecord
-builtin findColumn
-builtin findRecord
+builtin tableFind : (<-tables: [A], fn: (key: B) => bool) => [A] where A: Record, B: Record
+builtin getColumn : (<-table: [A], column: string) => [B] where A: Record
+builtin getRecord : (<-table: [A], idx: int) => A where A: Record
+builtin findColumn : (<-tables: [A], fn: (key: B) => bool, column: string) => [C] where A: Record, B: Record
+builtin findRecord : (<-tables: [A], fn: (key: B) => bool, idx: int) => A where A: Record, B: Record
 
 // type conversion functions
-builtin bool
-builtin bytes
-builtin duration
-builtin float
-builtin int
-builtin string
-builtin time
-builtin uint
+builtin bool : (v: A) => bool
+builtin bytes : (v: A) => bool
+builtin duration : (v: A) => duration
+builtin float : (v: A) => float
+builtin int : (v: A) => int
+builtin string : (v: A) => string
+builtin time : (v: A) => time
+builtin uint : (v: A) => uint
 
 // contains function
-builtin contains
+builtin contains : (value: A, set: [A]) => bool where A: Nullable
 
 // other builtins
-builtin inf
-builtin length // length function for arrays
-builtin linearBins
-builtin logarithmicBins
-builtin sleep // sleep is the identity function with the side effect of delaying execution by a specified duration
+builtin inf : duration
+builtin length : (arr: [A]) => int
+builtin linearBins : (start: float, width: float, count: int, ?infinity: bool) => [float]
+builtin logarithmicBins : (start: float, factor: float, count: int, ?infinity: bool) => [float]
+
+// sleep is the identity function with the side effect of delaying execution by a specified duration
+builtin sleep : (<-v: A, duration: duration) => A
+// die returns a fatal error from within a flux script
+builtin die : (msg: string) => A
+
+// Time weighted average where values at the beginning and end of the range are linearly interpolated.
+timeWeightedAvg = (tables=<-, unit) => tables
+    |> integral(unit: unit, interpolate: "linear")
+    |> map(fn: (r) => ({ r with _value: (r._value * float(v: uint(v: unit))) / float(v: int(v: r._stop) - int(v: r._start)) }))
 
 // covariance function with automatic join
 cov = (x,y,on,pearsonr=false) =>

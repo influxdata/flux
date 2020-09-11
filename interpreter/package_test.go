@@ -38,7 +38,6 @@ func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, err
 }
 
 func TestAccessNestedImport(t *testing.T) {
-	t.Skip("Handle imports for user-defined packages https://github.com/influxdata/flux/issues/2343")
 	// package a
 	// x = 0
 	packageA := interpreter.NewPackageWithValues("a", "", values.NewObjectWithValues(map[string]values.Value{

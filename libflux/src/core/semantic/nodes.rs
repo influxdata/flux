@@ -452,8 +452,8 @@ impl OptionStmt {
 #[derive(Debug, PartialEq, Clone)]
 pub struct BuiltinStmt {
     pub loc: ast::SourceLocation,
-
     pub id: Identifier,
+    pub typ_expr: PolyType,
 }
 
 impl BuiltinStmt {

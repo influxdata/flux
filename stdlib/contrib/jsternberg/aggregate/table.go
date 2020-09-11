@@ -228,7 +228,7 @@ func (t *tableTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 		}
 	}
 
-	outTable, err := t.buildTable(tbl.Key(), columns)
+	outTable, err := t.buildTable(tbl.Key(), nil, nil, columns)
 	if err != nil {
 		return err
 	}
@@ -300,24 +300,31 @@ func (t *tableTransformation) prepare(cols []flux.ColMeta, n int) ([]*columnStat
 	return columns, nil
 }
 
-func (t *tableTransformation) buildTable(key flux.GroupKey, columns []*columnState) (flux.Table, error) {
+func (t *tableTransformation) buildTable(key flux.GroupKey, cols []flux.ColMeta, arrs []array.Interface, columns []*columnState) (flux.Table, error) {
 	// Construct the table schema.
 	buffer := &arrow.TableBuffer{
 		GroupKey: key,
-		Columns:  make([]flux.ColMeta, len(key.Cols())+len(columns)),
+		Columns:  make([]flux.ColMeta, len(key.Cols())+len(cols)+len(columns)),
 	}
 	buffer.Values = make([]array.Interface, len(buffer.Columns))
 
-	// Create columns for the output values.
+	// Add the additional columns if present.
 	offset := len(key.Cols())
+	for i, c := range cols {
+		buffer.Columns[i+offset] = c
+		buffer.Values[i+offset] = arrs[i]
+	}
+	offset += len(cols)
+
+	// Create columns for the output values.
 	for i, cs := range columns {
 		buffer.Columns[i+offset] = flux.ColMeta{
 			Label: cs.Label,
 			Type:  cs.Type,
 		}
-		buffer.Values[i] = cs.Builder.NewArray()
+		buffer.Values[i+offset] = cs.Builder.NewArray()
 	}
-	n := buffer.Values[0].Len()
+	n := buffer.Values[offset].Len()
 
 	// Copy over the group key columns.
 	for i, c := range key.Cols() {

@@ -1,28 +1,28 @@
 package experimental
 
-builtin addDuration
-builtin subDuration
+builtin addDuration : (d: duration, to: time) => time
+builtin subDuration : (d: duration, from: time) => time
 
 // An experimental version of group that has mode: "extend"
-builtin group
+builtin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A: Record
 
 // objectKeys produces a list of the keys existing on the object
-builtin objectKeys
+builtin objectKeys : (o: A) => [string] where A: Record
 
 // set adds the values from the object onto each row of a table
-builtin set
+builtin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record
 
 // An experimental version of "to" that:
 // - Expects pivoted data
 // - Any column in the group key is made a tag in storage
 // - All other columns are fields
 // - An error will be thrown for incompatible data types
-builtin to
+builtin to : (<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Record
 
 // An experimental version of join.
-builtin join
+builtin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record
 
-builtin chain
+builtin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record
 
 // Aligns all tables to a common start time by using the same _time value for
 // the first record in each table and incrementing all subsequent _time values

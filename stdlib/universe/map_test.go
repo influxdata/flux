@@ -116,7 +116,6 @@ func TestMap_NewQuery(t *testing.T) {
 func TestMap_Process(t *testing.T) {
 	builtIns := runtime.Prelude()
 	testCases := []struct {
-		skip    string
 		name    string
 		spec    *universe.MapProcedureSpec
 		data    []flux.Table
@@ -716,6 +715,120 @@ f
 			}},
 		},
 		{
+			name: `error returning array property`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_value: ["str"]})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(1)},
+				},
+			}},
+			wantErr: errors.New(`map object property "_value" is array type which is not supported in a flux table`),
+		},
+		{
+			name: `error returning regexp property`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_value: /ab?/})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(1)},
+				},
+			}},
+			wantErr: errors.New(`map object property "_value" is regexp type which is not supported in a flux table`),
+		},
+		{
+			name: `error returning function property`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_value: (p) => 1})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(1)},
+				},
+			}},
+			wantErr: errors.New(`map object property "_value" is function type which is not supported in a flux table`),
+		},
+		{
+			name: `error returning duration property`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_value: 1d})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(1)},
+				},
+			}},
+			wantErr: errors.New(`map object property "_value" is duration type which is not supported in a flux table`),
+		},
+		{
+			name: `error returning object property`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_value: {v: 1}})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(1)},
+				},
+			}},
+			wantErr: errors.New(`map object property "_value" is object type which is not supported in a flux table`),
+		},
+		{
+			name: `error returning byte property`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_value: bytes(v: "123")})`),
+				},
+			},
+			data: []flux.Table{&executetest.Table{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "_value", Type: flux.TUInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), uint64(1)},
+				},
+			}},
+			wantErr: errors.New(`map object property "_value" is bytes type which is not supported in a flux table`),
+		},
+		{
 			name: `float("foo") produces error`,
 			spec: &universe.MapProcedureSpec{
 				Fn: interpreter.ResolvedFunction{
@@ -730,7 +843,6 @@ f
 				},
 				Data: [][]interface{}{
 					{execute.Time(1), uint64(1)},
-					{execute.Time(2), uint64(6)},
 				},
 			}},
 			wantErr: errors.New(`failed to evaluate map function: strconv.ParseFloat: parsing "foo": invalid syntax`),
@@ -824,9 +936,6 @@ f
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip != "" {
-				t.Skip(tc.skip)
-			}
 			executetest.ProcessTestHelper(
 				t,
 				tc.data,

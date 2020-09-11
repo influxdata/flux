@@ -21,7 +21,6 @@ import (
 func TestTablesEqual(t *testing.T) {
 
 	testCases := []struct {
-		skip    bool
 		name    string
 		data0   *executetest.Table // data from parent 0
 		data1   *executetest.Table // data from parent 1
@@ -153,10 +152,6 @@ func TestTablesEqual(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip {
-				t.Skip()
-			}
-
 			// this is used to normalize tables
 			tc.data0.Key()
 			tc.data1.Key()

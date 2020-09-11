@@ -25,7 +25,7 @@ type WindowOpSpec struct {
 	CreateEmpty bool          `json:"createEmpty"`
 }
 
-var infinityVar = values.NewDuration(values.ConvertDuration(math.MaxInt64))
+var infinityVar = values.NewDuration(values.ConvertDurationNsecs(math.MaxInt64))
 
 func init() {
 	windowSignature := runtime.MustLookupBuiltinType("universe", "window")
@@ -44,19 +44,31 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	spec := new(WindowOpSpec)
-	every, everySet, err := args.GetDuration("every")
-	if err != nil {
-		return nil, err
-	}
-	if everySet {
-		if every.IsNegative() {
-			return nil, errors.New(codes.Invalid, `every parameter must be nonnegative`)
+
+	every, everySet, err := func() (flux.Duration, bool, error) {
+		d, ok, err := args.GetDuration("every")
+		if err != nil || !ok {
+			return flux.Duration{}, ok, err
 		}
+
+		if d.IsNegative() {
+			return flux.Duration{}, false, errors.New(codes.Invalid, `parameter "every" must be nonnegative`)
+		} else if d.IsZero() {
+			return flux.Duration{}, false, errors.New(codes.Invalid, `parameter "every" must be nonzero`)
+		}
+		return d, true, nil
+	}()
+	if err != nil {
+		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#every"
+		return nil, errors.WithDocURL(err, docURL)
+	} else if everySet {
 		spec.Every = every
 	}
+
 	period, periodSet, err := args.GetDuration("period")
 	if err != nil {
-		return nil, err
+		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#period"
+		return nil, errors.WithDocURL(err, docURL)
 	}
 	if periodSet {
 		spec.Period = period
@@ -68,7 +80,9 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	}
 
 	if !everySet && !periodSet {
-		return nil, errors.New(codes.Invalid, `window function requires at least one of "every" or "period" to be set`)
+		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/"
+		return nil, errors.New(codes.Invalid, `window function requires at least one of "every" or "period" to be set`).
+			WithDocURL(docURL)
 	}
 
 	if label, ok, err := args.GetString("timeColumn"); err != nil {
@@ -169,7 +183,9 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 
 	bounds := a.StreamContext().Bounds()
 	if bounds == nil {
-		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window")
+		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#nil-bounds-passed-to-window"
+		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window; use range to set the window range").
+			WithDocURL(docURL)
 	}
 
 	w, err := execute.NewWindow(
@@ -241,7 +257,9 @@ func (t *fixedWindowTransformation) RetractTable(id execute.DatasetID, key flux.
 func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
 	timeIdx := execute.ColIdx(t.timeCol, tbl.Cols())
 	if timeIdx < 0 {
-		return errors.Newf(codes.FailedPrecondition, "missing time column %q", t.timeCol)
+		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#missing-time-column"
+		return errors.Newf(codes.FailedPrecondition, "missing time column %q", t.timeCol).
+			WithDocURL(docURL)
 	}
 
 	newCols := make([]flux.ColMeta, 0, len(tbl.Cols())+2)

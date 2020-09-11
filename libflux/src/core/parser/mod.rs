@@ -528,9 +528,12 @@ impl Parser {
     fn parse_builtin_statement(&mut self) -> Statement {
         let t = self.expect(TOK_BUILTIN);
         let id = self.parse_identifier();
+        self.expect(TOK_COLON);
+        let _type = self.parse_type_expression();
         Statement::Builtin(Box::new(BuiltinStmt {
             base: self.base_node_from_other_end(&t, &id.base),
             id,
+            ty: _type,
         }))
     }
 
@@ -598,13 +601,14 @@ impl Parser {
     fn parse_function(&mut self) -> MonoType {
         let _lparen = self.expect(TOK_LPAREN);
 
-        let mut params = Vec::<ParameterType>::new();
-        if self.peek().tok == TOK_PIPE_RECEIVE
+        let params = if self.peek().tok == TOK_PIPE_RECEIVE
             || self.peek().tok == TOK_QUESTION_MARK
             || self.peek().tok == TOK_IDENT
         {
-            params = self.parse_parameters();
-        }
+            self.parse_parameters()
+        } else {
+            Vec::<ParameterType>::new()
+        };
         let _rparen = self.expect(TOK_RPAREN);
         self.expect(TOK_ARROW);
         let mt = self.parse_monotype();

@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   218,
 				},
 				File:   "geo.flux",
-				Source: "package geo\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\n\n// Units\noption units = {\n  distance: \"km\"\n}\n\n//\n// Builtin GIS functions\n//\n\n// Returns boolean whether the region contains specified geometry.\nbuiltin stContains\n\n// Returns distance from given region to specified geometry.\nbuiltin stDistance\n\n// Returns length of a curve.\nbuiltin stLength\n\n//\n// Flux GIS ST functions\n//\n\nST_Contains = (region, geometry, units=units) =>\n  stContains(region: region, geometry: geometry, units: units)\n\nST_Distance = (region, geometry, units=units) =>\n  stDistance(region: region, geometry: geometry, units: units)\n\nST_DWithin = (region, geometry, distance, units=units) =>\n  stDistance(region: region, geometry: geometry, units: units) <= distance\n\nST_Intersects = (region, geometry, units=units) =>\n  stDistance(region: region, geometry: geometry, units: units) <= 0.0\n\nST_Length = (geometry, units=units) =>\n  stLength(geometry: geometry, units: units)\n\n// Non-standard\nST_LineString = (tables=<-) =>\n  tables\n    |> reduce(fn: (r, accumulator) => ({\n        __linestring: accumulator.__linestring + (if accumulator.__count > 0 then \", \" else \"\") + string(v: r.lon) + \" \" + string(v: r.lat),\n        __count: accumulator.__count + 1\n      }), identity: {\n        __linestring: \"\",\n        __count: 0\n      }\n    )\n    |> drop(columns: [\"__count\"])\n    |> rename(columns: {__linestring: \"st_linestring\"})\n\n//\n// None of the following builtin functions are intended to be used by end users.\n//\n\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid\n\n// Returns level of specified cell ID token.\nbuiltin getLevel\n\n// Returns cell ID token for given cell or lat/lon point at specified level.\nbuiltin s2CellIDToken\n\n// Returns lat/lon coordinates of given cell ID token.\nbuiltin s2CellLatLon\n\n//\n// Flux functions\n//\n\n// Gets level of cell ID tag `s2cellID` from the first record from the first table in the stream.\n_detectLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666\n  return _level\n}\n\n//\n// Convenience functions\n//\n\n// Pivots values to row-wise sets.\ntoRows = (tables=<-) =>\n  tables\n    |> v1.fieldsAsCols()\n\n// Shapes data to meet the requirements of the geo package.\n// Renames fields containing latitude and longitude values to lat and lon.\n// Pivots values to row-wise sets.\n// Generates an s2_cell_id tag for each reach using lat and lon values.\n// Adds the s2_cell_id column to the group key.\nshapeData = (tables=<-, latField, lonField, level) =>\n  tables\n    |> map(fn: (r) => ({ r with\n        _field:\n          if r._field == latField then \"lat\"\n          else if r._field == lonField then \"lon\"\n          else r._field\n      })\n    )\n    |> toRows()\n    |> map(fn: (r) => ({ r with\n        s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)\n      })\n    )\n    |> experimental.group(\n      columns: [\"s2_cell_id\"],\n      mode: \"extend\"\n    )\n\n//\n// Filtering functions\n//\n\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel, units: units)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) =>\n  tables\n    |> filter(fn: (r) =>\n      ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})\n    )\n\n// Two-phase filtering by specified region.\n// Checks to see if data is already pivoted and contains a lat column.\n// Returns pivoted data.\nfilterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n  _columns =\n    tables\n      |> columns(column: \"_value\")\n      |> tableFind(fn: (key) => true )\n      |> getColumn(column: \"_value\")\n  _rows =\n    if contains(value: \"lat\", set: _columns) then\n      tables\n        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)\n    else\n      tables\n        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)\n        |> toRows()\n  _result =\n    if strict then\n      _rows\n        |> strictFilter(region)\n    else\n      _rows\n  return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
+				Source: "package geo\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\n\n// Units\noption units = {\n  distance: \"km\"\n}\n\n//\n// Builtin GIS functions\n//\n\n// Returns boolean whether the region contains specified geometry.\nbuiltin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record\n\n// Returns distance from given region to specified geometry.\nbuiltin stDistance : (region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record\n\n// Returns length of a curve.\nbuiltin stLength : (geometry: A, units: {distance: string}) => float where A: Record\n\n//\n// Flux GIS ST functions\n//\n\nST_Contains = (region, geometry, units=units) =>\n  stContains(region: region, geometry: geometry, units: units)\n\nST_Distance = (region, geometry, units=units) =>\n  stDistance(region: region, geometry: geometry, units: units)\n\nST_DWithin = (region, geometry, distance, units=units) =>\n  stDistance(region: region, geometry: geometry, units: units) <= distance\n\nST_Intersects = (region, geometry, units=units) =>\n  stDistance(region: region, geometry: geometry, units: units) <= 0.0\n\nST_Length = (geometry, units=units) =>\n  stLength(geometry: geometry, units: units)\n\n// Non-standard\nST_LineString = (tables=<-) =>\n  tables\n    |> reduce(fn: (r, accumulator) => ({\n        __linestring: accumulator.__linestring + (if accumulator.__count > 0 then \", \" else \"\") + string(v: r.lon) + \" \" + string(v: r.lat),\n        __count: accumulator.__count + 1\n      }), identity: {\n        __linestring: \"\",\n        __count: 0\n      }\n    )\n    |> drop(columns: [\"__count\"])\n    |> rename(columns: {__linestring: \"st_linestring\"})\n\n//\n// None of the following builtin functions are intended to be used by end users.\n//\n\n// Calculates grid (set of cell ID tokens) for given region and according to options.\nbuiltin getGrid : (region: T, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) => {level: int , set: [string]} where T: Record\n\n// Returns level of specified cell ID token.\nbuiltin getLevel : (token: string) => int\n\n// Returns cell ID token for given cell or lat/lon point at specified level.\nbuiltin s2CellIDToken : (?token: string, ?point: {lat: float , lon: float}, level: int) => string\n\n// Returns lat/lon coordinates of given cell ID token.\nbuiltin s2CellLatLon : (token: string) => {lat: float , lon: float}\n\n//\n// Flux functions\n//\n\n// Gets level of cell ID tag `s2cellID` from the first record from the first table in the stream.\n_detectLevel = (tables=<-) => {\n  _r0 =\n    tables\n      |> tableFind(fn: (key) => exists key.s2_cell_id)\n      |> getRecord(idx: 0)\n  _level =\n    if exists _r0 then\n      getLevel(token: _r0.s2_cell_id)\n    else\n       666\n  return _level\n}\n\n//\n// Convenience functions\n//\n\n// Pivots values to row-wise sets.\ntoRows = (tables=<-) =>\n  tables\n    |> v1.fieldsAsCols()\n\n// Shapes data to meet the requirements of the geo package.\n// Renames fields containing latitude and longitude values to lat and lon.\n// Pivots values to row-wise sets.\n// Generates an s2_cell_id tag for each reach using lat and lon values.\n// Adds the s2_cell_id column to the group key.\nshapeData = (tables=<-, latField, lonField, level) =>\n  tables\n    |> map(fn: (r) => ({ r with\n        _field:\n          if r._field == latField then \"lat\"\n          else if r._field == lonField then \"lon\"\n          else r._field\n      })\n    )\n    |> toRows()\n    |> map(fn: (r) => ({ r with\n        s2_cell_id: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)\n      })\n    )\n    |> experimental.group(\n      columns: [\"s2_cell_id\"],\n      mode: \"extend\"\n    )\n\n//\n// Filtering functions\n//\n\n// Filters records by a box, a circle or a polygon area using S2 cell ID tag.\n// It is a coarse filter, as the grid always overlays the region, the result will likely contain records\n// with lat/lon outside the specified region.\ngridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, units=units) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _grid = getGrid(region: region, minSize: minSize, maxSize: maxSize, level: level, maxLevel: _s2cellIDLevel, units: units)\n  return\n    tables\n      |> filter(fn: (r) =>\n        if _grid.level == _s2cellIDLevel then\n          contains(value: r.s2_cell_id, set: _grid.set)\n        else\n          contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set)\n      )\n}\n\n// Filters records by specified region.\n// It is an exact filter and must be used after `toRows()` because it requires `lat` and `lon` columns in input row sets.\nstrictFilter = (tables=<-, region) =>\n  tables\n    |> filter(fn: (r) =>\n      ST_Contains(region: region, geometry: {lat: r.lat, lon: r.lon})\n    )\n\n// Two-phase filtering by specified region.\n// Checks to see if data is already pivoted and contains a lat column.\n// Returns pivoted data.\nfilterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel=-1, strict=true) => {\n  _columns =\n    tables\n      |> columns(column: \"_value\")\n      |> tableFind(fn: (key) => true )\n      |> getColumn(column: \"_value\")\n  _rows =\n    if contains(value: \"lat\", set: _columns) then\n      tables\n        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)\n    else\n      tables\n        |> gridFilter(region: region, minSize: minSize, maxSize: maxSize, level: level, s2cellIDLevel: s2cellIDLevel)\n        |> toRows()\n  _result =\n    if strict then\n      _rows\n        |> strictFilter(region)\n    else\n      _rows\n  return _result\n}\n\n//\n// Grouping functions\n//\n// intended to be used row-wise sets (i.e after `toRows()`)\n\n// Groups data by area of size specified by level. Result is grouped by `newColumn`.\n// Grouping levels: https://s2geometry.io/resources/s2cell_statistics.html\ngroupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {\n  _s2cellIDLevel =\n    if s2cellIDLevel == -1 then\n      tables\n        |> _detectLevel()\n    else\n      s2cellIDLevel\n  _prepared =\n    if level == _s2cellIDLevel then\n      tables\n\t    |> duplicate(column: \"s2_cell_id\", as: newColumn)\n    else\n      tables\n        |> map(fn: (r) => ({\n             r with\n               _s2_cell_id_xxx: s2CellIDToken(point: {lat: r.lat, lon: r.lon}, level: level)\n           }))\n        |> rename(columns: { _s2_cell_id_xxx: newColumn })\n  return\n    _prepared\n      |> group(columns: [newColumn])\n}\n\n// Groups rows into tracks.\nasTracks = (tables=<-, groupBy=[\"id\",\"tid\"], orderBy=[\"_time\"]) =>\n  tables\n    |> group(columns: groupBy)\n    |> sort(columns: orderBy)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -188,6 +188,444 @@ var pkgAST = &ast.Package{
 				},
 				Name: "stContains",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 108,
+							Line:   17,
+						},
+						File:   "geo.flux",
+						Source: "(region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record",
+						Start: ast.Position{
+							Column: 22,
+							Line:   17,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 97,
+								Line:   17,
+							},
+							File:   "geo.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 88,
+								Line:   17,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 97,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 91,
+									Line:   17,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 89,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 88,
+									Line:   17,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}, &ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 108,
+								Line:   17,
+							},
+							File:   "geo.flux",
+							Source: "B: Record",
+							Start: ast.Position{
+								Column: 99,
+								Line:   17,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 108,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 102,
+									Line:   17,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 100,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "B",
+								Start: ast.Position{
+									Column: 99,
+									Line:   17,
+								},
+							},
+						},
+						Name: "B",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 81,
+								Line:   17,
+							},
+							File:   "geo.flux",
+							Source: "(region: A, geometry: B, units: {distance: string}) => bool",
+							Start: ast.Position{
+								Column: 22,
+								Line:   17,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "region: A",
+								Start: ast.Position{
+									Column: 23,
+									Line:   17,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   17,
+									},
+									File:   "geo.flux",
+									Source: "region",
+									Start: ast.Position{
+										Column: 23,
+										Line:   17,
+									},
+								},
+							},
+							Name: "region",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   17,
+									},
+									File:   "geo.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 31,
+										Line:   17,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   17,
+										},
+										File:   "geo.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 31,
+											Line:   17,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "geometry: B",
+								Start: ast.Position{
+									Column: 34,
+									Line:   17,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   17,
+									},
+									File:   "geo.flux",
+									Source: "geometry",
+									Start: ast.Position{
+										Column: 34,
+										Line:   17,
+									},
+								},
+							},
+							Name: "geometry",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 45,
+										Line:   17,
+									},
+									File:   "geo.flux",
+									Source: "B",
+									Start: ast.Position{
+										Column: 44,
+										Line:   17,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   17,
+										},
+										File:   "geo.flux",
+										Source: "B",
+										Start: ast.Position{
+											Column: 44,
+											Line:   17,
+										},
+									},
+								},
+								Name: "B",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 72,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "units: {distance: string}",
+								Start: ast.Position{
+									Column: 47,
+									Line:   17,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 52,
+										Line:   17,
+									},
+									File:   "geo.flux",
+									Source: "units",
+									Start: ast.Position{
+										Column: 47,
+										Line:   17,
+									},
+								},
+							},
+							Name: "units",
+						},
+						Ty: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 72,
+										Line:   17,
+									},
+									File:   "geo.flux",
+									Source: "{distance: string}",
+									Start: ast.Position{
+										Column: 54,
+										Line:   17,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 71,
+											Line:   17,
+										},
+										File:   "geo.flux",
+										Source: "distance: string",
+										Start: ast.Position{
+											Column: 55,
+											Line:   17,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 63,
+												Line:   17,
+											},
+											File:   "geo.flux",
+											Source: "distance",
+											Start: ast.Position{
+												Column: 55,
+												Line:   17,
+											},
+										},
+									},
+									Name: "distance",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 71,
+												Line:   17,
+											},
+											File:   "geo.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 65,
+												Line:   17,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 71,
+													Line:   17,
+												},
+												File:   "geo.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 65,
+													Line:   17,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}},
+							Tvar: nil,
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 81,
+									Line:   17,
+								},
+								File:   "geo.flux",
+								Source: "bool",
+								Start: ast.Position{
+									Column: 77,
+									Line:   17,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 81,
+										Line:   17,
+									},
+									File:   "geo.flux",
+									Source: "bool",
+									Start: ast.Position{
+										Column: 77,
+										Line:   17,
+									},
+								},
+							},
+							Name: "bool",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -222,6 +660,444 @@ var pkgAST = &ast.Package{
 				},
 				Name: "stDistance",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 109,
+							Line:   20,
+						},
+						File:   "geo.flux",
+						Source: "(region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record",
+						Start: ast.Position{
+							Column: 22,
+							Line:   20,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 98,
+								Line:   20,
+							},
+							File:   "geo.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 89,
+								Line:   20,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 98,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 92,
+									Line:   20,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 90,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 89,
+									Line:   20,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}, &ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 109,
+								Line:   20,
+							},
+							File:   "geo.flux",
+							Source: "B: Record",
+							Start: ast.Position{
+								Column: 100,
+								Line:   20,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 109,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 103,
+									Line:   20,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 101,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "B",
+								Start: ast.Position{
+									Column: 100,
+									Line:   20,
+								},
+							},
+						},
+						Name: "B",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 82,
+								Line:   20,
+							},
+							File:   "geo.flux",
+							Source: "(region: A, geometry: B, units: {distance: string}) => float",
+							Start: ast.Position{
+								Column: 22,
+								Line:   20,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "region: A",
+								Start: ast.Position{
+									Column: 23,
+									Line:   20,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   20,
+									},
+									File:   "geo.flux",
+									Source: "region",
+									Start: ast.Position{
+										Column: 23,
+										Line:   20,
+									},
+								},
+							},
+							Name: "region",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   20,
+									},
+									File:   "geo.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 31,
+										Line:   20,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   20,
+										},
+										File:   "geo.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 31,
+											Line:   20,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "geometry: B",
+								Start: ast.Position{
+									Column: 34,
+									Line:   20,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   20,
+									},
+									File:   "geo.flux",
+									Source: "geometry",
+									Start: ast.Position{
+										Column: 34,
+										Line:   20,
+									},
+								},
+							},
+							Name: "geometry",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 45,
+										Line:   20,
+									},
+									File:   "geo.flux",
+									Source: "B",
+									Start: ast.Position{
+										Column: 44,
+										Line:   20,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   20,
+										},
+										File:   "geo.flux",
+										Source: "B",
+										Start: ast.Position{
+											Column: 44,
+											Line:   20,
+										},
+									},
+								},
+								Name: "B",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 72,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "units: {distance: string}",
+								Start: ast.Position{
+									Column: 47,
+									Line:   20,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 52,
+										Line:   20,
+									},
+									File:   "geo.flux",
+									Source: "units",
+									Start: ast.Position{
+										Column: 47,
+										Line:   20,
+									},
+								},
+							},
+							Name: "units",
+						},
+						Ty: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 72,
+										Line:   20,
+									},
+									File:   "geo.flux",
+									Source: "{distance: string}",
+									Start: ast.Position{
+										Column: 54,
+										Line:   20,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 71,
+											Line:   20,
+										},
+										File:   "geo.flux",
+										Source: "distance: string",
+										Start: ast.Position{
+											Column: 55,
+											Line:   20,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 63,
+												Line:   20,
+											},
+											File:   "geo.flux",
+											Source: "distance",
+											Start: ast.Position{
+												Column: 55,
+												Line:   20,
+											},
+										},
+									},
+									Name: "distance",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 71,
+												Line:   20,
+											},
+											File:   "geo.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 65,
+												Line:   20,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 71,
+													Line:   20,
+												},
+												File:   "geo.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 65,
+													Line:   20,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}},
+							Tvar: nil,
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 82,
+									Line:   20,
+								},
+								File:   "geo.flux",
+								Source: "float",
+								Start: ast.Position{
+									Column: 77,
+									Line:   20,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 82,
+										Line:   20,
+									},
+									File:   "geo.flux",
+									Source: "float",
+									Start: ast.Position{
+										Column: 77,
+										Line:   20,
+									},
+								},
+							},
+							Name: "float",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -255,6 +1131,322 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "stLength",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 85,
+							Line:   23,
+						},
+						File:   "geo.flux",
+						Source: "(geometry: A, units: {distance: string}) => float where A: Record",
+						Start: ast.Position{
+							Column: 20,
+							Line:   23,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 85,
+								Line:   23,
+							},
+							File:   "geo.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 76,
+								Line:   23,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 85,
+									Line:   23,
+								},
+								File:   "geo.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 79,
+									Line:   23,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 77,
+									Line:   23,
+								},
+								File:   "geo.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 76,
+									Line:   23,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 69,
+								Line:   23,
+							},
+							File:   "geo.flux",
+							Source: "(geometry: A, units: {distance: string}) => float",
+							Start: ast.Position{
+								Column: 20,
+								Line:   23,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   23,
+								},
+								File:   "geo.flux",
+								Source: "geometry: A",
+								Start: ast.Position{
+									Column: 21,
+									Line:   23,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   23,
+									},
+									File:   "geo.flux",
+									Source: "geometry",
+									Start: ast.Position{
+										Column: 21,
+										Line:   23,
+									},
+								},
+							},
+							Name: "geometry",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   23,
+									},
+									File:   "geo.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 31,
+										Line:   23,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 32,
+											Line:   23,
+										},
+										File:   "geo.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 31,
+											Line:   23,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 59,
+									Line:   23,
+								},
+								File:   "geo.flux",
+								Source: "units: {distance: string}",
+								Start: ast.Position{
+									Column: 34,
+									Line:   23,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 39,
+										Line:   23,
+									},
+									File:   "geo.flux",
+									Source: "units",
+									Start: ast.Position{
+										Column: 34,
+										Line:   23,
+									},
+								},
+							},
+							Name: "units",
+						},
+						Ty: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 59,
+										Line:   23,
+									},
+									File:   "geo.flux",
+									Source: "{distance: string}",
+									Start: ast.Position{
+										Column: 41,
+										Line:   23,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 58,
+											Line:   23,
+										},
+										File:   "geo.flux",
+										Source: "distance: string",
+										Start: ast.Position{
+											Column: 42,
+											Line:   23,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 50,
+												Line:   23,
+											},
+											File:   "geo.flux",
+											Source: "distance",
+											Start: ast.Position{
+												Column: 42,
+												Line:   23,
+											},
+										},
+									},
+									Name: "distance",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 58,
+												Line:   23,
+											},
+											File:   "geo.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 52,
+												Line:   23,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 58,
+													Line:   23,
+												},
+												File:   "geo.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 52,
+													Line:   23,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}},
+							Tvar: nil,
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 69,
+									Line:   23,
+								},
+								File:   "geo.flux",
+								Source: "float",
+								Start: ast.Position{
+									Column: 64,
+									Line:   23,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 69,
+										Line:   23,
+									},
+									File:   "geo.flux",
+									Source: "float",
+									Start: ast.Position{
+										Column: 64,
+										Line:   23,
+									},
+								},
+							},
+							Name: "float",
+						},
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -3792,6 +4984,741 @@ var pkgAST = &ast.Package{
 				},
 				Name: "getGrid",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 164,
+							Line:   63,
+						},
+						File:   "geo.flux",
+						Source: "(region: T, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) => {level: int , set: [string]} where T: Record",
+						Start: ast.Position{
+							Column: 19,
+							Line:   63,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 164,
+								Line:   63,
+							},
+							File:   "geo.flux",
+							Source: "T: Record",
+							Start: ast.Position{
+								Column: 155,
+								Line:   63,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 164,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 158,
+									Line:   63,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 156,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "T",
+								Start: ast.Position{
+									Column: 155,
+									Line:   63,
+								},
+							},
+						},
+						Name: "T",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 148,
+								Line:   63,
+							},
+							File:   "geo.flux",
+							Source: "(region: T, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) => {level: int , set: [string]}",
+							Start: ast.Position{
+								Column: 19,
+								Line:   63,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "region: T",
+								Start: ast.Position{
+									Column: 20,
+									Line:   63,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "region",
+									Start: ast.Position{
+										Column: 20,
+										Line:   63,
+									},
+								},
+							},
+							Name: "region",
+						},
+						Ty: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "T",
+									Start: ast.Position{
+										Column: 28,
+										Line:   63,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 29,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 28,
+											Line:   63,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 44,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "?minSize: int",
+								Start: ast.Position{
+									Column: 31,
+									Line:   63,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 39,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "minSize",
+									Start: ast.Position{
+										Column: 32,
+										Line:   63,
+									},
+								},
+							},
+							Name: "minSize",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 44,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 41,
+										Line:   63,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 44,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 41,
+											Line:   63,
+										},
+									},
+								},
+								Name: "int",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 59,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "?maxSize: int",
+								Start: ast.Position{
+									Column: 46,
+									Line:   63,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 54,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "maxSize",
+									Start: ast.Position{
+										Column: 47,
+										Line:   63,
+									},
+								},
+							},
+							Name: "maxSize",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 59,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 56,
+										Line:   63,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 59,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 56,
+											Line:   63,
+										},
+									},
+								},
+								Name: "int",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 72,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "?level: int",
+								Start: ast.Position{
+									Column: 61,
+									Line:   63,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 67,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "level",
+									Start: ast.Position{
+										Column: 62,
+										Line:   63,
+									},
+								},
+							},
+							Name: "level",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 72,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 69,
+										Line:   63,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 72,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 69,
+											Line:   63,
+										},
+									},
+								},
+								Name: "int",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 88,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "?maxLevel: int",
+								Start: ast.Position{
+									Column: 74,
+									Line:   63,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 83,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "maxLevel",
+									Start: ast.Position{
+										Column: 75,
+										Line:   63,
+									},
+								},
+							},
+							Name: "maxLevel",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 88,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 85,
+										Line:   63,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 88,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 85,
+											Line:   63,
+										},
+									},
+								},
+								Name: "int",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 115,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "units: {distance: string}",
+								Start: ast.Position{
+									Column: 90,
+									Line:   63,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 95,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "units",
+									Start: ast.Position{
+										Column: 90,
+										Line:   63,
+									},
+								},
+							},
+							Name: "units",
+						},
+						Ty: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 115,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "{distance: string}",
+									Start: ast.Position{
+										Column: 97,
+										Line:   63,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 114,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "distance: string",
+										Start: ast.Position{
+											Column: 98,
+											Line:   63,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 106,
+												Line:   63,
+											},
+											File:   "geo.flux",
+											Source: "distance",
+											Start: ast.Position{
+												Column: 98,
+												Line:   63,
+											},
+										},
+									},
+									Name: "distance",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 114,
+												Line:   63,
+											},
+											File:   "geo.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 108,
+												Line:   63,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 114,
+													Line:   63,
+												},
+												File:   "geo.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 108,
+													Line:   63,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							}},
+							Tvar: nil,
+						},
+					}},
+					Return: &ast.RecordType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 148,
+									Line:   63,
+								},
+								File:   "geo.flux",
+								Source: "{level: int , set: [string]}",
+								Start: ast.Position{
+									Column: 120,
+									Line:   63,
+								},
+							},
+						},
+						Properties: []*ast.PropertyType{&ast.PropertyType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 131,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "level: int",
+									Start: ast.Position{
+										Column: 121,
+										Line:   63,
+									},
+								},
+							},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 126,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "level",
+										Start: ast.Position{
+											Column: 121,
+											Line:   63,
+										},
+									},
+								},
+								Name: "level",
+							},
+							Ty: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 131,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 128,
+											Line:   63,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 131,
+												Line:   63,
+											},
+											File:   "geo.flux",
+											Source: "int",
+											Start: ast.Position{
+												Column: 128,
+												Line:   63,
+											},
+										},
+									},
+									Name: "int",
+								},
+							},
+						}, &ast.PropertyType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 147,
+										Line:   63,
+									},
+									File:   "geo.flux",
+									Source: "set: [string]",
+									Start: ast.Position{
+										Column: 134,
+										Line:   63,
+									},
+								},
+							},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 137,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "set",
+										Start: ast.Position{
+											Column: 134,
+											Line:   63,
+										},
+									},
+								},
+								Name: "set",
+							},
+							Ty: &ast.ArrayType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 147,
+											Line:   63,
+										},
+										File:   "geo.flux",
+										Source: "[string]",
+										Start: ast.Position{
+											Column: 139,
+											Line:   63,
+										},
+									},
+								},
+								ElementType: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 146,
+												Line:   63,
+											},
+											File:   "geo.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 140,
+												Line:   63,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 146,
+													Line:   63,
+												},
+												File:   "geo.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 140,
+													Line:   63,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+							},
+						}},
+						Tvar: nil,
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -3825,6 +5752,147 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "getLevel",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   66,
+						},
+						File:   "geo.flux",
+						Source: "(token: string) => int",
+						Start: ast.Position{
+							Column: 20,
+							Line:   66,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   66,
+							},
+							File:   "geo.flux",
+							Source: "(token: string) => int",
+							Start: ast.Position{
+								Column: 20,
+								Line:   66,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   66,
+								},
+								File:   "geo.flux",
+								Source: "token: string",
+								Start: ast.Position{
+									Column: 21,
+									Line:   66,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   66,
+									},
+									File:   "geo.flux",
+									Source: "token",
+									Start: ast.Position{
+										Column: 21,
+										Line:   66,
+									},
+								},
+							},
+							Name: "token",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 34,
+										Line:   66,
+									},
+									File:   "geo.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 28,
+										Line:   66,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 34,
+											Line:   66,
+										},
+										File:   "geo.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 28,
+											Line:   66,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   66,
+								},
+								File:   "geo.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 39,
+									Line:   66,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   66,
+									},
+									File:   "geo.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 39,
+										Line:   66,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
@@ -3860,6 +5928,409 @@ var pkgAST = &ast.Package{
 				},
 				Name: "s2CellIDToken",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 98,
+							Line:   69,
+						},
+						File:   "geo.flux",
+						Source: "(?token: string, ?point: {lat: float , lon: float}, level: int) => string",
+						Start: ast.Position{
+							Column: 25,
+							Line:   69,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 98,
+								Line:   69,
+							},
+							File:   "geo.flux",
+							Source: "(?token: string, ?point: {lat: float , lon: float}, level: int) => string",
+							Start: ast.Position{
+								Column: 25,
+								Line:   69,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   69,
+								},
+								File:   "geo.flux",
+								Source: "?token: string",
+								Start: ast.Position{
+									Column: 26,
+									Line:   69,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   69,
+									},
+									File:   "geo.flux",
+									Source: "token",
+									Start: ast.Position{
+										Column: 27,
+										Line:   69,
+									},
+								},
+							},
+							Name: "token",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   69,
+									},
+									File:   "geo.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 34,
+										Line:   69,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   69,
+										},
+										File:   "geo.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 34,
+											Line:   69,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 75,
+									Line:   69,
+								},
+								File:   "geo.flux",
+								Source: "?point: {lat: float , lon: float}",
+								Start: ast.Position{
+									Column: 42,
+									Line:   69,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 48,
+										Line:   69,
+									},
+									File:   "geo.flux",
+									Source: "point",
+									Start: ast.Position{
+										Column: 43,
+										Line:   69,
+									},
+								},
+							},
+							Name: "point",
+						},
+						Ty: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 75,
+										Line:   69,
+									},
+									File:   "geo.flux",
+									Source: "{lat: float , lon: float}",
+									Start: ast.Position{
+										Column: 50,
+										Line:   69,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   69,
+										},
+										File:   "geo.flux",
+										Source: "lat: float",
+										Start: ast.Position{
+											Column: 51,
+											Line:   69,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 54,
+												Line:   69,
+											},
+											File:   "geo.flux",
+											Source: "lat",
+											Start: ast.Position{
+												Column: 51,
+												Line:   69,
+											},
+										},
+									},
+									Name: "lat",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   69,
+											},
+											File:   "geo.flux",
+											Source: "float",
+											Start: ast.Position{
+												Column: 56,
+												Line:   69,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 61,
+													Line:   69,
+												},
+												File:   "geo.flux",
+												Source: "float",
+												Start: ast.Position{
+													Column: 56,
+													Line:   69,
+												},
+											},
+										},
+										Name: "float",
+									},
+								},
+							}, &ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 74,
+											Line:   69,
+										},
+										File:   "geo.flux",
+										Source: "lon: float",
+										Start: ast.Position{
+											Column: 64,
+											Line:   69,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 67,
+												Line:   69,
+											},
+											File:   "geo.flux",
+											Source: "lon",
+											Start: ast.Position{
+												Column: 64,
+												Line:   69,
+											},
+										},
+									},
+									Name: "lon",
+								},
+								Ty: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 74,
+												Line:   69,
+											},
+											File:   "geo.flux",
+											Source: "float",
+											Start: ast.Position{
+												Column: 69,
+												Line:   69,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 74,
+													Line:   69,
+												},
+												File:   "geo.flux",
+												Source: "float",
+												Start: ast.Position{
+													Column: 69,
+													Line:   69,
+												},
+											},
+										},
+										Name: "float",
+									},
+								},
+							}},
+							Tvar: nil,
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 87,
+									Line:   69,
+								},
+								File:   "geo.flux",
+								Source: "level: int",
+								Start: ast.Position{
+									Column: 77,
+									Line:   69,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 82,
+										Line:   69,
+									},
+									File:   "geo.flux",
+									Source: "level",
+									Start: ast.Position{
+										Column: 77,
+										Line:   69,
+									},
+								},
+							},
+							Name: "level",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 87,
+										Line:   69,
+									},
+									File:   "geo.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 84,
+										Line:   69,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 87,
+											Line:   69,
+										},
+										File:   "geo.flux",
+										Source: "int",
+										Start: ast.Position{
+											Column: 84,
+											Line:   69,
+										},
+									},
+								},
+								Name: "int",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 98,
+									Line:   69,
+								},
+								File:   "geo.flux",
+								Source: "string",
+								Start: ast.Position{
+									Column: 92,
+									Line:   69,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 98,
+										Line:   69,
+									},
+									File:   "geo.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 92,
+										Line:   69,
+									},
+								},
+							},
+							Name: "string",
+						},
+					},
+				},
+			},
 		}, &ast.BuiltinStatement{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -3893,6 +6364,269 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "s2CellLatLon",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 68,
+							Line:   72,
+						},
+						File:   "geo.flux",
+						Source: "(token: string) => {lat: float , lon: float}",
+						Start: ast.Position{
+							Column: 24,
+							Line:   72,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 68,
+								Line:   72,
+							},
+							File:   "geo.flux",
+							Source: "(token: string) => {lat: float , lon: float}",
+							Start: ast.Position{
+								Column: 24,
+								Line:   72,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 38,
+									Line:   72,
+								},
+								File:   "geo.flux",
+								Source: "token: string",
+								Start: ast.Position{
+									Column: 25,
+									Line:   72,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 30,
+										Line:   72,
+									},
+									File:   "geo.flux",
+									Source: "token",
+									Start: ast.Position{
+										Column: 25,
+										Line:   72,
+									},
+								},
+							},
+							Name: "token",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   72,
+									},
+									File:   "geo.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 32,
+										Line:   72,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   72,
+										},
+										File:   "geo.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 32,
+											Line:   72,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.RecordType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 68,
+									Line:   72,
+								},
+								File:   "geo.flux",
+								Source: "{lat: float , lon: float}",
+								Start: ast.Position{
+									Column: 43,
+									Line:   72,
+								},
+							},
+						},
+						Properties: []*ast.PropertyType{&ast.PropertyType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 54,
+										Line:   72,
+									},
+									File:   "geo.flux",
+									Source: "lat: float",
+									Start: ast.Position{
+										Column: 44,
+										Line:   72,
+									},
+								},
+							},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 47,
+											Line:   72,
+										},
+										File:   "geo.flux",
+										Source: "lat",
+										Start: ast.Position{
+											Column: 44,
+											Line:   72,
+										},
+									},
+								},
+								Name: "lat",
+							},
+							Ty: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 54,
+											Line:   72,
+										},
+										File:   "geo.flux",
+										Source: "float",
+										Start: ast.Position{
+											Column: 49,
+											Line:   72,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 54,
+												Line:   72,
+											},
+											File:   "geo.flux",
+											Source: "float",
+											Start: ast.Position{
+												Column: 49,
+												Line:   72,
+											},
+										},
+									},
+									Name: "float",
+								},
+							},
+						}, &ast.PropertyType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 67,
+										Line:   72,
+									},
+									File:   "geo.flux",
+									Source: "lon: float",
+									Start: ast.Position{
+										Column: 57,
+										Line:   72,
+									},
+								},
+							},
+							Name: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 60,
+											Line:   72,
+										},
+										File:   "geo.flux",
+										Source: "lon",
+										Start: ast.Position{
+											Column: 57,
+											Line:   72,
+										},
+									},
+								},
+								Name: "lon",
+							},
+							Ty: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 67,
+											Line:   72,
+										},
+										File:   "geo.flux",
+										Source: "float",
+										Start: ast.Position{
+											Column: 62,
+											Line:   72,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 67,
+												Line:   72,
+											},
+											File:   "geo.flux",
+											Source: "float",
+											Start: ast.Position{
+												Column: 62,
+												Line:   72,
+											},
+										},
+									},
+									Name: "float",
+								},
+							},
+						}},
+						Tvar: nil,
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{

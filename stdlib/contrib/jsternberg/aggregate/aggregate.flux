@@ -37,18 +37,44 @@ import "contrib/jsternberg/math"
 //     tables |> aggregate.table(columns: {
 //         "min_bottom_degrees": aggregate.min(column: "bottom_degrees"),
 //     ])
-builtin table
+builtin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C: Record
+
+// window will aggregate columns and create tables by
+// organizing incoming points into windows.
+//
+// Each table will have two additional columns: start and stop.
+// These are the start and stop times for each interval.
+// It is not possible to use start or stop as destination column
+// names with this function. The start and stop columns are not
+// added to the group key.
+//
+// The same options as for table apply to window.
+// In addition to those options, window requires one
+// additional parameter.
+//     every = duration
+//         The duration between the start of each interval.
+//
+// Along with the above required option, there are a few additional
+// optional parameters.
+//     time = string
+//         The column name for the time input.
+//         This defaults to _time or time, whichever is earlier in
+//         the list of columns.
+//     period = duration
+//         The length of the interval. This defaults to the
+//         every duration.
+builtin window : (<-tables: [A], ?time: string, every: duration, ?period: duration, columns: C) => [B] where A: Record, B: Record, C: Record
 
 // null is a sentinel value for fill that will fill
 // in a null value if there were no values for an interval.
-builtin null
+builtin null : A
 
 // none is a sentinel value for fill that will skip
 // emitting a row if there are no values for an interval.
-builtin none
+builtin none : A
 
 // define will define an aggregate function.
-define = (init, reduce, compute, fill=null) => (column, fill=fill) => ({
+define = (init, reduce, compute, fill=null) => (column="_value", fill=fill) => ({
 	column: column,
 	init: init,
 	reduce: reduce,

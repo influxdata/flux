@@ -2,11 +2,18 @@ package testing
 
 import c "csv"
 
-builtin assertEquals
-builtin assertEmpty
-builtin diff
+builtin assertEquals : (name: string, <-got: [A], want: [A]) => [A]
+builtin assertEmpty : (<-tables: [A]) => [A]
+builtin diff : (<-got: [A], want: [A], ?verbose: bool, ?epsilon: float) => [{A with _diff: string}]
 
 option loadStorage = (csv) => c.from(csv: csv)
+    |> range(start: 1800-01-01T00:00:00Z, stop: 2200-12-31T11:59:59Z)
+    |> map(fn: (r) => ({r with
+    _field: if exists r._field then r._field else die(msg: "test input table does not have _field column"),
+    _measurement: if exists r._measurement then r._measurement else die(msg: "test input table does not have _measurement column"),
+    _time: if exists r._time then r._time else die(msg: "test input table does not have _time column")
+    }))
+
 option loadMem = (csv) => c.from(csv: csv)
 
 inspect = (case) => {

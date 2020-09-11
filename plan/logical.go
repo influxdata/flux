@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interpreter"
 )
 
 // LogicalPlanner translates a flux.Spec into a plan.Spec and applies any
@@ -127,8 +128,9 @@ func (a administration) Now() time.Time {
 type LogicalNode struct {
 	edges
 	bounds
-	id   NodeID
-	Spec ProcedureSpec
+	id     NodeID
+	Spec   ProcedureSpec
+	Source []interpreter.StackEntry
 }
 
 // ID returns a human-readable identifier unique to this plan.
@@ -139,6 +141,11 @@ func (lpn *LogicalNode) ID() NodeID {
 // Kind returns the kind of procedure performed by this plan node.
 func (lpn *LogicalNode) Kind() ProcedureKind {
 	return lpn.Spec.Kind()
+}
+
+// CallStack returns the call stack that created this LogicalNode.
+func (lpn *LogicalNode) CallStack() []interpreter.StackEntry {
+	return lpn.Source
 }
 
 // ProcedureSpec returns the procedure spec for this plan node.
@@ -235,6 +242,7 @@ func (v *fluxSpecVisitor) visitOperation(o *flux.Operation) error {
 
 	// Create a LogicalNode using the ProcedureSpec
 	logicalNode := CreateLogicalNode(NodeID(o.ID), procedureSpec)
+	logicalNode.Source = o.Source.Stack
 
 	v.nodes[o.ID] = logicalNode
 

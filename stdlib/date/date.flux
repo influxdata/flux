@@ -1,19 +1,19 @@
 package date
 
-builtin second
-builtin minute
-builtin hour
-builtin weekDay
-builtin monthDay
-builtin yearDay
-builtin month
-builtin year
-builtin week
-builtin quarter
-builtin millisecond
-builtin microsecond
-builtin nanosecond
-builtin truncate
+builtin second : (t: T) => int where T: Timeable
+builtin minute : (t: T) => int where T: Timeable
+builtin hour : (t: T) => int where T: Timeable
+builtin weekDay : (t: T) => int where T: Timeable
+builtin monthDay : (t: T) => int where T: Timeable
+builtin yearDay : (t: T) => int where T: Timeable
+builtin month : (t: T) => int where T: Timeable
+builtin year : (t: T) => int where T: Timeable
+builtin week : (t: T) => int where T: Timeable
+builtin quarter : (t: T) => int where T: Timeable
+builtin millisecond : (t: T) => int where T: Timeable
+builtin microsecond : (t: T) => int where T: Timeable
+builtin nanosecond : (t: T) => int where T: Timeable
+builtin truncate : (t: T) => int where T: Timeable
 
 Sunday    = 0
 Monday    = 1

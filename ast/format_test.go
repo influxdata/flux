@@ -8,11 +8,6 @@ import (
 	"github.com/influxdata/flux/parser"
 )
 
-var skip = map[string]string{
-	"array_expr":  "without pars -> bad syntax, with pars formatting removes them",
-	"conditional": "how is a conditional expression defined in spec?",
-}
-
 type formatTestCase struct {
 	name       string
 	script     string
@@ -27,10 +22,6 @@ func formatTestHelper(t *testing.T, testCases []formatTestCase) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-
-			if reason, ok := skip[tc.name]; ok {
-				t.Skip(reason)
-			}
 
 			pkg := parser.ParseSource(tc.script)
 			if ast.Check(pkg) > 0 {
@@ -113,11 +104,7 @@ a[i]`,
 		},
 		{
 			name:   "array_expr",
-			script: `a[(i+1)]`,
-		},
-		{
-			name:   "conditional",
-			script: `test?cons:alt`,
+			script: `a[i + 1]`,
 		},
 		{
 			name:   "float",

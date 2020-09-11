@@ -288,12 +288,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		}
 		return value, nil
 	case *semantic.CallExpression:
-		v, err := itrp.doCall(ctx, e, scope)
-		if err != nil {
-			// Determine function name
-			return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q", functionName(e))
-		}
-		return v, nil
+		return itrp.doCall(ctx, e, scope)
 	case *semantic.MemberExpression:
 		obj, err := itrp.doExpression(ctx, e.Object, scope)
 		if err != nil {
@@ -595,7 +590,7 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 	}
 	ft := callee.Type()
 	if ft.Nature() != semantic.Function {
-		return nil, errors.Newf(codes.Invalid, "cannot call function, value is of type %v", callee.Type())
+		return nil, errors.Newf(codes.Invalid, "cannot call function: %s: value is of type %v", call.Callee.Location(), callee.Type())
 	}
 	argObj, err := itrp.doArguments(ctx, call.Arguments, scope, ft, call.Pipe)
 	if err != nil {
@@ -612,10 +607,16 @@ func (itrp *Interpreter) doCall(ctx context.Context, call *semantic.CallExpressi
 		f = af
 	}
 
-	// Call the function
+	// Call the function. We attach source location information
+	// to this call so it can be available for the function if needed.
+	// We do not attach this source location information when evaluating
+	// arguments as this source location information is only
+	// for the currently called function.
+	fname := functionName(call)
+	ctx = withStackEntry(ctx, fname, call.Location())
 	value, err := f.Call(ctx, argObj)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, codes.Inherit, "error calling function %q @%s", fname, call.Location())
 	}
 
 	if f.HasSideEffect() {
@@ -894,17 +895,17 @@ func (f function) Scope() values.Scope {
 func (f function) Resolve() (semantic.Node, error) {
 	n := f.e.Copy()
 	localIdentifiers := make([]string, 0, 10)
-	node, err := f.resolveIdentifiers(n, &localIdentifiers)
+	node, err := ResolveIdsInFunction(f.scope, f.e, n, &localIdentifiers)
 	if err != nil {
 		return nil, err
 	}
 	return node, nil
 }
 
-func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string) (semantic.Node, error) {
+func ResolveIdsInFunction(scope values.Scope, origFn *semantic.FunctionExpression, n semantic.Node, localIdentifiers *[]string) (semantic.Node, error) {
 	switch n := n.(type) {
 	case *semantic.MemberExpression:
-		node, err := f.resolveIdentifiers(n.Object, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Object, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
@@ -925,14 +926,14 @@ func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string
 		if obj, ok := node.(*semantic.ObjectExpression); ok {
 			for _, prop := range obj.Properties {
 				if prop.Key.Key() == n.Property {
-					return f.resolveIdentifiers(prop.Value, localIdentifiers)
+					return ResolveIdsInFunction(scope, origFn, prop.Value, localIdentifiers)
 				}
 			}
 		}
 		n.Object = node.(semantic.Expression)
 	case *semantic.IdentifierExpression:
-		if f.e.Parameters != nil {
-			for _, p := range f.e.Parameters.List {
+		if origFn.Parameters != nil {
+			for _, p := range origFn.Parameters.List {
 				if n.Name == p.Key.Name {
 					// Identifier is a parameter do not resolve
 					return n, nil
@@ -948,7 +949,7 @@ func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string
 			}
 		}
 
-		v, ok := f.scope.Lookup(n.Name)
+		v, ok := scope.Lookup(n.Name)
 		if ok {
 			// Attempt to resolve the value if it is possible to inline.
 			node, ok, err := resolveValue(v)
@@ -960,127 +961,127 @@ func (f function) resolveIdentifiers(n semantic.Node, localIdentifiers *[]string
 		return nil, errors.Newf(codes.Invalid, "name %q does not exist in scope", n.Name)
 	case *semantic.Block:
 		for i, s := range n.Body {
-			node, err := f.resolveIdentifiers(s, localIdentifiers)
+			node, err := ResolveIdsInFunction(scope, origFn, s, localIdentifiers)
 			if err != nil {
 				return nil, err
 			}
 			n.Body[i] = node.(semantic.Statement)
 		}
 	case *semantic.OptionStatement:
-		node, err := f.resolveIdentifiers(n.Assignment, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Assignment, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Assignment = node.(semantic.Assignment)
 	case *semantic.ExpressionStatement:
-		node, err := f.resolveIdentifiers(n.Expression, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Expression, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Expression = node.(semantic.Expression)
 	case *semantic.ReturnStatement:
-		node, err := f.resolveIdentifiers(n.Argument, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Argument, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Argument = node.(semantic.Expression)
 	case *semantic.NativeVariableAssignment:
-		node, err := f.resolveIdentifiers(n.Init, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Init, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		*localIdentifiers = append(*localIdentifiers, n.Identifier.Name)
 		n.Init = node.(semantic.Expression)
 	case *semantic.CallExpression:
-		node, err := f.resolveIdentifiers(n.Arguments, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Arguments, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		// TODO(adam): lookup the function definition, call the function if it's found in scope.
 		n.Arguments = node.(*semantic.ObjectExpression)
 	case *semantic.FunctionExpression:
-		node, err := f.resolveIdentifiers(n.Block, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Block, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Block = node.(*semantic.Block)
 	case *semantic.BinaryExpression:
-		node, err := f.resolveIdentifiers(n.Left, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Left, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Left = node.(semantic.Expression)
 
-		node, err = f.resolveIdentifiers(n.Right, localIdentifiers)
+		node, err = ResolveIdsInFunction(scope, origFn, n.Right, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Right = node.(semantic.Expression)
 	case *semantic.UnaryExpression:
-		node, err := f.resolveIdentifiers(n.Argument, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Argument, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Argument = node.(semantic.Expression)
 
 	case *semantic.LogicalExpression:
-		node, err := f.resolveIdentifiers(n.Left, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Left, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Left = node.(semantic.Expression)
-		node, err = f.resolveIdentifiers(n.Right, localIdentifiers)
+		node, err = ResolveIdsInFunction(scope, origFn, n.Right, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Right = node.(semantic.Expression)
 	case *semantic.ArrayExpression:
 		for i, el := range n.Elements {
-			node, err := f.resolveIdentifiers(el, localIdentifiers)
+			node, err := ResolveIdsInFunction(scope, origFn, el, localIdentifiers)
 			if err != nil {
 				return nil, err
 			}
 			n.Elements[i] = node.(semantic.Expression)
 		}
 	case *semantic.IndexExpression:
-		node, err := f.resolveIdentifiers(n.Array, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Array, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Array = node.(semantic.Expression)
-		node, err = f.resolveIdentifiers(n.Index, localIdentifiers)
+		node, err = ResolveIdsInFunction(scope, origFn, n.Index, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Index = node.(semantic.Expression)
 	case *semantic.ObjectExpression:
 		for i, p := range n.Properties {
-			node, err := f.resolveIdentifiers(p, localIdentifiers)
+			node, err := ResolveIdsInFunction(scope, origFn, p, localIdentifiers)
 			if err != nil {
 				return nil, err
 			}
 			n.Properties[i] = node.(*semantic.Property)
 		}
 	case *semantic.ConditionalExpression:
-		node, err := f.resolveIdentifiers(n.Test, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Test, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Test = node.(semantic.Expression)
 
-		node, err = f.resolveIdentifiers(n.Alternate, localIdentifiers)
+		node, err = ResolveIdsInFunction(scope, origFn, n.Alternate, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Alternate = node.(semantic.Expression)
 
-		node, err = f.resolveIdentifiers(n.Consequent, localIdentifiers)
+		node, err = ResolveIdsInFunction(scope, origFn, n.Consequent, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
 		n.Consequent = node.(semantic.Expression)
 	case *semantic.Property:
-		node, err := f.resolveIdentifiers(n.Value, localIdentifiers)
+		node, err := ResolveIdsInFunction(scope, origFn, n.Value, localIdentifiers)
 		if err != nil {
 			return nil, err
 		}
@@ -1464,4 +1465,54 @@ func (a *arguments) listUnused() []string {
 		})
 	}
 	return unused
+}
+
+type contextKey int
+
+const (
+	callStackKey contextKey = iota
+)
+
+// StackEntry describes a single entry in the call stack.
+type StackEntry struct {
+	FunctionName string
+	Location     ast.SourceLocation
+}
+
+// stackElement describes a single entry in the call stack.
+type stackElement struct {
+	parent *stackElement
+	entry  StackEntry
+	depth  int
+}
+
+// Stack retrieves the call stack for a given context.
+func Stack(ctx context.Context) []StackEntry {
+	e, ok := ctx.Value(callStackKey).(*stackElement)
+	if !ok {
+		return nil
+	}
+
+	stack := make([]StackEntry, 0, e.depth+1)
+	for e != nil {
+		stack = append(stack, e.entry)
+		e = e.parent
+	}
+	return stack
+}
+
+// withStackEntry will attach StackEntry information
+// to the context to be retrieved by Stack.
+func withStackEntry(ctx context.Context, name string, loc ast.SourceLocation) context.Context {
+	stack := &stackElement{
+		entry: StackEntry{
+			FunctionName: name,
+			Location:     loc,
+		},
+	}
+	if parent := ctx.Value(callStackKey); parent != nil {
+		stack.parent = parent.(*stackElement)
+		stack.depth = stack.parent.depth + 1
+	}
+	return context.WithValue(ctx, callStackKey, stack)
 }

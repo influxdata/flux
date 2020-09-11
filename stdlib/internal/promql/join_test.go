@@ -24,7 +24,6 @@ func TestJoin(t *testing.T) {
 		left, right []flux.Table
 		want        []*executetest.Table
 		wantErr     bool
-		skip        string
 	}{
 		{
 			name: "multiple column readers",
@@ -669,9 +668,6 @@ func TestJoin(t *testing.T) {
 		tc := tc
 
 		t.Run(tc.name, func(t *testing.T) {
-			if tc.skip != "" {
-				t.Skip(tc.skip)
-			}
 			l := execute.DatasetID(executetest.RandomDatasetID())
 			r := execute.DatasetID(executetest.RandomDatasetID())
 

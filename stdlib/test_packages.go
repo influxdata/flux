@@ -5,16 +5,18 @@ package stdlib
 import (
 	ast "github.com/influxdata/flux/ast"
 	naivebayesclassifier "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
+	aggregate "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
 	rows "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
 	date "github.com/influxdata/flux/stdlib/date"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
-	aggregate "github.com/influxdata/flux/stdlib/experimental/aggregate"
+	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
 	array "github.com/influxdata/flux/stdlib/experimental/array"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
 	http "github.com/influxdata/flux/stdlib/http"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
+	tasks "github.com/influxdata/flux/stdlib/influxdata/influxdb/tasks"
 	v1 "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 	promql "github.com/influxdata/flux/stdlib/internal/promql"
 	planner "github.com/influxdata/flux/stdlib/planner"
@@ -33,16 +35,18 @@ import (
 var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
 	pkgs = append(pkgs, naivebayesclassifier.FluxTestPackages...)
+	pkgs = append(pkgs, aggregate.FluxTestPackages...)
 	pkgs = append(pkgs, rows.FluxTestPackages...)
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
-	pkgs = append(pkgs, aggregate.FluxTestPackages...)
+	pkgs = append(pkgs, aggregate1.FluxTestPackages...)
 	pkgs = append(pkgs, array.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
+	pkgs = append(pkgs, tasks.FluxTestPackages...)
 	pkgs = append(pkgs, v1.FluxTestPackages...)
 	pkgs = append(pkgs, promql.FluxTestPackages...)
 	pkgs = append(pkgs, planner.FluxTestPackages...)

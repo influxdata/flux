@@ -14,13 +14,13 @@ option units = {
 //
 
 // Returns boolean whether the region contains specified geometry.
-builtin stContains
+builtin stContains : (region: A, geometry: B, units: {distance: string}) => bool where A: Record, B: Record
 
 // Returns distance from given region to specified geometry.
-builtin stDistance
+builtin stDistance : (region: A, geometry: B, units: {distance: string}) => float where A: Record, B: Record
 
 // Returns length of a curve.
-builtin stLength
+builtin stLength : (geometry: A, units: {distance: string}) => float where A: Record
 
 //
 // Flux GIS ST functions
@@ -60,16 +60,16 @@ ST_LineString = (tables=<-) =>
 //
 
 // Calculates grid (set of cell ID tokens) for given region and according to options.
-builtin getGrid
+builtin getGrid : (region: T, ?minSize: int, ?maxSize: int, ?level: int, ?maxLevel: int, units: {distance: string}) => {level: int , set: [string]} where T: Record
 
 // Returns level of specified cell ID token.
-builtin getLevel
+builtin getLevel : (token: string) => int
 
 // Returns cell ID token for given cell or lat/lon point at specified level.
-builtin s2CellIDToken
+builtin s2CellIDToken : (?token: string, ?point: {lat: float , lon: float}, level: int) => string
 
 // Returns lat/lon coordinates of given cell ID token.
-builtin s2CellLatLon
+builtin s2CellLatLon : (token: string) => {lat: float , lon: float}
 
 //
 // Flux functions

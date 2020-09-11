@@ -1,18 +1,27 @@
 package flux
 
-var experimentalTracingEnabled = false
+import (
+	"context"
+)
 
-// EnableExperimentalTracing will enable any experimental
-// tracing in the flux binary. Experimental tracing may provide
-// more insight, but it indicates that we have not tested that the
-// tracing doesn't have negative side effects when run in production.
-//
-// Traces that are enabled this way may be removed or may be enabled
-// by default in the future.
-func EnableExperimentalTracing() {
-	experimentalTracingEnabled = true
+const queryTracingContextKey = "query-tracing-enabled"
+
+// WithExperimentalTracingEnabled will return a child context
+// that will turn on experimental query tracing.
+func WithExperimentalTracingEnabled(parentCtx context.Context) context.Context {
+	return context.WithValue(parentCtx, queryTracingContextKey, true)
 }
 
-func IsExperimentalTracingEnabled() bool {
-	return experimentalTracingEnabled
+// IsExperimentalTracingEnabled will return true if the context
+// contains a key indicating that experimental tracing is enabled.
+func IsExperimentalTracingEnabled(ctx context.Context) bool {
+	v := ctx.Value(queryTracingContextKey)
+	if v == nil {
+		return false
+	}
+	b, ok := v.(bool)
+	if !ok {
+		return false
+	}
+	return b
 }

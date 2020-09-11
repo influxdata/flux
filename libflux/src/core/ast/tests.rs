@@ -15,7 +15,7 @@ import "my_other_pkg"
 import "yet_another_pkg"
 option now = () => (2030-01-01T00:00:00Z)
 option foo.bar = "baz"
-builtin foo
+builtin foo : int
 
 # // bad stmt
 
@@ -406,6 +406,7 @@ fn test_json_namedtype() {
         },
     });
     let serialized = serde_json::to_string(&n).unwrap();
+    // {"type":"Identifier","name":...}
     assert_eq!(serialized, r#"{"type":"NamedType","name":{"name":"int"}}"#);
     let deserialized: MonoType = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -517,7 +518,7 @@ fn test_json_type_expression() {
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"monotype":{"type":"FunctionType","parameters":[{"type":"Required","name":{"name":"a"},"monotype":{"type":"TvarType","name":{"name":"T"}}},{"type":"Required","name":{"name":"b"},"monotype":{"type":"TvarType","name":{"name":"T"}}}],"monotype":{"type":"TvarType","name":{"name":"T"}}},"constraints":[{"tvar":{"name":"T"},"kinds":[{"name":"Addable"},{"name":"Divisible"}]}]}"#
+        r#"{"type":"TypeExpression","monotype":{"type":"FunctionType","parameters":[{"type":"Required","name":{"name":"a"},"monotype":{"type":"TvarType","name":{"name":"T"}}},{"type":"Required","name":{"name":"b"},"monotype":{"type":"TvarType","name":{"name":"T"}}}],"monotype":{"type":"TvarType","name":{"name":"T"}}},"constraints":[{"type":"TypeConstraint","tvar":{"name":"T"},"kinds":[{"name":"Addable"},{"name":"Divisible"}]}]}"#
     );
     let deserialized: TypeExpression = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
@@ -881,11 +882,22 @@ fn test_json_builtin_statement() {
             base: BaseNode::default(),
             name: "task".to_string(),
         },
+        ty: TypeExpression {
+            base: BaseNode::default(),
+            monotype: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "int".to_string(),
+                },
+            }),
+            constraints: vec![],
+        },
     }));
     let serialized = serde_json::to_string(&n).unwrap();
     assert_eq!(
         serialized,
-        r#"{"type":"BuiltinStatement","id":{"name":"task"}}"#
+        r#"{"type":"BuiltinStatement","id":{"name":"task"},"ty":{"type":"TypeExpression","monotype":{"type":"NamedType","name":{"name":"int"}},"constraints":[]}}"#
     );
     let deserialized: Statement = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)

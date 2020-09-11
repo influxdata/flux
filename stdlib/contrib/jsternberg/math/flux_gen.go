@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   15,
 				},
 				File:   "math.flux",
-				Source: "package math\n\nbuiltin minIndex\nmin = (values) => {\n    index = minIndex(values)\n    return values[index]\n}\n\nbuiltin maxIndex\nmax = (values) => {\n\tindex = maxIndex(values)\n\treturn values[index]\n}\n\nbuiltin sum",
+				Source: "package math\n\nbuiltin minIndex : (values: [A]) => int where A: Numeric\nmin = (values) => {\n    index = minIndex(values)\n    return values[index]\n}\n\nbuiltin maxIndex : (values: [A]) => int where A: Numeric\nmax = (values) => {\n\tindex = maxIndex(values)\n\treturn values[index]\n}\n\nbuiltin sum",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -65,6 +65,216 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "minIndex",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 57,
+							Line:   3,
+						},
+						File:   "math.flux",
+						Source: "(values: [A]) => int where A: Numeric",
+						Start: ast.Position{
+							Column: 20,
+							Line:   3,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 57,
+								Line:   3,
+							},
+							File:   "math.flux",
+							Source: "A: Numeric",
+							Start: ast.Position{
+								Column: 47,
+								Line:   3,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 57,
+									Line:   3,
+								},
+								File:   "math.flux",
+								Source: "Numeric",
+								Start: ast.Position{
+									Column: 50,
+									Line:   3,
+								},
+							},
+						},
+						Name: "Numeric",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 48,
+									Line:   3,
+								},
+								File:   "math.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 47,
+									Line:   3,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   3,
+							},
+							File:   "math.flux",
+							Source: "(values: [A]) => int",
+							Start: ast.Position{
+								Column: 20,
+								Line:   3,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   3,
+								},
+								File:   "math.flux",
+								Source: "values: [A]",
+								Start: ast.Position{
+									Column: 21,
+									Line:   3,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   3,
+									},
+									File:   "math.flux",
+									Source: "values",
+									Start: ast.Position{
+										Column: 21,
+										Line:   3,
+									},
+								},
+							},
+							Name: "values",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   3,
+									},
+									File:   "math.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 29,
+										Line:   3,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   3,
+										},
+										File:   "math.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 30,
+											Line:   3,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   3,
+											},
+											File:   "math.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 30,
+												Line:   3,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   3,
+								},
+								File:   "math.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 37,
+									Line:   3,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   3,
+									},
+									File:   "math.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 37,
+										Line:   3,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -397,6 +607,216 @@ var pkgAST = &ast.Package{
 				},
 				Name: "maxIndex",
 			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 57,
+							Line:   9,
+						},
+						File:   "math.flux",
+						Source: "(values: [A]) => int where A: Numeric",
+						Start: ast.Position{
+							Column: 20,
+							Line:   9,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 57,
+								Line:   9,
+							},
+							File:   "math.flux",
+							Source: "A: Numeric",
+							Start: ast.Position{
+								Column: 47,
+								Line:   9,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 57,
+									Line:   9,
+								},
+								File:   "math.flux",
+								Source: "Numeric",
+								Start: ast.Position{
+									Column: 50,
+									Line:   9,
+								},
+							},
+						},
+						Name: "Numeric",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 48,
+									Line:   9,
+								},
+								File:   "math.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 47,
+									Line:   9,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   9,
+							},
+							File:   "math.flux",
+							Source: "(values: [A]) => int",
+							Start: ast.Position{
+								Column: 20,
+								Line:   9,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   9,
+								},
+								File:   "math.flux",
+								Source: "values: [A]",
+								Start: ast.Position{
+									Column: 21,
+									Line:   9,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   9,
+									},
+									File:   "math.flux",
+									Source: "values",
+									Start: ast.Position{
+										Column: 21,
+										Line:   9,
+									},
+								},
+							},
+							Name: "values",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   9,
+									},
+									File:   "math.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 29,
+										Line:   9,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   9,
+										},
+										File:   "math.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 30,
+											Line:   9,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   9,
+											},
+											File:   "math.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 30,
+												Line:   9,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   9,
+								},
+								File:   "math.flux",
+								Source: "int",
+								Start: ast.Position{
+									Column: 37,
+									Line:   9,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   9,
+									},
+									File:   "math.flux",
+									Source: "int",
+									Start: ast.Position{
+										Column: 37,
+										Line:   9,
+									},
+								},
+							},
+							Name: "int",
+						},
+					},
+				},
+			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -727,6 +1147,216 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "sum",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 50,
+							Line:   15,
+						},
+						File:   "math.flux",
+						Source: "(values: [A]) => A where A: Numeric",
+						Start: ast.Position{
+							Column: 15,
+							Line:   15,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 50,
+								Line:   15,
+							},
+							File:   "math.flux",
+							Source: "A: Numeric",
+							Start: ast.Position{
+								Column: 40,
+								Line:   15,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 50,
+									Line:   15,
+								},
+								File:   "math.flux",
+								Source: "Numeric",
+								Start: ast.Position{
+									Column: 43,
+									Line:   15,
+								},
+							},
+						},
+						Name: "Numeric",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   15,
+								},
+								File:   "math.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 40,
+									Line:   15,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 33,
+								Line:   15,
+							},
+							File:   "math.flux",
+							Source: "(values: [A]) => A",
+							Start: ast.Position{
+								Column: 15,
+								Line:   15,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   15,
+								},
+								File:   "math.flux",
+								Source: "values: [A]",
+								Start: ast.Position{
+									Column: 16,
+									Line:   15,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 22,
+										Line:   15,
+									},
+									File:   "math.flux",
+									Source: "values",
+									Start: ast.Position{
+										Column: 16,
+										Line:   15,
+									},
+								},
+							},
+							Name: "values",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   15,
+									},
+									File:   "math.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 24,
+										Line:   15,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 26,
+											Line:   15,
+										},
+										File:   "math.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 25,
+											Line:   15,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   15,
+											},
+											File:   "math.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 25,
+												Line:   15,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}},
+					Return: &ast.TvarType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 33,
+									Line:   15,
+								},
+								File:   "math.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 32,
+									Line:   15,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 33,
+										Line:   15,
+									},
+									File:   "math.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 32,
+										Line:   15,
+									},
+								},
+							},
+							Name: "A",
+						},
+					},
+				},
 			},
 		}},
 		Imports:  nil,

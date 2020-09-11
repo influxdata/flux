@@ -1,9 +1,18 @@
 package promql_test
+
 import "testing"
 import "internal/promql"
+import c "csv"
 
 option now = () =>
 	(2030-01-01T00:00:00Z)
+// todo(faith): remove overload https://github.com/influxdata/flux/issues/3155
+option testing.loadStorage = (csv) => c.from(csv: csv)
+    |> map(fn: (r) => ({r with
+    _field: if exists r._field then r._field else die(msg: "test input table does not have _field column"),
+    _measurement: if exists r._measurement then r._measurement else die(msg: "test input table does not have _measurement column"),
+    _time: if exists r._time then r._time else die(msg: "test input table does not have _time column")
+    }))
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,double,string

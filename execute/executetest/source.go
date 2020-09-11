@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	uuid "github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
@@ -15,7 +16,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/plan"
-	uuid "github.com/satori/go.uuid"
 )
 
 const FromTestKind = "from-test"
@@ -115,6 +115,7 @@ func CreateFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.A
 type AllocatingFromProcedureSpec struct {
 	ByteCount int
 
+	id    execute.DatasetID
 	alloc *memory.Allocator
 	ts    []execute.Transformation
 }
@@ -138,7 +139,9 @@ func (AllocatingFromProcedureSpec) Cost(inStats []plan.Statistics) (cost plan.Co
 
 func CreateAllocatingFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	s := spec.(*AllocatingFromProcedureSpec)
+	s.id = id
 	s.alloc = a.Allocator()
+
 	return s, nil
 }
 
@@ -146,6 +149,9 @@ func (s *AllocatingFromProcedureSpec) Run(ctx context.Context) {
 	// Allocate the amount of memory as specified in the byte count.
 	// This memory is not used or returned.
 	_ = s.alloc.Allocate(s.ByteCount)
+	for _, t := range s.ts {
+		t.Finish(s.id, nil)
+	}
 }
 
 func (s *AllocatingFromProcedureSpec) AddTransformation(t execute.Transformation) {

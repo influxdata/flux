@@ -32,6 +32,7 @@ var opts = append(
 	cmp.AllowUnexported(universe.JoinOpSpec{}),
 	cmpopts.IgnoreUnexported(flux.Spec{}),
 	cmpopts.IgnoreUnexported(universe.JoinOpSpec{}),
+	cmpopts.IgnoreFields(flux.Operation{}, "Source"),
 	valuestest.ScopeTransformer,
 )
 

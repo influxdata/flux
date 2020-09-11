@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   54,
 				},
 				File:   "slack.flux",
-				Source: "package slack\n\nimport \"http\"\nimport \"json\"\n\nbuiltin validateColorString\n\noption defaultURL = \"https://slack.com/api/chat.postMessage\"\n\n// `message` sends a single message to a Slack channel. It will work either with the chat.postMessage API or with a slack webhook.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup. This URL will be secret. Don't worry about secrets for the initial implementation.\n// `token` - string - the api token string.  Defaults to: \"\", and can be ignored if one uses the webhook api URL.\n// `channel` - string - Name of channel in which to post the message. No default.\n// `text` - string - The text to display.\n// `color` - string - Color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.\nmessage = (url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// `endpoint` creates the endpoint for the Slack external service.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup, and this URL will be secret.\n// `token` - string - token for the slack endpoint.  This can be ignored if one uses the webhook url acquired as part of the slack API setup, but must be supplied if the chat.postMessage API is used.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel`, `text`, and `color` fields as defined in the `message` function arguments.\nendpoint = (url=defaultURL, token=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
+				Source: "package slack\n\nimport \"http\"\nimport \"json\"\n\nbuiltin validateColorString : (color: string) => string\n\noption defaultURL = \"https://slack.com/api/chat.postMessage\"\n\n// `message` sends a single message to a Slack channel. It will work either with the chat.postMessage API or with a slack webhook.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup. This URL will be secret. Don't worry about secrets for the initial implementation.\n// `token` - string - the api token string.  Defaults to: \"\", and can be ignored if one uses the webhook api URL.\n// `channel` - string - Name of channel in which to post the message. No default.\n// `text` - string - The text to display.\n// `color` - string - Color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.\nmessage = (url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// `endpoint` creates the endpoint for the Slack external service.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup, and this URL will be secret.\n// `token` - string - token for the slack endpoint.  This can be ignored if one uses the webhook url acquired as part of the slack API setup, but must be supplied if the chat.postMessage API is used.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel`, `text`, and `color` fields as defined in the `message` function arguments.\nendpoint = (url=defaultURL, token=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -65,6 +65,147 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Name: "validateColorString",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 56,
+							Line:   6,
+						},
+						File:   "slack.flux",
+						Source: "(color: string) => string",
+						Start: ast.Position{
+							Column: 31,
+							Line:   6,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 56,
+								Line:   6,
+							},
+							File:   "slack.flux",
+							Source: "(color: string) => string",
+							Start: ast.Position{
+								Column: 31,
+								Line:   6,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   6,
+								},
+								File:   "slack.flux",
+								Source: "color: string",
+								Start: ast.Position{
+									Column: 32,
+									Line:   6,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   6,
+									},
+									File:   "slack.flux",
+									Source: "color",
+									Start: ast.Position{
+										Column: 32,
+										Line:   6,
+									},
+								},
+							},
+							Name: "color",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 45,
+										Line:   6,
+									},
+									File:   "slack.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 39,
+										Line:   6,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   6,
+										},
+										File:   "slack.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 39,
+											Line:   6,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.NamedType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 56,
+									Line:   6,
+								},
+								File:   "slack.flux",
+								Source: "string",
+								Start: ast.Position{
+									Column: 50,
+									Line:   6,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 56,
+										Line:   6,
+									},
+									File:   "slack.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 50,
+										Line:   6,
+									},
+								},
+							},
+							Name: "string",
+						},
+					},
+				},
 			},
 		}, &ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{

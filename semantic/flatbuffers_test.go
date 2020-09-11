@@ -825,16 +825,18 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		},
 		{
 			name:    "builtin statement",
-			fluxSrc: `builtin foo`,
+			fluxSrc: `builtin foo : int`,
 			err:     errors.New("error @1:1-1:12: undefined builtin identifier foo"),
 		},
 		{
 			name: "test statement",
 			fluxSrc: `
-                import "testing"
-                test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
+		       import "testing"
+		       test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
 			types: map[string]string{
-				"t": "forall [t0, t1, t2] where t1: Record, t2: Record () -> {fn: (<-table: t0) -> t0 | input: [t1] | want: [t2]}",
+				"t": "forall [t0, t1, t2, t3, t4] where t4: Record () -> {fn: (<-table: t0) -> t0 | " +
+					"input: [{_field: t1 | _field: t1 | _measurement: t2 | _measurement: t2 | _start: time | _stop: time | _time: time | _time: time | t3}] " +
+					"| want: [t4]}",
 			},
 		},
 		{

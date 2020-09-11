@@ -138,6 +138,10 @@ pub fn builtins() -> Builtins<'static> {
             "influxdata/influxdb/secrets" => semantic_map! {
                 "get" => "(key: string) => string",
             },
+            "influxdata/influxdb/tasks" => semantic_map! {
+                "_zeroTime" => "time",
+                "_lastSuccess" => "(orTime: time, lastSuccessTime: time) => time",
+            },
             "influxdata/influxdb/v1" => semantic_map! {
                 // exactly one of json and file must be specified
                 // https://github.com/influxdata/flux/issues/2250
@@ -438,6 +442,7 @@ pub fn builtins() -> Builtins<'static> {
                         ?columns: [string],
                         ?timeColumn: string
                     ) => [B] where A: Record, B: Record "#,
+                "die" => "(msg: string) => A",
                 "difference" => r#"
                    (
                         <-tables: [T],
@@ -548,7 +553,8 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         ?unit: duration,
                         ?timeColumn: string,
-                        ?column: string
+                        ?column: string,
+                        ?interpolate: string
                     ) => [B] where A: Record, B: Record "#,
                 "join" => r#"(
                         <-tables: A,
@@ -624,14 +630,12 @@ pub fn builtins() -> Builtins<'static> {
                 //   https://github.com/influxdata/flux/issues/2243
                 // Also, we should remove the column arguments so we can reuse A in the return type:
                 //   https://github.com/influxdata/flux/issues/2253
+
                 "range" => r#"(
-                        <-tables: [A],
+                        <-tables: [{A with _time: time}],
                         start: B,
-                        ?stop: C,
-                        ?timeColumn: string,
-                        ?startColumn: string,
-                        ?stopColumn: string
-                    ) => [D] where A: Record, D: Record "#,
+                        ?stop: C
+                    ) => [{A with _time: time, _start: time, _stop: time}]"#,
                 // This function could be updated to get better type inference:
                 //   https://github.com/influxdata/flux/issues/2254
                 "reduce" => r#"(
@@ -767,6 +771,13 @@ pub fn builtins() -> Builtins<'static> {
                     ) => [B] where A: Record, B: Record, C: Record "#,
                 "null" => r#"A"#,
                 "none" => r#"A"#,
+                "window" => r#"(
+                        <-tables: [A],
+                        ?time: string,
+                        every: duration,
+                        ?period: duration,
+                        columns: C
+                    ) => [B] where A: Record, B: Record, C: Record"#,
             },
             "contrib/jsternberg/influxdb" => semantic_map! {
                 "_mask" => r#"(
@@ -779,6 +790,9 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         fn: (r: A) => B
                     ) => [B] where A: Record, B: Record "#,
+            },
+            "contrib/sranka/opsgenie" => semantic_map! {
+                "respondersToJSON" => "(v: [string]) => string",
             },
         },
     }
