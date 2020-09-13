@@ -771,6 +771,13 @@ pub fn builtins() -> Builtins<'static> {
                     ) => [B] where A: Record, B: Record, C: Record "#,
                 "null" => r#"A"#,
                 "none" => r#"A"#,
+                "window" => r#"(
+                        <-tables: [A],
+                        ?time: string,
+                        every: duration,
+                        ?period: duration,
+                        columns: C
+                    ) => [B] where A: Record, B: Record, C: Record"#,
             },
             "contrib/jsternberg/influxdb" => semantic_map! {
                 "_mask" => r#"(
