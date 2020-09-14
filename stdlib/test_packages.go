@@ -4,11 +4,15 @@ package stdlib
 
 import (
 	ast "github.com/influxdata/flux/ast"
+<<<<<<< HEAD
 	naivebayesclassifier "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
+=======
+	aggregate "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
+>>>>>>> 1ca64e34... feat(contrib): aggregate.window for an alternative windowing aggregate (#3168)
 	rows "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
 	date "github.com/influxdata/flux/stdlib/date"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
-	aggregate "github.com/influxdata/flux/stdlib/experimental/aggregate"
+	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
 	array "github.com/influxdata/flux/stdlib/experimental/array"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
@@ -33,11 +37,15 @@ import (
 
 var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
+<<<<<<< HEAD
 	pkgs = append(pkgs, naivebayesclassifier.FluxTestPackages...)
+=======
+	pkgs = append(pkgs, aggregate.FluxTestPackages...)
+>>>>>>> 1ca64e34... feat(contrib): aggregate.window for an alternative windowing aggregate (#3168)
 	pkgs = append(pkgs, rows.FluxTestPackages...)
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
-	pkgs = append(pkgs, aggregate.FluxTestPackages...)
+	pkgs = append(pkgs, aggregate1.FluxTestPackages...)
 	pkgs = append(pkgs, array.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
