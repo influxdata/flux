@@ -192,12 +192,12 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 
 		source, err := createSourceFn(spec, id, ec)
-		source.SetLabel(string(node.ID()))
 
 		if err != nil {
 			return err
 		}
 
+		source.SetLabel(string(node.ID()))
 		v.es.sources = append(v.es.sources, source)
 		v.nodes[node] = source
 	} else {
@@ -211,12 +211,12 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 		}
 
 		tr, ds, err := createTransformationFn(id, DiscardingMode, spec, ec)
-		tr.SetLabel(string(node.ID()))
 
 		if err != nil {
 			return err
 		}
 
+		tr.SetLabel(string(node.ID()))
 		if ppn.TriggerSpec == nil {
 			ppn.TriggerSpec = plan.DefaultTriggerSpec
 		}
