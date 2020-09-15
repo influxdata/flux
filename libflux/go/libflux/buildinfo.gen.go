@@ -66,6 +66,8 @@ var sourceHashes = map[string]string{
 	"libflux/src/flux/benches/builtins.rs":                                          "c60908c65ea51c225fccec19c44343af9103c950a91b23071ddb80292da708c8",
 	"libflux/src/flux/build.rs":                                                     "31a4f825297f9b79d1c8692a5fa3ff9211cb87d01650d147128d061588f75abd",
 	"libflux/src/flux/lib.rs":                                                       "814d59476baa5c7f8bc1bc72770fabe803a832707978e3567b56a25a6351b7db",
+	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/bayes_test.flux":            "d22b87db3818b7c628e0a88eaabbbd882be002a6260f8c9e77a842a2d3f0c120",
+	"stdlib/contrib/RohanSreerama5/naiveBayesClassifier/naiveBayesClassifier.flux":  "453386ba1a814fe9e89cb97e66f1148954517097dc326f0a6990d1847132cc49",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                    "b9f9b1a60fc92f47930fa4252a77bfc1def5ba98084880eddb4ebbab4078a697",
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                            "fffde07d389b43cd8e2a0f7109f0afa4157174f28d71afac7d484b3423985e93",
 	"stdlib/contrib/jsternberg/aggregate/table_test.flux":                           "5091de069830dcfb6bbddbfa068c1777e747347e9da3dfa59f50195df5b20d4f",
