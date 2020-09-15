@@ -897,6 +897,7 @@ impl Parser {
     fn parse_expression_suffix(&mut self, expr: Expression) -> Expression {
         let expr = self.parse_postfix_operator_suffix(expr);
         let expr = self.parse_pipe_expression_suffix(expr);
+        let expr = self.parse_exponent_expression_suffix(expr);
         let expr = self.parse_multiplicative_expression_suffix(expr);
         let expr = self.parse_additive_expression_suffix(expr);
         let expr = self.parse_comparison_expression_suffix(expr);
@@ -1113,7 +1114,7 @@ impl Parser {
         res
     }
     fn parse_multiplicative_expression(&mut self) -> Expression {
-        let expr = self.parse_pipe_expression();
+        let expr = self.parse_exponent_expression();
         self.parse_multiplicative_expression_suffix(expr)
     }
     fn parse_multiplicative_expression_suffix(&mut self, expr: Expression) -> Expression {
@@ -1123,7 +1124,7 @@ impl Parser {
             match op {
                 Some(op) => {
                     let t = self.scan();
-                    let rhs = self.parse_pipe_expression();
+                    let rhs = self.parse_exponent_expression();
                     self.base_node_from_others_c(res.base(), rhs.base(), &t);
                     res = Expression::Binary(Box::new(BinaryExpr {
                         base: self.base_node_from_others_c(res.base(), rhs.base(), &t),
@@ -1144,15 +1145,53 @@ impl Parser {
             TOK_MUL => res = Some(Operator::MultiplicationOperator),
             TOK_DIV => res = Some(Operator::DivisionOperator),
             TOK_MOD => res = Some(Operator::ModuloOperator),
-            TOK_POW => res = Some(Operator::PowerOperator),
             _ => (),
         }
         res
     }
+
+    fn parse_exponent_expression(&mut self) -> Expression {
+        let expr = self.parse_pipe_expression();
+        self.parse_exponent_expression_suffix(expr)
+    }
+
+    fn parse_exponent_expression_suffix(&mut self, expr: Expression) -> Expression {
+        let mut res = expr;
+        loop {
+            let op = self.parse_exponent_operator();
+            match op {
+                Some(op) => {
+                    let t = self.scan();
+                    let rhs = self.parse_pipe_expression();
+                    self.base_node_from_others_c(res.base(), rhs.base(), &t);
+                    res = Expression::Binary(Box::new(BinaryExpr {
+                        base: self.base_node_from_others_c(res.base(), rhs.base(), &t),
+                        operator: op,
+                        left: res,
+                        right: rhs,
+                    }));
+                }
+                None => break,
+            };
+        }
+        res
+    }
+
+    fn parse_exponent_operator(&mut self) -> Option<Operator> {
+        let t = self.peek().tok;
+        let mut res = None;
+
+        if let TOK_POW = t {
+            res = Some(Operator::PowerOperator)
+        }
+        res
+    }
+
     fn parse_pipe_expression(&mut self) -> Expression {
         let expr = self.parse_unary_expression();
         self.parse_pipe_expression_suffix(expr)
     }
+
     fn parse_pipe_expression_suffix(&mut self, expr: Expression) -> Expression {
         let mut res = expr;
         loop {

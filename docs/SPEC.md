@@ -946,9 +946,12 @@ The operator precedence is encoded directly into the grammar as the following.
     AdditiveExpression       = MultiplicativeExpression
                              | AdditiveExpression AdditiveOperator MultiplicativeExpression .
     AdditiveOperator         = "+" | "-" .
-    MultiplicativeExpression = PipeExpression
-                             | MultiplicativeExpression MultiplicativeOperator PipeExpression .
-    MultiplicativeOperator   = "*" | "/" | "%" | "^".
+    MultiplicativeExpression = ExponentExpression
+                             | ExponentExpression ExponentOperator MultiplicativeExpression .
+    MultiplicativeOperator   = "*" | "/" | "%" .
+    ExponentExpression       = PipeExpression
+                             | ExponentExpression ExponentOperator PipeExpression .
+    ExponentOperator         = "^" .
     PipeExpression           = PostfixExpression
                              | PipeExpression PipeOperator UnaryExpression .
     PipeOperator             = "|>" .
