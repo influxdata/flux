@@ -11,7 +11,7 @@ InfluxDB: https://github.com/influxdata/influxdb
 1) Ensure you have InfluxDB 2.0 set up by either going to localhost:9999 (if you `make` InfluxDB from source) or going to your Cloud instance on AWS, Azure, etc. Keep the instance running throughout this demo.  
 2) Choose a binary dataset (fields can only take on 2 unique values) or visit https://archive.ics.uci.edu/ml/datasets.php for some wonderful datasets you can get started with. 
 
-![](images/csvData.png)
+[Animal dataset](zoo_data.csv)
 
 3) You will have to make edits to script.py in the following areas: 
 
@@ -22,22 +22,20 @@ InfluxDB: https://github.com/influxdata/influxdb
 - Note which fields you want to use as actual fields you classify on and which you would like to use for Class. Recall we predict `P(Class | field)`.
 - Anything you choose to be a class must be listed inside of `data_frame_tag_columns` and everything else defaults to a `field`. Finally, run the script. You've just written your dataset to an InfluxDB bucket. 
 
-![](images/pythonScript.png)
+[Python Script to Write Data to InfluxDB Bucket](script.py)
 
-Note: In our demo, we've divided training and test data based on time: 3 days for training and 1 day for testing. 
+Note: In our demo, we've divided training and test data based on time: 3 days for training and 1 day for testing 
 
 4) In the UI, go to Data -> yourBucket and if data does not show up, then add a `Custom Time Range` that is the time range of your dataset. Switch on `Raw Data`. 
 5) Copy-paste in the Flux script from `naiveBayesClassifier.flux` into the `Script Editor`. At the bottom of the script, ensure you have changed the arguments to `naiveBayes(...)` with the correct information from your dataset. If your are running the `zoo-data`, all you must change is the `bucket` name. 
+
+[Naive Bayes Flux Script](naiveBayesClassifier.flux)
 
 Note: For ease of use and debugging, use the Flux extension in VSCode. https://marketplace.visualstudio.com/items?itemName=influxdata.flux
 
 6) That's it! Hit `Submit` and watch the predictions show up under the `Probability` column. What is this predicting? This classifier predicts the probability that a given animal is airborne given whether it is aquatic or not. 
 
 If you are using my zoo data, feel free to play around with this by changing the field or Class to any of the other available fields in the dataset. You can also change the time frames of the training and test data based on your dataset.
-
-![](images/overview.png)
-
-![](images/data.png)
 
 Coming very soon:
 
