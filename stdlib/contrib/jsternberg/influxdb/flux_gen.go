@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 2,
-					Line:   77,
+					Column: 14,
+					Line:   97,
 				},
 				File:   "influxdb.flux",
-				Source: "package influxdb\n\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/v1\"\n\n// _mask will hide the given columns from downstream\n// transformations. It will not perform any copies and\n// it will not regroup. This should only be used when\n// the user knows it can't cause a key conflict.\nbuiltin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record\n\n// from will retrieve data from a bucket between the start and stop time.\n// This version of from is the equivalent of doing from |> range\n// as a single call.\nfrom = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source =\n        if org != \"\" and host != \"\" and token != \"\" then\n            influxdb.from(bucket, org, host, token)\n        else if org != \"\" and token != \"\" then\n            influxdb.from(bucket, org, token)\n        else if org != \"\" and host != \"\" then\n            influxdb.from(bucket, org, host)\n        else if host != \"\" and token != \"\" then\n            influxdb.from(bucket, host, token)\n        else if org != \"\" then\n            influxdb.from(bucket, org)\n        else if host != \"\" then\n            influxdb.from(bucket, host)\n        else if token != \"\" then\n            influxdb.from(bucket, token)\n        else\n            influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}\n\n// _from allows us to reference the from function from\n// within the select call which has a function parameter\n// with the same name.\n_from = from\n\n// select will select data from an influxdb instance within\n// the range between `start` and `stop` from the bucket specified by\n// the `from` parameter. It will select the specific measurement\n// and it will only include fields that are included in the list of\n// `fields`.\n//\n// In order to filter by tags, the `where` function can be used to further\n// limit the amount of data selected.\nselect = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(bucket, start, stop, org, host, token)\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n\n    nfields = length(arr: fields)\n    fn =\n        if nfields == 0 then\n            (r) => true\n        else if nfields == 1 then\n            (r) => r._field == fields[0]\n        else if nfields == 2 then\n            (r) => r._field == fields[0] or r._field == fields[1]\n        else if nfields == 3 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n        else if nfields == 4 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n        else if nfields == 5 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n        else\n            (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}",
+				Source: "package influxdb\n\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/v1\"\n\n// _mask will hide the given columns from downstream\n// transformations. It will not perform any copies and\n// it will not regroup. This should only be used when\n// the user knows it can't cause a key conflict.\nbuiltin _mask : (<-tables: [A], columns: [string]) => [B] where A: Record, B: Record\n\n// from will retrieve data from a bucket between the start and stop time.\n// This version of from is the equivalent of doing from |> range\n// as a single call.\nfrom = (bucket, start, stop=now(), org=\"\", host=\"\", token=\"\") => {\n    source =\n        if org != \"\" and host != \"\" and token != \"\" then\n            influxdb.from(bucket, org, host, token)\n        else if org != \"\" and token != \"\" then\n            influxdb.from(bucket, org, token)\n        else if org != \"\" and host != \"\" then\n            influxdb.from(bucket, org, host)\n        else if host != \"\" and token != \"\" then\n            influxdb.from(bucket, host, token)\n        else if org != \"\" then\n            influxdb.from(bucket, org)\n        else if host != \"\" then\n            influxdb.from(bucket, host)\n        else if token != \"\" then\n            influxdb.from(bucket, token)\n        else\n            influxdb.from(bucket)\n\n    return source |> range(start, stop)\n}\n\n// _from allows us to reference the from function from\n// within the select call which has a function parameter\n// with the same name.\n_from = from\n\n// select will select data from an influxdb instance within\n// the range between `start` and `stop` from the bucket specified by\n// the `from` parameter. It will select the specific measurement\n// and it will only include fields that are included in the list of\n// `fields`.\n//\n// In order to filter by tags, the `where` function can be used to further\n// limit the amount of data selected.\nselect = (from, start, stop=now(), m, fields=[], org=\"\", host=\"\", token=\"\", where=(r) => true) => {\n    bucket = from\n    tables = _from(bucket, start, stop, org, host, token)\n        |> filter(fn: (r) => r._measurement == m)\n        |> filter(fn: where)\n\n    nfields = length(arr: fields)\n    fn =\n        if nfields == 0 then\n            (r) => true\n        else if nfields == 1 then\n            (r) => r._field == fields[0]\n        else if nfields == 2 then\n            (r) => r._field == fields[0] or r._field == fields[1]\n        else if nfields == 3 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2]\n        else if nfields == 4 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3]\n        else if nfields == 5 then\n            (r) => r._field == fields[0] or r._field == fields[1] or r._field == fields[2] or r._field == fields[3] or r._field == fields[4]\n        else\n            (r) => contains(value: r._field, set: fields)\n\n    return tables\n        |> filter(fn)\n        |> v1.fieldsAsCols()\n        |> _mask(columns: [\"_measurement\", \"_start\", \"_stop\"])\n}\n\n// to will write data to a bucket.\n// The incoming data needs to come in with the same format\n// as returned by from. There must be a _measurement, _field,\n// _time, and _value column. Any other columns that are part\n// of the group key will be included as tags. The _start\n// and _stop column are ignored along with any non-key columns\n// that aren't listed above.\nbuiltin to : (<-tables: [A], ?org: string, bucket: string, ?host: string, ?token: string) => [A] where A: Record\n\n// write will write data to a bucket.\n// The incoming data needs to come in with the same format\n// as returned by select. Non-group key columns will be written\n// with a field key equivalent to the column name with the\n// appropriate type. To avoid writing extraneous data, you\n// should drop unused columns.\n// The group keys will be used as the tags.\n// The measurement is specified as a parameter to the function\n// and it is required.\nbuiltin write",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -8229,6 +8229,1158 @@ var pkgAST = &ast.Package{
 						}},
 					},
 				}},
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 11,
+						Line:   86,
+					},
+					File:   "influxdb.flux",
+					Source: "builtin to",
+					Start: ast.Position{
+						Column: 1,
+						Line:   86,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   86,
+						},
+						File:   "influxdb.flux",
+						Source: "to",
+						Start: ast.Position{
+							Column: 9,
+							Line:   86,
+						},
+					},
+				},
+				Name: "to",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 113,
+							Line:   86,
+						},
+						File:   "influxdb.flux",
+						Source: "(<-tables: [A], ?org: string, bucket: string, ?host: string, ?token: string) => [A] where A: Record",
+						Start: ast.Position{
+							Column: 14,
+							Line:   86,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 113,
+								Line:   86,
+							},
+							File:   "influxdb.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 104,
+								Line:   86,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 113,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 107,
+									Line:   86,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 105,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 104,
+									Line:   86,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 97,
+								Line:   86,
+							},
+							File:   "influxdb.flux",
+							Source: "(<-tables: [A], ?org: string, bucket: string, ?host: string, ?token: string) => [A]",
+							Start: ast.Position{
+								Column: 14,
+								Line:   86,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 28,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 15,
+									Line:   86,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 23,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 17,
+										Line:   86,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 28,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 25,
+										Line:   86,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   86,
+										},
+										File:   "influxdb.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 26,
+											Line:   86,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 27,
+												Line:   86,
+											},
+											File:   "influxdb.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 26,
+												Line:   86,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "?org: string",
+								Start: ast.Position{
+									Column: 30,
+									Line:   86,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 34,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "org",
+									Start: ast.Position{
+										Column: 31,
+										Line:   86,
+									},
+								},
+							},
+							Name: "org",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 36,
+										Line:   86,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   86,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 36,
+											Line:   86,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 58,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "bucket: string",
+								Start: ast.Position{
+									Column: 44,
+									Line:   86,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 50,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "bucket",
+									Start: ast.Position{
+										Column: 44,
+										Line:   86,
+									},
+								},
+							},
+							Name: "bucket",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 58,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 52,
+										Line:   86,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 58,
+											Line:   86,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 52,
+											Line:   86,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 73,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "?host: string",
+								Start: ast.Position{
+									Column: 60,
+									Line:   86,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 65,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "host",
+									Start: ast.Position{
+										Column: 61,
+										Line:   86,
+									},
+								},
+							},
+							Name: "host",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 73,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 67,
+										Line:   86,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 73,
+											Line:   86,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 67,
+											Line:   86,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 89,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "?token: string",
+								Start: ast.Position{
+									Column: 75,
+									Line:   86,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 81,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "token",
+									Start: ast.Position{
+										Column: 76,
+										Line:   86,
+									},
+								},
+							},
+							Name: "token",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 89,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 83,
+										Line:   86,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 89,
+											Line:   86,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 83,
+											Line:   86,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 97,
+									Line:   86,
+								},
+								File:   "influxdb.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 94,
+									Line:   86,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 96,
+										Line:   86,
+									},
+									File:   "influxdb.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 95,
+										Line:   86,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 96,
+											Line:   86,
+										},
+										File:   "influxdb.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 95,
+											Line:   86,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   97,
+					},
+					File:   "influxdb.flux",
+					Source: "builtin write",
+					Start: ast.Position{
+						Column: 1,
+						Line:   97,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   97,
+						},
+						File:   "influxdb.flux",
+						Source: "write",
+						Start: ast.Position{
+							Column: 9,
+							Line:   97,
+						},
+					},
+				},
+				Name: "write",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 127,
+							Line:   97,
+						},
+						File:   "influxdb.flux",
+						Source: "(<-tables: [A], ?org: string, bucket: string, ?host: string, ?token: string, m: string) => [A] where A: Record",
+						Start: ast.Position{
+							Column: 17,
+							Line:   97,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 127,
+								Line:   97,
+							},
+							File:   "influxdb.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 118,
+								Line:   97,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 127,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 121,
+									Line:   97,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 119,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 118,
+									Line:   97,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 111,
+								Line:   97,
+							},
+							File:   "influxdb.flux",
+							Source: "(<-tables: [A], ?org: string, bucket: string, ?host: string, ?token: string, m: string) => [A]",
+							Start: ast.Position{
+								Column: 17,
+								Line:   97,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 18,
+									Line:   97,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 20,
+										Line:   97,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 28,
+										Line:   97,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   97,
+										},
+										File:   "influxdb.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 29,
+											Line:   97,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   97,
+											},
+											File:   "influxdb.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 29,
+												Line:   97,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "?org: string",
+								Start: ast.Position{
+									Column: 33,
+									Line:   97,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "org",
+									Start: ast.Position{
+										Column: 34,
+										Line:   97,
+									},
+								},
+							},
+							Name: "org",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 45,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 39,
+										Line:   97,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   97,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 39,
+											Line:   97,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 61,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "bucket: string",
+								Start: ast.Position{
+									Column: 47,
+									Line:   97,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 53,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "bucket",
+									Start: ast.Position{
+										Column: 47,
+										Line:   97,
+									},
+								},
+							},
+							Name: "bucket",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 61,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 55,
+										Line:   97,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   97,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 55,
+											Line:   97,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 76,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "?host: string",
+								Start: ast.Position{
+									Column: 63,
+									Line:   97,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 68,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "host",
+									Start: ast.Position{
+										Column: 64,
+										Line:   97,
+									},
+								},
+							},
+							Name: "host",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 76,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 70,
+										Line:   97,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 76,
+											Line:   97,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 70,
+											Line:   97,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 92,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "?token: string",
+								Start: ast.Position{
+									Column: 78,
+									Line:   97,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 84,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "token",
+									Start: ast.Position{
+										Column: 79,
+										Line:   97,
+									},
+								},
+							},
+							Name: "token",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 92,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 86,
+										Line:   97,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 92,
+											Line:   97,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 86,
+											Line:   97,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 103,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "m: string",
+								Start: ast.Position{
+									Column: 94,
+									Line:   97,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 95,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "m",
+									Start: ast.Position{
+										Column: 94,
+										Line:   97,
+									},
+								},
+							},
+							Name: "m",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 103,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 97,
+										Line:   97,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 103,
+											Line:   97,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 97,
+											Line:   97,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 111,
+									Line:   97,
+								},
+								File:   "influxdb.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 108,
+									Line:   97,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 110,
+										Line:   97,
+									},
+									File:   "influxdb.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 109,
+										Line:   97,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 110,
+											Line:   97,
+										},
+										File:   "influxdb.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 109,
+											Line:   97,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
 			},
 		}},
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
