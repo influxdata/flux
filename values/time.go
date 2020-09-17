@@ -48,6 +48,28 @@ func ConvertDuration(v time.Duration) Duration {
 	}
 }
 
+// ConvertDurationMonths takes a time.Duration and converts it into a Duration with months.
+func ConvertDurationMonths(v time.Duration) Duration {
+	negative := false
+	if v < 0 {
+		negative, v = true, -v
+	}
+	return Duration{
+		months:   int64(v),
+		negative: negative,
+	}
+}
+
+// MakeDuration takes nanoseconds and months as int64 and negative as a bool to construct a Duration
+// with mixed units
+func MakeDuration(nsecs int64, months int64, negative bool) Duration {
+	return Duration{
+		months:   months,
+		nsecs:    nsecs,
+		negative: negative,
+	}
+}
+
 func (t Time) Round(d Duration) Time {
 	if !d.IsPositive() {
 		return t
