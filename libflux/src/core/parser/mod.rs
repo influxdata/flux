@@ -455,7 +455,7 @@ impl Parser {
             if !self.more() {
                 return stmts;
             }
-            stmts.push(self.parse_statement())
+            stmts.push(self.parse_statement());
         }
     }
 

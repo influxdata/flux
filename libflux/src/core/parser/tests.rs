@@ -49,6 +49,534 @@ impl<'a> Locator<'a> {
 }
 
 #[test]
+fn parse_invalid_unicode_bare() {
+    let mut p = Parser::new(r#"®some string®"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 16),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 3),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 3, 1, 7),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 3, 1, 7),
+                            ..BaseNode::default()
+                        },
+                        name: "some".to_string(),
+                    })
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 8, 1, 14),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 8, 1, 14),
+                            ..BaseNode::default()
+                        },
+                        name: "string".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 14, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+            ],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn parse_invalid_unicode_paren_wrapped() {
+    let mut p = Parser::new(r#"(‛some string‛)"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 20),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 20),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Paren(Box::new(ParenExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 20),
+                        errors: vec!["invalid expression @1:16-1:19: ‛".to_string()],
+                        ..BaseNode::default()
+                    },
+                    lparen: None,
+                    expression: Expression::Binary(Box::new(BinaryExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::InvalidOperator,
+                        left: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 5, 1, 9),
+                                errors: vec!["invalid expression @1:2-1:5: ‛".to_string()],
+                                ..BaseNode::default()
+                            },
+                            name: "some".to_string(),
+                        }),
+                        right: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 10, 1, 16),
+                                ..BaseNode::default()
+                            },
+                            name: "string".to_string(),
+                        })
+                    })),
+                    rparen: None,
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn parse_invalid_unicode_interspersed() {
+    let mut p = Parser::new(r#"®s®t®r®i®n®g"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 19),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 3),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 3, 1, 4),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 3, 1, 4),
+                            ..BaseNode::default()
+                        },
+                        name: "s".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 4, 1, 6),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 6, 1, 7),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 6, 1, 7),
+                            ..BaseNode::default()
+                        },
+                        name: "t".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 7, 1, 9),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 10),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 9, 1, 10),
+                            ..BaseNode::default()
+                        },
+                        name: "r".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 10, 1, 12),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 12, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 12, 1, 13),
+                            ..BaseNode::default()
+                        },
+                        name: "i".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 13, 1, 15),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 15, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 15, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        name: "n".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 16, 1, 18),
+                        ..BaseNode::default()
+                    },
+                    text: "®".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 18, 1, 19),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 18, 1, 19),
+                            ..BaseNode::default()
+                        },
+                        name: "g".to_string(),
+                    })
+                })),
+            ],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn parse_greedy_quotes_paren_wrapped() {
+    let mut p = Parser::new(r#"(“some string”)"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 20),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 20),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Paren(Box::new(ParenExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 20),
+                        errors: vec!["invalid expression @1:16-1:19: ”".to_string()],
+                        ..BaseNode::default()
+                    },
+                    lparen: None,
+                    expression: Expression::Binary(Box::new(BinaryExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::InvalidOperator,
+                        left: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 5, 1, 9),
+                                errors: vec!["invalid expression @1:2-1:5: “".to_string()],
+                                ..BaseNode::default()
+                            },
+                            name: "some".to_string(),
+                        }),
+                        right: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 10, 1, 16),
+                                ..BaseNode::default()
+                            },
+                            name: "string".to_string(),
+                        })
+                    })),
+                    rparen: None,
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn parse_greedy_quotes_bare() {
+    let mut p = Parser::new(r#"“some string”"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 18),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 4),
+                        ..BaseNode::default()
+                    },
+                    text: "“".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 4, 1, 8),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 4, 1, 8),
+                            ..BaseNode::default()
+                        },
+                        name: "some".to_string(),
+                    })
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 15),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 9, 1, 15),
+                            ..BaseNode::default()
+                        },
+                        name: "string".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 15, 1, 18),
+                        ..BaseNode::default()
+                    },
+                    text: "”".to_string(),
+                })),
+            ],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn parse_greedy_quotes_interspersed() {
+    let mut p = Parser::new(r#"“s”t“r”i“n”g"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 25),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 4),
+                        ..BaseNode::default()
+                    },
+                    text: "“".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 4, 1, 5),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 4, 1, 5),
+                            ..BaseNode::default()
+                        },
+                        name: "s".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 5, 1, 8),
+                        ..BaseNode::default()
+                    },
+                    text: "”".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 8, 1, 9),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 8, 1, 9),
+                            ..BaseNode::default()
+                        },
+                        name: "t".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 12),
+                        ..BaseNode::default()
+                    },
+                    text: "“".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 12, 1, 13),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 12, 1, 13),
+                            ..BaseNode::default()
+                        },
+                        name: "r".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 13, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    text: "”".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 16, 1, 17),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 16, 1, 17),
+                            ..BaseNode::default()
+                        },
+                        name: "i".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 17, 1, 20),
+                        ..BaseNode::default()
+                    },
+                    text: "“".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 20, 1, 21),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 20, 1, 21),
+                            ..BaseNode::default()
+                        },
+                        name: "n".to_string(),
+                    })
+                })),
+                Statement::Bad(Box::new(BadStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 21, 1, 24),
+                        ..BaseNode::default()
+                    },
+                    text: "”".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 24, 1, 25),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Identifier(Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 24, 1, 25),
+                            ..BaseNode::default()
+                        },
+                        name: "g".to_string(),
+                    })
+                })),
+            ],
+            eof: None,
+        },
+    )
+}
+
+#[test]
 fn string_interpolation_simple() {
     let mut p = Parser::new(r#""a + b = ${a + b}""#);
     let parsed = p.parse_file("".to_string());

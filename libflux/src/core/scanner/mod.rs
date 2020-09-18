@@ -174,6 +174,10 @@ impl Scanner {
             };
             match nc {
                 Some(nc) => {
+                    // It's possible that the C scanner left the data pointer in the middle
+                    // of a character. This resets the pointer to the
+                    // beginning of the token we just failed to scan.
+                    self.p = unsafe { self.ps.add(token_start as usize) };
                     let size = nc.len_utf8();
                     // Advance the data pointer to after the character we just emitted.
                     self.p = unsafe { self.p.add(size) };
