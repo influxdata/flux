@@ -264,6 +264,252 @@ fn test_scan() {
 }
 
 #[test]
+fn scan_invalid_unicode_single_quotes() {
+    let text = "‛some string‛";
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_ILLEGAL,
+            lit: String::from("‛"),
+            start_offset: 0,
+            end_offset: 3,
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 4 },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_IDENT,
+            lit: String::from("some"),
+            start_offset: 3,
+            end_offset: 7,
+            start_pos: Position { line: 1, column: 4 },
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_IDENT,
+            lit: String::from("string"),
+            start_offset: 8,
+            end_offset: 14,
+            start_pos: Position { line: 1, column: 9 },
+            end_pos: Position {
+                line: 1,
+                column: 15
+            },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_ILLEGAL,
+            lit: String::from("‛"),
+            start_offset: 14,
+            end_offset: 17,
+            start_pos: Position {
+                line: 1,
+                column: 15
+            },
+            end_pos: Position {
+                line: 1,
+                column: 18
+            },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_EOF,
+            lit: String::from(""),
+            start_offset: 17,
+            end_offset: 17,
+            start_pos: Position {
+                line: 1,
+                column: 18
+            },
+            end_pos: Position {
+                line: 1,
+                column: 18
+            },
+            comments: None,
+        }
+    );
+}
+
+#[test]
+fn scan_invalid_unicode_double_quotes() {
+    let text = "“some string”";
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_ILLEGAL,
+            lit: String::from("“"),
+            start_offset: 0,
+            end_offset: 3,
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 4 },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_IDENT,
+            lit: String::from("some"),
+            start_offset: 3,
+            end_offset: 7,
+            start_pos: Position { line: 1, column: 4 },
+            end_pos: Position { line: 1, column: 8 },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_IDENT,
+            lit: String::from("string"),
+            start_offset: 8,
+            end_offset: 14,
+            start_pos: Position { line: 1, column: 9 },
+            end_pos: Position {
+                line: 1,
+                column: 15
+            },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_ILLEGAL,
+            lit: String::from("”"),
+            start_offset: 14,
+            end_offset: 17,
+            start_pos: Position {
+                line: 1,
+                column: 15
+            },
+            end_pos: Position {
+                line: 1,
+                column: 18
+            },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_EOF,
+            lit: String::from(""),
+            start_offset: 17,
+            end_offset: 17,
+            start_pos: Position {
+                line: 1,
+                column: 18
+            },
+            end_pos: Position {
+                line: 1,
+                column: 18
+            },
+            comments: None,
+        }
+    );
+}
+
+#[test]
+fn scan_invalid_unicode_register() {
+    let text = "®some string®";
+    let cdata = CString::new(text).expect("CString::new failed");
+    let mut s = Scanner::new(cdata);
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_ILLEGAL,
+            lit: String::from("®"),
+            start_offset: 0,
+            end_offset: 2,
+            start_pos: Position { line: 1, column: 1 },
+            end_pos: Position { line: 1, column: 3 },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_IDENT,
+            lit: String::from("some"),
+            start_offset: 2,
+            end_offset: 6,
+            start_pos: Position { line: 1, column: 3 },
+            end_pos: Position { line: 1, column: 7 },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_IDENT,
+            lit: String::from("string"),
+            start_offset: 7,
+            end_offset: 13,
+            start_pos: Position { line: 1, column: 8 },
+            end_pos: Position {
+                line: 1,
+                column: 14
+            },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_ILLEGAL,
+            lit: String::from("®"),
+            start_offset: 13,
+            end_offset: 15,
+            start_pos: Position {
+                line: 1,
+                column: 14
+            },
+            end_pos: Position {
+                line: 1,
+                column: 16
+            },
+            comments: None,
+        }
+    );
+    assert_eq!(
+        s.scan(),
+        Token {
+            tok: TOK_EOF,
+            lit: String::from(""),
+            start_offset: 15,
+            end_offset: 15,
+            start_pos: Position {
+                line: 1,
+                column: 16
+            },
+            end_pos: Position {
+                line: 1,
+                column: 16
+            },
+            comments: None,
+        }
+    );
+}
+
+#[test]
 fn test_scan_with_regex() {
     let text = "a + b =~ /.*[0-9]/ / 2";
     let cdata = CString::new(text).expect("CString::new failed");
