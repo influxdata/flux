@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
@@ -25,10 +26,7 @@ const (
 
 // NameOrID signifies the name of an organization/bucket
 // or an ID for an organization/bucket.
-type NameOrID struct {
-	ID   string
-	Name string
-}
+type NameOrID = influxdb.NameOrID
 
 type FromOpSpec struct {
 	Org    *NameOrID

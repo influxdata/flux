@@ -75,3 +75,23 @@ select = (from, start, stop=now(), m, fields=[], org="", host="", token="", wher
         |> v1.fieldsAsCols()
         |> _mask(columns: ["_measurement", "_start", "_stop"])
 }
+
+// to will write data to a bucket.
+// The incoming data needs to come in with the same format
+// as returned by from. There must be a _measurement, _field,
+// _time, and _value column. Any other columns that are part
+// of the group key will be included as tags. The _start
+// and _stop column are ignored along with any non-key columns
+// that aren't listed above.
+builtin to : (<-tables: [A], ?org: string, bucket: string, ?host: string, ?token: string) => [A] where A: Record
+
+// write will write data to a bucket.
+// The incoming data needs to come in with the same format
+// as returned by select. Non-group key columns will be written
+// with a field key equivalent to the column name with the
+// appropriate type. To avoid writing extraneous data, you
+// should drop unused columns.
+// The group keys will be used as the tags.
+// The measurement is specified as a parameter to the function
+// and it is required.
+builtin write : (<-tables: [A], ?org: string, bucket: string, ?host: string, ?token: string, m: string) => [A] where A: Record

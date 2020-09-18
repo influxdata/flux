@@ -1,0 +1,35 @@
+package arrowutil
+
+import (
+	"fmt"
+
+	"github.com/apache/arrow/go/arrow/array"
+)
+
+type Values interface {
+	Value(i int) interface{}
+	IsNull(i int) bool
+}
+
+func AsValues(arr array.Interface) Values {
+	switch arr := arr.(type) {
+	{{range .}}
+	case *{{.Type}}:
+		return (*{{.Name}}Values)(arr)
+	{{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+	}
+}
+
+{{range .}}
+type {{.Name}}Values {{.Type}}
+
+func (vs *{{.Name}}Values) Value(i int) interface{} {
+	return (*{{.Type}})(vs).{{.Value}}(i)
+}
+
+func (vs *{{.Name}}Values) IsNull(i int) bool {
+	return (*{{.Type}})(vs).IsNull(i)
+}
+{{end}}

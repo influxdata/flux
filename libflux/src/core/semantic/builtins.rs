@@ -784,6 +784,21 @@ pub fn builtins() -> Builtins<'static> {
                         <-tables: [A],
                         columns: [string]
                     ) => [B] where A: Record, B: Record "#,
+                "to" => r#"(
+                        <-tables: [A],
+                        ?org: string,
+                        bucket: string,
+                        ?host: string,
+                        ?token: string
+                    ) => [A] where A: Record"#,
+                "write" => r#"(
+                        <-tables: [A],
+                        ?org: string,
+                        bucket: string,
+                        ?host: string,
+                        ?token: string,
+                        m: string
+                    ) => [A] where A: Record"#,
             },
             "contrib/jsternberg/rows" => semantic_map! {
                 "map" => r#"(
