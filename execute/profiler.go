@@ -128,11 +128,11 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 			Type:  flux.TString,
 		},
 		{
-			Label: DefaultStartColLabel,
+			Label: "Begin",
 			Type:  flux.TTime,
 		},
 		{
-			Label: DefaultStopColLabel,
+			Label: "End",
 			Type:  flux.TTime,
 		},
 		{
