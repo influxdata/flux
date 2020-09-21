@@ -44,17 +44,18 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 	wg := sync.WaitGroup{}
 	wg.Add(count)
 	fn := func(label string, ctx context.Context) {
-		span := execute.StartSpanFromContext(ctx, "tf", label).(*execute.OperatorProfilingSpan)
+		_, span := execute.StartSpanFromContext(ctx, "tf", label)
+		profilerSpan := span.(*execute.OperatorProfilingSpan)
 		// Finish() will write the data to the profiler
 		// In Flux runtime, this is called when an execution node finishes execution
-		span.Finish()
+		profilerSpan.Finish()
 		mu.Lock()
 		// Write the expected result from raw span data.
 		wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,tf,%s,%d\n",
-			span.Result.Start.Format(time.RFC3339Nano),
-			span.Result.Stop.Format(time.RFC3339Nano),
-			span.Result.Label,
-			span.Result.Stop.Sub(span.Result.Start).Nanoseconds()))
+			profilerSpan.Result.Start.Format(time.RFC3339Nano),
+			profilerSpan.Result.Stop.Format(time.RFC3339Nano),
+			profilerSpan.Result.Label,
+			profilerSpan.Result.Stop.Sub(profilerSpan.Result.Start).Nanoseconds()))
 		mu.Unlock()
 		wg.Done()
 	}

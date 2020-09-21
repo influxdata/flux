@@ -252,7 +252,9 @@ func (es *executionState) do(ctx context.Context) {
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
-			if span := StartSpanFromContext(ctx, reflect.TypeOf(src).String(), src.Label()); span != nil {
+			ctx := ctx
+			if ctxWithSpan, span := StartSpanFromContext(ctx, reflect.TypeOf(src).String(), src.Label()); span != nil {
+				ctx = ctxWithSpan
 				defer span.Finish()
 			}
 			defer wg.Done()

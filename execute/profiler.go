@@ -177,11 +177,11 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 // the Span produced by this function can be very different.
 // It could be a no-op span, a Jaeger span, a no-op span wrapped by a profiling span, or
 // a Jaeger span wrapped by a profiling span.
-func StartSpanFromContext(ctx context.Context, operationName string, label string) opentracing.Span {
+func StartSpanFromContext(ctx context.Context, operationName string, label string) (context.Context, opentracing.Span) {
 	var span opentracing.Span
 	start := time.Now()
 	if flux.IsQueryTracingEnabled(ctx) {
-		span, _ = opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
+		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
 	}
 	if tfp, ok := ctx.Value(OperatorProfilerContextKey).(*OperatorProfiler); ok {
 		span = &OperatorProfilingSpan{
@@ -194,7 +194,7 @@ func StartSpanFromContext(ctx context.Context, operationName string, label strin
 			},
 		}
 	}
-	return span
+	return ctx, span
 }
 
 type QueryProfiler struct{}
