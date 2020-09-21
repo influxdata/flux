@@ -15,7 +15,6 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -198,6 +197,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			return err
 		}
 
+		source.SetLabel(string(node.ID()))
 		v.es.sources = append(v.es.sources, source)
 		v.nodes[node] = source
 	} else {
@@ -216,6 +216,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			return err
 		}
 
+		tr.SetLabel(string(node.ID()))
 		if ppn.TriggerSpec == nil {
 			ppn.TriggerSpec = plan.DefaultTriggerSpec
 		}
@@ -252,8 +253,7 @@ func (es *executionState) do(ctx context.Context) {
 		wg.Add(1)
 		go func(src Source) {
 			ctx := ctx
-			if flux.IsExperimentalTracingEnabled(ctx) {
-				span, ctxWithSpan := opentracing.StartSpanFromContext(ctx, reflect.TypeOf(src).String())
+			if ctxWithSpan, span := StartSpanFromContext(ctx, reflect.TypeOf(src).String(), src.Label()); span != nil {
 				ctx = ctxWithSpan
 				defer span.Finish()
 			}

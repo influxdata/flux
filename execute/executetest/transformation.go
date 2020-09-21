@@ -181,6 +181,7 @@ func ProcessTestHelper2(
 
 // DataStore will store the incoming tables from an upstream transformation or source.
 type DataStore struct {
+	execute.ExecutionNode
 	tables *execute.GroupLookup
 	err    error
 }
@@ -321,7 +322,9 @@ func RunBenchmark(
 	tx.Finish(parentID, nil)
 }
 
-type devNullStore struct{}
+type devNullStore struct {
+	*execute.ExecutionNode
+}
 
 func NewDevNullStore() execute.Transformation {
 	return devNullStore{}

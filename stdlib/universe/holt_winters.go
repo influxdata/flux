@@ -138,6 +138,7 @@ func createHoltWintersTransformation(id execute.DatasetID, mode execute.Accumula
 }
 
 type holtWintersTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	alloc *fluxmemory.Allocator

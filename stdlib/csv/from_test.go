@@ -210,7 +210,7 @@ func TestFromCSV_RunCancel(t *testing.T) {
 	// Add a do-nothing transformation which never reads our table.
 	// We want to produce a table and send it with the expectation
 	// that our source might not read it.
-	s.AddTransformation(noopTransformation{})
+	s.AddTransformation(&noopTransformation{})
 
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
@@ -232,12 +232,14 @@ func TestFromCSV_RunCancel(t *testing.T) {
 	}
 }
 
-type noopTransformation struct{}
+type noopTransformation struct {
+	execute.ExecutionNode
+}
 
-func (n noopTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error { return nil }
-func (n noopTransformation) Process(id execute.DatasetID, tbl flux.Table) error         { return nil }
-func (n noopTransformation) UpdateWatermark(id execute.DatasetID, t execute.Time) error { return nil }
-func (n noopTransformation) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
+func (n *noopTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error { return nil }
+func (n *noopTransformation) Process(id execute.DatasetID, tbl flux.Table) error         { return nil }
+func (n *noopTransformation) UpdateWatermark(id execute.DatasetID, t execute.Time) error { return nil }
+func (n *noopTransformation) UpdateProcessingTime(id execute.DatasetID, t execute.Time) error {
 	return nil
 }
-func (n noopTransformation) Finish(id execute.DatasetID, err error) {}
+func (n *noopTransformation) Finish(id execute.DatasetID, err error) {}

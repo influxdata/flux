@@ -23,6 +23,8 @@ type MetadataNode interface {
 type Source interface {
 	Node
 	Run(ctx context.Context)
+	SetLabel(label string)
+	Label() string
 }
 
 type CreateSource func(spec plan.ProcedureSpec, id DatasetID, ctx Administration) (Source, error)
@@ -34,4 +36,16 @@ func RegisterSource(k plan.ProcedureKind, c CreateSource) {
 		panic(fmt.Errorf("duplicate registration for source with procedure kind %v", k))
 	}
 	procedureToSource[k] = c
+}
+
+type ExecutionNode struct {
+	label string
+}
+
+func (n *ExecutionNode) SetLabel(label string) {
+	n.label = label
+}
+
+func (n *ExecutionNode) Label() string {
+	return n.label
 }

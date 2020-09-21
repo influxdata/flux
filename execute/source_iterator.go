@@ -31,6 +31,7 @@ func CreateSourceFromDecoder(decoder SourceDecoder, dsid DatasetID, a Administra
 }
 
 type sourceDecoder struct {
+	ExecutionNode
 	decoder SourceDecoder
 	id      DatasetID
 	ts      []Transformation
@@ -103,6 +104,7 @@ type SourceIterator interface {
 
 // sourceIterator implements execute.Source using the SourceIterator.
 type sourceIterator struct {
+	ExecutionNode
 	id       DatasetID
 	ts       []Transformation
 	iterator SourceIterator

@@ -11,6 +11,7 @@ import (
 )
 
 type selectorTransformation struct {
+	ExecutionNode
 	d     Dataset
 	cache TableBuilderCache
 

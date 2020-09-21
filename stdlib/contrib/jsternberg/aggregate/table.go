@@ -177,6 +177,7 @@ func createTableTransformation(id execute.DatasetID, mode execute.AccumulationMo
 }
 
 type tableTransformation struct {
+	execute.ExecutionNode
 	d    *execute.PassthroughDataset
 	spec *TableProcedureSpec
 	ctx  context.Context

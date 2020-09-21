@@ -12,7 +12,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/opentracing/opentracing-go"
 )
 
 type Transport interface {
@@ -224,6 +223,14 @@ PROCESS:
 	}
 }
 
+func (t *consecutiveTransport) Label() string {
+	return t.t.Label()
+}
+
+func (t *consecutiveTransport) SetLabel(label string) {
+	t.t.SetLabel(label)
+}
+
 // processMessage processes the message on t.
 // The return value is true if the message was a FinishMsg.
 func processMessage(ctx context.Context, t Transformation, m Message) (finished bool, err error) {
@@ -232,10 +239,7 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
 		b := m.Table()
-		var span opentracing.Span
-		if flux.IsExperimentalTracingEnabled(ctx) {
-			span, _ = opentracing.StartSpanFromContext(ctx, reflect.TypeOf(t).String())
-		}
+		_, span := StartSpanFromContext(ctx, reflect.TypeOf(t).String(), t.Label())
 		err = t.Process(m.SrcDatasetID(), b)
 		if span != nil {
 			span.Finish()

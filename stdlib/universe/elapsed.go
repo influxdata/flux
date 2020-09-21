@@ -115,6 +115,7 @@ func createElapsedTransformation(id execute.DatasetID, mode execute.Accumulation
 }
 
 type elapsedTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

@@ -136,6 +136,7 @@ func createToSQLTransformation(id execute.DatasetID, mode execute.AccumulationMo
 }
 
 type ToSQLTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  *ToSQLProcedureSpec

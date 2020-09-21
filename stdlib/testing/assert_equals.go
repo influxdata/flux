@@ -88,6 +88,7 @@ func newAssertEqualsProcedure(qs flux.OperationSpec, pa plan.Administration) (pl
 }
 
 type AssertEqualsTransformation struct {
+	execute.ExecutionNode
 	mu sync.Mutex
 
 	gotParent   *assertEqualsParentState

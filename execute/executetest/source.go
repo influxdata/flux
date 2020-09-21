@@ -23,6 +23,7 @@ const FromTestKind = "from-test"
 // FromProcedureSpec is a procedure spec AND an execution Node.
 // It simulates the execution of a basic physical scan operation.
 type FromProcedureSpec struct {
+	execute.ExecutionNode
 	data []*Table
 	ts   []execute.Transformation
 }
@@ -113,6 +114,7 @@ func CreateFromSource(spec plan.ProcedureSpec, id execute.DatasetID, a execute.A
 // AllocatingFromProcedureSpec is a procedure spec AND an execution node
 // that allocates ByteCount bytes during execution.
 type AllocatingFromProcedureSpec struct {
+	execute.ExecutionNode
 	ByteCount int
 
 	id    execute.DatasetID

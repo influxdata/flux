@@ -104,6 +104,7 @@ func createkamaTransformation(id execute.DatasetID, mode execute.AccumulationMod
 }
 
 type kamaTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

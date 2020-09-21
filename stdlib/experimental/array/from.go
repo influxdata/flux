@@ -90,6 +90,7 @@ func createFromSource(ps plan.ProcedureSpec, id execute.DatasetID, a execute.Adm
 }
 
 type tableSource struct {
+	execute.ExecutionNode
 	id   execute.DatasetID
 	mem  *memory.Allocator
 	rows values.Array

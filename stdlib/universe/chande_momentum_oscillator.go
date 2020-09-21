@@ -112,6 +112,7 @@ func createChandeMomentumOscillatorTransformation(id execute.DatasetID, mode exe
 }
 
 type chandeMomentumOscillatorTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

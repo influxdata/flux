@@ -92,6 +92,7 @@ func createExponentialMovingAverageTransformation(id execute.DatasetID, mode exe
 }
 
 type exponentialMovingAverageTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

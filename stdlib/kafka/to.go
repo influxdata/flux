@@ -219,6 +219,7 @@ func createToKafkaTransformation(id execute.DatasetID, mode execute.Accumulation
 }
 
 type ToKafkaTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  *ToKafkaProcedureSpec

@@ -20,6 +20,7 @@ func createDeprecatedFillTransformation(id execute.DatasetID, mode execute.Accum
 }
 
 type deprecatedFillTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

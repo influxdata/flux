@@ -139,6 +139,7 @@ func createFromInfluxJSONSource(prSpec plan.ProcedureSpec, dsid execute.DatasetI
 }
 
 type JSONSource struct {
+	execute.ExecutionNode
 	results flux.ResultIterator
 	id      execute.DatasetID
 	ts      []execute.Transformation

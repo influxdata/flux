@@ -88,6 +88,7 @@ func createColumnsTransformation(id execute.DatasetID, mode execute.Accumulation
 }
 
 type columnsTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

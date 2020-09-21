@@ -9,6 +9,7 @@ import (
 // Source is a mock source that performs the given functions.
 // By default it does nothing.
 type Source struct {
+	execute.ExecutionNode
 	AddTransformationFn func(transformation execute.Transformation)
 	RunFn               func(ctx context.Context)
 }

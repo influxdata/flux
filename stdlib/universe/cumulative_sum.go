@@ -100,6 +100,7 @@ func createCumulativeSumTransformation(id execute.DatasetID, mode execute.Accumu
 }
 
 type cumulativeSumTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  CumulativeSumProcedureSpec

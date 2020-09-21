@@ -106,6 +106,7 @@ func createExtrapolatedRateTransformation(id execute.DatasetID, mode execute.Acc
 }
 
 type extrapolatedRateTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

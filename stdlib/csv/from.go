@@ -123,6 +123,7 @@ func CreateSource(spec *FromCSVProcedureSpec, dsid execute.DatasetID, a execute.
 }
 
 type CSVSource struct {
+	execute.ExecutionNode
 	id    execute.DatasetID
 	tx    string
 	ts    []execute.Transformation

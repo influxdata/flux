@@ -154,6 +154,7 @@ func createRangeTransformation(id execute.DatasetID, mode execute.AccumulationMo
 }
 
 type rangeTransformation struct {
+	execute.ExecutionNode
 	d        execute.Dataset
 	cache    execute.TableBuilderCache
 	bounds   execute.Bounds

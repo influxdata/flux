@@ -77,6 +77,7 @@ func createChangesTransformation(id execute.DatasetID, mode execute.Accumulation
 }
 
 type changesTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 }

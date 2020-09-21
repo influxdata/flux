@@ -368,6 +368,7 @@ func createExactQuantileSelectTransformation(id execute.DatasetID, mode execute.
 }
 
 type ExactQuantileSelectorTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 	spec  ExactQuantileSelectProcedureSpec

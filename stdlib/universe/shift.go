@@ -129,6 +129,7 @@ func createShiftTransformation(id execute.DatasetID, mode execute.AccumulationMo
 }
 
 type shiftTransformation struct {
+	execute.ExecutionNode
 	d       execute.Dataset
 	cache   execute.TableBuilderCache
 	shift   execute.Duration

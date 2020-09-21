@@ -114,6 +114,7 @@ func createLabelReplaceTransformation(id execute.DatasetID, mode execute.Accumul
 }
 
 type labelReplaceTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

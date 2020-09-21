@@ -112,6 +112,7 @@ func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode
 }
 
 type mapTransformation struct {
+	execute.ExecutionNode
 	d        execute.Dataset
 	cache    execute.TableBuilderCache
 	ctx      context.Context

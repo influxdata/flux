@@ -34,6 +34,7 @@ func (s *ToProcedureSpec) Cost(inStats []plan.Statistics) (plan.Cost, plan.Stati
 
 // ToTransformation simulates an output or an identity transformation
 type ToTransformation struct {
+	execute.ExecutionNode
 	d execute.Dataset
 	c execute.TableBuilderCache
 }

@@ -94,6 +94,7 @@ func createUniqueTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 type uniqueTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

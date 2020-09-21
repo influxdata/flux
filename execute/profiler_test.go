@@ -1,9 +1,14 @@
 package execute_test
 
 import (
+	"bytes"
+	"context"
+	"fmt"
 	"io/ioutil"
 	"strings"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/csv"
@@ -15,7 +20,70 @@ import (
 	"github.com/influxdata/flux/mock"
 )
 
-func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
+func TestOperatorProfiler_GetResult(t *testing.T) {
+	// Create an operator profiler
+	p := execute.AllProfilers["operator"]()
+	// And inject it to the context.
+	ctx := context.WithValue(context.Background(), execute.OperatorProfilerContextKey, p)
+	// Build the "want" table.
+	// This table is built dynamically because the table includes time data which changes
+	// every time the test is run.
+	var wantStr bytes.Buffer
+	// Need to have the goroutines to sync on their writes to the buffer.
+	var mu sync.Mutex
+	wantStr.WriteString(`
+#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,string,string,long
+#group,false,false,true,false,false,false,false,false
+#default,_profiler,,,,,,,
+,result,table,_measurement,Begin,End,Type,Label,Duration
+`)
+	// Unfortunately, the operator profiler result is only grouped on _measurement, it cannot
+	// ensure a deterministic row order with our executetest.EqualResultIterators
+	// Therefore, currently I only set this goroutine count to 2.
+	count := 2
+	wg := sync.WaitGroup{}
+	wg.Add(count)
+	fn := func(label string, ctx context.Context) {
+		_, span := execute.StartSpanFromContext(ctx, "tf", label)
+		profilerSpan := span.(*execute.OperatorProfilingSpan)
+		// Finish() will write the data to the profiler
+		// In Flux runtime, this is called when an execution node finishes execution
+		profilerSpan.Finish()
+		mu.Lock()
+		// Write the expected result from raw span data.
+		wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,tf,%s,%d\n",
+			profilerSpan.Result.Start.Format(time.RFC3339Nano),
+			profilerSpan.Result.Stop.Format(time.RFC3339Nano),
+			profilerSpan.Result.Label,
+			profilerSpan.Result.Stop.Sub(profilerSpan.Result.Start).Nanoseconds()))
+		mu.Unlock()
+		wg.Done()
+	}
+	for i := 0; i < count; i++ {
+		go fn(fmt.Sprintf("op%d", i), ctx)
+	}
+	wg.Wait()
+	// Wait a bit for the profiling results to be added.
+	// In the query code path this is guaranteed because we only access the result
+	// after the query finishes execution AND its result tables are read and encoded.
+	time.Sleep(100 * time.Millisecond)
+	tbl, err := p.GetResult(nil, &memory.Allocator{})
+	if err != nil {
+		t.Error(err)
+	}
+	result := table.NewProfilerResult(tbl)
+	got := flux.NewSliceResultIterator([]flux.Result{&result})
+	dec := csv.NewMultiResultDecoder(csv.ResultDecoderConfig{})
+	want, e := dec.Decode(ioutil.NopCloser(strings.NewReader(wantStr.String())))
+	if e != nil {
+		t.Error(err)
+	}
+	if err := executetest.EqualResultIterators(want, got); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestQueryProfiler_GetResult(t *testing.T) {
 	p := &execute.QueryProfiler{}
 	q := &mock.Query{}
 	q.SetStatistics(flux.Statistics{
@@ -55,8 +123,6 @@ func TestFluxStatisticsProfiler_GetResult(t *testing.T) {
 	if e != nil {
 		t.Error(err)
 	}
-	defer want.Release()
-
 	if err := executetest.EqualResultIterators(want, got); err != nil {
 		t.Fatal(err)
 	}

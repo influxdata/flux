@@ -274,8 +274,7 @@ type Program struct {
 	PlanSpec *plan.Spec
 	Runtime  flux.Runtime
 
-	opts      *compileOptions
-	Profilers []execute.Profiler
+	opts *compileOptions
 }
 
 func (p *Program) SetLogger(logger *zap.Logger) {
@@ -352,6 +351,11 @@ type AstProgram struct {
 
 	Ast flux.ASTHandle
 	Now time.Time
+	// A list of profilers that are profiling this query
+	Profilers []execute.Profiler
+	// The operator profiler that is profiling this query, if any.
+	// Note this operator profiler is also cached in the Profilers array.
+	tfProfiler *execute.OperatorProfiler
 }
 
 // Prepare the Ast for semantic analysis
@@ -437,6 +441,12 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 
 	// Execution.
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
+	if p.tfProfiler != nil {
+		// If we have an active operator profiler, put that into the execution context
+		// so that the data sources and the transformations can properly create spans that link
+		// to this profiler and send over their profiling data.
+		cctx = context.WithValue(cctx, execute.OperatorProfilerContextKey, p.tfProfiler)
+	}
 	defer s.Finish()
 	return p.Program.Start(cctx, alloc)
 }
@@ -458,7 +468,7 @@ func (p *AstProgram) updateProfilers(scope values.Scope) error {
 	dedupeMap := make(map[string]bool)
 	p.Profilers = make([]execute.Profiler, 0)
 	for _, profilerName := range profilerNames {
-		if profiler, exists := execute.AllProfilers[profilerName]; !exists {
+		if createProfilerFn, exists := execute.AllProfilers[profilerName]; !exists {
 			// profiler does not exist
 			continue
 		} else {
@@ -467,6 +477,14 @@ func (p *AstProgram) updateProfilers(scope values.Scope) error {
 				continue
 			}
 			dedupeMap[profilerName] = true
+			profiler := createProfilerFn()
+			if tfp, ok := profiler.(*execute.OperatorProfiler); ok {
+				// The operator profiler needs to be in the context so transformations
+				// and data sources can easily locate it when creating spans.
+				// We cache the operator profiler here in addition to the Profilers
+				// array to avoid the array look-up.
+				p.tfProfiler = tfp
+			}
 			p.Profilers = append(p.Profilers, profiler)
 		}
 	}

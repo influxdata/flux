@@ -89,6 +89,7 @@ func createMaskTransformation(id execute.DatasetID, mode execute.AccumulationMod
 }
 
 type maskTransformation struct {
+	execute.ExecutionNode
 	d    *execute.PassthroughDataset
 	spec *maskProcedureSpec
 }

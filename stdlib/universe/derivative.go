@@ -137,6 +137,7 @@ func createDerivativeTransformation(id execute.DatasetID, mode execute.Accumulat
 }
 
 type derivativeTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 

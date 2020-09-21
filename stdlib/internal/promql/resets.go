@@ -76,6 +76,7 @@ func createResetsTransformation(id execute.DatasetID, mode execute.AccumulationM
 }
 
 type resetsTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache execute.TableBuilderCache
 }

@@ -140,6 +140,7 @@ func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMo
 }
 
 type groupTransformation struct {
+	execute.ExecutionNode
 	d     execute.Dataset
 	cache table.BuilderCache
 	mem   *memory.Allocator

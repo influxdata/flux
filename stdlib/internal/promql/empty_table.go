@@ -69,6 +69,7 @@ func createEmptyTableSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a
 }
 
 type EmptyTableSource struct {
+	execute.ExecutionNode
 	id execute.DatasetID
 	ts []execute.Transformation
 }
