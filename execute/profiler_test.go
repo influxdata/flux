@@ -35,7 +35,7 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 #datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,string,string,long
 #group,false,false,true,false,false,false,false,false
 #default,_profiler,,,,,,,
-,result,table,_measurement,_start,_stop,Type,Label,Duration
+,result,table,_measurement,Begin,End,Type,Label,Duration
 `)
 	// Unfortunately, the operator profiler result is only grouped on _measurement, it cannot
 	// ensure a deterministic row order with our executetest.EqualResultIterators
