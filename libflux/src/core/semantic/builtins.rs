@@ -234,6 +234,13 @@ pub fn builtins() -> Builtins<'static> {
                 "yield" => r#"(<-v: A) => A "#,
                 "makeRecord" => "(o: A) => B where A: Record, B: Record",
             },
+            "interpolate" => semantic_map! {
+                "linear" => "(<-tables: [{ T with
+                    _time:  time,
+                    _value: float }], every: duration) => [{ T with
+                    _time:  time,
+                    _value: float }]",
+            },
             "json" => semantic_map! {
                 "encode" => "(v: A) => bytes",
             },
