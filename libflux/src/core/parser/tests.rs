@@ -7093,6 +7093,68 @@ fn binary_operator_precedence_double_sum() {
 }
 
 #[test]
+fn binary_operator_precedence_exponent() {
+    let mut p = Parser::new(r#"5 * 1 ^ 5"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 10),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 10),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Binary(Box::new(BinaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 10),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::MultiplicationOperator,
+                    left: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        value: 5
+                    }),
+                    right: Expression::Binary(Box::new(BinaryExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 10),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::PowerOperator,
+                        left: Expression::Integer(IntegerLit {
+                            base: BaseNode {
+                                location: loc.get(1, 5, 1, 6),
+                                ..BaseNode::default()
+                            },
+                            value: 1
+                        }),
+                        right: Expression::Integer(IntegerLit {
+                            base: BaseNode {
+                                location: loc.get(1, 9, 1, 10),
+                                ..BaseNode::default()
+                            },
+                            value: 5
+                        })
+                    })),
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
 fn binary_operator_precedence_double_sum_with_parens() {
     let mut p = Parser::new(r#"1 + (2 + 3)"#);
     let parsed = p.parse_file("".to_string());
@@ -7144,6 +7206,76 @@ fn binary_operator_precedence_double_sum_with_parens() {
                                     ..BaseNode::default()
                                 },
                                 value: 2
+                            }),
+                            right: Expression::Integer(IntegerLit {
+                                base: BaseNode {
+                                    location: loc.get(1, 10, 1, 11),
+                                    ..BaseNode::default()
+                                },
+                                value: 3
+                            })
+                        })),
+                        rparen: None,
+                    }))
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn binary_operator_precedence_exponent_with_parens() {
+    let mut p = Parser::new(r#"2 ^ (1 + 3)"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 12),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 12),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Binary(Box::new(BinaryExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 12),
+                        ..BaseNode::default()
+                    },
+                    operator: Operator::PowerOperator,
+                    left: Expression::Integer(IntegerLit {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 2),
+                            ..BaseNode::default()
+                        },
+                        value: 2
+                    }),
+                    right: Expression::Paren(Box::new(ParenExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 5, 1, 12),
+                            ..BaseNode::default()
+                        },
+                        lparen: None,
+                        expression: Expression::Binary(Box::new(BinaryExpr {
+                            base: BaseNode {
+                                location: loc.get(1, 6, 1, 11),
+                                ..BaseNode::default()
+                            },
+                            operator: Operator::AdditionOperator,
+                            left: Expression::Integer(IntegerLit {
+                                base: BaseNode {
+                                    location: loc.get(1, 6, 1, 7),
+                                    ..BaseNode::default()
+                                },
+                                value: 1
                             }),
                             right: Expression::Integer(IntegerLit {
                                 base: BaseNode {
