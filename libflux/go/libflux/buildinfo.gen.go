@@ -427,6 +427,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/map_extension_with_test.flux":                                  "8e2f31fae11e6b11e25bc8ffa9dee0baccd2c0b771f6058ed168509ab88eac9d",
 	"stdlib/universe/map_extern_dynamic_var_test.flux":                              "968517648bfc320c69a970c005a07ca416421ca25a477b426882e5637b024db1",
 	"stdlib/universe/map_extern_var_test.flux":                                      "d3dda5a1ab5a76900e2d5c8bac28d3e1bcbf770b9524c6ea4a0060ff6c894dc3",
+	"stdlib/universe/map_field_type_change_test.flux":                               "13fabfe40850ae5c571ff71e5f75016e62cdb9a67ee0e803eb2129ef990fec2a",
 	"stdlib/universe/map_local_var_test.flux":                                       "bfac82093b3a3067f9681842ca8e83450724c306c56b6baccf5586aba01a05a8",
 	"stdlib/universe/map_nulls_test.flux":                                           "89dbbfc350af04bec198ee737466177d4b2cf0590d623348d4aaa34e4e64eba6",
 	"stdlib/universe/map_polymorphism_test.flux":                                    "7959a28ed1dc7a7a4c974e52a8c28d2d67a8fc47c103d64732b5a8476c41c3d8",
