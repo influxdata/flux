@@ -88,7 +88,11 @@ func (m *HdbRowReader) GetNextRow() ([]values.Value, error) {
 				}
 				newFloat, _ := (*big.Rat)(&out).Float64()
 				row[i] = values.NewFloat(newFloat)
-			default:
+			default: // flux.TString
+				switch m.sqlTypes[i].DatabaseTypeName() {
+				case "BINARY", "VARBINARY":
+					return nil, errors.Newf(codes.Invalid, "Flux does not support column type %s", m.sqlTypes[i].DatabaseTypeName())
+				}
 				row[i] = values.NewString(string(value))
 			}
 		case nil:
