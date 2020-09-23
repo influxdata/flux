@@ -180,7 +180,7 @@ func HdbColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToHdb[f]
 		if !found {
-			return "", errors.Newf(codes.Internal, "SAP HANA does not support column type %s", f.String())
+			return "", errors.Newf(codes.Invalid, "SAP HANA does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}
@@ -189,6 +189,8 @@ func HdbColumnTranslateFunc() translationFunc {
 // Template for conditional query by table existence check
 var hdbDoIfTableNotExistsTemplate = `DO
 BEGIN
+	DECLARE SCHEMA_NAME NVARCHAR(%d) = '%s';
+	DECLARE TABLE_NAME NVARCHAR(%d) = '%s';
     DECLARE X_EXISTS INT = 0;
     SELECT COUNT(*) INTO X_EXISTS FROM TABLES %s;
     IF :X_EXISTS = 0
@@ -198,14 +200,26 @@ BEGIN
 END;
 `
 
-// Adds SAP HANA specific table existence check to CREATE TABLE statement
+// Adds SAP HANA specific table existence check to CREATE TABLE statement.
 func hdbAddIfNotExist(table string, query string) string {
 	var where string
+	var args []interface{}
 	parts := strings.SplitN(table, ".", 2)
 	if len(parts) == 2 { // fully-qualified table name
-		where = fmt.Sprintf("WHERE SCHEMA_NAME=UPPER('%s') AND TABLE_NAME=UPPER('%s')", parts[0], parts[1])
+		where = "WHERE SCHEMA_NAME=UPPER(:SCHEMA_NAME) AND TABLE_NAME=UPPER(:TABLE_NAME)"
+		args = append(args, len(parts[0]))
+		args = append(args, parts[0])
+		args = append(args, len(parts[1]))
+		args = append(args, parts[1])
 	} else { // table in user default schema
-		where = fmt.Sprintf("WHERE TABLE_NAME=UPPER('%s')", table)
+		where = "WHERE TABLE_NAME=UPPER(:TABLE_NAME)"
+		args = append(args, len("default"))
+		args = append(args, "default")
+		args = append(args, len(table))
+		args = append(args, table)
 	}
-	return fmt.Sprintf(hdbDoIfTableNotExistsTemplate, where, query)
+	args = append(args, where)
+	args = append(args, query)
+
+	return fmt.Sprintf(hdbDoIfTableNotExistsTemplate, args...)
 }
