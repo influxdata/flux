@@ -189,8 +189,8 @@ func HdbColumnTranslateFunc() translationFunc {
 // Template for conditional query by table existence check
 var hdbDoIfTableNotExistsTemplate = `DO
 BEGIN
-	DECLARE SCHEMA_NAME NVARCHAR(%d) = '%s';
-	DECLARE TABLE_NAME NVARCHAR(%d) = '%s';
+    DECLARE SCHEMA_NAME NVARCHAR(%d) = '%s';
+    DECLARE TABLE_NAME NVARCHAR(%d) = '%s';
     DECLARE X_EXISTS INT = 0;
     SELECT COUNT(*) INTO X_EXISTS FROM TABLES %s;
     IF :X_EXISTS = 0
