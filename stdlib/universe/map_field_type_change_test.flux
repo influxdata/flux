@@ -6,7 +6,7 @@ option now = () => (2030-01-01T00:00:00Z)
 
 inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,double
-#group,false,false,false,false,false,false
+#group,false,false,true,true,false,false
 #default,_result,,,,,
 ,result,table,_measurement,_field,_time,_value
 ,,0,m,f,2018-01-01T00:00:00Z,2
@@ -14,7 +14,7 @@ inData = "
 
 outData = "
 #datatype,string,long,string,string,dateTime:RFC3339,string
-#group,false,false,false,false,false,false
+#group,false,false,true,true,false,false
 #default,_result,,,,,
 ,result,table,_measurement,_field,_time,_value
 ,,0,m,f,2018-01-01T00:00:00Z,hello
