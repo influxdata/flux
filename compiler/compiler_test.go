@@ -446,6 +446,22 @@ func TestCompileAndEval(t *testing.T) {
 			}),
 			want: values.Null,
 		},
+		{
+			name: "superseding record field type",
+			fn: `
+				(str) => {
+					m = (s) => ({s with v: 10.0})
+					f = (t=<-) => t.v == 10.0
+					return m(s: {v: str}) |> f()
+				}`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("str"), Value: semantic.BasicString},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"str": values.NewString("foo"),
+			}),
+			want: values.NewBool(true),
+		},
 	}
 
 	for _, tc := range testCases {

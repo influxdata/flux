@@ -72,15 +72,15 @@ func Compile(scope Scope, f *semantic.FunctionExpression, in semantic.MonoType) 
 // inType and mapping any variables to the value in the other record.
 // If the input type is not a type variable, it will check to ensure
 // that the type in the input matches or it will return an error.
-func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.MonoType) error {
+func substituteTypes(subst map[uint64]semantic.MonoType, inferredType, actualType semantic.MonoType) error {
 	// If the input isn't a valid type, then don't consider it as
 	// part of substituting types. We will trust type inference has
 	// the correct type and that we are just handling a null value
 	// which isn't represented in type inference.
-	if in.Nature() == semantic.Invalid {
+	if actualType.Nature() == semantic.Invalid {
 		return nil
-	} else if inType.Kind() == semantic.Var {
-		vn, err := inType.VarNum()
+	} else if inferredType.Kind() == semantic.Var {
+		vn, err := inferredType.VarNum()
 		if err != nil {
 			return err
 		}
@@ -91,45 +91,45 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 		// input parameter and the substituted monotype since
 		// substituteTypes will verify the types.
 		if t, ok := subst[vn]; ok {
-			return substituteTypes(subst, t, in)
+			return substituteTypes(subst, t, actualType)
 		}
 
 		// If the input type is not invalid, mark it down
 		// as the real type.
-		if in.Nature() != semantic.Invalid {
-			subst[vn] = in
+		if actualType.Nature() != semantic.Invalid {
+			subst[vn] = actualType
 		}
 		return nil
 	}
 
-	if inType.Kind() != in.Kind() {
-		return errors.Newf(codes.FailedPrecondition, "type conflict: %s != %s", inType, in)
+	if inferredType.Kind() != actualType.Kind() {
+		return errors.Newf(codes.FailedPrecondition, "type conflict: %s != %s", inferredType, actualType)
 	}
 
-	switch inType.Kind() {
+	switch inferredType.Kind() {
 	case semantic.Basic:
-		at, err := inType.Basic()
+		at, err := inferredType.Basic()
 		if err != nil {
 			return err
 		}
 
 		// Otherwise we have a valid type and need to ensure they match.
-		bt, err := in.Basic()
+		bt, err := actualType.Basic()
 		if err != nil {
 			return err
 		}
 
 		if at != bt {
-			return errors.Newf(codes.FailedPrecondition, "type conflict: %s != %s", inType, in)
+			return errors.Newf(codes.FailedPrecondition, "type conflict: %s != %s", inferredType, actualType)
 		}
 		return nil
 	case semantic.Arr:
-		lt, err := inType.ElemType()
+		lt, err := inferredType.ElemType()
 		if err != nil {
 			return err
 		}
 
-		rt, err := in.ElemType()
+		rt, err := actualType.ElemType()
 		if err != nil {
 			return err
 		}
@@ -143,25 +143,30 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 		// What isn't ok is that the two types conflict so we are
 		// going to iterate over all of the properties in the inferred
 		// type and perform substitutions on them.
-		nproperties, err := inType.NumProperties()
+		nproperties, err := inferredType.NumProperties()
 		if err != nil {
 			return err
 		}
 
 		names := make([]string, 0, nproperties)
 		for i := 0; i < nproperties; i++ {
-			lprop, err := inType.RecordProperty(i)
+			lprop, err := inferredType.RecordProperty(i)
 			if err != nil {
 				return err
 			}
 
 			// Record the name of the property in the input type.
 			name := lprop.Name()
+			if containsStr(names, name) {
+				// The input type may have the same field twice if the record was
+				// extended with {r with ...}
+				continue
+			}
 			names = append(names, name)
 
 			// Find the property in the real type if it
 			// exists. If it doesn't exist, then no problem!
-			rprop, ok, err := findProperty(name, in)
+			rprop, ok, err := findProperty(name, actualType)
 			if err != nil {
 				return err
 			} else if !ok {
@@ -185,20 +190,20 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 
 		// If this object extends another, then find all of the labels
 		// in the in value that were not referenced by the type.
-		if withType, ok, err := inType.Extends(); err != nil {
+		if withType, ok, err := inferredType.Extends(); err != nil {
 			return err
 		} else if ok {
 			// Construct the input by filtering any of the names
 			// that were referenced above. This way, extends only
 			// includes the unreferenced labels.
-			nproperties, err := in.NumProperties()
+			nproperties, err := actualType.NumProperties()
 			if err != nil {
 				return err
 			}
 
 			properties := make([]semantic.PropertyType, 0, nproperties)
 			for i := 0; i < nproperties; i++ {
-				prop, err := in.RecordProperty(i)
+				prop, err := actualType.RecordProperty(i)
 				if err != nil {
 					return err
 				}
@@ -229,7 +234,7 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inType, in semantic.Mon
 		// TODO: https://github.com/influxdata/flux/issues/2587
 		return errors.New(codes.Unimplemented)
 	default:
-		return errors.Newf(codes.Internal, "unknown semantic kind: %s", inType)
+		return errors.Newf(codes.Internal, "unknown semantic kind: %s", inferredType)
 	}
 }
 
