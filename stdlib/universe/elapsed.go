@@ -179,7 +179,7 @@ func (t *elapsedTransformation) Process(id execute.DatasetID, tbl flux.Table) er
 		}
 	}
 
-	prevTime := float64(0)
+	prevTime, first := float64(0), true
 
 	colMap := execute.ColMap([]int{0}, builder, tbl.Cols())
 
@@ -190,16 +190,19 @@ func (t *elapsedTransformation) Process(id execute.DatasetID, tbl flux.Table) er
 
 				if c.Type == flux.TTime && c.Label == t.timeColumn {
 					ts := cr.Times(j)
-					prevTime = float64(execute.Time(ts.Value(0)))
-					currTime := float64(0)
-					for i := 1; i < l; i++ {
+					i := 0
+					if first {
+						prevTime = float64(execute.Time(ts.Value(0)))
+						i, first = 1, false
+					}
+					for ; i < l; i++ {
 
 						if err := execute.AppendMappedRecordExplicit(i, cr, builder, colMap); err != nil {
 							return err
 						}
 
 						pTime := execute.Time(ts.Value(i))
-						currTime = float64(pTime)
+						currTime := float64(pTime)
 						if err := builder.AppendInt(numCol, int64((currTime-prevTime)/t.unit)); err != nil {
 							return err
 						}
