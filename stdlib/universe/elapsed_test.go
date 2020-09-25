@@ -1,9 +1,10 @@
 package universe_test
 
 import (
-	"github.com/influxdata/flux/querytest"
 	"testing"
 	"time"
+
+	"github.com/influxdata/flux/querytest"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
@@ -293,6 +294,50 @@ func TestElapsed_Process(t *testing.T) {
 					{execute.Time(5), execute.Time(6), int64(execute.Time(5) - execute.Time(4))},
 					{execute.Time(6), execute.Time(7), int64(execute.Time(6) - execute.Time(5))},
 					{execute.Time(7), execute.Time(8), int64(execute.Time(7) - execute.Time(6))},
+				},
+			}},
+		},
+		{
+			name: "multiple buffers",
+			spec: &universe.ElapsedProcedureSpec{
+				Unit:       flux.ConvertDuration(time.Nanosecond),
+				TimeColumn: execute.DefaultTimeColLabel,
+				ColumnName: "elapsed",
+			},
+			data: []flux.Table{&executetest.RowWiseTable{
+				Table: &executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+					},
+					Data: [][]interface{}{
+						{execute.Time(0)},
+						{execute.Time(1)},
+						{execute.Time(2)},
+						{execute.Time(3)},
+						{execute.Time(4)},
+						{execute.Time(5)},
+						{execute.Time(6)},
+						{execute.Time(7)},
+						{execute.Time(8)},
+						{execute.Time(9)},
+					},
+				},
+			}},
+			want: []*executetest.Table{{
+				ColMeta: []flux.ColMeta{
+					{Label: "_time", Type: flux.TTime},
+					{Label: "elapsed", Type: flux.TInt},
+				},
+				Data: [][]interface{}{
+					{execute.Time(1), int64(1)},
+					{execute.Time(2), int64(1)},
+					{execute.Time(3), int64(1)},
+					{execute.Time(4), int64(1)},
+					{execute.Time(5), int64(1)},
+					{execute.Time(6), int64(1)},
+					{execute.Time(7), int64(1)},
+					{execute.Time(8), int64(1)},
+					{execute.Time(9), int64(1)},
 				},
 			}},
 		},
