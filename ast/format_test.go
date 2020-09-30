@@ -51,6 +51,10 @@ func TestFormat_Nodes(t *testing.T) {
 			script: `"a + b = ${a + b}; \"quoted string\""`,
 		},
 		{
+			name:   "string interpolation wrapped in quotes",
+			script: `"\"a + b = ${a + b}; stringy\""`,
+		},
+		{
 			name:   "binary_op",
 			script: `1 + 1 - 2`,
 		},
