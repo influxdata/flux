@@ -55,7 +55,7 @@ func TestFormat_Nodes(t *testing.T) {
 			script: `"\"a + b = ${a + b}; c\""`,
 		},
 		{
-			name:   "string interpolation with nested in strings",
+			name:   "string interpolation with nested strings",
 			script: `"\"a + b = ${a + b}; \\\"quoted string\\\"\""`,
 		},
 		{
