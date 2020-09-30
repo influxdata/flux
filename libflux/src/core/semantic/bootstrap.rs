@@ -5,9 +5,7 @@ use std::path::{Path, PathBuf};
 
 use crate::ast;
 use crate::parser;
-use crate::semantic::builtins::builtins;
 use crate::semantic::convert::convert_file;
-use crate::semantic::convert::convert_polytype;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
@@ -18,8 +16,7 @@ use crate::semantic::nodes::infer_file;
 use crate::semantic::sub::Substitutable;
 use crate::semantic::types;
 use crate::semantic::types::{
-    MaxTvar, MonoType, PolyType, PolyTypeMap, PolyTypeMapMap, Property, Record, SemanticMap, Tvar,
-    TvarKinds,
+    MonoType, PolyType, PolyTypeMap, Property, Record, SemanticMap, TvarKinds,
 };
 
 use walkdir::WalkDir;
@@ -83,14 +80,14 @@ impl From<&str> for Error {
 // Infer the types of the standard library returning two importers, one for the prelude
 // and one for the standard library, as well as a type variable fresher.
 pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
-    let (builtins, mut f) = builtin_types()?;
+    let mut f = Fresher::default();
 
     let dir = "../../../stdlib";
     let files = file_map(parse_flux_files(dir)?);
     let rerun_if_changed = compute_file_dependencies(dir);
 
-    let (prelude, importer) = infer_pre(&mut f, &files, &builtins)?;
-    let importer = infer_std(&mut f, &files, &builtins, prelude.clone(), importer)?;
+    let (prelude, importer) = infer_pre(&mut f, &files)?;
+    let importer = infer_std(&mut f, &files, prelude.clone(), importer)?;
 
     Ok((prelude, importer, f, rerun_if_changed))
 }
@@ -117,37 +114,11 @@ fn path_to_string(path: &Path) -> String {
 }
 
 #[allow(clippy::type_complexity)]
-fn builtin_types() -> Result<(PolyTypeMapMap, Fresher), Error> {
-    let mut tv = Tvar(0);
-    let mut ty = PolyTypeMapMap::new();
-    for (path, values) in builtins().iter() {
-        for (name, expr) in values {
-            let mut p = parser::Parser::new(expr);
-            let expr = convert_polytype(p.parse_type_expression(), &mut Fresher::default())?;
-
-            let tvar = expr.max_tvar();
-            if tvar > tv {
-                tv = tvar;
-            }
-
-            ty.entry((*path).to_string())
-                .or_insert_with(PolyTypeMap::new)
-                .insert((*name).to_string(), expr);
-        }
-    }
-    Ok((ty, Fresher::from(tv.0 + 1)))
-}
-
-#[allow(clippy::type_complexity)]
-fn infer_pre<I: Importer>(
-    f: &mut Fresher,
-    files: &AstFileMap,
-    builtin: &SemanticMap<String, I>,
-) -> Result<(PolyTypeMap, PolyTypeMap), Error> {
+fn infer_pre(f: &mut Fresher, files: &AstFileMap) -> Result<(PolyTypeMap, PolyTypeMap), Error> {
     let mut prelude = PolyTypeMap::new();
     let mut imports = PolyTypeMap::new();
     for name in &PRELUDE {
-        let (types, importer) = infer_pkg(name, f, files, builtin, PolyTypeMap::new(), imports)?;
+        let (types, importer) = infer_pkg(name, f, files, PolyTypeMap::new(), imports)?;
         for (k, v) in types {
             prelude.insert(k, v);
         }
@@ -157,10 +128,9 @@ fn infer_pre<I: Importer>(
 }
 
 #[allow(clippy::type_complexity)]
-fn infer_std<I: Importer>(
+fn infer_std(
     f: &mut Fresher,
     files: &AstFileMap,
-    builtin: &SemanticMap<String, I>,
     prelude: PolyTypeMap,
     mut imports: PolyTypeMap,
 ) -> Result<PolyTypeMap, Error> {
@@ -168,7 +138,7 @@ fn infer_std<I: Importer>(
         if imports.contains_key(path) {
             continue;
         }
-        let (types, mut importer) = infer_pkg(path, f, files, builtin, prelude.clone(), imports)?;
+        let (types, mut importer) = infer_pkg(path, f, files, prelude.clone(), imports)?;
         importer.insert(path.to_string(), build_polytype(types, f)?);
         imports = importer;
     }
@@ -291,13 +261,12 @@ fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
 // the inferred types along with a possibly updated map of package imports.
 //
 #[allow(clippy::type_complexity)]
-fn infer_pkg<I: Importer>(
-    name: &str,                       // name of package to infer
-    f: &mut Fresher,                  // type variable fresher
-    files: &AstFileMap,               // files available for inference
-    builtin: &SemanticMap<String, I>, // builtin types
-    prelude: PolyTypeMap,             // prelude types
-    imports: PolyTypeMap,             // types available for import
+fn infer_pkg(
+    name: &str,           // name of package to infer
+    f: &mut Fresher,      // type variable fresher
+    files: &AstFileMap,   // files available for inference
+    prelude: PolyTypeMap, // prelude types
+    imports: PolyTypeMap, // types available for import
 ) -> Result<
     (
         PolyTypeMap, // inferred types
@@ -321,25 +290,14 @@ fn infer_pkg<I: Importer>(
             }
             let file = file.unwrap().to_owned();
 
-            let env = if let Some(builtins) = builtin.get(pkg) {
-                infer_file(
-                    &mut convert_file(file, f)?,
-                    Environment::new(prelude.clone().into()),
-                    f,
-                    &imports,
-                    builtins,
-                )?
-                .0
-            } else {
-                infer_file(
-                    &mut convert_file(file, f)?,
-                    Environment::new(prelude.clone().into()),
-                    f,
-                    &imports,
-                    &None,
-                )?
-                .0
-            };
+            let env = infer_file(
+                &mut convert_file(file, f)?,
+                Environment::new(prelude.clone().into()),
+                f,
+                &imports,
+                &None,
+            )?
+            .0;
 
             imports.insert(pkg.to_string(), build_polytype(env.values, f)?);
         }
@@ -353,25 +311,14 @@ fn infer_pkg<I: Importer>(
     }
     let file = file.unwrap().to_owned();
 
-    let env = if let Some(builtins) = builtin.get(name) {
-        infer_file(
-            &mut convert_file(file, f)?,
-            Environment::new(prelude.into()),
-            f,
-            &imports,
-            builtins,
-        )?
-        .0
-    } else {
-        infer_file(
-            &mut convert_file(file, f)?,
-            Environment::new(prelude.into()),
-            f,
-            &imports,
-            &None,
-        )?
-        .0
-    };
+    let env = infer_file(
+        &mut convert_file(file, f)?,
+        Environment::new(prelude.into()),
+        f,
+        &imports,
+        &None,
+    )?
+    .0;
 
     Ok((env.values, imports))
 }
@@ -382,7 +329,7 @@ mod tests {
     use crate::ast::get_err_type_expression;
     use crate::parser;
     use crate::parser::parse_string;
-    use crate::semantic::env::Environment;
+    use crate::semantic::convert::convert_polytype;
 
     #[test]
     fn infer_program() -> Result<(), Error> {
@@ -406,28 +353,10 @@ mod tests {
             String::from("b") => parse_string("b.flux", b),
             String::from("c") => parse_string("c.flux", c),
         };
-        let builtins = semantic_map! {
-            String::from("b") => Environment::from(semantic_map! {
-                String::from("x") => {
-                // parse("forall [] int")?
-                    let mut p = parser::Parser::new("int");
-                    let typ_expr = p.parse_type_expression();
-                    let err = get_err_type_expression(typ_expr.clone());
-                    if err != "" {
-                        let msg = format!(
-                            "TypeExpression parsing failed for int. {:?}", err
-                        );
-                        panic!(msg)
-                    }
-                    convert_polytype(typ_expr, &mut Fresher::default())?
-                },
-            }),
-        };
         let (types, imports) = infer_pkg(
             "c",
             &mut Fresher::from(1),
             &files,
-            &builtins,
             PolyTypeMap::new(),
             PolyTypeMap::new(),
         )?;
