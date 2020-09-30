@@ -593,7 +593,7 @@ func (f *formatter) formatStringExpressionPart(n StringExpressionPart) {
 }
 
 func (f *formatter) formatTextPart(n *TextPart) {
-	f.writeString(n.Value)
+	f.writeString(escapeStr(n.Value))
 }
 
 func (f *formatter) formatInterpolatedPart(n *InterpolatedPart) {
