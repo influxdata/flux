@@ -51,7 +51,14 @@ builtin mode : (<-tables: [A], ?column: string) => [{C with _value: B}] where A:
 builtin movingAverage : (<-tables: [{B with _value: A}], n: int) => [{B with _value: float}] where A: Numeric
 builtin quantile : (<-tables: [A], ?column: string, q: float, ?compression: float, ?method: string) => [A] where A: Record
 builtin pivot : (<-tables: [A], rowKey: [string], columnKey: [string], valueColumn: string) => [B] where A: Record, B: Record
-builtin range : (<-tables: [A], start: B, ?stop: C, ?timeColumn: string, ?startColumn: string, ?stopColumn: string) => [D] where A: Record, D: Record
+builtin range : (
+    <-tables: [{A with _time: time}],
+    start: B,
+    ?stop: C
+) => [{A with
+    _time:  time,
+    _start: time,
+    _stop:  time}]
 builtin reduce : (<-tables: [A], fn: (r: A, accumulator: B) => B, identity: B) => [C] where A: Record, B: Record, C: Record
 builtin relativeStrengthIndex : (<-tables: [A], n: int, ?columns: [string]) => [B] where A: Record, B: Record
 builtin rename : (<-tables: [A], ?fn: (column: string) => string, ?columns: B) => [C] where A: Record, B: Record, C: Record
@@ -80,7 +87,7 @@ builtin findRecord : (<-tables: [A], fn: (key: B) => bool, idx: int) => A where 
 
 // type conversion functions
 builtin bool : (v: A) => bool
-builtin bytes : (v: A) => bool
+builtin bytes : (v: A) => bytes
 builtin duration : (v: A) => duration
 builtin float : (v: A) => float
 builtin int : (v: A) => int
