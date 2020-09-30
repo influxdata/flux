@@ -77,12 +77,6 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
     let mut f = Fresher::default();
     let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
     // TODO(affo): add a stdlib Importer.
-    let (_, sub) = nodes::infer_pkg_types(
-        &mut sem_pkg,
-        Environment::empty(false),
-        &mut f,
-        &None,
-        &None,
-    )?;
+    let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, Environment::empty(false), &mut f, &None)?;
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))
 }

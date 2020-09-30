@@ -2,7 +2,6 @@ extern crate serde_aux;
 extern crate serde_derive;
 
 use core::parser::Parser;
-use core::semantic::builtins::builtins;
 use core::semantic::check;
 use core::semantic::env::Environment;
 use core::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
@@ -10,7 +9,6 @@ use core::semantic::flatbuffers::types::{build_env, build_type};
 use core::semantic::fresh::Fresher;
 use core::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
 use core::semantic::sub::Substitution;
-use core::semantic::Importer;
 
 pub use core::ast;
 pub use core::formatter;
@@ -382,10 +380,9 @@ pub struct SemanticAnalyzer {
     f: Fresher,
     env: Environment,
     imports: Environment,
-    importer: Box<dyn Importer>,
 }
 
-fn new_semantic_analyzer(pkgpath: &str) -> Result<SemanticAnalyzer, core::Error> {
+fn new_semantic_analyzer() -> Result<SemanticAnalyzer, core::Error> {
     let env = match prelude() {
         Some(prelude) => Environment::new(prelude),
         None => return Err(core::Error::from("missing prelude")),
@@ -394,14 +391,8 @@ fn new_semantic_analyzer(pkgpath: &str) -> Result<SemanticAnalyzer, core::Error>
         Some(imports) => imports,
         None => return Err(core::Error::from("missing stdlib imports")),
     };
-    let mut f = fresher();
-    let importer = builtins().importer_for(pkgpath, &mut f);
-    Ok(SemanticAnalyzer {
-        f,
-        env,
-        imports,
-        importer: Box::new(importer),
-    })
+    let f = fresher();
+    Ok(SemanticAnalyzer { f, env, imports })
 }
 
 impl SemanticAnalyzer {
@@ -420,13 +411,7 @@ impl SemanticAnalyzer {
         // Clone the environment. The environment may not be returned but we need to maintain
         // a copy of it for this function to be re-entrant.
         let env = self.env.clone();
-        let (mut env, sub) = infer_pkg_types(
-            &mut sem_pkg,
-            env,
-            &mut self.f,
-            &self.imports,
-            &self.importer,
-        )?;
+        let (mut env, sub) = infer_pkg_types(&mut sem_pkg, env, &mut self.f, &self.imports)?;
         // TODO(jsternberg): This part is hacky and can be improved
         // by refactoring infer file so we can use the internals without
         // infering the file itself.
@@ -454,12 +439,9 @@ impl SemanticAnalyzer {
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
-pub unsafe extern "C" fn flux_new_semantic_analyzer(
-    cstr: *mut c_char,
-) -> Box<Result<SemanticAnalyzer, core::Error>> {
-    let buf = CStr::from_ptr(cstr).to_bytes(); // Unsafe
-    let s = String::from_utf8(buf.to_vec()).unwrap();
-    Box::new(new_semantic_analyzer(&s))
+pub unsafe extern "C" fn flux_new_semantic_analyzer() -> Box<Result<SemanticAnalyzer, core::Error>>
+{
+    Box::new(new_semantic_analyzer())
 }
 
 /// Free a previously allocated semantic analyzer
@@ -525,7 +507,6 @@ pub fn infer_with_env(
         return Err(core::Error::from(format!("{}", &errs[0])));
     }
 
-    let pkgpath = ast_pkg.path.clone();
     let mut sem_pkg = core::semantic::convert::convert_with(ast_pkg, &mut f)?;
 
     check::check(&sem_pkg)?;
@@ -541,9 +522,8 @@ pub fn infer_with_env(
         Some(imports) => imports,
         None => return Err(core::Error::from("missing stdlib imports")),
     };
-    let builtin_importer = builtins().importer_for(&pkgpath, &mut f);
 
-    let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports, &builtin_importer)?;
+    let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports)?;
     Ok((sem_pkg, env, sub))
 }
 
@@ -1007,7 +987,7 @@ from(bucket: v.bucket)
         let mut f = super::fresher();
 
         let mut file = convert_file(ast, &mut f).unwrap();
-        let (got, _) = infer_file(&mut file, prelude, &mut f, &imports, &None).unwrap();
+        let (got, _) = infer_file(&mut file, prelude, &mut f, &imports).unwrap();
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466
@@ -1050,7 +1030,7 @@ from(bucket: v.bucket)
         let mut f = super::fresher();
 
         let mut file = convert_file(ast, &mut f).unwrap();
-        let (got, _) = infer_file(&mut file, prelude, &mut f, &imports, &None).unwrap();
+        let (got, _) = infer_file(&mut file, prelude, &mut f, &imports).unwrap();
 
         // TODO(algow): re-introduce equality constraints for binary comparison operators
         // https://github.com/influxdata/flux/issues/2466

@@ -295,7 +295,6 @@ fn infer_pkg(
                 Environment::new(prelude.clone().into()),
                 f,
                 &imports,
-                &None,
             )?
             .0;
 
@@ -316,7 +315,6 @@ fn infer_pkg(
         Environment::new(prelude.into()),
         f,
         &imports,
-        &None,
     )?
     .0;
 

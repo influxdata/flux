@@ -143,7 +143,6 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
     })
 }
 
-#[allow(unused)]
 fn convert_monotype(
     ty: ast::MonoType,
     tvars: &mut HashMap<String, types::Tvar>,
@@ -235,13 +234,12 @@ fn convert_monotype(
     }
 }
 
-#[allow(unused)]
 pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     f: &mut Fresher,
 ) -> Result<types::PolyType> {
     let mut tvars = HashMap::<String, types::Tvar>::new();
-    let mut expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
+    let expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
     let mut vars = Vec::<types::Tvar>::new();
     let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
 

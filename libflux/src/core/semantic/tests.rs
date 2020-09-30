@@ -131,7 +131,6 @@ fn infer_types(
         Environment::new(env),
         &mut f,
         &importer,
-        &None,
     ) {
         Ok((env, _)) => env.values,
         Err(e) => return Err(e),
