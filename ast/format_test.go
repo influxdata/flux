@@ -52,7 +52,11 @@ func TestFormat_Nodes(t *testing.T) {
 		},
 		{
 			name:   "string interpolation wrapped in quotes",
-			script: `"\"a + b = ${a + b}; stringy\""`,
+			script: `"\"a + b = ${a + b}; c\""`,
+		},
+		{
+			name:   "string interpolation with nested in strings",
+			script: `"\"a + b = ${a + b}; \\\"quoted string\\\"\""`,
 		},
 		{
 			name:   "binary_op",
