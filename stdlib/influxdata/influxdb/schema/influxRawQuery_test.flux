@@ -1,4 +1,4 @@
-package v1_test
+package schema_test
 
 import "testing"
 import "influxdata/influxdb/v1"

@@ -1,4 +1,4 @@
-package v1_test
+package schema_test
 
 import "testing"
 
@@ -41,19 +41,17 @@ output = "
 #group,false,false,false
 #default,0,,
 ,result,table,_value
-,,0,load1
-,,0,load3
-,,0,load5
-,,0,used_percent
+,,0,swap
+,,0,system
 "
 
-show_tag_values_fn = (tables=<-) => tables
+show_measurements_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
     |> filter(fn: (r) => true)
-    |> keep(columns: ["_field"])
+    |> keep(columns: ["_measurement"])
     |> group()
-    |> distinct(column: "_field")
+    |> distinct(column: "_measurement")
     |> sort()
 
-test show_tag_values = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})
+test show_measurements = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})

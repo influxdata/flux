@@ -1,4 +1,4 @@
-package v1_test
+package schema_test
 
 import "testing"
 
