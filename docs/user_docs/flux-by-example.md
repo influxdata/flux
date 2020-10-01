@@ -155,3 +155,26 @@ csv.from(url: "https://influx-testdata.s3.amazonaws.com/noaa.csv")
 |> map(fn: (r) => ({ r with jsonStr: string(v: json.encode(v: {"location":r.location,"mean":r._value}))}))
 |> map(fn: (r) => ({r with status_code: http.post(url: "http://somehost.com/", headers: {x:"a", y:"b"}, data: bytes(v: r.jsonStr))}))
 ```
+
+# Calculate a percentage using a defined set with a filter and only querying the data once
+
+Select the raw data set into a variable. 
+Create a 2nd variable which uses the selected data to count the total of the set and returns that as a scalar.
+Create a 3rd varibable which uses the selected data and filters by the specified criteria and then counts the number of records.
+Use Map to return the percentage.
+
+```
+data = from(bucket:v.bucket)
+  |> range(start: -1h)
+  |> filter(fn: (r) => r["_measurement"] == "nginx")
+  |> filter(fn: (r) => r["_field"] == "active")
+
+cnt_total = data
+  |> count()
+  |> findRecord(fn: (key) => true, idx: 0)
+
+data
+  |> filter(fn: (r) => r["_value"] > 10)
+  |> count()
+  |> map(fn: (r) => ({ r with _value: float(v: r["_value"]) / float(v: cnt_total["_value"]) * 100.0 }))
+```
