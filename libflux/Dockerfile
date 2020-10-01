@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 # Install ragel
 ENV RAGEL_VERSION=6.10
-RUN curl http://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
+RUN curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
     tar -xzf ragel-${RAGEL_VERSION}.tar.gz && \
     cd ragel-${RAGEL_VERSION}/ && \
     ./configure --prefix=/usr/local && \
