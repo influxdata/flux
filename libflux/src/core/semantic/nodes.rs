@@ -244,33 +244,24 @@ impl Expression {
 }
 
 // Infer the types of a flux package
-pub fn infer_pkg_types<T, S>(
+pub fn infer_pkg_types<T>(
     pkg: &mut Package,
     env: Environment,
     f: &mut Fresher,
     importer: &T,
-    builtins: &S,
 ) -> std::result::Result<(Environment, Substitution), Error>
 where
     T: Importer,
-    S: Importer,
 {
-    let (env, cons) = pkg.infer(env, f, importer, builtins)?;
+    let (env, cons) = pkg.infer(env, f, importer)?;
     Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
 }
 
-pub fn infer_file<T, S>(
-    file: &mut File,
-    env: Environment,
-    f: &mut Fresher,
-    importer: &T,
-    builtins: &S,
-) -> Result
+pub fn infer_file<T>(file: &mut File, env: Environment, f: &mut Fresher, importer: &T) -> Result
 where
     T: Importer,
-    S: Importer,
 {
-    file.infer(env, f, importer, builtins)
+    file.infer(env, f, importer)
 }
 
 pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
@@ -286,21 +277,14 @@ pub struct Package {
 }
 
 impl Package {
-    fn infer<T, S>(
-        &mut self,
-        env: Environment,
-        f: &mut Fresher,
-        importer: &T,
-        builtins: &S,
-    ) -> Result
+    fn infer<T>(&mut self, env: Environment, f: &mut Fresher, importer: &T) -> Result
     where
         T: Importer,
-        S: Importer,
     {
         self.files
             .iter_mut()
             .try_fold((env, Constraints::empty()), |(env, rest), file| {
-                let (env, cons) = file.infer(env, f, importer, builtins)?;
+                let (env, cons) = file.infer(env, f, importer)?;
                 Ok((env, cons + rest))
             })
     }
@@ -324,16 +308,9 @@ pub struct File {
 }
 
 impl File {
-    fn infer<T, S>(
-        &mut self,
-        mut env: Environment,
-        f: &mut Fresher,
-        importer: &T,
-        builtins: &S,
-    ) -> Result
+    fn infer<T>(&mut self, mut env: Environment, f: &mut Fresher, importer: &T) -> Result
     where
         T: Importer,
-        S: Importer,
     {
         let mut imports = Vec::with_capacity(self.imports.len());
 
@@ -356,7 +333,7 @@ impl File {
                     (env, Constraints::empty()),
                     |(env, rest), node| match node {
                         Statement::Builtin(stmt) => {
-                            let env = stmt.infer(env, builtins)?;
+                            let env = stmt.infer(env)?;
                             Ok((env, rest))
                         }
                         Statement::Variable(stmt) => {
@@ -457,20 +434,9 @@ pub struct BuiltinStmt {
 }
 
 impl BuiltinStmt {
-    fn infer<I: Importer>(
-        &self,
-        mut env: Environment,
-        importer: &I,
-    ) -> std::result::Result<Environment, Error> {
-        if let Some(ty) = importer.import(&self.id.name) {
-            env.add(self.id.name.clone(), ty);
-            Ok(env)
-        } else {
-            Err(Error::UndefinedBuiltin(
-                self.id.name.clone(),
-                self.loc.clone(),
-            ))
-        }
+    fn infer(&self, mut env: Environment) -> std::result::Result<Environment, Error> {
+        env.add(self.id.name.clone(), self.typ_expr.clone());
+        Ok(env)
     }
     fn apply(self, _: &Substitution) -> Self {
         self

@@ -59,7 +59,7 @@ func New(ctx context.Context, deps flux.Dependencies) *REPL {
 		deps:     deps,
 		scope:    scope,
 		itrp:     interpreter.NewInterpreter(nil),
-		analyzer: libflux.NewAnalyzer("main"),
+		analyzer: libflux.NewAnalyzer(),
 		importer: importer,
 	}
 }

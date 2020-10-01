@@ -13,7 +13,7 @@ builtin quarter : (t: T) => int where T: Timeable
 builtin millisecond : (t: T) => int where T: Timeable
 builtin microsecond : (t: T) => int where T: Timeable
 builtin nanosecond : (t: T) => int where T: Timeable
-builtin truncate : (t: T) => int where T: Timeable
+builtin truncate : (t: T, unit: duration) => time where T: Timeable
 
 Sunday    = 0
 Monday    = 1

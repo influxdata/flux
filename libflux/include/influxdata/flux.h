@@ -93,7 +93,7 @@ struct flux_semantic_analyzer_t;
 
 // flux_new_semantic_analyzer creates a new semantic analyzer for the given package path.
 // The returned analyzer must be freed with flux_free_semantic_analyzer().
-struct flux_semantic_analyzer_t *flux_new_semantic_analyzer(const char *pkgpath);
+struct flux_semantic_analyzer_t *flux_new_semantic_analyzer();
 
 // flux_free_semantic_analyzer frees a previously allocated semantic analyzer.
 void flux_free_semantic_analyzer(struct flux_semantic_analyzer_t *);

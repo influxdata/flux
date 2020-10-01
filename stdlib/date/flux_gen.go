@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   37,
 				},
 				File:   "date.flux",
-				Source: "package date\n\nbuiltin second : (t: T) => int where T: Timeable\nbuiltin minute : (t: T) => int where T: Timeable\nbuiltin hour : (t: T) => int where T: Timeable\nbuiltin weekDay : (t: T) => int where T: Timeable\nbuiltin monthDay : (t: T) => int where T: Timeable\nbuiltin yearDay : (t: T) => int where T: Timeable\nbuiltin month : (t: T) => int where T: Timeable\nbuiltin year : (t: T) => int where T: Timeable\nbuiltin week : (t: T) => int where T: Timeable\nbuiltin quarter : (t: T) => int where T: Timeable\nbuiltin millisecond : (t: T) => int where T: Timeable\nbuiltin microsecond : (t: T) => int where T: Timeable\nbuiltin nanosecond : (t: T) => int where T: Timeable\nbuiltin truncate : (t: T) => int where T: Timeable\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12",
+				Source: "package date\n\nbuiltin second : (t: T) => int where T: Timeable\nbuiltin minute : (t: T) => int where T: Timeable\nbuiltin hour : (t: T) => int where T: Timeable\nbuiltin weekDay : (t: T) => int where T: Timeable\nbuiltin monthDay : (t: T) => int where T: Timeable\nbuiltin yearDay : (t: T) => int where T: Timeable\nbuiltin month : (t: T) => int where T: Timeable\nbuiltin year : (t: T) => int where T: Timeable\nbuiltin week : (t: T) => int where T: Timeable\nbuiltin quarter : (t: T) => int where T: Timeable\nbuiltin millisecond : (t: T) => int where T: Timeable\nbuiltin microsecond : (t: T) => int where T: Timeable\nbuiltin nanosecond : (t: T) => int where T: Timeable\nbuiltin truncate : (t: T, unit: duration) => time where T: Timeable\n\nSunday    = 0\nMonday    = 1\nTuesday   = 2\nWednesday = 3\nThursday  = 4\nFriday    = 5\nSaturday  = 6\n\nJanuary   = 1\nFebruary  = 2\nMarch     = 3\nApril     = 4\nMay       = 5\nJune      = 6\nJuly      = 7\nAugust    = 8\nSeptember = 9\nOctober   = 10\nNovember  = 11\nDecember  = 12",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -3022,11 +3022,11 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 51,
+							Column: 68,
 							Line:   16,
 						},
 						File:   "date.flux",
-						Source: "(t: T) => int where T: Timeable",
+						Source: "(t: T, unit: duration) => time where T: Timeable",
 						Start: ast.Position{
 							Column: 20,
 							Line:   16,
@@ -3038,13 +3038,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 51,
+								Column: 68,
 								Line:   16,
 							},
 							File:   "date.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
-								Column: 40,
+								Column: 57,
 								Line:   16,
 							},
 						},
@@ -3054,13 +3054,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 51,
+									Column: 68,
 									Line:   16,
 								},
 								File:   "date.flux",
 								Source: "Timeable",
 								Start: ast.Position{
-									Column: 43,
+									Column: 60,
 									Line:   16,
 								},
 							},
@@ -3072,13 +3072,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 41,
+									Column: 58,
 									Line:   16,
 								},
 								File:   "date.flux",
 								Source: "T",
 								Start: ast.Position{
-									Column: 40,
+									Column: 57,
 									Line:   16,
 								},
 							},
@@ -3091,11 +3091,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 33,
+								Column: 50,
 								Line:   16,
 							},
 							File:   "date.flux",
-							Source: "(t: T) => int",
+							Source: "(t: T, unit: duration) => time",
 							Start: ast.Position{
 								Column: 20,
 								Line:   16,
@@ -3172,19 +3172,89 @@ var pkgAST = &ast.Package{
 								Name: "T",
 							},
 						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 41,
+									Line:   16,
+								},
+								File:   "date.flux",
+								Source: "unit: duration",
+								Start: ast.Position{
+									Column: 27,
+									Line:   16,
+								},
+							},
+						},
+						Kind: "Required",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   16,
+									},
+									File:   "date.flux",
+									Source: "unit",
+									Start: ast.Position{
+										Column: 27,
+										Line:   16,
+									},
+								},
+							},
+							Name: "unit",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   16,
+									},
+									File:   "date.flux",
+									Source: "duration",
+									Start: ast.Position{
+										Column: 33,
+										Line:   16,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   16,
+										},
+										File:   "date.flux",
+										Source: "duration",
+										Start: ast.Position{
+											Column: 33,
+											Line:   16,
+										},
+									},
+								},
+								Name: "duration",
+							},
+						},
 					}},
 					Return: &ast.NamedType{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 33,
+									Column: 50,
 									Line:   16,
 								},
 								File:   "date.flux",
-								Source: "int",
+								Source: "time",
 								Start: ast.Position{
-									Column: 30,
+									Column: 46,
 									Line:   16,
 								},
 							},
@@ -3194,18 +3264,18 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 33,
+										Column: 50,
 										Line:   16,
 									},
 									File:   "date.flux",
-									Source: "int",
+									Source: "time",
 									Start: ast.Position{
-										Column: 30,
+										Column: 46,
 										Line:   16,
 									},
 								},
 							},
-							Name: "int",
+							Name: "time",
 						},
 					},
 				},

@@ -133,7 +133,7 @@ void test_semantic() {
 void test_semantic_analyzer() {
   printf("Testing semantic analyzer...\n");
 
-  struct flux_semantic_analyzer_t *analyzer = flux_new_semantic_analyzer("main");
+  struct flux_semantic_analyzer_t *analyzer = flux_new_semantic_analyzer();
 
   struct flux_ast_pkg_t *ast_pkg = NULL;
   struct flux_semantic_pkg_t *sem_pkg = NULL;

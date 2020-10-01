@@ -114,11 +114,8 @@ type Analyzer struct {
 	ptr *C.struct_flux_semantic_analyzer_t
 }
 
-func NewAnalyzer(pkgpath string) *Analyzer {
-	cstr := C.CString(pkgpath)
-	defer C.free(unsafe.Pointer(cstr))
-
-	ptr := C.flux_new_semantic_analyzer(cstr)
+func NewAnalyzer() *Analyzer {
+	ptr := C.flux_new_semantic_analyzer()
 	p := &Analyzer{ptr: ptr}
 	runtime.SetFinalizer(p, free)
 	return p

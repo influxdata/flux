@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   84,
 				},
 				File:   "math.flux",
-				Source: "package math\n\n// builtin constants\nbuiltin pi : float\nbuiltin e : float\nbuiltin phi : float\nbuiltin sqrt2 : float\nbuiltin sqrte : float\nbuiltin sqrtpi : float\nbuiltin sqrtphi : float\nbuiltin ln2 : float\nbuiltin log2e : float\nbuiltin ln10 : float\nbuiltin log10e : float\nbuiltin maxfloat : float\nbuiltin smallestNonzeroFloat : float\nbuiltin maxint : int\nbuiltin minint : int\nbuiltin maxuint : uint\n\n// builtin functions\nbuiltin abs : (x: float) => float\nbuiltin acos : (x: float) => float\nbuiltin acosh : (x: float) => float\nbuiltin asin : (x: float) => float\nbuiltin asinh : (x: float) => float\nbuiltin atan : (x: float) => float\nbuiltin atan2 : (x: float, y: float) => float\nbuiltin atanh : (x: float) => float\nbuiltin cbrt : (x: float) => float\nbuiltin ceil : (x: float) => float\nbuiltin copysign : (x: float, y: float) => float\nbuiltin cos : (x: float) => float\nbuiltin cosh : (x: float) => float\nbuiltin dim : (x: float, y: float) => float\nbuiltin erf : (x: float) => float\nbuiltin erfc : (x: float) => float\nbuiltin erfcinv : (x: float) => float\nbuiltin erfinv : (x: float) => float\nbuiltin exp : (x: float) => float\nbuiltin exp2 : (x: float) => float\nbuiltin expm1 : (x: float) => float\nbuiltin float64bits : (f: float) => uint\nbuiltin float64frombits : (b: uint) => float\nbuiltin floor : (x: float) => float\nbuiltin frexp : (f: float) => {frac: float , exp: int}\nbuiltin gamma : (x: float) => float\nbuiltin hypot : (x: float) => float\nbuiltin ilogb : (x: float) => float\nbuiltin mInf : (x: int) => float\nbuiltin isInf : (f: float, sign: int) => bool\nbuiltin isNaN : (f: float) => bool\nbuiltin j0 : (x: float) => float\nbuiltin j1 : (x: float) => float\nbuiltin jn : (n: int, x: float) => float\nbuiltin ldexp : (frac: float, exp: int) => float\nbuiltin lgamma : (x: float) => {lgamma: float , sign: int}\nbuiltin log : (x: float) => float\nbuiltin log10 : (x: float) => float\nbuiltin log1p : (x: float) => float\nbuiltin log2 : (x: float) => float\nbuiltin logb : (x: float) => float\nbuiltin mMax : (x: float, y: float) => float\nbuiltin mMin : (x: float, y: float) => float\nbuiltin mod : (x: float, y: float) => float\nbuiltin modf : (f: float) => {int: float , frac: float}\nbuiltin NaN : () => float\nbuiltin nextafter : (x: float, y: float) => float\nbuiltin pow : (x: float, y: float) => float\nbuiltin pow10 : (n: int) => float\nbuiltin remainder : (x: float, y: float) => float\nbuiltin round : (x: float) => float\nbuiltin roundtoeven : (x: float) => float\nbuiltin signbit : (x: float) => bool\nbuiltin sin : (x: float) => float\nbuiltin sincos : (x: float) => {sin: float , cos: float}\nbuiltin sinh : (x: float) => float\nbuiltin sqrt : (x: float) => float\nbuiltin tan : (x: float) => float\nbuiltin tanh : (x: float) => float\nbuiltin trunc : (x: float) => float\nbuiltin y0 : (x: float) => float\nbuiltin y1 : (x: float) => float\nbuiltin yn",
+				Source: "package math\n\n// builtin constants\nbuiltin pi : float\nbuiltin e : float\nbuiltin phi : float\nbuiltin sqrt2 : float\nbuiltin sqrte : float\nbuiltin sqrtpi : float\nbuiltin sqrtphi : float\nbuiltin ln2 : float\nbuiltin log2e : float\nbuiltin ln10 : float\nbuiltin log10e : float\nbuiltin maxfloat : float\nbuiltin smallestNonzeroFloat : float\nbuiltin maxint : int\nbuiltin minint : int\nbuiltin maxuint : uint\n\n// builtin functions\nbuiltin abs : (x: float) => float\nbuiltin acos : (x: float) => float\nbuiltin acosh : (x: float) => float\nbuiltin asin : (x: float) => float\nbuiltin asinh : (x: float) => float\nbuiltin atan : (x: float) => float\nbuiltin atan2 : (x: float, y: float) => float\nbuiltin atanh : (x: float) => float\nbuiltin cbrt : (x: float) => float\nbuiltin ceil : (x: float) => float\nbuiltin copysign : (x: float, y: float) => float\nbuiltin cos : (x: float) => float\nbuiltin cosh : (x: float) => float\nbuiltin dim : (x: float, y: float) => float\nbuiltin erf : (x: float) => float\nbuiltin erfc : (x: float) => float\nbuiltin erfcinv : (x: float) => float\nbuiltin erfinv : (x: float) => float\nbuiltin exp : (x: float) => float\nbuiltin exp2 : (x: float) => float\nbuiltin expm1 : (x: float) => float\nbuiltin float64bits : (f: float) => uint\nbuiltin float64frombits : (b: uint) => float\nbuiltin floor : (x: float) => float\nbuiltin frexp : (f: float) => {frac: float , exp: int}\nbuiltin gamma : (x: float) => float\nbuiltin hypot : (x: float) => float\nbuiltin ilogb : (x: float) => float\nbuiltin mInf : (sign: int) => float\nbuiltin isInf : (f: float, sign: int) => bool\nbuiltin isNaN : (f: float) => bool\nbuiltin j0 : (x: float) => float\nbuiltin j1 : (x: float) => float\nbuiltin jn : (n: int, x: float) => float\nbuiltin ldexp : (frac: float, exp: int) => float\nbuiltin lgamma : (x: float) => {lgamma: float , sign: int}\nbuiltin log : (x: float) => float\nbuiltin log10 : (x: float) => float\nbuiltin log1p : (x: float) => float\nbuiltin log2 : (x: float) => float\nbuiltin logb : (x: float) => float\nbuiltin mMax : (x: float, y: float) => float\nbuiltin mMin : (x: float, y: float) => float\nbuiltin mod : (x: float, y: float) => float\nbuiltin modf : (f: float) => {int: float , frac: float}\nbuiltin NaN : () => float\nbuiltin nextafter : (x: float, y: float) => float\nbuiltin pow : (x: float, y: float) => float\nbuiltin pow10 : (n: int) => float\nbuiltin remainder : (x: float, y: float) => float\nbuiltin round : (x: float) => float\nbuiltin roundtoeven : (x: float) => float\nbuiltin signbit : (x: float) => bool\nbuiltin sin : (x: float) => float\nbuiltin sincos : (x: float) => {sin: float , cos: float}\nbuiltin sinh : (x: float) => float\nbuiltin sqrt : (x: float) => float\nbuiltin tan : (x: float) => float\nbuiltin tanh : (x: float) => float\nbuiltin trunc : (x: float) => float\nbuiltin y0 : (x: float) => float\nbuiltin y1 : (x: float) => float\nbuiltin yn",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -6695,11 +6695,11 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 33,
+							Column: 36,
 							Line:   50,
 						},
 						File:   "math.flux",
-						Source: "(x: int) => float",
+						Source: "(sign: int) => float",
 						Start: ast.Position{
 							Column: 16,
 							Line:   50,
@@ -6712,11 +6712,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 33,
+								Column: 36,
 								Line:   50,
 							},
 							File:   "math.flux",
-							Source: "(x: int) => float",
+							Source: "(sign: int) => float",
 							Start: ast.Position{
 								Column: 16,
 								Line:   50,
@@ -6728,11 +6728,11 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 23,
+									Column: 26,
 									Line:   50,
 								},
 								File:   "math.flux",
-								Source: "x: int",
+								Source: "sign: int",
 								Start: ast.Position{
 									Column: 17,
 									Line:   50,
@@ -6745,31 +6745,31 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 18,
+										Column: 21,
 										Line:   50,
 									},
 									File:   "math.flux",
-									Source: "x",
+									Source: "sign",
 									Start: ast.Position{
 										Column: 17,
 										Line:   50,
 									},
 								},
 							},
-							Name: "x",
+							Name: "sign",
 						},
 						Ty: &ast.NamedType{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 23,
+										Column: 26,
 										Line:   50,
 									},
 									File:   "math.flux",
 									Source: "int",
 									Start: ast.Position{
-										Column: 20,
+										Column: 23,
 										Line:   50,
 									},
 								},
@@ -6779,13 +6779,13 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
+											Column: 26,
 											Line:   50,
 										},
 										File:   "math.flux",
 										Source: "int",
 										Start: ast.Position{
-											Column: 20,
+											Column: 23,
 											Line:   50,
 										},
 									},
@@ -6799,13 +6799,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 33,
+									Column: 36,
 									Line:   50,
 								},
 								File:   "math.flux",
 								Source: "float",
 								Start: ast.Position{
-									Column: 28,
+									Column: 31,
 									Line:   50,
 								},
 							},
@@ -6815,13 +6815,13 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 33,
+										Column: 36,
 										Line:   50,
 									},
 									File:   "math.flux",
 									Source: "float",
 									Start: ast.Position{
-										Column: 28,
+										Column: 31,
 										Line:   50,
 									},
 								},
