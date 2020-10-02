@@ -20,14 +20,14 @@ RUN curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
     cd .. && rm -rf ragel-${RAGEL_VERSION}*
 ENV PATH="/usr/local/bin:${PATH}"
 
-# Install and configure openssl - needed for proper Rust install
+# Download, verify, install, and configure openssl (needed for proper Rust install)
 ENV SSL_VERSION=1.0.2q
-
 RUN curl https://www.openssl.org/source/openssl-$SSL_VERSION.tar.gz -O && \
+    curl https://www.openssl.org/source/openssl-$SSL_VERSION.tar.gz.sha256 -O && \
+    echo "$(cat openssl-$SSL_VERSION.tar.gz.sha256) openssl-$SSL_VERSION.tar.gz" | sha256sum --check && \
     tar -xzf openssl-$SSL_VERSION.tar.gz && \
     cd openssl-$SSL_VERSION && ./config && make depend && make install && \
     cd .. && rm -rf openssl-$SSL_VERSION*
-
 ENV OPENSSL_LIB_DIR=/usr/local/ssl/lib \
     OPENSSL_INCLUDE_DIR=/usr/local/ssl/include \
     OPENSSL_STATIC=1
