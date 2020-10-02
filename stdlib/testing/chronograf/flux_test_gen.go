@@ -3566,10 +3566,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 108,
-					Line:   105,
+					Line:   104,
 				},
 				File:   "aggregate_window_median_test.flux",
-				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.remote,35\n,,1,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35\n\"\n\nagg_window_median_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")\n\ntest agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
+				Source: "package chronograf_test\n \nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,,\n,result,table,_start,_stop,_field,_measurement,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk1s1,apfs,host.remote,30\n,,1,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.remote,35\n,,1,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,false,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,_field,_measurement,host,_value\n,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35\n,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35\n\"\n\nagg_window_median_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")\n\ntest agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -3585,7 +3585,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   75,
 					},
 					File:   "aggregate_window_median_test.flux",
-					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -3619,14 +3619,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   75,
 						},
 						File:   "aggregate_window_median_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n\"",
 						Start: ast.Position{
 							Column: 10,
 							Line:   5,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,long\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n",
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,0,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.local,67.1\n,,0,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.local,67.4\n,,0,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.local,67.5\n,,0,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.local,67.6\n,,0,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,0,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.local,67.9\n,,1,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.local,92.2\n,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,false,true,true,true,true,true,false\n#default,_result,,,,,,,,\n,result,table,_time,_measurement,_field,device,fstype,host,_value\n,,2,2018-05-22T00:00:00Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:10Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:20Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:30Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:40Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,2,2018-05-22T00:00:50Z,disk,percentage,disk1s1,apfs,host.remote,30\n,,3,2018-05-22T00:00:00Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:10Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:20Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:30Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:40Z,disk,percentage,disk2s1,apfs,host.remote,35\n,,3,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.remote,35\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,_field,device,host,_value\n,,0,2018-05-22T00:00:00Z,cpu,percentage,core1,host.local,89.7\n,,0,2018-05-22T00:00:10Z,cpu,percentage,core1,host.local,73.4\n,,0,2018-05-22T00:00:20Z,cpu,percentage,core1,host.local,88.8\n,,0,2018-05-22T00:00:30Z,cpu,percentage,core1,host.local,91.0\n,,0,2018-05-22T00:00:40Z,cpu,percentage,core1,host.local,81.1\n,,0,2018-05-22T00:00:50Z,cpu,percentage,core1,host.local,87.8\n,,1,2018-05-22T00:00:00Z,cpu,percentage,core2,host.local,70.3\n,,1,2018-05-22T00:00:10Z,cpu,percentage,core2,host.local,80.4\n,,1,2018-05-22T00:00:20Z,cpu,percentage,core2,host.local,95.6\n,,1,2018-05-22T00:00:30Z,cpu,percentage,core2,host.local,94.4\n,,1,2018-05-22T00:00:40Z,cpu,percentage,core2,host.local,91.2\n,,1,2018-05-22T00:00:50Z,cpu,percentage,core2,host.local,90.6\n\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,host,_value\n,,0,2018-05-22T00:00:00Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:10Z,mem,percentage,host.local,82.5\n,,0,2018-05-22T00:00:20Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:30Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:40Z,mem,percentage,host.local,82.6\n,,0,2018-05-22T00:00:50Z,mem,percentage,host.local,82.5\n,,1,2018-05-22T00:00:00Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:10Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:20Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:30Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:40Z,mem,percentage,host.remote,35\n,,1,2018-05-22T00:00:50Z,mem,percentage,host.remote,35\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -3686,10 +3686,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 78,
-						Line:   102,
+						Line:   101,
 					},
 					File:   "aggregate_window_median_test.flux",
-					Source: "agg_window_median_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")",
+					Source: "agg_window_median_fn = (table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")",
 					Start: ast.Position{
 						Column: 1,
 						Line:   95,
@@ -3720,10 +3720,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 78,
-							Line:   102,
+							Line:   101,
 						},
 						File:   "aggregate_window_median_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")",
+						Source: "(table=<-) => table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")",
 						Start: ast.Position{
 							Column: 24,
 							Line:   95,
@@ -3736,208 +3736,33 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Argument: &ast.PipeExpression{
 								Argument: &ast.PipeExpression{
 									Argument: &ast.PipeExpression{
-										Argument: &ast.PipeExpression{
-											Argument: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 43,
-															Line:   95,
-														},
-														File:   "aggregate_window_median_test.flux",
-														Source: "table",
-														Start: ast.Position{
-															Column: 38,
-															Line:   95,
-														},
-													},
-												},
-												Name: "table",
-											},
+										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 70,
-														Line:   96,
+														Column: 43,
+														Line:   95,
 													},
 													File:   "aggregate_window_median_test.flux",
-													Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)",
+													Source: "table",
 													Start: ast.Position{
 														Column: 38,
 														Line:   95,
 													},
 												},
 											},
-											Call: &ast.CallExpression{
-												Arguments: []ast.Expression{&ast.ObjectExpression{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 69,
-																Line:   96,
-															},
-															File:   "aggregate_window_median_test.flux",
-															Source: "start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z",
-															Start: ast.Position{
-																Column: 14,
-																Line:   96,
-															},
-														},
-													},
-													Properties: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 41,
-																	Line:   96,
-																},
-																File:   "aggregate_window_median_test.flux",
-																Source: "start: 2018-05-22T00:00:00Z",
-																Start: ast.Position{
-																	Column: 14,
-																	Line:   96,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 19,
-																		Line:   96,
-																	},
-																	File:   "aggregate_window_median_test.flux",
-																	Source: "start",
-																	Start: ast.Position{
-																		Column: 14,
-																		Line:   96,
-																	},
-																},
-															},
-															Name: "start",
-														},
-														Value: &ast.DateTimeLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 41,
-																		Line:   96,
-																	},
-																	File:   "aggregate_window_median_test.flux",
-																	Source: "2018-05-22T00:00:00Z",
-																	Start: ast.Position{
-																		Column: 21,
-																		Line:   96,
-																	},
-																},
-															},
-															Value: parser.MustParseTime("2018-05-22T00:00:00Z"),
-														},
-													}, &ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 69,
-																	Line:   96,
-																},
-																File:   "aggregate_window_median_test.flux",
-																Source: "stop: 2018-05-22T00:01:00Z",
-																Start: ast.Position{
-																	Column: 43,
-																	Line:   96,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 47,
-																		Line:   96,
-																	},
-																	File:   "aggregate_window_median_test.flux",
-																	Source: "stop",
-																	Start: ast.Position{
-																		Column: 43,
-																		Line:   96,
-																	},
-																},
-															},
-															Name: "stop",
-														},
-														Value: &ast.DateTimeLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 69,
-																		Line:   96,
-																	},
-																	File:   "aggregate_window_median_test.flux",
-																	Source: "2018-05-22T00:01:00Z",
-																	Start: ast.Position{
-																		Column: 49,
-																		Line:   96,
-																	},
-																},
-															},
-															Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
-														},
-													}},
-													With: nil,
-												}},
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 70,
-															Line:   96,
-														},
-														File:   "aggregate_window_median_test.flux",
-														Source: "range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)",
-														Start: ast.Position{
-															Column: 8,
-															Line:   96,
-														},
-													},
-												},
-												Callee: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 13,
-																Line:   96,
-															},
-															File:   "aggregate_window_median_test.flux",
-															Source: "range",
-															Start: ast.Position{
-																Column: 8,
-																Line:   96,
-															},
-														},
-													},
-													Name: "range",
-												},
-											},
+											Name: "table",
 										},
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 78,
-													Line:   97,
+													Column: 70,
+													Line:   96,
 												},
 												File:   "aggregate_window_median_test.flux",
-												Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")",
+												Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)",
 												Start: ast.Position{
 													Column: 38,
 													Line:   95,
@@ -3946,6 +3771,196 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 69,
+															Line:   96,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z",
+														Start: ast.Position{
+															Column: 14,
+															Line:   96,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   96,
+															},
+															File:   "aggregate_window_median_test.flux",
+															Source: "start: 2018-05-22T00:00:00Z",
+															Start: ast.Position{
+																Column: 14,
+																Line:   96,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   96,
+																},
+																File:   "aggregate_window_median_test.flux",
+																Source: "start",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   96,
+																},
+															},
+														},
+														Name: "start",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   96,
+																},
+																File:   "aggregate_window_median_test.flux",
+																Source: "2018-05-22T00:00:00Z",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   96,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2018-05-22T00:00:00Z"),
+													},
+												}, &ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 69,
+																Line:   96,
+															},
+															File:   "aggregate_window_median_test.flux",
+															Source: "stop: 2018-05-22T00:01:00Z",
+															Start: ast.Position{
+																Column: 43,
+																Line:   96,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 47,
+																	Line:   96,
+																},
+																File:   "aggregate_window_median_test.flux",
+																Source: "stop",
+																Start: ast.Position{
+																	Column: 43,
+																	Line:   96,
+																},
+															},
+														},
+														Name: "stop",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 69,
+																	Line:   96,
+																},
+																File:   "aggregate_window_median_test.flux",
+																Source: "2018-05-22T00:01:00Z",
+																Start: ast.Position{
+																	Column: 49,
+																	Line:   96,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2018-05-22T00:01:00Z"),
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 70,
+														Line:   96,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)",
+													Start: ast.Position{
+														Column: 8,
+														Line:   96,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 13,
+															Line:   96,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "range",
+														Start: ast.Position{
+															Column: 8,
+															Line:   96,
+														},
+													},
+												},
+												Name: "range",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 78,
+												Line:   97,
+											},
+											File:   "aggregate_window_median_test.flux",
+											Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")",
+											Start: ast.Position{
+												Column: 38,
+												Line:   95,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 77,
+														Line:   97,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   97,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
@@ -3961,388 +3976,19 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													},
 												},
-												Properties: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 77,
-																Line:   97,
-															},
-															File:   "aggregate_window_median_test.flux",
-															Source: "fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
-															Start: ast.Position{
-																Column: 15,
-																Line:   97,
-															},
-														},
-													},
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 17,
-																	Line:   97,
-																},
-																File:   "aggregate_window_median_test.flux",
-																Source: "fn",
-																Start: ast.Position{
-																	Column: 15,
-																	Line:   97,
-																},
-															},
-														},
-														Name: "fn",
-													},
-													Value: &ast.FunctionExpression{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 77,
-																	Line:   97,
-																},
-																File:   "aggregate_window_median_test.flux",
-																Source: "(r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
-																Start: ast.Position{
-																	Column: 19,
-																	Line:   97,
-																},
-															},
-														},
-														Body: &ast.LogicalExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 77,
-																		Line:   97,
-																	},
-																	File:   "aggregate_window_median_test.flux",
-																	Source: "r._measurement == \"disk\" or r._measurement == \"mem\"",
-																	Start: ast.Position{
-																		Column: 26,
-																		Line:   97,
-																	},
-																},
-															},
-															Left: &ast.BinaryExpression{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 50,
-																			Line:   97,
-																		},
-																		File:   "aggregate_window_median_test.flux",
-																		Source: "r._measurement == \"disk\"",
-																		Start: ast.Position{
-																			Column: 26,
-																			Line:   97,
-																		},
-																	},
-																},
-																Left: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 40,
-																				Line:   97,
-																			},
-																			File:   "aggregate_window_median_test.flux",
-																			Source: "r._measurement",
-																			Start: ast.Position{
-																				Column: 26,
-																				Line:   97,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 27,
-																					Line:   97,
-																				},
-																				File:   "aggregate_window_median_test.flux",
-																				Source: "r",
-																				Start: ast.Position{
-																					Column: 26,
-																					Line:   97,
-																				},
-																			},
-																		},
-																		Name: "r",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 40,
-																					Line:   97,
-																				},
-																				File:   "aggregate_window_median_test.flux",
-																				Source: "_measurement",
-																				Start: ast.Position{
-																					Column: 28,
-																					Line:   97,
-																				},
-																			},
-																		},
-																		Name: "_measurement",
-																	},
-																},
-																Operator: 17,
-																Right: &ast.StringLiteral{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 50,
-																				Line:   97,
-																			},
-																			File:   "aggregate_window_median_test.flux",
-																			Source: "\"disk\"",
-																			Start: ast.Position{
-																				Column: 44,
-																				Line:   97,
-																			},
-																		},
-																	},
-																	Value: "disk",
-																},
-															},
-															Operator: 2,
-															Right: &ast.BinaryExpression{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 77,
-																			Line:   97,
-																		},
-																		File:   "aggregate_window_median_test.flux",
-																		Source: "r._measurement == \"mem\"",
-																		Start: ast.Position{
-																			Column: 54,
-																			Line:   97,
-																		},
-																	},
-																},
-																Left: &ast.MemberExpression{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 68,
-																				Line:   97,
-																			},
-																			File:   "aggregate_window_median_test.flux",
-																			Source: "r._measurement",
-																			Start: ast.Position{
-																				Column: 54,
-																				Line:   97,
-																			},
-																		},
-																	},
-																	Object: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 55,
-																					Line:   97,
-																				},
-																				File:   "aggregate_window_median_test.flux",
-																				Source: "r",
-																				Start: ast.Position{
-																					Column: 54,
-																					Line:   97,
-																				},
-																			},
-																		},
-																		Name: "r",
-																	},
-																	Property: &ast.Identifier{
-																		BaseNode: ast.BaseNode{
-																			Errors: nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 68,
-																					Line:   97,
-																				},
-																				File:   "aggregate_window_median_test.flux",
-																				Source: "_measurement",
-																				Start: ast.Position{
-																					Column: 56,
-																					Line:   97,
-																				},
-																			},
-																		},
-																		Name: "_measurement",
-																	},
-																},
-																Operator: 17,
-																Right: &ast.StringLiteral{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 77,
-																				Line:   97,
-																			},
-																			File:   "aggregate_window_median_test.flux",
-																			Source: "\"mem\"",
-																			Start: ast.Position{
-																				Column: 72,
-																				Line:   97,
-																			},
-																		},
-																	},
-																	Value: "mem",
-																},
-															},
-														},
-														Params: []*ast.Property{&ast.Property{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 21,
-																		Line:   97,
-																	},
-																	File:   "aggregate_window_median_test.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 20,
-																		Line:   97,
-																	},
-																},
-															},
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 21,
-																			Line:   97,
-																		},
-																		File:   "aggregate_window_median_test.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 20,
-																			Line:   97,
-																		},
-																	},
-																},
-																Name: "r",
-															},
-															Value: nil,
-														}},
-													},
-												}},
-												With: nil,
-											}},
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 78,
-														Line:   97,
-													},
-													File:   "aggregate_window_median_test.flux",
-													Source: "filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")",
-													Start: ast.Position{
-														Column: 8,
-														Line:   97,
-													},
-												},
-											},
-											Callee: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 14,
-															Line:   97,
-														},
-														File:   "aggregate_window_median_test.flux",
-														Source: "filter",
-														Start: ast.Position{
-															Column: 8,
-															Line:   97,
-														},
-													},
-												},
-												Name: "filter",
-											},
-										},
-									},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 50,
-												Line:   98,
-											},
-											File:   "aggregate_window_median_test.flux",
-											Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")",
-											Start: ast.Position{
-												Column: 38,
-												Line:   95,
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 49,
-														Line:   98,
-													},
-													File:   "aggregate_window_median_test.flux",
-													Source: "fn: (r) => r.host == \"host.remote\"",
-													Start: ast.Position{
-														Column: 15,
-														Line:   98,
-													},
-												},
-											},
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 49,
-															Line:   98,
-														},
-														File:   "aggregate_window_median_test.flux",
-														Source: "fn: (r) => r.host == \"host.remote\"",
-														Start: ast.Position{
-															Column: 15,
-															Line:   98,
-														},
-													},
-												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
-																Line:   98,
+																Line:   97,
 															},
 															File:   "aggregate_window_median_test.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 15,
-																Line:   98,
+																Line:   97,
 															},
 														},
 													},
@@ -4353,104 +3999,211 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 49,
-																Line:   98,
+																Column: 77,
+																Line:   97,
 															},
 															File:   "aggregate_window_median_test.flux",
-															Source: "(r) => r.host == \"host.remote\"",
+															Source: "(r) => r._measurement == \"disk\" or r._measurement == \"mem\"",
 															Start: ast.Position{
 																Column: 19,
-																Line:   98,
+																Line:   97,
 															},
 														},
 													},
-													Body: &ast.BinaryExpression{
+													Body: &ast.LogicalExpression{
 														BaseNode: ast.BaseNode{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 49,
-																	Line:   98,
+																	Column: 77,
+																	Line:   97,
 																},
 																File:   "aggregate_window_median_test.flux",
-																Source: "r.host == \"host.remote\"",
+																Source: "r._measurement == \"disk\" or r._measurement == \"mem\"",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   98,
+																	Line:   97,
 																},
 															},
 														},
-														Left: &ast.MemberExpression{
+														Left: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 32,
-																		Line:   98,
+																		Column: 50,
+																		Line:   97,
 																	},
 																	File:   "aggregate_window_median_test.flux",
-																	Source: "r.host",
+																	Source: "r._measurement == \"disk\"",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   98,
+																		Line:   97,
 																	},
 																},
 															},
-															Object: &ast.Identifier{
+															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 27,
-																			Line:   98,
+																			Column: 40,
+																			Line:   97,
 																		},
 																		File:   "aggregate_window_median_test.flux",
-																		Source: "r",
+																		Source: "r._measurement",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   98,
+																			Line:   97,
 																		},
 																	},
 																},
-																Name: "r",
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 27,
+																				Line:   97,
+																			},
+																			File:   "aggregate_window_median_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   97,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 40,
+																				Line:   97,
+																			},
+																			File:   "aggregate_window_median_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 28,
+																				Line:   97,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
 															},
-															Property: &ast.Identifier{
+															Operator: 17,
+															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 32,
-																			Line:   98,
+																			Column: 50,
+																			Line:   97,
 																		},
 																		File:   "aggregate_window_median_test.flux",
-																		Source: "host",
+																		Source: "\"disk\"",
 																		Start: ast.Position{
-																			Column: 28,
-																			Line:   98,
+																			Column: 44,
+																			Line:   97,
 																		},
 																	},
 																},
-																Name: "host",
+																Value: "disk",
 															},
 														},
-														Operator: 17,
-														Right: &ast.StringLiteral{
+														Operator: 2,
+														Right: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 49,
-																		Line:   98,
+																		Column: 77,
+																		Line:   97,
 																	},
 																	File:   "aggregate_window_median_test.flux",
-																	Source: "\"host.remote\"",
+																	Source: "r._measurement == \"mem\"",
 																	Start: ast.Position{
-																		Column: 36,
-																		Line:   98,
+																		Column: 54,
+																		Line:   97,
 																	},
 																},
 															},
-															Value: "host.remote",
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 68,
+																			Line:   97,
+																		},
+																		File:   "aggregate_window_median_test.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 54,
+																			Line:   97,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 55,
+																				Line:   97,
+																			},
+																			File:   "aggregate_window_median_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 54,
+																				Line:   97,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 68,
+																				Line:   97,
+																			},
+																			File:   "aggregate_window_median_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 56,
+																				Line:   97,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 77,
+																			Line:   97,
+																		},
+																		File:   "aggregate_window_median_test.flux",
+																		Source: "\"mem\"",
+																		Start: ast.Position{
+																			Column: 72,
+																			Line:   97,
+																		},
+																	},
+																},
+																Value: "mem",
+															},
 														},
 													},
 													Params: []*ast.Property{&ast.Property{
@@ -4459,13 +4212,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
-																	Line:   98,
+																	Line:   97,
 																},
 																File:   "aggregate_window_median_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   98,
+																	Line:   97,
 																},
 															},
 														},
@@ -4475,13 +4228,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   98,
+																		Line:   97,
 																	},
 																	File:   "aggregate_window_median_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
-																		Line:   98,
+																		Line:   97,
 																	},
 																},
 															},
@@ -4497,14 +4250,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 50,
-													Line:   98,
+													Column: 78,
+													Line:   97,
 												},
 												File:   "aggregate_window_median_test.flux",
-												Source: "filter(fn: (r) => r.host == \"host.remote\")",
+												Source: "filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")",
 												Start: ast.Position{
 													Column: 8,
-													Line:   98,
+													Line:   97,
 												},
 											},
 										},
@@ -4514,13 +4267,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   98,
+														Line:   97,
 													},
 													File:   "aggregate_window_median_test.flux",
 													Source: "filter",
 													Start: ast.Position{
 														Column: 8,
-														Line:   98,
+														Line:   97,
 													},
 												},
 											},
@@ -4532,11 +4285,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   99,
+											Column: 50,
+											Line:   98,
 										},
 										File:   "aggregate_window_median_test.flux",
-										Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)",
+										Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")",
 										Start: ast.Position{
 											Column: 38,
 											Line:   95,
@@ -4545,6 +4298,268 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   98,
+												},
+												File:   "aggregate_window_median_test.flux",
+												Source: "fn: (r) => r.host == \"host.remote\"",
+												Start: ast.Position{
+													Column: 15,
+													Line:   98,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 49,
+														Line:   98,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "fn: (r) => r.host == \"host.remote\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   98,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 17,
+															Line:   98,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "fn",
+														Start: ast.Position{
+															Column: 15,
+															Line:   98,
+														},
+													},
+												},
+												Name: "fn",
+											},
+											Value: &ast.FunctionExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 49,
+															Line:   98,
+														},
+														File:   "aggregate_window_median_test.flux",
+														Source: "(r) => r.host == \"host.remote\"",
+														Start: ast.Position{
+															Column: 19,
+															Line:   98,
+														},
+													},
+												},
+												Body: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 49,
+																Line:   98,
+															},
+															File:   "aggregate_window_median_test.flux",
+															Source: "r.host == \"host.remote\"",
+															Start: ast.Position{
+																Column: 26,
+																Line:   98,
+															},
+														},
+													},
+													Left: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 32,
+																	Line:   98,
+																},
+																File:   "aggregate_window_median_test.flux",
+																Source: "r.host",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   98,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 27,
+																		Line:   98,
+																	},
+																	File:   "aggregate_window_median_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   98,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 32,
+																		Line:   98,
+																	},
+																	File:   "aggregate_window_median_test.flux",
+																	Source: "host",
+																	Start: ast.Position{
+																		Column: 28,
+																		Line:   98,
+																	},
+																},
+															},
+															Name: "host",
+														},
+													},
+													Operator: 17,
+													Right: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 49,
+																	Line:   98,
+																},
+																File:   "aggregate_window_median_test.flux",
+																Source: "\"host.remote\"",
+																Start: ast.Position{
+																	Column: 36,
+																	Line:   98,
+																},
+															},
+														},
+														Value: "host.remote",
+													},
+												},
+												Params: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 21,
+																Line:   98,
+															},
+															File:   "aggregate_window_median_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 20,
+																Line:   98,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   98,
+																},
+																File:   "aggregate_window_median_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   98,
+																},
+															},
+														},
+														Name: "r",
+													},
+													Value: nil,
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 50,
+												Line:   98,
+											},
+											File:   "aggregate_window_median_test.flux",
+											Source: "filter(fn: (r) => r.host == \"host.remote\")",
+											Start: ast.Position{
+												Column: 8,
+												Line:   98,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   98,
+												},
+												File:   "aggregate_window_median_test.flux",
+												Source: "filter",
+												Start: ast.Position{
+													Column: 8,
+													Line:   98,
+												},
+											},
+										},
+										Name: "filter",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 27,
+										Line:   99,
+									},
+									File:   "aggregate_window_median_test.flux",
+									Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)",
+									Start: ast.Position{
+										Column: 38,
+										Line:   95,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   99,
+											},
+											File:   "aggregate_window_median_test.flux",
+											Source: "period: 30s",
+											Start: ast.Position{
+												Column: 15,
+												Line:   99,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
@@ -4560,7 +4575,25 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
-										Properties: []*ast.Property{&ast.Property{
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   99,
+													},
+													File:   "aggregate_window_median_test.flux",
+													Source: "period",
+													Start: ast.Position{
+														Column: 15,
+														Line:   99,
+													},
+												},
+											},
+											Name: "period",
+										},
+										Value: &ast.DurationLiteral{
 											BaseNode: ast.BaseNode{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
@@ -4569,119 +4602,33 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Line:   99,
 													},
 													File:   "aggregate_window_median_test.flux",
-													Source: "period: 30s",
+													Source: "30s",
 													Start: ast.Position{
-														Column: 15,
+														Column: 23,
 														Line:   99,
 													},
 												},
 											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 21,
-															Line:   99,
-														},
-														File:   "aggregate_window_median_test.flux",
-														Source: "period",
-														Start: ast.Position{
-															Column: 15,
-															Line:   99,
-														},
-													},
-												},
-												Name: "period",
-											},
-											Value: &ast.DurationLiteral{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 26,
-															Line:   99,
-														},
-														File:   "aggregate_window_median_test.flux",
-														Source: "30s",
-														Start: ast.Position{
-															Column: 23,
-															Line:   99,
-														},
-													},
-												},
-												Values: []ast.Duration{ast.Duration{
-													Magnitude: int64(30),
-													Unit:      "s",
-												}},
-											},
-										}},
-										With: nil,
+											Values: []ast.Duration{ast.Duration{
+												Magnitude: int64(30),
+												Unit:      "s",
+											}},
+										},
 									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 27,
-												Line:   99,
-											},
-											File:   "aggregate_window_median_test.flux",
-											Source: "window(period: 30s)",
-											Start: ast.Position{
-												Column: 8,
-												Line:   99,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 14,
-													Line:   99,
-												},
-												File:   "aggregate_window_median_test.flux",
-												Source: "window",
-												Start: ast.Position{
-													Column: 8,
-													Line:   99,
-												},
-											},
-										},
-										Name: "window",
-									},
-								},
-							},
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 17,
-										Line:   100,
-									},
-									File:   "aggregate_window_median_test.flux",
-									Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()",
-									Start: ast.Position{
-										Column: 38,
-										Line:   95,
-									},
-								},
-							},
-							Call: &ast.CallExpression{
-								Arguments: nil,
+									With: nil,
+								}},
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 17,
-											Line:   100,
+											Column: 27,
+											Line:   99,
 										},
 										File:   "aggregate_window_median_test.flux",
-										Source: "toFloat()",
+										Source: "window(period: 30s)",
 										Start: ast.Position{
 											Column: 8,
-											Line:   100,
+											Line:   99,
 										},
 									},
 								},
@@ -4690,18 +4637,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 15,
-												Line:   100,
+												Column: 14,
+												Line:   99,
 											},
 											File:   "aggregate_window_median_test.flux",
-											Source: "toFloat",
+											Source: "window",
 											Start: ast.Position{
 												Column: 8,
-												Line:   100,
+												Line:   99,
 											},
 										},
 									},
-									Name: "toFloat",
+									Name: "window",
 								},
 							},
 						},
@@ -4710,10 +4657,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   101,
+									Line:   100,
 								},
 								File:   "aggregate_window_median_test.flux",
-								Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()\n    |> median()",
+								Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> median()",
 								Start: ast.Position{
 									Column: 38,
 									Line:   95,
@@ -4727,13 +4674,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   101,
+										Line:   100,
 									},
 									File:   "aggregate_window_median_test.flux",
 									Source: "median()",
 									Start: ast.Position{
 										Column: 8,
-										Line:   101,
+										Line:   100,
 									},
 								},
 							},
@@ -4743,13 +4690,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   101,
+											Line:   100,
 										},
 										File:   "aggregate_window_median_test.flux",
 										Source: "median",
 										Start: ast.Position{
 											Column: 8,
-											Line:   101,
+											Line:   100,
 										},
 									},
 								},
@@ -4762,10 +4709,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 78,
-								Line:   102,
+								Line:   101,
 							},
 							File:   "aggregate_window_median_test.flux",
-							Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> toFloat()\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")",
+							Source: "table\n    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)\n    |> filter(fn: (r) => r._measurement == \"disk\" or r._measurement == \"mem\")\n    |> filter(fn: (r) => r.host == \"host.remote\")\n    |> window(period: 30s)\n    |> median()\n    |> group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")",
 							Start: ast.Position{
 								Column: 38,
 								Line:   95,
@@ -4779,13 +4726,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 77,
-										Line:   102,
+										Line:   101,
 									},
 									File:   "aggregate_window_median_test.flux",
 									Source: "columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\"",
 									Start: ast.Position{
 										Column: 14,
-										Line:   102,
+										Line:   101,
 									},
 								},
 							},
@@ -4795,13 +4742,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 61,
-											Line:   102,
+											Line:   101,
 										},
 										File:   "aggregate_window_median_test.flux",
 										Source: "columns: [\"_value\", \"_time\", \"_start\", \"_stop\"]",
 										Start: ast.Position{
 											Column: 14,
-											Line:   102,
+											Line:   101,
 										},
 									},
 								},
@@ -4811,13 +4758,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   102,
+												Line:   101,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 14,
-												Line:   102,
+												Line:   101,
 											},
 										},
 									},
@@ -4829,13 +4776,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 61,
-												Line:   102,
+												Line:   101,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "[\"_value\", \"_time\", \"_start\", \"_stop\"]",
 											Start: ast.Position{
 												Column: 23,
-												Line:   102,
+												Line:   101,
 											},
 										},
 									},
@@ -4845,13 +4792,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
-													Line:   102,
+													Line:   101,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "\"_value\"",
 												Start: ast.Position{
 													Column: 24,
-													Line:   102,
+													Line:   101,
 												},
 											},
 										},
@@ -4862,13 +4809,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   102,
+													Line:   101,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "\"_time\"",
 												Start: ast.Position{
 													Column: 34,
-													Line:   102,
+													Line:   101,
 												},
 											},
 										},
@@ -4879,13 +4826,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
-													Line:   102,
+													Line:   101,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "\"_start\"",
 												Start: ast.Position{
 													Column: 43,
-													Line:   102,
+													Line:   101,
 												},
 											},
 										},
@@ -4896,13 +4843,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   102,
+													Line:   101,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "\"_stop\"",
 												Start: ast.Position{
 													Column: 53,
-													Line:   102,
+													Line:   101,
 												},
 											},
 										},
@@ -4915,13 +4862,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 77,
-											Line:   102,
+											Line:   101,
 										},
 										File:   "aggregate_window_median_test.flux",
 										Source: "mode: \"except\"",
 										Start: ast.Position{
 											Column: 63,
-											Line:   102,
+											Line:   101,
 										},
 									},
 								},
@@ -4931,13 +4878,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 67,
-												Line:   102,
+												Line:   101,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "mode",
 											Start: ast.Position{
 												Column: 63,
-												Line:   102,
+												Line:   101,
 											},
 										},
 									},
@@ -4949,13 +4896,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 77,
-												Line:   102,
+												Line:   101,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "\"except\"",
 											Start: ast.Position{
 												Column: 69,
-												Line:   102,
+												Line:   101,
 											},
 										},
 									},
@@ -4969,13 +4916,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 78,
-									Line:   102,
+									Line:   101,
 								},
 								File:   "aggregate_window_median_test.flux",
 								Source: "group(columns: [\"_value\", \"_time\", \"_start\", \"_stop\"], mode: \"except\")",
 								Start: ast.Position{
 									Column: 8,
-									Line:   102,
+									Line:   101,
 								},
 							},
 						},
@@ -4985,13 +4932,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   102,
+										Line:   101,
 									},
 									File:   "aggregate_window_median_test.flux",
 									Source: "group",
 									Start: ast.Position{
 										Column: 8,
-										Line:   102,
+										Line:   101,
 									},
 								},
 							},
@@ -5057,13 +5004,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 108,
-							Line:   105,
+							Line:   104,
 						},
 						File:   "aggregate_window_median_test.flux",
 						Source: "agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   104,
+							Line:   103,
 						},
 					},
 				},
@@ -5073,13 +5020,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   104,
+								Line:   103,
 							},
 							File:   "aggregate_window_median_test.flux",
 							Source: "agg_window_median",
 							Start: ast.Position{
 								Column: 6,
-								Line:   104,
+								Line:   103,
 							},
 						},
 					},
@@ -5091,13 +5038,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 108,
-								Line:   105,
+								Line:   104,
 							},
 							File:   "aggregate_window_median_test.flux",
 							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   104,
+								Line:   103,
 							},
 						},
 					},
@@ -5107,13 +5054,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 108,
-									Line:   105,
+									Line:   104,
 								},
 								File:   "aggregate_window_median_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 								Start: ast.Position{
 									Column: 2,
-									Line:   105,
+									Line:   104,
 								},
 							},
 						},
@@ -5123,13 +5070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 107,
-										Line:   105,
+										Line:   104,
 									},
 									File:   "aggregate_window_median_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn}",
 									Start: ast.Position{
 										Column: 3,
-										Line:   105,
+										Line:   104,
 									},
 								},
 							},
@@ -5139,13 +5086,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   105,
+											Line:   104,
 										},
 										File:   "aggregate_window_median_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
 											Column: 4,
-											Line:   105,
+											Line:   104,
 										},
 									},
 								},
@@ -5155,13 +5102,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
-												Line:   105,
+												Line:   104,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 4,
-												Line:   105,
+												Line:   104,
 											},
 										},
 									},
@@ -5174,13 +5121,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   105,
+													Line:   104,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
 													Column: 31,
-													Line:   105,
+													Line:   104,
 												},
 											},
 										},
@@ -5190,13 +5137,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
-														Line:   105,
+														Line:   104,
 													},
 													File:   "aggregate_window_median_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
 														Column: 31,
-														Line:   105,
+														Line:   104,
 													},
 												},
 											},
@@ -5206,13 +5153,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   105,
+															Line:   104,
 														},
 														File:   "aggregate_window_median_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 31,
-															Line:   105,
+															Line:   104,
 														},
 													},
 												},
@@ -5224,13 +5171,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   105,
+															Line:   104,
 														},
 														File:   "aggregate_window_median_test.flux",
 														Source: "inData",
 														Start: ast.Position{
 															Column: 36,
-															Line:   105,
+															Line:   104,
 														},
 													},
 												},
@@ -5244,13 +5191,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   105,
+												Line:   104,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
 												Column: 11,
-												Line:   105,
+												Line:   104,
 											},
 										},
 									},
@@ -5260,13 +5207,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   105,
+													Line:   104,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 11,
-													Line:   105,
+													Line:   104,
 												},
 											},
 										},
@@ -5276,13 +5223,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   105,
+														Line:   104,
 													},
 													File:   "aggregate_window_median_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 11,
-														Line:   105,
+														Line:   104,
 													},
 												},
 											},
@@ -5294,13 +5241,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   105,
+														Line:   104,
 													},
 													File:   "aggregate_window_median_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 19,
-														Line:   105,
+														Line:   104,
 													},
 												},
 											},
@@ -5314,13 +5261,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
-											Line:   105,
+											Line:   104,
 										},
 										File:   "aggregate_window_median_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
 											Column: 45,
-											Line:   105,
+											Line:   104,
 										},
 									},
 								},
@@ -5330,13 +5277,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
-												Line:   105,
+												Line:   104,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 45,
-												Line:   105,
+												Line:   104,
 											},
 										},
 									},
@@ -5349,13 +5296,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
-													Line:   105,
+													Line:   104,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
 													Column: 67,
-													Line:   105,
+													Line:   104,
 												},
 											},
 										},
@@ -5365,13 +5312,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 79,
-														Line:   105,
+														Line:   104,
 													},
 													File:   "aggregate_window_median_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
 														Column: 67,
-														Line:   105,
+														Line:   104,
 													},
 												},
 											},
@@ -5381,13 +5328,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 70,
-															Line:   105,
+															Line:   104,
 														},
 														File:   "aggregate_window_median_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 67,
-															Line:   105,
+															Line:   104,
 														},
 													},
 												},
@@ -5399,13 +5346,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 79,
-															Line:   105,
+															Line:   104,
 														},
 														File:   "aggregate_window_median_test.flux",
 														Source: "outData",
 														Start: ast.Position{
 															Column: 72,
-															Line:   105,
+															Line:   104,
 														},
 													},
 												},
@@ -5419,13 +5366,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
-												Line:   105,
+												Line:   104,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
 												Column: 51,
-												Line:   105,
+												Line:   104,
 											},
 										},
 									},
@@ -5435,13 +5382,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 66,
-													Line:   105,
+													Line:   104,
 												},
 												File:   "aggregate_window_median_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 51,
-													Line:   105,
+													Line:   104,
 												},
 											},
 										},
@@ -5451,13 +5398,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
-														Line:   105,
+														Line:   104,
 													},
 													File:   "aggregate_window_median_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 51,
-														Line:   105,
+														Line:   104,
 													},
 												},
 											},
@@ -5469,13 +5416,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 66,
-														Line:   105,
+														Line:   104,
 													},
 													File:   "aggregate_window_median_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 59,
-														Line:   105,
+														Line:   104,
 													},
 												},
 											},
@@ -5489,13 +5436,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
-											Line:   105,
+											Line:   104,
 										},
 										File:   "aggregate_window_median_test.flux",
 										Source: "fn: agg_window_median_fn",
 										Start: ast.Position{
 											Column: 82,
-											Line:   105,
+											Line:   104,
 										},
 									},
 								},
@@ -5505,13 +5452,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
-												Line:   105,
+												Line:   104,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 82,
-												Line:   105,
+												Line:   104,
 											},
 										},
 									},
@@ -5523,13 +5470,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
-												Line:   105,
+												Line:   104,
 											},
 											File:   "aggregate_window_median_test.flux",
 											Source: "agg_window_median_fn",
 											Start: ast.Position{
 												Column: 86,
-												Line:   105,
+												Line:   104,
 											},
 										},
 									},
@@ -5547,13 +5494,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 108,
-						Line:   105,
+						Line:   104,
 					},
 					File:   "aggregate_window_median_test.flux",
 					Source: "test agg_window_median = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: agg_window_median_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   104,
+						Line:   103,
 					},
 				},
 			},
