@@ -6,12 +6,16 @@ RUN apt-get update && \
     apt-get install --no-install-recommends -y \
     ca-certificates curl file \
     build-essential \
+    gnupg \
     autoconf automake autotools-dev libtool xutils-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Install ragel
+# Download, verify, and install ragel
 ENV RAGEL_VERSION=6.10
-RUN curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
+RUN curl https://www.colm.net/files/thurston.asc | gpg --import - && \
+    curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
+    curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz.asc -O && \
+    gpg --verify ragel-${RAGEL_VERSION}.tar.gz.asc ragel-${RAGEL_VERSION}.tar.gz && \
     tar -xzf ragel-${RAGEL_VERSION}.tar.gz && \
     cd ragel-${RAGEL_VERSION}/ && \
     ./configure --prefix=/usr/local && \
