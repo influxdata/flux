@@ -227,6 +227,48 @@ func TestQuantile_NewQuery(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name: "default",
+			Raw:  `from(bucket:"testdb") |> range(start: -1h) |> quantile(q: 0.99)`,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "testdb"},
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop: flux.Time{
+								IsRelative: true,
+							},
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "quantile2",
+						Spec: &universe.QuantileOpSpec{
+							Quantile:        0.99,
+							Compression:     1000,
+							Method:          "estimate_tdigest",
+							AggregateConfig: execute.DefaultAggregateConfig,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "quantile2"},
+				},
+			},
+		},
 		// errors
 		{
 			Name:    "wrong method",

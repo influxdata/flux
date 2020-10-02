@@ -24,6 +24,8 @@ const (
 	methodEstimateTdigest = "estimate_tdigest"
 	methodExactMean       = "exact_mean"
 	methodExactSelector   = "exact_selector"
+
+	defaultMethod = methodEstimateTdigest
 )
 
 type QuantileOpSpec struct {
@@ -67,6 +69,8 @@ func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.Ope
 		return nil, err
 	} else if ok {
 		spec.Method = m
+	} else {
+		spec.Method = defaultMethod
 	}
 
 	if c, ok, err := args.GetFloat("compression"); err != nil {
