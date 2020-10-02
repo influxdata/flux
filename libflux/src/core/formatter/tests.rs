@@ -579,4 +579,8 @@ fn builtin() {
 
 x = 1",
     );
+    assert_unchanged("// comment\nbuiltin foo : int");
+    assert_unchanged("builtin \n\t// comment\n\tfoo : int");
+    assert_unchanged("builtin foo\n\t// comment\n\t: int");
+    assert_unchanged("builtin foo : \n\t// comment\n\tint");
 }

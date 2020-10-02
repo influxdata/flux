@@ -312,6 +312,7 @@ where
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Comment {
     pub lit: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub next: Option<Box<Comment>>,
 }
 
@@ -491,6 +492,8 @@ pub struct BuiltinStmt {
     #[serde(default)]
     #[serde(flatten)]
     pub base: BaseNode,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub colon: CommentList,
     pub id: Identifier,
     pub ty: TypeExpression,
 }
