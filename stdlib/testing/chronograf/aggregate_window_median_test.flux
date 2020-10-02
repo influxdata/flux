@@ -84,7 +84,12 @@ outData = "
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,disk,disk2s1,apfs,host.remote,35
 ,,1,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,disk,disk2s1,apfs,host.remote,35
 
-
+#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
+#group,false,false,false,false,true,true,true,false
+#default,_result,,,,,,,
+,result,table,_start,_stop,_field,_measurement,host,_value
+,,0,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,percentage,mem,host.remote,35
+,,0,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,percentage,mem,host.remote,35
 "
 
 agg_window_median_fn = (table=<-) => table
