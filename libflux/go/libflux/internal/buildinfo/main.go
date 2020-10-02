@@ -33,8 +33,68 @@ var (
 	walkFluxPath = "../../../stdlib"
 )
 
+// lsFiles returns a list of files that exist on the filesystem that git does not ignore
 func lsFiles(path string) ([]string, error) {
-	cmd := exec.Command("git", "ls-files", "--full-name", "--", path)
+	// List files in git's cache, i.e. all files that git knows about
+	cached, err := gitListFiles(path, "--cached")
+	if err != nil {
+		return nil, err
+	}
+	// List files that exist on the filesystem but have not been added to git
+	others, err := gitListFiles(path, "--others")
+	if err != nil {
+		return nil, err
+	}
+	// List files that exist on the filesystem but should be ignored
+	excluded, err := gitListFiles(path, "--others", "--ignored", "--exclude-standard")
+	if err != nil {
+		return nil, err
+	}
+	// List files that have been deleted from the filesystem but not git
+	deleted, err := gitListFiles(path, "--deleted")
+	if err != nil {
+		return nil, err
+	}
+	// We want cached + others - excluded - deleted
+	sort.Strings(excluded)
+	sort.Strings(deleted)
+	skip := func(f string) bool {
+		return contains(excluded, f) || contains(deleted, f)
+	}
+	filtered := make([]string, 0, len(cached)+len(others))
+	// add cached
+	for _, f := range cached {
+		if skip(f) {
+			continue
+		}
+		filtered = append(filtered, f)
+	}
+	// add others
+	for _, f := range others {
+		if skip(f) {
+			continue
+		}
+		filtered = append(filtered, f)
+	}
+
+	return filtered, nil
+}
+
+// contains reports if item exists in set, the set must be sorted
+func contains(set []string, item string) bool {
+	i := sort.SearchStrings(set, item)
+	return i < len(set) && set[i] == item
+}
+
+// gitListFiles returns a list of files reported using the 'git ls-files' command
+func gitListFiles(path string, flags ...string) ([]string, error) {
+	args := make([]string, 0, 4+len(flags))
+	args = append(args, "ls-files")
+	args = append(args, "--full-name")
+	args = append(args, flags...)
+	args = append(args, "--")
+	args = append(args, path)
+	cmd := exec.Command("git", args...)
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, err
