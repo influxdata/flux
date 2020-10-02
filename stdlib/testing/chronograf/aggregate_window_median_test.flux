@@ -21,7 +21,7 @@ inData = "
 ,,1,2018-05-22T00:00:50Z,disk,percentage,disk2s1,apfs,host.local,92.2
 
 
-#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,long
+#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,double
 #group,false,false,false,true,true,true,true,true,false
 #default,_result,,,,,,,,
 ,result,table,_time,_measurement,_field,device,fstype,host,_value
@@ -97,7 +97,6 @@ agg_window_median_fn = (table=<-) => table
     |> filter(fn: (r) => r._measurement == "disk" or r._measurement == "mem")
     |> filter(fn: (r) => r.host == "host.remote")
     |> window(period: 30s)
-    |> toFloat()
     |> median()
     |> group(columns: ["_value", "_time", "_start", "_stop"], mode: "except")
 
