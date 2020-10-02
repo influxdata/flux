@@ -29,6 +29,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/http"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
+	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/schema"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/tasks"
 	_ "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"

@@ -15,9 +15,9 @@ import (
 	json "github.com/influxdata/flux/stdlib/experimental/json"
 	http "github.com/influxdata/flux/stdlib/http"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
+	schema "github.com/influxdata/flux/stdlib/influxdata/influxdb/schema"
 	secrets "github.com/influxdata/flux/stdlib/influxdata/influxdb/secrets"
 	tasks "github.com/influxdata/flux/stdlib/influxdata/influxdb/tasks"
-	v1 "github.com/influxdata/flux/stdlib/influxdata/influxdb/v1"
 	promql "github.com/influxdata/flux/stdlib/internal/promql"
 	interpolate "github.com/influxdata/flux/stdlib/interpolate"
 	planner "github.com/influxdata/flux/stdlib/planner"
@@ -46,9 +46,9 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, json.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
+	pkgs = append(pkgs, schema.FluxTestPackages...)
 	pkgs = append(pkgs, secrets.FluxTestPackages...)
 	pkgs = append(pkgs, tasks.FluxTestPackages...)
-	pkgs = append(pkgs, v1.FluxTestPackages...)
 	pkgs = append(pkgs, promql.FluxTestPackages...)
 	pkgs = append(pkgs, interpolate.FluxTestPackages...)
 	pkgs = append(pkgs, planner.FluxTestPackages...)

@@ -1,4 +1,4 @@
-package v1_test
+package schema_test
 
 import "testing"
 
@@ -47,7 +47,7 @@ output = "
 ,,0,used_percent
 "
 
-show_field_keys_fn = (tables=<-) => tables
+show_tag_values_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
     |> filter(fn: (r) => true)
     |> keep(columns: ["_field"])
@@ -55,5 +55,5 @@ show_field_keys_fn = (tables=<-) => tables
     |> distinct(column: "_field")
     |> sort()
 
-test show_field_keys = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_field_keys_fn})
+test show_tag_values = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})
