@@ -32,15 +32,17 @@ ENV OPENSSL_LIB_DIR=/usr/local/ssl/lib \
     OPENSSL_INCLUDE_DIR=/usr/local/ssl/include \
     OPENSSL_STATIC=1
 
-# Install Clang
-# Check https://releases.llvm.org/download.html#8.0.0 for the latest available binaries
+# Download, verify, and install Clang
+# (See https://releases.llvm.org/download.html#8.0.0 for the latest available binaries)
 RUN curl https://releases.llvm.org/8.0.0/hans-gpg-key.asc | gpg --import - && \
-    curl -SL https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz -O && \
-    curl -SL https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz.sig -O && \
+    curl https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz -O && \
+    curl https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz.sig -O && \
     gpg --verify clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz.sig \
                  clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz && \
-    | tar -xJC . && \
-    mv clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_8.0.0
+    tar -xvf clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz && \
+    mv clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_8.0.0 && \
+    rm -rf clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04*
+
 
 ENV PATH="/clang_8.0.0/bin:${PATH}" \
     LD_LIBRARY_PATH="/clang_8.0.0/lib:${LD_LIBRARY_PATH}" \
