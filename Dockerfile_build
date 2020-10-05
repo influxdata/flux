@@ -1,6 +1,6 @@
 # This file describes an image that is capable of building Flux.
 
-FROM golang:1.13
+FROM golang:1.15
 
 # Install common packages
 RUN apt-get update && \
