@@ -1,6 +1,8 @@
 package sql
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -85,6 +87,21 @@ func TestTranslationDriverReturn(t *testing.T) {
 
 	// verify that valid returns expected happiness for BigQuery
 	_, err = getTranslationFunc("bigquery")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
+	// verify that valid returns expected error for AWS Athena (yes, error)
+	expectedErr := errors.Newf(codes.Invalid, "writing is not supported for awsathena")
+	_, err = getTranslationFunc("awsathena")
+	if !cmp.Equal(expectedErr, err) {
+		t.Log(cmp.Diff(expectedErr, err))
+		t.Fail()
+	}
+
+	// verify that valid returns expected happiness for SAP HANA
+	_, err = getTranslationFunc("hdb")
 	if !cmp.Equal(nil, err) {
 		t.Log(cmp.Diff(nil, err))
 		t.Fail()
@@ -332,6 +349,48 @@ func TestBigQueryTranslation(t *testing.T) {
 	}
 	if !cmp.Equal("BigQuery does not support column type unknown", err.Error()) {
 		t.Log(cmp.Diff("BigQuery does not support column type unknown", err.Error()))
+		t.Fail()
+	}
+}
+
+func TestHdbTranslation(t *testing.T) {
+	hdbTypeTranslations := map[string]flux.ColType{
+		"DOUBLE":         flux.TFloat,
+		"BIGINT":         flux.TInt,
+		"NVARCHAR(5000)": flux.TString,
+		"TIMESTAMP":      flux.TTime,
+		"BOOLEAN":        flux.TBool,
+	}
+
+	columnLabel := "apples"
+	// verify that valid returns expected happiness for hdb
+	sqlT, err := getTranslationFunc("hdb")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
+	for dbTypeString, fluxType := range hdbTypeTranslations {
+		v, err := sqlT()(fluxType, columnLabel)
+		if !cmp.Equal(nil, err) {
+			t.Log(cmp.Diff(nil, err))
+			t.Fail()
+		}
+		if !cmp.Equal(strconv.Quote(strings.ToUpper(columnLabel))+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(strconv.Quote(strings.ToUpper(columnLabel))+" "+dbTypeString, v))
+			t.Fail()
+		}
+	}
+
+	// test no match
+	var _unsupportedType flux.ColType = 666
+	_, err = sqlT()(_unsupportedType, columnLabel)
+	if cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+	if !cmp.Equal("SAP HANA does not support column type unknown", err.Error()) {
+		t.Log(cmp.Diff("SAP HANA does not support column type unknown", err.Error()))
 		t.Fail()
 	}
 }

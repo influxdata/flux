@@ -9,6 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.8.3
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/DATA-DOG/go-sqlmock v1.4.1
+	github.com/SAP/go-hdb v0.14.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20200923215132-ac86123a3f01
 	github.com/bonitoo-io/go-sql-bigquery v0.3.4-1.4.0

@@ -275,6 +275,8 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 		return nil, errors.Newf(codes.Invalid, "writing is not supported for %s", driverName)
 	case "bigquery":
 		return BigQueryColumnTranslateFunc, nil
+	case "hdb":
+		return HdbColumnTranslateFunc, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
@@ -335,10 +337,16 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 
 		if t.spec.Spec.DriverName != "sqlmock" {
 			var q string
-			if !isMssqlDriver(t.spec.Spec.DriverName) {
-				q = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
-			} else { // SQL Server does not support IF NOT EXIST
+			if isMssqlDriver(t.spec.Spec.DriverName) { // SQL Server does not support IF NOT EXIST
 				q = fmt.Sprintf("IF OBJECT_ID('%s', 'U') IS NULL BEGIN CREATE TABLE %s (%s) END", t.spec.Spec.Table, t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+			} else if t.spec.Spec.DriverName == "hdb" { // SAP HANA does not support IF NOT EXIST
+				// wrap CREATE TABLE statement with HDB-specific "if not exists" SQLScript check
+				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))
+				q = hdbAddIfNotExist(t.spec.Spec.Table, q)
+				// SAP HANA does not support INSERT/UPDATE batching via a single SQL command
+				batchSize = 1
+			} else {
+				q = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
 			}
 			_, err = t.tx.Exec(q)
 			if err != nil {
@@ -395,7 +403,7 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 				return err
 			}
 
-			if i != 0 && i%batchSize == 0 {
+			if (i != 0 && i%batchSize == 0) || (batchSize == 1) {
 				// create "mini batches" of values - each one represents a single db.Exec to SQL
 				valArgsArray = append(valArgsArray, valueArgs)
 				valStringArray = append(valStringArray, valueStrings)

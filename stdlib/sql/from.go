@@ -127,6 +127,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewAwsAthenaRowReader
 	case "bigquery":
 		newRowReader = NewBigQueryRowReader
+	case "hdb":
+		newRowReader = NewHdbRowReader
 	default:
 		return nil, errors.Newf(codes.Invalid, "sql driver %s not supported", spec.DriverName)
 	}

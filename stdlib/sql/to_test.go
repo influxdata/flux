@@ -335,6 +335,15 @@ func TestToSql_NewTransformation(t *testing.T) {
 				},
 				WantErr: "connection refused",
 			}, {
+				Name: "ok hdb",
+				Spec: &fsql.ToSQLProcedureSpec{
+					Spec: &fsql.ToSQLOpSpec{
+						DriverName:     "hdb",
+						DataSourceName: "hdb://user:password@localhost:39013",
+					},
+				},
+				WantErr: "connection refused",
+			}, {
 				Name: "invalid driver",
 				Spec: &fsql.ToSQLProcedureSpec{
 					Spec: &fsql.ToSQLOpSpec{
