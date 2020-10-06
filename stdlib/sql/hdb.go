@@ -213,7 +213,7 @@ func hdbAddIfNotExist(table string, query string) string {
 	var where string
 	var args []interface{}
 	parts := strings.SplitN(strings.ToUpper(table), ".", 2) // schema and table name assumed uppercase in HDB by default (see Notes)
-	if len(parts) == 2 { // fully-qualified table name
+	if len(parts) == 2 {                                    // fully-qualified table name
 		where = "WHERE SCHEMA_NAME=ESCAPE_DOUBLE_QUOTES(:SCHEMA_NAME) AND TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
 		args = append(args, len(parts[0]))
 		args = append(args, parts[0])
