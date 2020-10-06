@@ -182,7 +182,7 @@ var fluxToHdb = map[flux.ColType]string{
 	flux.TTime:   "TIMESTAMP", // not exactly correct (see Notes)
 }
 
-// HdbTranslateColumn translates flux colTypes into their corresponding SAP HANA column type for CREATE TABLE statement
+// HdbTranslateColumn translates flux colTypes into their corresponding SAP HANA column type
 func HdbColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToHdb[f]
@@ -212,15 +212,15 @@ END;
 func hdbAddIfNotExist(table string, query string) string {
 	var where string
 	var args []interface{}
-	parts := strings.SplitN(table, ".", 2)
+	parts := strings.SplitN(strings.ToUpper(table), ".", 2) // schema and table name assumed uppercase in HDB by default (see Notes)
 	if len(parts) == 2 { // fully-qualified table name
-		where = "WHERE SCHEMA_NAME=ESCAPE_DOUBLE_QUOTES(UPPER(:SCHEMA_NAME)) AND TABLE_NAME=ESCAPE_DOUBLE_QUOTES(UPPER(:TABLE_NAME))"
+		where = "WHERE SCHEMA_NAME=ESCAPE_DOUBLE_QUOTES(:SCHEMA_NAME) AND TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
 		args = append(args, len(parts[0]))
 		args = append(args, parts[0])
 		args = append(args, len(parts[1]))
 		args = append(args, parts[1])
 	} else { // table in user default schema
-		where = "WHERE TABLE_NAME=ESCAPE_DOUBLE_QUOTES(UPPER(:TABLE_NAME))"
+		where = "WHERE TABLE_NAME=ESCAPE_DOUBLE_QUOTES(:TABLE_NAME)"
 		args = append(args, len("default"))
 		args = append(args, "default")
 		args = append(args, len(table))
