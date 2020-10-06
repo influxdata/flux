@@ -340,9 +340,11 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 			if isMssqlDriver(t.spec.Spec.DriverName) { // SQL Server does not support IF NOT EXIST
 				q = fmt.Sprintf("IF OBJECT_ID('%s', 'U') IS NULL BEGIN CREATE TABLE %s (%s) END", t.spec.Spec.Table, t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
 			} else if t.spec.Spec.DriverName == "hdb" { // SAP HANA does not support IF NOT EXIST
-				q = fmt.Sprintf("CREATE TABLE %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+				// wrap CREATE TABLE statement with HDB-specific "if not exists" SQLScript check
+				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))
 				q = hdbAddIfNotExist(t.spec.Spec.Table, q)
-				batchSize = 1 // SAP HANA does not support INSERT/UPDATE batching via a single SQL command
+				// SAP HANA does not support INSERT/UPDATE batching via a single SQL command
+				batchSize = 1
 			} else {
 				q = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
 			}

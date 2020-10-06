@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math/big"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,6 +28,8 @@ import (
 //   Therefore TIMESTAMP is mapped to TTime and vice-versa here.
 // * the hdb driver is rather strict, eg. does not convert date- or time-formatted string values to time.Time,
 //   or float64 to Decimal on its own and just throws "unsupported conversion" error
+// * Per naming conventions rules (https://documentation.sas.com/?cdcId=pgmsascdc&cdcVersion=9.4_3.5&docsetId=acreldb&docsetTarget=p1k98908uh9ovsn1jwzl3jg05exr.htm&locale=en),
+//   `sql.to` target table and column names are assumed in / converted to uppercase.
 
 type HdbRowReader struct {
 	Cursor      *sql.Rows
@@ -179,14 +182,15 @@ var fluxToHdb = map[flux.ColType]string{
 	flux.TTime:   "TIMESTAMP", // not exactly correct (see Notes)
 }
 
-// HdbTranslateColumn translates flux colTypes into their corresponding SAP HANA column type
+// HdbTranslateColumn translates flux colTypes into their corresponding SAP HANA column type for CREATE TABLE statement
 func HdbColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToHdb[f]
 		if !found {
 			return "", errors.Newf(codes.Invalid, "SAP HANA does not support column type %s", f.String())
 		}
-		return colName + " " + s, nil
+		// quote the column name for safety also convert to uppercase per HDB naming conventions
+		return hdbEscapeName(colName, true) + " " + s, nil
 	}
 }
 
@@ -204,19 +208,19 @@ BEGIN
 END;
 `
 
-// Adds SAP HANA specific table existence check to CREATE TABLE statement.
+// hdbAddIfNotExist adds SAP HANA specific table existence check to CREATE TABLE statement.
 func hdbAddIfNotExist(table string, query string) string {
 	var where string
 	var args []interface{}
 	parts := strings.SplitN(table, ".", 2)
 	if len(parts) == 2 { // fully-qualified table name
-		where = "WHERE SCHEMA_NAME=UPPER(:SCHEMA_NAME) AND TABLE_NAME=UPPER(:TABLE_NAME)"
+		where = "WHERE SCHEMA_NAME=ESCAPE_DOUBLE_QUOTES(UPPER(:SCHEMA_NAME)) AND TABLE_NAME=ESCAPE_DOUBLE_QUOTES(UPPER(:TABLE_NAME))"
 		args = append(args, len(parts[0]))
 		args = append(args, parts[0])
 		args = append(args, len(parts[1]))
 		args = append(args, parts[1])
 	} else { // table in user default schema
-		where = "WHERE TABLE_NAME=UPPER(:TABLE_NAME)"
+		where = "WHERE TABLE_NAME=ESCAPE_DOUBLE_QUOTES(UPPER(:TABLE_NAME))"
 		args = append(args, len("default"))
 		args = append(args, "default")
 		args = append(args, len(table))
@@ -226,4 +230,16 @@ func hdbAddIfNotExist(table string, query string) string {
 	args = append(args, query)
 
 	return fmt.Sprintf(hdbDoIfTableNotExistsTemplate, args...)
+}
+
+// hdbEscapeName escapes name in double quotes and convert it to uppercase per HDB naming conventions
+func hdbEscapeName(name string, toUpper bool) string {
+	parts := strings.Split(name, ".")
+	for i, _ := range parts {
+		if toUpper {
+			parts[i] = strings.ToUpper(parts[i])
+		}
+		parts[i] = strconv.Quote(strings.Trim(parts[i], "\""))
+	}
+	return strings.Join(parts, ".")
 }

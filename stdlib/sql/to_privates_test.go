@@ -1,6 +1,8 @@
 package sql
 
 import (
+	"strconv"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -374,8 +376,8 @@ func TestHdbTranslation(t *testing.T) {
 			t.Log(cmp.Diff(nil, err))
 			t.Fail()
 		}
-		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
-			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+		if !cmp.Equal(strconv.Quote(strings.ToUpper(columnLabel))+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(strconv.Quote(strings.ToUpper(columnLabel))+" "+dbTypeString, v))
 			t.Fail()
 		}
 	}
