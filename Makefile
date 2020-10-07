@@ -133,9 +133,6 @@ vet: libflux-go
 bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
-release:
-	./release.sh
-
 libflux/scanner.c: libflux/src/core/scanner/scanner.rl
 	ragel -C -o libflux/scanner.c libflux/src/core/scanner/scanner.rl
 
