@@ -162,7 +162,7 @@ func SqliteColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToSQLite[f]
 		if !found {
-			return "", errors.Newf(codes.Internal, "SQLite does not support column type %s", f.String())
+			return "", errors.Newf(codes.Invalid, "SQLite does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}

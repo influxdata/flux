@@ -158,7 +158,7 @@ func PostgresColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToPostgreSQL[f]
 		if !found {
-			return "", errors.Newf(codes.Internal, "PostgreSQL does not support column type %s", f.String())
+			return "", errors.Newf(codes.Invalid, "PostgreSQL does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}

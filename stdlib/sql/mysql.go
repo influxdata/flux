@@ -189,7 +189,7 @@ func MysqlColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToMySQL[f]
 		if !found {
-			return "", errors.Newf(codes.Internal, "MySQL does not support column type %s", f.String())
+			return "", errors.Newf(codes.Invalid, "MySQL does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}

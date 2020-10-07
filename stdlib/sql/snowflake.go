@@ -196,7 +196,7 @@ func SnowflakeColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToSnowflake[f]
 		if !found {
-			return "", errors.Newf(codes.Internal, "Snowflake does not support column type %s", f.String())
+			return "", errors.Newf(codes.Invalid, "Snowflake does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}
