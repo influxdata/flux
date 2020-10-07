@@ -178,11 +178,6 @@ func NewToSQLTransformation(d execute.Dataset, deps flux.Dependencies, cache exe
 	}, nil
 }
 
-type idxType struct {
-	Idx  int
-	Type flux.ColType
-}
-
 func (t *ToSQLTransformation) Process(id execute.DatasetID, tbl flux.Table) (err error) {
 	colNames, valStrings, valArgs, err := CreateInsertComponents(t, tbl)
 	if err != nil {
