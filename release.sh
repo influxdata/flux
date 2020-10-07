@@ -7,10 +7,15 @@ set -e
 
 remote=$(git rev-parse "@{u}") # "@{u}" gets the current upstream branch
 local=$(git rev-parse @) # '@' gets the current local branch
-
 # check if local commit syncs with remote
 if [ "$remote" != "$local" ]; then
     echo "Error: local commit does not match remote. Exiting release script."
+    exit 1
+fi
+
+state=`curl -s https://api.github.com/repos/influxdata/flux/commits/${local}/status | jq -r ".state"`
+if [ "$state" != "success" ]; then
+    echo "Error: commit state is \"$state\". Exiting release script"
     exit 1
 fi
 
@@ -26,7 +31,13 @@ if ! diff -q <(git_remote_tags) <(git_local_tags) &>/dev/null; then
 fi
 
 # cut the next Flux release
-version=$(./gotool.sh github.com/influxdata/changelog nextver)
+version=$1
+if [ "$version" == "" ]; then
+    version=$(./gotool.sh github.com/influxdata/changelog nextver)
+fi
+if [[ $version != v* ]]; then
+    echo "Error: invalid tag specified. Tag must be prefixed with 'v'."
+    exit 1
+fi
 git tag -s -m "Release $version" "$version"
 git push origin "$version"
-
