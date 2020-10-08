@@ -3,6 +3,7 @@ jobs:
   test:
     docker:
       - image: quay.io/influxdb/flux-build:latest
+    resource_class: large
     environment:
       GOCACHE: /tmp/go-cache
       GOFLAGS: -p=8
@@ -27,7 +28,7 @@ jobs:
       - run: make checkfmt
       - run: make checktidy
       - run: make vet
-      - run: make staticcheck
+      - run: GOGC=50 make staticcheck
       - run: make checkgenerate
       - run: make libflux-wasm
       - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic'
