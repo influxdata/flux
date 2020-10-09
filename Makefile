@@ -34,7 +34,6 @@ GENERATED_TARGETS = \
 	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
 	internal/fbsemantic/semantic_generated.go \
-	semantic/flatbuffers_gen.go \
 	internal/fbsemantic/semantic_generated.go \
 	libflux/go/libflux/buildinfo.gen.go \
 	$(LIBFLUX_GENERATED_TARGETS)
@@ -53,8 +52,6 @@ libflux/src/core/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
 
 internal/fbsemantic/semantic_generated.go: internal/fbsemantic/semantic.fbs
 	$(GO_GENERATE) ./internal/fbsemantic
-semantic/flatbuffers_gen.go: semantic/graph.go internal/cmd/fbgen/cmd/semantic.go internal/fbsemantic/semantic_generated.go
-	$(GO_GENERATE) ./semantic
 libflux/src/core/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
 	flatc --rust -o libflux/src/core/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
 libflux/go/libflux/buildinfo.gen.go: $(LIBFLUX_GENERATED_TARGETS)
@@ -65,7 +62,7 @@ libflux/go/libflux/buildinfo.gen.go: $(LIBFLUX_GENERATED_TARGETS)
 ast/asttest/cmpopts.go: ast/ast.go ast/asttest/gen.go $$(call go_deps,./internal/cmd/cmpgen)
 	$(GO_GENERATE) ./ast/asttest
 
-stdlib/packages.go: $(STDLIB_SOURCES) libflux-go internal/fbsemantic/semantic_generated.go semantic/flatbuffers_gen.go
+stdlib/packages.go: $(STDLIB_SOURCES) libflux-go internal/fbsemantic/semantic_generated.go
 	$(GO_GENERATE) ./stdlib
 
 internal/scanner/unicode.rl: internal/scanner/unicode2ragel.rb
