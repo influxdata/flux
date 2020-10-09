@@ -1828,6 +1828,7 @@ fn builtin() {
                     },
                     name: "from".to_string()
                 },
+                colon: None,
                 ty: TypeExpression {
                     base: BaseNode {
                         location: loc.get(1, 16, 1, 19),
@@ -3121,6 +3122,72 @@ fn comment() {
                     arguments: vec![],
                     rparen: None,
                 })),
+            }))],
+            eof: None,
+        },
+    )
+}
+#[test]
+fn comment_builtin() {
+    let mut p = Parser::new(
+        r#"// Comment
+builtin foo
+// colon comment
+: int"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(2, 1, 2, 12),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Builtin(Box::new(BuiltinStmt {
+                base: BaseNode {
+                    location: loc.get(2, 1, 2, 12),
+                    comments: Some(Box::new(Comment {
+                        lit: "// Comment\n".to_string(),
+                        next: None,
+                    })),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(2, 9, 2, 12),
+                        ..BaseNode::default()
+                    },
+                    name: "foo".to_string()
+                },
+                colon: Some(Box::new(Comment {
+                    lit: "// colon comment\n".to_string(),
+                    next: None,
+                })),
+                ty: TypeExpression {
+                    base: BaseNode {
+                        location: loc.get(4, 3, 4, 6),
+                        ..BaseNode::default()
+                    },
+                    monotype: MonoType::Basic(NamedType {
+                        base: BaseNode {
+                            location: loc.get(4, 3, 4, 6),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(4, 3, 4, 6),
+                                ..BaseNode::default()
+                            },
+                            name: "int".to_string()
+                        },
+                    }),
+                    constraints: vec![]
+                },
             }))],
             eof: None,
         },

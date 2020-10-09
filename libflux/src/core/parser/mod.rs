@@ -528,10 +528,11 @@ impl Parser {
     fn parse_builtin_statement(&mut self) -> Statement {
         let t = self.expect(TOK_BUILTIN);
         let id = self.parse_identifier();
-        self.expect(TOK_COLON);
+        let colon = self.expect(TOK_COLON);
         let _type = self.parse_type_expression();
         Statement::Builtin(Box::new(BuiltinStmt {
-            base: self.base_node_from_other_end(&t, &id.base),
+            base: self.base_node_from_other_end_c(&t, &id.base, &t),
+            colon: self.make_comments(&colon),
             id,
             ty: _type,
         }))

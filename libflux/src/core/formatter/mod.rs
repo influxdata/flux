@@ -235,9 +235,14 @@ impl Formatter {
     }
 
     fn format_builtin(&mut self, n: &ast::BuiltinStmt) {
+        self.format_comments(&n.base.comments);
         self.write_string("builtin ");
         self.format_identifier(&n.id);
-        self.write_string(" : ");
+        self.format_comments(&n.colon);
+        if n.colon == None {
+            self.write_string(" ");
+        }
+        self.write_string(": ");
         self.format_type_expression(&n.ty);
     }
 
