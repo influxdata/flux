@@ -493,6 +493,11 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		return &integerEvaluator{
 			i: n.Value,
 		}, nil
+	case *semantic.PolyNumericLiteral:
+		return &integerEvaluator{
+			i: n.Value,
+		}, nil
+
 	case *semantic.UnsignedIntegerLiteral:
 		return &unsignedIntegerEvaluator{
 			i: n.Value,

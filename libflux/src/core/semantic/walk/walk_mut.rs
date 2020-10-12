@@ -29,6 +29,7 @@ pub enum NodeMut<'a> {
     CallExpr(&'a mut CallExpr),
     ConditionalExpr(&'a mut ConditionalExpr),
     StringExpr(&'a mut StringExpr),
+    PolyNumericLit(&'a mut PolyNumericLit),
     IntegerLit(&'a mut IntegerLit),
     FloatLit(&'a mut FloatLit),
     StringLit(&'a mut StringLit),
@@ -75,6 +76,7 @@ impl<'a> fmt::Display for NodeMut<'a> {
             NodeMut::CallExpr(_) => write!(f, "CallExpr"),
             NodeMut::ConditionalExpr(_) => write!(f, "ConditionalExpr"),
             NodeMut::StringExpr(_) => write!(f, "StringExpr"),
+            NodeMut::PolyNumericLit(_) => write!(f, "PolyNumericLit"),
             NodeMut::IntegerLit(_) => write!(f, "IntegerLit"),
             NodeMut::FloatLit(_) => write!(f, "FloatLit"),
             NodeMut::StringLit(_) => write!(f, "StringLit"),
@@ -122,6 +124,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::CallExpr(n) => &n.loc,
             NodeMut::ConditionalExpr(n) => &n.loc,
             NodeMut::StringExpr(n) => &n.loc,
+            NodeMut::PolyNumericLit(n) => &n.loc,
             NodeMut::IntegerLit(n) => &n.loc,
             NodeMut::FloatLit(n) => &n.loc,
             NodeMut::StringLit(n) => &n.loc,
@@ -163,6 +166,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::StringExpr(n) => {
                 Some(Expression::StringExpr(Box::new((*n).clone())).type_of())
             }
+            NodeMut::PolyNumericLit(n) => Some(Expression::PolyNumeric((*n).clone()).type_of()),
             NodeMut::IntegerLit(n) => Some(Expression::Integer((*n).clone()).type_of()),
             NodeMut::FloatLit(n) => Some(Expression::Float((*n).clone()).type_of()),
             NodeMut::StringLit(n) => Some(Expression::StringLit((*n).clone()).type_of()),
@@ -194,6 +198,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::CallExpr(ref mut n) => n.loc = loc,
             NodeMut::ConditionalExpr(ref mut n) => n.loc = loc,
             NodeMut::StringExpr(ref mut n) => n.loc = loc,
+            NodeMut::PolyNumericLit(ref mut n) => n.loc = loc,
             NodeMut::IntegerLit(ref mut n) => n.loc = loc,
             NodeMut::FloatLit(ref mut n) => n.loc = loc,
             NodeMut::StringLit(ref mut n) => n.loc = loc,
@@ -233,6 +238,7 @@ impl<'a> NodeMut<'a> {
             Expression::Call(ref mut e) => NodeMut::CallExpr(e),
             Expression::Conditional(ref mut e) => NodeMut::ConditionalExpr(e),
             Expression::StringExpr(ref mut e) => NodeMut::StringExpr(e),
+            Expression::PolyNumeric(ref mut e) => NodeMut::PolyNumericLit(e),
             Expression::Integer(ref mut e) => NodeMut::IntegerLit(e),
             Expression::Float(ref mut e) => NodeMut::FloatLit(e),
             Expression::StringLit(ref mut e) => NodeMut::StringLit(e),
@@ -412,6 +418,7 @@ where
                     walk_mut(v, &mut NodeMut::from_string_expr_part(&mut part));
                 }
             }
+            NodeMut::PolyNumericLit(_) => {}
             NodeMut::IntegerLit(_) => {}
             NodeMut::FloatLit(_) => {}
             NodeMut::StringLit(_) => {}
@@ -526,9 +533,9 @@ mod tests {
                     "File",
                     "ExprStmt",
                     "ArrayExpr",
-                    "IntegerLit",
-                    "IntegerLit",
-                    "IntegerLit",
+                    "PolyNumericLit",
+                    "PolyNumericLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -542,7 +549,7 @@ mod tests {
                     "FunctionExpr",
                     "Block::Return",
                     "ReturnStmt",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -562,13 +569,13 @@ mod tests {
                     "Block::Variable",
                     "VariableAssgn",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                     "Block::Variable",
                     "VariableAssgn",
                     "Identifier",
                     "BinaryExpr",
-                    "IntegerLit",
-                    "IntegerLit",
+                    "PolyNumericLit",
+                    "PolyNumericLit",
                     "Block::Expr",
                     "ExprStmt",
                     "BinaryExpr",
@@ -590,7 +597,7 @@ mod tests {
                     "FunctionExpr",
                     "FunctionParameter",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                     "Block::Return",
                     "ReturnStmt",
                     "IdentifierExpr",
@@ -620,7 +627,7 @@ mod tests {
                     "ObjectExpr",
                     "Property",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                     "Property",
                     "Identifier",
                     "IdentifierExpr",
@@ -691,7 +698,7 @@ mod tests {
                     "IdentifierExpr",
                     "Property",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -738,7 +745,7 @@ mod tests {
         }
         #[test]
         fn test_integer_lit() {
-            test_walk("1", vec!["File", "ExprStmt", "IntegerLit"])
+            test_walk("1", vec!["File", "ExprStmt", "PolyNumericLit"])
         }
         #[test]
         fn test_float_lit() {
@@ -805,7 +812,7 @@ mod tests {
                     "FunctionExpr",
                     "Block::Return",
                     "ReturnStmt",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -818,7 +825,7 @@ mod tests {
                     "TestStmt",
                     "VariableAssgn",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -921,6 +928,9 @@ mod tests {
                     }
                     NodeMut::StringExpr(n) => {
                         Some(Expression::StringExpr(Box::new((*n).clone())).type_of())
+                    }
+                    NodeMut::PolyNumericLit(n) => {
+                        Some(Expression::PolyNumeric((*n).clone()).type_of())
                     }
                     NodeMut::IntegerLit(n) => Some(Expression::Integer((*n).clone()).type_of()),
                     NodeMut::FloatLit(n) => Some(Expression::Float((*n).clone()).type_of()),

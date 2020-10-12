@@ -341,7 +341,7 @@ func analyzeLiteral(lit ast.Literal) (Literal, error) {
 	case *ast.FloatLiteral:
 		return analyzeFloatLiteral(lit)
 	case *ast.IntegerLiteral:
-		return analyzeIntegerLiteral(lit)
+		return analyzePolyNumericLiteral(lit)
 	case *ast.UnsignedIntegerLiteral:
 		return analyzeUnsignedIntegerLiteral(lit)
 	case *ast.RegexpLiteral:
@@ -701,10 +701,11 @@ func analyzeFloatLiteral(lit *ast.FloatLiteral) (*FloatLiteral, error) {
 		Value: lit.Value,
 	}, nil
 }
-func analyzeIntegerLiteral(lit *ast.IntegerLiteral) (*IntegerLiteral, error) {
-	return &IntegerLiteral{
+func analyzePolyNumericLiteral(lit *ast.IntegerLiteral) (*PolyNumericLiteral, error) {
+	return &PolyNumericLiteral{
 		Loc:   Loc(lit.Location()),
 		Value: lit.Value,
+		Typ:   BasicInt,
 	}, nil
 }
 func analyzeUnsignedIntegerLiteral(lit *ast.UnsignedIntegerLiteral) (*UnsignedIntegerLiteral, error) {

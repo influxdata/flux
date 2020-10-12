@@ -133,7 +133,7 @@ pub enum Expression {
     Call(Box<CallExpr>),
     Conditional(Box<ConditionalExpr>),
     StringExpr(Box<StringExpr>),
-
+    PolyNumeric(PolyNumericLit),
     Integer(IntegerLit),
     Float(FloatLit),
     StringLit(StringLit),
@@ -159,6 +159,7 @@ impl Expression {
             Expression::Call(e) => e.typ.clone(),
             Expression::Conditional(e) => e.alternate.type_of(),
             Expression::StringExpr(_) => MonoType::String,
+            Expression::PolyNumeric(e) => e.typ.clone(),
             Expression::Integer(_) => MonoType::Int,
             Expression::Float(_) => MonoType::Float,
             Expression::StringLit(_) => MonoType::String,
@@ -183,6 +184,7 @@ impl Expression {
             Expression::Call(e) => &e.loc,
             Expression::Conditional(e) => &e.loc,
             Expression::StringExpr(e) => &e.loc,
+            Expression::PolyNumeric(lit) => &lit.loc,
             Expression::Integer(lit) => &lit.loc,
             Expression::Float(lit) => &lit.loc,
             Expression::StringLit(lit) => &lit.loc,
@@ -207,6 +209,7 @@ impl Expression {
             Expression::Call(e) => e.infer(env, f),
             Expression::Conditional(e) => e.infer(env, f),
             Expression::StringExpr(e) => e.infer(env, f),
+            Expression::PolyNumeric(lit) => lit.infer(env),
             Expression::Integer(lit) => lit.infer(env),
             Expression::Float(lit) => lit.infer(env),
             Expression::StringLit(lit) => lit.infer(env),
@@ -231,6 +234,7 @@ impl Expression {
             Expression::Call(e) => Expression::Call(Box::new(e.apply(&sub))),
             Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(&sub))),
             Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(&sub))),
+            Expression::PolyNumeric(lit) => Expression::PolyNumeric(lit.apply(&sub)),
             Expression::Integer(lit) => Expression::Integer(lit.apply(&sub)),
             Expression::Float(lit) => Expression::Float(lit.apply(&sub)),
             Expression::StringLit(lit) => Expression::StringLit(lit.apply(&sub)),
@@ -254,7 +258,9 @@ where
     T: Importer,
 {
     let (env, cons) = pkg.infer(env, f, importer)?;
-    Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
+    let sub = infer::solve(&cons, &mut TvarKinds::new(), f)?;
+
+    Ok((env, sub))
 }
 
 pub fn infer_file<T>(file: &mut File, env: Environment, f: &mut Fresher, importer: &T) -> Result
@@ -543,10 +549,8 @@ impl VariableAssgn {
 
         let mut kinds = TvarKinds::new();
         let sub = infer::solve(&constraints, &mut kinds, f)?;
-
         // Apply substitution to the type environment
         let mut env = env.apply(&sub);
-
         let t = self.init.type_of().apply(&sub);
         let p = infer::generalize(&env, &kinds, t);
 
@@ -555,6 +559,7 @@ impl VariableAssgn {
         //
         // Note these variables are fixed after generalization
         // and so it is safe to update these nodes in place.
+
         self.vars = p.vars.clone();
         self.cons = p.cons.clone();
 
@@ -1642,6 +1647,31 @@ impl BooleanLit {
     }
 }
 
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+pub struct PolyNumericLit {
+    pub loc: ast::SourceLocation,
+    pub value: i64,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
+}
+
+impl PolyNumericLit {
+    fn infer(&self, env: Environment) -> Result {
+        let cons = Constraints::from(vec![Constraint::Kind {
+            act: self.typ.clone(),
+            exp: Kind::NumericDefaultInt,
+            loc: self.loc.clone(),
+        }]);
+        Ok((env, cons))
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
+    }
+}
+
+// No Longer in Use
 #[derive(Derivative)]
 #[derivative(Debug, PartialEq, Clone)]
 pub struct IntegerLit {

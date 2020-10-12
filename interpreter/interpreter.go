@@ -575,7 +575,7 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 		return values.NewDuration(dur), nil
 	case *semantic.FloatLiteral:
 		return values.NewFloat(l.Value), nil
-	case *semantic.IntegerLiteral:
+	case *semantic.PolyNumericLiteral:
 		return values.NewInt(l.Value), nil
 	case *semantic.UnsignedIntegerLiteral:
 		return values.NewUInt(l.Value), nil
@@ -1140,7 +1140,7 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 			Value: v.Str(),
 		}, true, nil
 	case semantic.Int:
-		return &semantic.IntegerLiteral{
+		return &semantic.PolyNumericLiteral{
 			Value: v.Int(),
 		}, true, nil
 	case semantic.UInt:

@@ -94,6 +94,7 @@ enum Kind : ubyte {
   Record,
   Negatable,
   Timeable,
+  NumericDefaultInt,
 }
 
 table Constraint {
@@ -133,6 +134,7 @@ union Expression {
   DateTimeLiteral,
   DurationLiteral,
   FloatLiteral,
+  PolyNumericLiteral,
   IntegerLiteral,
   StringLiteral,
   RegexpLiteral,
@@ -395,6 +397,12 @@ table Duration {
 table DurationLiteral {
   loc:SourceLocation;
   value:[Duration];
+}
+
+table PolyNumericLiteral {
+  loc:SourceLocation;
+  value:int64;
+  typ:MonoType;
 }
 
 table IntegerLiteral {

@@ -61,6 +61,7 @@ func (*BooleanLiteral) node()         {}
 func (*DateTimeLiteral) node()        {}
 func (*DurationLiteral) node()        {}
 func (*FloatLiteral) node()           {}
+func (*PolyNumericLiteral) node()     {}
 func (*IntegerLiteral) node()         {}
 func (*StringLiteral) node()          {}
 func (*RegexpLiteral) node()          {}
@@ -104,6 +105,7 @@ func (*DurationLiteral) expression()        {}
 func (*FloatLiteral) expression()           {}
 func (*FunctionExpression) expression()     {}
 func (*IdentifierExpression) expression()   {}
+func (*PolyNumericLiteral) expression()     {}
 func (*IntegerLiteral) expression()         {}
 func (*LogicalExpression) expression()      {}
 func (*MemberExpression) expression()       {}
@@ -123,6 +125,7 @@ func (*BooleanLiteral) literal()         {}
 func (*DateTimeLiteral) literal()        {}
 func (*DurationLiteral) literal()        {}
 func (*FloatLiteral) literal()           {}
+func (*PolyNumericLiteral) literal()     {}
 func (*IntegerLiteral) literal()         {}
 func (*RegexpLiteral) literal()          {}
 func (*StringLiteral) literal()          {}
@@ -963,6 +966,27 @@ func (l *DurationLiteral) Copy() Node {
 }
 func (e *DurationLiteral) TypeOf() MonoType {
 	return BasicDuration
+}
+
+type PolyNumericLiteral struct {
+	Loc
+	Value int64
+	Typ   MonoType
+}
+
+func (*PolyNumericLiteral) NodeType() string { return "PolyNumericLiteral" }
+
+func (l *PolyNumericLiteral) Copy() Node {
+	if l == nil {
+		return l
+	}
+	nl := new(PolyNumericLiteral)
+	*nl = *l
+
+	return nl
+}
+func (e *PolyNumericLiteral) TypeOf() MonoType {
+	return e.Typ
 }
 
 type IntegerLiteral struct {

@@ -55,29 +55,31 @@ var EnumNamesType = map[Type]string{
 type Kind = byte
 
 const (
-	KindAddable      Kind = 0
-	KindSubtractable Kind = 1
-	KindDivisible    Kind = 2
-	KindNumeric      Kind = 3
-	KindComparable   Kind = 4
-	KindEquatable    Kind = 5
-	KindNullable     Kind = 6
-	KindRecord       Kind = 7
-	KindNegatable    Kind = 8
-	KindTimeable     Kind = 9
+	KindAddable           Kind = 0
+	KindSubtractable      Kind = 1
+	KindDivisible         Kind = 2
+	KindNumeric           Kind = 3
+	KindComparable        Kind = 4
+	KindEquatable         Kind = 5
+	KindNullable          Kind = 6
+	KindRecord            Kind = 7
+	KindNegatable         Kind = 8
+	KindTimeable          Kind = 9
+	KindNumericDefaultInt Kind = 10
 )
 
 var EnumNamesKind = map[Kind]string{
-	KindAddable:      "Addable",
-	KindSubtractable: "Subtractable",
-	KindDivisible:    "Divisible",
-	KindNumeric:      "Numeric",
-	KindComparable:   "Comparable",
-	KindEquatable:    "Equatable",
-	KindNullable:     "Nullable",
-	KindRecord:       "Record",
-	KindNegatable:    "Negatable",
-	KindTimeable:     "Timeable",
+	KindAddable:           "Addable",
+	KindSubtractable:      "Subtractable",
+	KindDivisible:         "Divisible",
+	KindNumeric:           "Numeric",
+	KindComparable:        "Comparable",
+	KindEquatable:         "Equatable",
+	KindNullable:          "Nullable",
+	KindRecord:            "Record",
+	KindNegatable:         "Negatable",
+	KindTimeable:          "Timeable",
+	KindNumericDefaultInt: "NumericDefaultInt",
 }
 
 type Statement = byte
@@ -138,10 +140,11 @@ const (
 	ExpressionDateTimeLiteral        Expression = 14
 	ExpressionDurationLiteral        Expression = 15
 	ExpressionFloatLiteral           Expression = 16
-	ExpressionIntegerLiteral         Expression = 17
-	ExpressionStringLiteral          Expression = 18
-	ExpressionRegexpLiteral          Expression = 19
-	ExpressionUnsignedIntegerLiteral Expression = 20
+	ExpressionPolyNumericLiteral     Expression = 17
+	ExpressionIntegerLiteral         Expression = 18
+	ExpressionStringLiteral          Expression = 19
+	ExpressionRegexpLiteral          Expression = 20
+	ExpressionUnsignedIntegerLiteral Expression = 21
 )
 
 var EnumNamesExpression = map[Expression]string{
@@ -162,6 +165,7 @@ var EnumNamesExpression = map[Expression]string{
 	ExpressionDateTimeLiteral:        "DateTimeLiteral",
 	ExpressionDurationLiteral:        "DurationLiteral",
 	ExpressionFloatLiteral:           "FloatLiteral",
+	ExpressionPolyNumericLiteral:     "PolyNumericLiteral",
 	ExpressionIntegerLiteral:         "IntegerLiteral",
 	ExpressionStringLiteral:          "StringLiteral",
 	ExpressionRegexpLiteral:          "RegexpLiteral",
@@ -4165,6 +4169,91 @@ func DurationLiteralStartValueVector(builder *flatbuffers.Builder, numElems int)
 	return builder.StartVector(4, numElems, 4)
 }
 func DurationLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type PolyNumericLiteral struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsPolyNumericLiteral(buf []byte, offset flatbuffers.UOffsetT) *PolyNumericLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &PolyNumericLiteral{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *PolyNumericLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *PolyNumericLiteral) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *PolyNumericLiteral) Loc(obj *SourceLocation) *SourceLocation {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(SourceLocation)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *PolyNumericLiteral) Value() int64 {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetInt64(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PolyNumericLiteral) MutateValue(n int64) bool {
+	return rcv._tab.MutateInt64Slot(6, n)
+}
+
+func (rcv *PolyNumericLiteral) TypType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *PolyNumericLiteral) MutateTypType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *PolyNumericLiteral) Typ(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func PolyNumericLiteralStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func PolyNumericLiteralAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
+}
+func PolyNumericLiteralAddValue(builder *flatbuffers.Builder, value int64) {
+	builder.PrependInt64Slot(1, value, 0)
+}
+func PolyNumericLiteralAddTypType(builder *flatbuffers.Builder, typType byte) {
+	builder.PrependByteSlot(2, typType, 0)
+}
+func PolyNumericLiteralAddTyp(builder *flatbuffers.Builder, typ flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(typ), 0)
+}
+func PolyNumericLiteralEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

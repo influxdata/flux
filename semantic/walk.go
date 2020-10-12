@@ -323,6 +323,11 @@ func walk(v Visitor, n Node) {
 			return
 		}
 		v.Visit(n)
+	case *PolyNumericLiteral:
+		if n == nil {
+			return
+		}
+		v.Visit(n)
 	case *RegexpLiteral:
 		if n == nil {
 			return

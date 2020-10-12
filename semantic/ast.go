@@ -222,7 +222,7 @@ func ToAST(n Node) ast.Node {
 		return &ast.DurationLiteral{Values: n.Values}
 	case *FloatLiteral:
 		return &ast.FloatLiteral{Value: n.Value}
-	case *IntegerLiteral:
+	case *PolyNumericLiteral:
 		return &ast.IntegerLiteral{Value: n.Value}
 	case *StringLiteral:
 		return &ast.StringLiteral{Value: n.Value}

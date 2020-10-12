@@ -1,5 +1,4 @@
 use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
-
 // A substitution defines a function that takes a monotype as input
 // and returns a monotype as output. The output type is interpreted
 // as being equivalent to the input type.
@@ -32,6 +31,10 @@ impl From<Substitution> for SubstitutionMap {
 impl Substitution {
     pub fn empty() -> Substitution {
         Substitution(SubstitutionMap::new())
+    }
+
+    pub fn insert(&mut self, k: Tvar, v: MonoType) {
+        self.0.insert(k, v);
     }
 
     pub fn apply(&self, tv: Tvar) -> MonoType {

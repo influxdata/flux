@@ -69,6 +69,16 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Float()
 		return NewFloat(l + r), nil
 	},
+	{Operator: ast.AdditionOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		l := lv.Int()
+		r := rv.Float()
+		return NewFloat(float64(l) + r), nil
+	},
+	{Operator: ast.AdditionOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		l := lv.Float()
+		r := rv.Int()
+		return NewFloat(l + float64(r)), nil
+	},
 	{Operator: ast.AdditionOperator, Left: semantic.String, Right: semantic.String}: func(lv, rv Value) (Value, error) {
 		l := lv.Str()
 		r := rv.Str()
@@ -95,6 +105,16 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Float()
 		return NewFloat(l - r), nil
 	},
+	{Operator: ast.SubtractionOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		l := lv.Int()
+		r := rv.Float()
+		return NewFloat(float64(l) - r), nil
+	},
+	{Operator: ast.SubtractionOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		l := lv.Float()
+		r := rv.Int()
+		return NewFloat(l - float64(r)), nil
+	},
 	{Operator: ast.SubtractionOperator, Left: semantic.Duration, Right: semantic.Duration}: func(lv, rv Value) (Value, error) {
 		l := lv.Duration()
 		r := rv.Duration()
@@ -115,6 +135,16 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		l := lv.Float()
 		r := rv.Float()
 		return NewFloat(l * r), nil
+	},
+	{Operator: ast.MultiplicationOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		l := lv.Int()
+		r := rv.Float()
+		return NewFloat(float64(l) * r), nil
+	},
+	{Operator: ast.MultiplicationOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		l := lv.Float()
+		r := rv.Int()
+		return NewFloat(l * float64(r)), nil
 	},
 	{Operator: ast.DivisionOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
@@ -140,6 +170,22 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		}
 		return NewFloat(l / r), nil
 	},
+	{Operator: ast.DivisionOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		l := lv.Int()
+		r := rv.Float()
+		if r == 0 {
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+		}
+		return NewFloat(float64(l) / r), nil
+	},
+	{Operator: ast.DivisionOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		l := lv.Float()
+		r := rv.Int()
+		if r == 0 {
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+		}
+		return NewFloat(l / float64(r)), nil
+	},
 	{Operator: ast.ModuloOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
 		r := rv.Int()
@@ -164,6 +210,22 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		}
 		return NewFloat(math.Mod(l, r)), nil
 	},
+	{Operator: ast.ModuloOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		l := lv.Int()
+		r := rv.Float()
+		if r == 0 {
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+		}
+		return NewFloat(math.Mod(float64(l), r)), nil
+	},
+	{Operator: ast.ModuloOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		l := lv.Float()
+		r := rv.Int()
+		if r == 0 {
+			return nil, errors.Newf(codes.FailedPrecondition, "cannot divide by zero")
+		}
+		return NewFloat(math.Mod(l, float64(r))), nil
+	},
 	{Operator: ast.PowerOperator, Left: semantic.Int, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
 		l := lv.Int()
 		r := rv.Int()
@@ -179,6 +241,17 @@ var binaryFuncLookup = map[BinaryFuncSignature]BinaryFunction{
 		r := rv.Float()
 		return NewFloat(math.Pow(float64(l), float64(r))), nil
 	},
+	{Operator: ast.PowerOperator, Left: semantic.Int, Right: semantic.Float}: func(lv, rv Value) (Value, error) {
+		l := lv.Int()
+		r := rv.Float()
+		return NewFloat(math.Pow(float64(l), float64(r))), nil
+	},
+	{Operator: ast.PowerOperator, Left: semantic.Float, Right: semantic.Int}: func(lv, rv Value) (Value, error) {
+		l := lv.Float()
+		r := rv.Int()
+		return NewFloat(math.Pow(float64(l), float64(r))), nil
+	},
+
 	//---------------------
 	// Comparison Operators
 	//---------------------

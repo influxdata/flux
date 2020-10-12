@@ -362,6 +362,23 @@ func (rcv *IntegerLiteral) FromBuf(fb *fbsemantic.IntegerLiteral) error {
 	return nil
 }
 
+func (rcv *PolyNumericLiteral) FromBuf(fb *fbsemantic.PolyNumericLiteral) error {
+	var err error
+	if fb == nil {
+		return nil
+	}
+	if fbLoc := fb.Loc(nil); fbLoc != nil {
+		if err = rcv.Loc.FromBuf(fbLoc); err != nil {
+			return errors.Wrap(err, codes.Inherit, "PolyNumericLiteral.Loc")
+		}
+	}
+	rcv.Value = fb.Value()
+	if rcv.Typ, err = getMonoType(fb); err != nil {
+		return errors.Wrap(err, codes.Inherit, "PolyNumericLiteral.Typ")
+	}
+	return nil
+}
+
 func (rcv *LogicalExpression) FromBuf(fb *fbsemantic.LogicalExpression) error {
 	var err error
 	if fb == nil {
