@@ -9,15 +9,18 @@ RUN apt-get update && \
     gcc-aarch64-linux-gnu libc6-dev-arm64-cross \
     libtinfo5 \
     ruby \
-    ca-certificates curl file \
+    ca-certificates curl file gnupg \
     build-essential cmake \
     libxml2-dev libssl-dev zlib1g-dev \
     autoconf automake autotools-dev libtool xutils-dev valgrind && \
     rm -rf /var/lib/apt/lists/*
 
-# Install ragel
+# Download, verify, and install ragel
 ENV RAGEL_VERSION=6.10
-RUN curl http://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
+RUN curl https://www.colm.net/files/thurston.asc | gpg --import - && \
+    curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
+    curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz.asc -O && \
+    gpg --verify ragel-${RAGEL_VERSION}.tar.gz.asc ragel-${RAGEL_VERSION}.tar.gz && \
     tar -xzf ragel-${RAGEL_VERSION}.tar.gz && \
     cd ragel-${RAGEL_VERSION}/ && \
     ./configure --prefix=/usr/local && \
@@ -34,22 +37,28 @@ RUN curl -LS https://github.com/google/flatbuffers/archive/v${FLATBUFFERS_VERSIO
     make && make install && \
     cd ../.. && rm -rf flatbuffers-${FLATBUFFERS_VERSION}
 
-# Install and configure openssl - needed for proper Rust install
+# Download, verify, install, and configure openssl (needed for proper Rust install)
 ENV SSL_VERSION=1.0.2t
-
 RUN curl https://www.openssl.org/source/openssl-$SSL_VERSION.tar.gz -O && \
+    curl https://www.openssl.org/source/openssl-$SSL_VERSION.tar.gz.sha256 -O && \
+    echo "$(cat openssl-$SSL_VERSION.tar.gz.sha256) openssl-$SSL_VERSION.tar.gz" | sha256sum --check && \
     tar -xzf openssl-$SSL_VERSION.tar.gz && \
     cd openssl-$SSL_VERSION && ./config && make depend && make install && \
     cd .. && rm -rf openssl-$SSL_VERSION*
-
 ENV OPENSSL_LIB_DIR=/usr/local/ssl/lib \
     OPENSSL_INCLUDE_DIR=/usr/local/ssl/include \
     OPENSSL_STATIC=1
 
-# Install Clang
-RUN curl -SL http://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz \
-    | tar -xJC . && \
-    mv clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_8.0.0
+# Download, verify, and install Clang
+# (See https://releases.llvm.org/download.html#8.0.0 for the latest available binaries)
+RUN curl https://releases.llvm.org/8.0.0/hans-gpg-key.asc | gpg --import - && \
+    curl https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz -O && \
+    curl https://releases.llvm.org/8.0.0/clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz.sig -O && \
+    gpg --verify clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz.sig \
+                 clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz && \
+    tar -xvf clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz && \
+    mv clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04 clang_8.0.0 && \
+    rm -rf clang+llvm-8.0.0-x86_64-linux-gnu-ubuntu-18.04*
 
 COPY xcc.sh /usr/local/bin/xcc
 ENV PATH="/go/clang_8.0.0/bin:${PATH}" \
