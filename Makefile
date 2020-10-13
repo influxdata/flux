@@ -124,6 +124,10 @@ vet: libflux-go
 bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
+# This requires ragel 7 master Oct 13, 2020.
+libflux/src/core/scanner/scanner.rs: libflux/core/src/scanner/scanner.rl
+	ragel-rust -o $@ $<
+
 libflux/scanner.c: libflux/core/src/scanner/scanner.rl
 	ragel -C -o libflux/scanner.c libflux/core/src/scanner/scanner.rl
 

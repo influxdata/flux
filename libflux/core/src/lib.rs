@@ -1,4 +1,4 @@
-#![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
+#![cfg_attr(feature = "strict", allow(warnings, missing_docs))]
 
 //! The flux crate handles the parsing and semantic analysis of flux source
 //! code.
