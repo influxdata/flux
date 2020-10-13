@@ -4,8 +4,6 @@ package stdlib
 
 import (
 	_ "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
-	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
-	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
 	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/influxdb"
