@@ -3043,6 +3043,3231 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 100,
+					Line:   66,
+				},
+				File:   "join_right_side_more_cols_test.flux",
+				Source: "package experimental_test\n\nimport \"experimental\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_field,_measurement,cpu,host,_value,_time\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:18:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:44.191958Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,94.62634341438049,2020-10-09T22:18:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,92.28242486302014,2020-10-09T22:19:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,91.15346397579125,2020-10-09T22:19:44.191958Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.0994751312170705,2020-10-09T22:18:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.5586762674700636,2020-10-09T22:19:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.6547010580713986,2020-10-09T22:19:44.191958Z\n\n#datatype,string,long,string,string,string,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,,\n,result,table,_field,_measurement,device,fstype,host,mode,path,_value,_time\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333294,2020-10-09T22:18:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333286,2020-10-09T22:19:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333253.4,2020-10-09T22:19:44.191958Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:18:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:44.191958Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119546,2020-10-09T22:18:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119554,2020-10-09T22:19:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119586.6,2020-10-09T22:19:44.191958Z\n\"\n\noutData = \"\n#group,false,false,true,false,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double,double,double\n#default,want,,,,,,,,,,,\n,result,table,host,_measurement,_start,_stop,_time,cpu,inodes_free,usage_guest,usage_idle,usage_system\n,,0,ip-192-168-1-16.ec2.internal,cpu,2020-10-01T00:00:00Z,2030-01-01T00:00:00Z,2020-10-09T22:20:00Z,cpu-total,4878333253.4,0,91.15346397579125,2.6547010580713986\n\"\n\njoin_test_fn = (table=<-) => {\n    a = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    b = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    return experimental.join(left:a, right:b, fn:(left, right) => ({left with inodes_free: right.inodes_free}))\n}\n\ntest experimental_join = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   7,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   7,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   7,
+							},
+							File:   "join_right_side_more_cols_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   7,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   7,
+							},
+							File:   "join_right_side_more_cols_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   7,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   7,
+								},
+								File:   "join_right_side_more_cols_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   7,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   7,
+									},
+									File:   "join_right_side_more_cols_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   7,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   7,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   37,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "inData = \"\n#datatype,string,long,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_field,_measurement,cpu,host,_value,_time\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:18:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:44.191958Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,94.62634341438049,2020-10-09T22:18:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,92.28242486302014,2020-10-09T22:19:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,91.15346397579125,2020-10-09T22:19:44.191958Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.0994751312170705,2020-10-09T22:18:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.5586762674700636,2020-10-09T22:19:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.6547010580713986,2020-10-09T22:19:44.191958Z\n\n#datatype,string,long,string,string,string,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,,\n,result,table,_field,_measurement,device,fstype,host,mode,path,_value,_time\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333294,2020-10-09T22:18:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333286,2020-10-09T22:19:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333253.4,2020-10-09T22:19:44.191958Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:18:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:44.191958Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119546,2020-10-09T22:18:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119554,2020-10-09T22:19:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119586.6,2020-10-09T22:19:44.191958Z\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   9,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   9,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   9,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   37,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_field,_measurement,cpu,host,_value,_time\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:18:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:44.191958Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,94.62634341438049,2020-10-09T22:18:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,92.28242486302014,2020-10-09T22:19:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,91.15346397579125,2020-10-09T22:19:44.191958Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.0994751312170705,2020-10-09T22:18:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.5586762674700636,2020-10-09T22:19:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.6547010580713986,2020-10-09T22:19:44.191958Z\n\n#datatype,string,long,string,string,string,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,,\n,result,table,_field,_measurement,device,fstype,host,mode,path,_value,_time\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333294,2020-10-09T22:18:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333286,2020-10-09T22:19:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333253.4,2020-10-09T22:19:44.191958Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:18:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:44.191958Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119546,2020-10-09T22:18:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119554,2020-10-09T22:19:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119586.6,2020-10-09T22:19:44.191958Z\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   9,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,false,false\n#default,_result,,,,,,,\n,result,table,_field,_measurement,cpu,host,_value,_time\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:18:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:00Z\n,,0,usage_guest,cpu,cpu-total,ip-192-168-1-16.ec2.internal,0,2020-10-09T22:19:44.191958Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,94.62634341438049,2020-10-09T22:18:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,92.28242486302014,2020-10-09T22:19:00Z\n,,1,usage_idle,cpu,cpu-total,ip-192-168-1-16.ec2.internal,91.15346397579125,2020-10-09T22:19:44.191958Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.0994751312170705,2020-10-09T22:18:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.5586762674700636,2020-10-09T22:19:00Z\n,,2,usage_system,cpu,cpu-total,ip-192-168-1-16.ec2.internal,2.6547010580713986,2020-10-09T22:19:44.191958Z\n\n#datatype,string,long,string,string,string,string,string,string,string,double,dateTime:RFC3339\n#group,false,false,true,true,true,true,true,true,true,false,false\n#default,_result,,,,,,,,,,\n,result,table,_field,_measurement,device,fstype,host,mode,path,_value,_time\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333294,2020-10-09T22:18:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333286,2020-10-09T22:19:00Z\n,,3,inodes_free,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4878333253.4,2020-10-09T22:19:44.191958Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:18:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:00Z\n,,4,inodes_total,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4882452840,2020-10-09T22:19:44.191958Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119546,2020-10-09T22:18:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119554,2020-10-09T22:19:00Z\n,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119586.6,2020-10-09T22:19:44.191958Z\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   45,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "outData = \"\n#group,false,false,true,false,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double,double,double\n#default,want,,,,,,,,,,,\n,result,table,host,_measurement,_start,_stop,_time,cpu,inodes_free,usage_guest,usage_idle,usage_system\n,,0,ip-192-168-1-16.ec2.internal,cpu,2020-10-01T00:00:00Z,2030-01-01T00:00:00Z,2020-10-09T22:20:00Z,cpu-total,4878333253.4,0,91.15346397579125,2.6547010580713986\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   39,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   39,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   39,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   45,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "\"\n#group,false,false,true,false,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double,double,double\n#default,want,,,,,,,,,,,\n,result,table,host,_measurement,_start,_stop,_time,cpu,inodes_free,usage_guest,usage_idle,usage_system\n,,0,ip-192-168-1-16.ec2.internal,cpu,2020-10-01T00:00:00Z,2030-01-01T00:00:00Z,2020-10-09T22:20:00Z,cpu-total,4878333253.4,0,91.15346397579125,2.6547010580713986\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   39,
+						},
+					},
+				},
+				Value: "\n#group,false,false,true,false,false,false,false,false,false,false,false,false\n#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double,double,double\n#default,want,,,,,,,,,,,\n,result,table,host,_measurement,_start,_stop,_time,cpu,inodes_free,usage_guest,usage_idle,usage_system\n,,0,ip-192-168-1-16.ec2.internal,cpu,2020-10-01T00:00:00Z,2030-01-01T00:00:00Z,2020-10-09T22:20:00Z,cpu-total,4878333253.4,0,91.15346397579125,2.6547010580713986\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   63,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "join_test_fn = (table=<-) => {\n    a = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    b = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    return experimental.join(left:a, right:b, fn:(left, right) => ({left with inodes_free: right.inodes_free}))\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   47,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   47,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "join_test_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   47,
+						},
+					},
+				},
+				Name: "join_test_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   63,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "(table=<-) => {\n    a = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    b = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    return experimental.join(left:a, right:b, fn:(left, right) => ({left with inodes_free: right.inodes_free}))\n}",
+						Start: ast.Position{
+							Column: 16,
+							Line:   47,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   63,
+							},
+							File:   "join_right_side_more_cols_test.flux",
+							Source: "{\n    a = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    b = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])\n\n    return experimental.join(left:a, right:b, fn:(left, right) => ({left with inodes_free: right.inodes_free}))\n}",
+							Start: ast.Position{
+								Column: 30,
+								Line:   47,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   53,
+								},
+								File:   "join_right_side_more_cols_test.flux",
+								Source: "a = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])",
+								Start: ast.Position{
+									Column: 5,
+									Line:   48,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   48,
+									},
+									File:   "join_right_side_more_cols_test.flux",
+									Source: "a",
+									Start: ast.Position{
+										Column: 5,
+										Line:   48,
+									},
+								},
+							},
+							Name: "a",
+						},
+						Init: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.PipeExpression{
+											Argument: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 14,
+															Line:   48,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "table",
+														Start: ast.Position{
+															Column: 9,
+															Line:   48,
+														},
+													},
+												},
+												Name: "table",
+											},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 46,
+														Line:   49,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 9,
+														Line:   48,
+													},
+												},
+											},
+											Call: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 45,
+																Line:   49,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "start: 2020-10-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 18,
+																Line:   49,
+															},
+														},
+													},
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 45,
+																	Line:   49,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "start: 2020-10-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   49,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 23,
+																		Line:   49,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "start",
+																	Start: ast.Position{
+																		Column: 18,
+																		Line:   49,
+																	},
+																},
+															},
+															Name: "start",
+														},
+														Value: &ast.DateTimeLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 45,
+																		Line:   49,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "2020-10-01T00:00:00Z",
+																	Start: ast.Position{
+																		Column: 25,
+																		Line:   49,
+																	},
+																},
+															},
+															Value: parser.MustParseTime("2020-10-01T00:00:00Z"),
+														},
+													}},
+													With: nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 46,
+															Line:   49,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "range(start: 2020-10-01T00:00:00Z)",
+														Start: ast.Position{
+															Column: 12,
+															Line:   49,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   49,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "range",
+															Start: ast.Position{
+																Column: 12,
+																Line:   49,
+															},
+														},
+													},
+													Name: "range",
+												},
+											},
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 54,
+													Line:   50,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")",
+												Start: ast.Position{
+													Column: 9,
+													Line:   48,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 53,
+															Line:   50,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "fn: (r) => r._measurement == \"cpu\"",
+														Start: ast.Position{
+															Column: 19,
+															Line:   50,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 53,
+																Line:   50,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "fn: (r) => r._measurement == \"cpu\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   50,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   50,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "fn",
+																Start: ast.Position{
+																	Column: 19,
+																	Line:   50,
+																},
+															},
+														},
+														Name: "fn",
+													},
+													Value: &ast.FunctionExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 53,
+																	Line:   50,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "(r) => r._measurement == \"cpu\"",
+																Start: ast.Position{
+																	Column: 23,
+																	Line:   50,
+																},
+															},
+														},
+														Body: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 53,
+																		Line:   50,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "r._measurement == \"cpu\"",
+																	Start: ast.Position{
+																		Column: 30,
+																		Line:   50,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 44,
+																			Line:   50,
+																		},
+																		File:   "join_right_side_more_cols_test.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 30,
+																			Line:   50,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 31,
+																				Line:   50,
+																			},
+																			File:   "join_right_side_more_cols_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 30,
+																				Line:   50,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 44,
+																				Line:   50,
+																			},
+																			File:   "join_right_side_more_cols_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 32,
+																				Line:   50,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 53,
+																			Line:   50,
+																		},
+																		File:   "join_right_side_more_cols_test.flux",
+																		Source: "\"cpu\"",
+																		Start: ast.Position{
+																			Column: 48,
+																			Line:   50,
+																		},
+																	},
+																},
+																Value: "cpu",
+															},
+														},
+														Params: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   50,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   50,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 25,
+																			Line:   50,
+																		},
+																		File:   "join_right_side_more_cols_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 24,
+																			Line:   50,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Value: nil,
+														}},
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 54,
+														Line:   50,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "filter(fn: (r) => r._measurement == \"cpu\")",
+													Start: ast.Position{
+														Column: 12,
+														Line:   50,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 18,
+															Line:   50,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "filter",
+														Start: ast.Position{
+															Column: 12,
+															Line:   50,
+														},
+													},
+												},
+												Name: "filter",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 68,
+												Line:   51,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)",
+											Start: ast.Position{
+												Column: 9,
+												Line:   48,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 67,
+														Line:   51,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "fn: last, every: 5m, createEmpty: false",
+													Start: ast.Position{
+														Column: 28,
+														Line:   51,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 36,
+															Line:   51,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "fn: last",
+														Start: ast.Position{
+															Column: 28,
+															Line:   51,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 30,
+																Line:   51,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 28,
+																Line:   51,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 36,
+																Line:   51,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "last",
+															Start: ast.Position{
+																Column: 32,
+																Line:   51,
+															},
+														},
+													},
+													Name: "last",
+												},
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   51,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "every: 5m",
+														Start: ast.Position{
+															Column: 38,
+															Line:   51,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 43,
+																Line:   51,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "every",
+															Start: ast.Position{
+																Column: 38,
+																Line:   51,
+															},
+														},
+													},
+													Name: "every",
+												},
+												Value: &ast.DurationLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 47,
+																Line:   51,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "5m",
+															Start: ast.Position{
+																Column: 45,
+																Line:   51,
+															},
+														},
+													},
+													Values: []ast.Duration{ast.Duration{
+														Magnitude: int64(5),
+														Unit:      "m",
+													}},
+												},
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 67,
+															Line:   51,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "createEmpty: false",
+														Start: ast.Position{
+															Column: 49,
+															Line:   51,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 60,
+																Line:   51,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "createEmpty",
+															Start: ast.Position{
+																Column: 49,
+																Line:   51,
+															},
+														},
+													},
+													Name: "createEmpty",
+												},
+												Value: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 67,
+																Line:   51,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "false",
+															Start: ast.Position{
+																Column: 62,
+																Line:   51,
+															},
+														},
+													},
+													Name: "false",
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   51,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "aggregateWindow(fn: last, every: 5m, createEmpty: false)",
+												Start: ast.Position{
+													Column: 12,
+													Line:   51,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 27,
+														Line:   51,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "aggregateWindow",
+													Start: ast.Position{
+														Column: 12,
+														Line:   51,
+													},
+												},
+											},
+											Name: "aggregateWindow",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 29,
+											Line:   52,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()",
+										Start: ast.Position{
+											Column: 9,
+											Line:   48,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   52,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "v1.fieldsAsCols()",
+											Start: ast.Position{
+												Column: 12,
+												Line:   52,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 27,
+													Line:   52,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "v1.fieldsAsCols",
+												Start: ast.Position{
+													Column: 12,
+													Line:   52,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   52,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "v1",
+													Start: ast.Position{
+														Column: 12,
+														Line:   52,
+													},
+												},
+											},
+											Name: "v1",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 27,
+														Line:   52,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "fieldsAsCols",
+													Start: ast.Position{
+														Column: 15,
+														Line:   52,
+													},
+												},
+											},
+											Name: "fieldsAsCols",
+										},
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 36,
+										Line:   53,
+									},
+									File:   "join_right_side_more_cols_test.flux",
+									Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"cpu\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])",
+									Start: ast.Position{
+										Column: 9,
+										Line:   48,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 35,
+												Line:   53,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "columns: [\"host\"]",
+											Start: ast.Position{
+												Column: 18,
+												Line:   53,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 35,
+													Line:   53,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "columns: [\"host\"]",
+												Start: ast.Position{
+													Column: 18,
+													Line:   53,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 25,
+														Line:   53,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 18,
+														Line:   53,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   53,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "[\"host\"]",
+													Start: ast.Position{
+														Column: 27,
+														Line:   53,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   53,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "\"host\"",
+														Start: ast.Position{
+															Column: 28,
+															Line:   53,
+														},
+													},
+												},
+												Value: "host",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 36,
+											Line:   53,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "group(columns: [\"host\"])",
+										Start: ast.Position{
+											Column: 12,
+											Line:   53,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   53,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 12,
+												Line:   53,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   60,
+								},
+								File:   "join_right_side_more_cols_test.flux",
+								Source: "b = table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])",
+								Start: ast.Position{
+									Column: 5,
+									Line:   55,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   55,
+									},
+									File:   "join_right_side_more_cols_test.flux",
+									Source: "b",
+									Start: ast.Position{
+										Column: 5,
+										Line:   55,
+									},
+								},
+							},
+							Name: "b",
+						},
+						Init: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.PipeExpression{
+											Argument: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 14,
+															Line:   55,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "table",
+														Start: ast.Position{
+															Column: 9,
+															Line:   55,
+														},
+													},
+												},
+												Name: "table",
+											},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 46,
+														Line:   56,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 9,
+														Line:   55,
+													},
+												},
+											},
+											Call: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 45,
+																Line:   56,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "start: 2020-10-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 18,
+																Line:   56,
+															},
+														},
+													},
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 45,
+																	Line:   56,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "start: 2020-10-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 18,
+																	Line:   56,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 23,
+																		Line:   56,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "start",
+																	Start: ast.Position{
+																		Column: 18,
+																		Line:   56,
+																	},
+																},
+															},
+															Name: "start",
+														},
+														Value: &ast.DateTimeLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 45,
+																		Line:   56,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "2020-10-01T00:00:00Z",
+																	Start: ast.Position{
+																		Column: 25,
+																		Line:   56,
+																	},
+																},
+															},
+															Value: parser.MustParseTime("2020-10-01T00:00:00Z"),
+														},
+													}},
+													With: nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 46,
+															Line:   56,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "range(start: 2020-10-01T00:00:00Z)",
+														Start: ast.Position{
+															Column: 12,
+															Line:   56,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   56,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "range",
+															Start: ast.Position{
+																Column: 12,
+																Line:   56,
+															},
+														},
+													},
+													Name: "range",
+												},
+											},
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 55,
+													Line:   57,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")",
+												Start: ast.Position{
+													Column: 9,
+													Line:   55,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 54,
+															Line:   57,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "fn: (r) => r._measurement == \"disk\"",
+														Start: ast.Position{
+															Column: 19,
+															Line:   57,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 54,
+																Line:   57,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "fn: (r) => r._measurement == \"disk\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   57,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   57,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "fn",
+																Start: ast.Position{
+																	Column: 19,
+																	Line:   57,
+																},
+															},
+														},
+														Name: "fn",
+													},
+													Value: &ast.FunctionExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 54,
+																	Line:   57,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "(r) => r._measurement == \"disk\"",
+																Start: ast.Position{
+																	Column: 23,
+																	Line:   57,
+																},
+															},
+														},
+														Body: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 54,
+																		Line:   57,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "r._measurement == \"disk\"",
+																	Start: ast.Position{
+																		Column: 30,
+																		Line:   57,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 44,
+																			Line:   57,
+																		},
+																		File:   "join_right_side_more_cols_test.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 30,
+																			Line:   57,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 31,
+																				Line:   57,
+																			},
+																			File:   "join_right_side_more_cols_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 30,
+																				Line:   57,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 44,
+																				Line:   57,
+																			},
+																			File:   "join_right_side_more_cols_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 32,
+																				Line:   57,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 54,
+																			Line:   57,
+																		},
+																		File:   "join_right_side_more_cols_test.flux",
+																		Source: "\"disk\"",
+																		Start: ast.Position{
+																			Column: 48,
+																			Line:   57,
+																		},
+																	},
+																},
+																Value: "disk",
+															},
+														},
+														Params: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 25,
+																		Line:   57,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 24,
+																		Line:   57,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 25,
+																			Line:   57,
+																		},
+																		File:   "join_right_side_more_cols_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 24,
+																			Line:   57,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Value: nil,
+														}},
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 55,
+														Line:   57,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "filter(fn: (r) => r._measurement == \"disk\")",
+													Start: ast.Position{
+														Column: 12,
+														Line:   57,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 18,
+															Line:   57,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "filter",
+														Start: ast.Position{
+															Column: 12,
+															Line:   57,
+														},
+													},
+												},
+												Name: "filter",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 68,
+												Line:   58,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)",
+											Start: ast.Position{
+												Column: 9,
+												Line:   55,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 67,
+														Line:   58,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "fn: last, every: 5m, createEmpty: false",
+													Start: ast.Position{
+														Column: 28,
+														Line:   58,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 36,
+															Line:   58,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "fn: last",
+														Start: ast.Position{
+															Column: 28,
+															Line:   58,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 30,
+																Line:   58,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 28,
+																Line:   58,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 36,
+																Line:   58,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "last",
+															Start: ast.Position{
+																Column: 32,
+																Line:   58,
+															},
+														},
+													},
+													Name: "last",
+												},
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   58,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "every: 5m",
+														Start: ast.Position{
+															Column: 38,
+															Line:   58,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 43,
+																Line:   58,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "every",
+															Start: ast.Position{
+																Column: 38,
+																Line:   58,
+															},
+														},
+													},
+													Name: "every",
+												},
+												Value: &ast.DurationLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 47,
+																Line:   58,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "5m",
+															Start: ast.Position{
+																Column: 45,
+																Line:   58,
+															},
+														},
+													},
+													Values: []ast.Duration{ast.Duration{
+														Magnitude: int64(5),
+														Unit:      "m",
+													}},
+												},
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 67,
+															Line:   58,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "createEmpty: false",
+														Start: ast.Position{
+															Column: 49,
+															Line:   58,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 60,
+																Line:   58,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "createEmpty",
+															Start: ast.Position{
+																Column: 49,
+																Line:   58,
+															},
+														},
+													},
+													Name: "createEmpty",
+												},
+												Value: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 67,
+																Line:   58,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "false",
+															Start: ast.Position{
+																Column: 62,
+																Line:   58,
+															},
+														},
+													},
+													Name: "false",
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   58,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "aggregateWindow(fn: last, every: 5m, createEmpty: false)",
+												Start: ast.Position{
+													Column: 12,
+													Line:   58,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 27,
+														Line:   58,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "aggregateWindow",
+													Start: ast.Position{
+														Column: 12,
+														Line:   58,
+													},
+												},
+											},
+											Name: "aggregateWindow",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 29,
+											Line:   59,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()",
+										Start: ast.Position{
+											Column: 9,
+											Line:   55,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   59,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "v1.fieldsAsCols()",
+											Start: ast.Position{
+												Column: 12,
+												Line:   59,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 27,
+													Line:   59,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "v1.fieldsAsCols",
+												Start: ast.Position{
+													Column: 12,
+													Line:   59,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   59,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "v1",
+													Start: ast.Position{
+														Column: 12,
+														Line:   59,
+													},
+												},
+											},
+											Name: "v1",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 27,
+														Line:   59,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "fieldsAsCols",
+													Start: ast.Position{
+														Column: 15,
+														Line:   59,
+													},
+												},
+											},
+											Name: "fieldsAsCols",
+										},
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 36,
+										Line:   60,
+									},
+									File:   "join_right_side_more_cols_test.flux",
+									Source: "table\n        |> range(start: 2020-10-01T00:00:00Z)\n        |> filter(fn: (r) => r._measurement == \"disk\")\n        |> aggregateWindow(fn: last, every: 5m, createEmpty: false)\n        |> v1.fieldsAsCols()\n        |> group(columns: [\"host\"])",
+									Start: ast.Position{
+										Column: 9,
+										Line:   55,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 35,
+												Line:   60,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "columns: [\"host\"]",
+											Start: ast.Position{
+												Column: 18,
+												Line:   60,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 35,
+													Line:   60,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "columns: [\"host\"]",
+												Start: ast.Position{
+													Column: 18,
+													Line:   60,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 25,
+														Line:   60,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 18,
+														Line:   60,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 35,
+														Line:   60,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "[\"host\"]",
+													Start: ast.Position{
+														Column: 27,
+														Line:   60,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   60,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "\"host\"",
+														Start: ast.Position{
+															Column: 28,
+															Line:   60,
+														},
+													},
+												},
+												Value: "host",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 36,
+											Line:   60,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "group(columns: [\"host\"])",
+										Start: ast.Position{
+											Column: 12,
+											Line:   60,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   60,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 12,
+												Line:   60,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 111,
+											Line:   62,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "left:a, right:b, fn:(left, right) => ({left with inodes_free: right.inodes_free})",
+										Start: ast.Position{
+											Column: 30,
+											Line:   62,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 36,
+												Line:   62,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "left:a",
+											Start: ast.Position{
+												Column: 30,
+												Line:   62,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 34,
+													Line:   62,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "left",
+												Start: ast.Position{
+													Column: 30,
+													Line:   62,
+												},
+											},
+										},
+										Name: "left",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 36,
+													Line:   62,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "a",
+												Start: ast.Position{
+													Column: 35,
+													Line:   62,
+												},
+											},
+										},
+										Name: "a",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   62,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "right:b",
+											Start: ast.Position{
+												Column: 38,
+												Line:   62,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 43,
+													Line:   62,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "right",
+												Start: ast.Position{
+													Column: 38,
+													Line:   62,
+												},
+											},
+										},
+										Name: "right",
+									},
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   62,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "b",
+												Start: ast.Position{
+													Column: 44,
+													Line:   62,
+												},
+											},
+										},
+										Name: "b",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 111,
+												Line:   62,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "fn:(left, right) => ({left with inodes_free: right.inodes_free})",
+											Start: ast.Position{
+												Column: 47,
+												Line:   62,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   62,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "fn",
+												Start: ast.Position{
+													Column: 47,
+													Line:   62,
+												},
+											},
+										},
+										Name: "fn",
+									},
+									Value: &ast.FunctionExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 111,
+													Line:   62,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "(left, right) => ({left with inodes_free: right.inodes_free})",
+												Start: ast.Position{
+													Column: 50,
+													Line:   62,
+												},
+											},
+										},
+										Body: &ast.ParenExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 111,
+														Line:   62,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "({left with inodes_free: right.inodes_free})",
+													Start: ast.Position{
+														Column: 67,
+														Line:   62,
+													},
+												},
+											},
+											Expression: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 110,
+															Line:   62,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "{left with inodes_free: right.inodes_free}",
+														Start: ast.Position{
+															Column: 68,
+															Line:   62,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 109,
+																Line:   62,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "inodes_free: right.inodes_free",
+															Start: ast.Position{
+																Column: 79,
+																Line:   62,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 90,
+																	Line:   62,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "inodes_free",
+																Start: ast.Position{
+																	Column: 79,
+																	Line:   62,
+																},
+															},
+														},
+														Name: "inodes_free",
+													},
+													Value: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 109,
+																	Line:   62,
+																},
+																File:   "join_right_side_more_cols_test.flux",
+																Source: "right.inodes_free",
+																Start: ast.Position{
+																	Column: 92,
+																	Line:   62,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 97,
+																		Line:   62,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "right",
+																	Start: ast.Position{
+																		Column: 92,
+																		Line:   62,
+																	},
+																},
+															},
+															Name: "right",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 109,
+																		Line:   62,
+																	},
+																	File:   "join_right_side_more_cols_test.flux",
+																	Source: "inodes_free",
+																	Start: ast.Position{
+																		Column: 98,
+																		Line:   62,
+																	},
+																},
+															},
+															Name: "inodes_free",
+														},
+													},
+												}},
+												With: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 73,
+																Line:   62,
+															},
+															File:   "join_right_side_more_cols_test.flux",
+															Source: "left",
+															Start: ast.Position{
+																Column: 69,
+																Line:   62,
+															},
+														},
+													},
+													Name: "left",
+												},
+											},
+										},
+										Params: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 55,
+														Line:   62,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "left",
+													Start: ast.Position{
+														Column: 51,
+														Line:   62,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 55,
+															Line:   62,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "left",
+														Start: ast.Position{
+															Column: 51,
+															Line:   62,
+														},
+													},
+												},
+												Name: "left",
+											},
+											Value: nil,
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 62,
+														Line:   62,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "right",
+													Start: ast.Position{
+														Column: 57,
+														Line:   62,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 62,
+															Line:   62,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "right",
+														Start: ast.Position{
+															Column: 57,
+															Line:   62,
+														},
+													},
+												},
+												Name: "right",
+											},
+											Value: nil,
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 112,
+										Line:   62,
+									},
+									File:   "join_right_side_more_cols_test.flux",
+									Source: "experimental.join(left:a, right:b, fn:(left, right) => ({left with inodes_free: right.inodes_free}))",
+									Start: ast.Position{
+										Column: 12,
+										Line:   62,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 29,
+											Line:   62,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "experimental.join",
+										Start: ast.Position{
+											Column: 12,
+											Line:   62,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   62,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "experimental",
+											Start: ast.Position{
+												Column: 12,
+												Line:   62,
+											},
+										},
+									},
+									Name: "experimental",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   62,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "join",
+											Start: ast.Position{
+												Column: 25,
+												Line:   62,
+											},
+										},
+									},
+									Name: "join",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 112,
+									Line:   62,
+								},
+								File:   "join_right_side_more_cols_test.flux",
+								Source: "return experimental.join(left:a, right:b, fn:(left, right) => ({left with inodes_free: right.inodes_free}))",
+								Start: ast.Position{
+									Column: 5,
+									Line:   62,
+								},
+							},
+						},
+					}},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   47,
+							},
+							File:   "join_right_side_more_cols_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   47,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 22,
+									Line:   47,
+								},
+								File:   "join_right_side_more_cols_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 17,
+									Line:   47,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 25,
+								Line:   47,
+							},
+							File:   "join_right_side_more_cols_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   47,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 100,
+							Line:   66,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "experimental_join = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   65,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   65,
+							},
+							File:   "join_right_side_more_cols_test.flux",
+							Source: "experimental_join",
+							Start: ast.Position{
+								Column: 6,
+								Line:   65,
+							},
+						},
+					},
+					Name: "experimental_join",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 100,
+								Line:   66,
+							},
+							File:   "join_right_side_more_cols_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+							Start: ast.Position{
+								Column: 26,
+								Line:   65,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 100,
+									Line:   66,
+								},
+								File:   "join_right_side_more_cols_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   66,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 99,
+										Line:   66,
+									},
+									File:   "join_right_side_more_cols_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   66,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   66,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   66,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   66,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   66,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   66,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   66,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   66,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   66,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   66,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   66,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   66,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   66,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   66,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   66,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   66,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   66,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   66,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   66,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   66,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   66,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   66,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   66,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   66,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   66,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   66,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   66,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   66,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   66,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   66,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   66,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   66,
+														},
+														File:   "join_right_side_more_cols_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   66,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   66,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   66,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   66,
+												},
+												File:   "join_right_side_more_cols_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   66,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   66,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   66,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   66,
+													},
+													File:   "join_right_side_more_cols_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   66,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 98,
+											Line:   66,
+										},
+										File:   "join_right_side_more_cols_test.flux",
+										Source: "fn: join_test_fn",
+										Start: ast.Position{
+											Column: 82,
+											Line:   66,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   66,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   66,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 98,
+												Line:   66,
+											},
+											File:   "join_right_side_more_cols_test.flux",
+											Source: "join_test_fn",
+											Start: ast.Position{
+												Column: 86,
+												Line:   66,
+											},
+										},
+									},
+									Name: "join_test_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 100,
+						Line:   66,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "test experimental_join = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   65,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   3,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   3,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 32,
+						Line:   4,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "import \"influxdata/influxdb/v1\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 32,
+							Line:   4,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "\"influxdata/influxdb/v1\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "influxdata/influxdb/v1",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   5,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   5,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "join_right_side_more_cols_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   1,
+					},
+					File:   "join_right_side_more_cols_test.flux",
+					Source: "package experimental_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   1,
+						},
+						File:   "join_right_side_more_cols_test.flux",
+						Source: "experimental_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "experimental_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 100,
 					Line:   106,
 				},
 				File:   "join_test.flux",

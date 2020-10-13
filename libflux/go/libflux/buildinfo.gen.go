@@ -142,6 +142,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/geo/units_miles_test.flux":                                 "54f6c8e0d2bf8785242e1381d3d37ba82067ab74cc1fe29a93623ce169c8fbad",
 	"stdlib/experimental/group_test.flux":                                           "aefb578804f4332f640b24ee05bb52a6b83a9fcba0b593922717b1e4916c8e44",
 	"stdlib/experimental/http/http.flux":                                            "1b3c331593e5d84fea64afc795db718fd49dfe15bbcb0b128024f0c3d9357583",
+	"stdlib/experimental/join_right_side_more_cols_test.flux":                       "dc42d01e2fe2b955a8f63ae0bea04a12380ebd0126b363c6b4cd77f68ff4ee9a",
 	"stdlib/experimental/join_test.flux":                                            "76f04e2d0d8806e4d2c9a8e5946d4d7f83cab805594a0a78ebb30567f1b47ff6",
 	"stdlib/experimental/json/json.flux":                                            "94e0b29efd3e43341f4e9ef3ace467732ce03bf77d5379b403f5d1151131bc6e",
 	"stdlib/experimental/json/json_test.flux":                                       "4f97387c67538eedce700a3bd079ee4082cb6c1eb95e77423a228853b71f320c",
