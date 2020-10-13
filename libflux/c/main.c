@@ -85,7 +85,7 @@ void test_semantic() {
 
   {
     printf("Parsing to AST\n");
-    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + \"1.0\"");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1.0");
     assert(ast_pkg_foo !=  NULL);
 
     printf("Analyzing (expect failure)\n");
@@ -115,7 +115,7 @@ void test_semantic() {
 
   {
     printf("Parsing to AST\n");
-    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + \"1.0\"");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx = 1 + 1.0");
     assert(ast_pkg_foo !=  NULL);
     printf("Find variable type v (expect failure)\n");
     struct flux_buffer_t buf;
