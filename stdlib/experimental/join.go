@@ -567,7 +567,7 @@ func (fn *rowJoinFn) Prepare(left, right []flux.ColMeta) error {
 		}
 	}
 
-	r := make([]semantic.PropertyType, len(left))
+	r := make([]semantic.PropertyType, len(right))
 	for j, col := range right {
 		r[j] = semantic.PropertyType{
 			Key:   []byte(col.Label),
