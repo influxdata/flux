@@ -9,7 +9,6 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/colm/tableflux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -187,14 +186,6 @@ func IsNonNullJSON(bs json.RawMessage) bool {
 
 func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.Program, error) {
 	query := c.Query
-
-	if tableflux.Enabled() {
-		ok, flux, err, _ := tableflux.TableFlux(query)
-		if !ok {
-			return nil, errors.Newf(codes.Invalid, "tableflux transformation failed: %s", err)
-		}
-		query = flux
-	}
 
 	// Ignore context, it will be provided upon Program Start.
 	if IsNonNullJSON(c.Extern) {
