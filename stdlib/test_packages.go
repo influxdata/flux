@@ -5,6 +5,8 @@ package stdlib
 import (
 	ast "github.com/influxdata/flux/ast"
 	naivebayesclassifier "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
+	anomalydetection "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
+	statsmodels "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
 	aggregate "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
 	rows "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
 	date "github.com/influxdata/flux/stdlib/date"
@@ -36,6 +38,8 @@ import (
 var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
 	pkgs = append(pkgs, naivebayesclassifier.FluxTestPackages...)
+	pkgs = append(pkgs, anomalydetection.FluxTestPackages...)
+	pkgs = append(pkgs, statsmodels.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
 	pkgs = append(pkgs, rows.FluxTestPackages...)
 	pkgs = append(pkgs, date.FluxTestPackages...)
