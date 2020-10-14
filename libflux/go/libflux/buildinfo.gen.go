@@ -83,6 +83,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/jsternberg/rows/map_with_test.flux":                             "7c1553d042b2cb9b52f720fd1a85eec320b92b708eb57892689c43a069b3f3a7",
 	"stdlib/contrib/jsternberg/rows/rows.flux":                                      "1d357c3f05a80394dc97af53522b043db83a7e2617abebfa243b3a9e4e798427",
 	"stdlib/contrib/sranka/opsgenie/opsgenie.flux":                                  "109db1eb8e5e7b37622a759e70187c64835fcfec38c79ac1e85d97729cf751c2",
+	"stdlib/contrib/sranka/sensu/sensu.flux":                                        "50f8e87b24535c7c37f99db96e419c5337c4b425c0a97596a9a1c86c6f275837",
 	"stdlib/contrib/sranka/teams/teams.flux":                                        "57d5656dcb2db79f173e84d551efdbeefb643d028eaaecfff8ee7d2a033f9f50",
 	"stdlib/contrib/sranka/telegram/telegram.flux":                                  "37d1614a215c6ca523e4efa5642ec9104936755a403e5bc4481d82a602f7719b",
 	"stdlib/csv/csv.flux":                                                           "8710762ef15231ac7f5ef2afabab75941c3e25bf4b3822396875157563fcebf5",

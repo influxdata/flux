@@ -12,6 +12,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/math"
 	_ "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/opsgenie"
+	_ "github.com/influxdata/flux/stdlib/contrib/sranka/sensu"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/teams"
 	_ "github.com/influxdata/flux/stdlib/contrib/sranka/telegram"
 	_ "github.com/influxdata/flux/stdlib/csv"
