@@ -45,15 +45,14 @@ outData = "
 "
 
 join_test_fn = (table=<-) => {
-    a = table
-        |> range(start: 2020-10-01T00:00:00Z)
+    bounded_stream = table |> range(start: 2020-10-01T00:00:00Z)
+    a = bounded_stream
         |> filter(fn: (r) => r._measurement == "cpu")
         |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
         |> v1.fieldsAsCols()
         |> group(columns: ["host"])
 
-    b = table
-        |> range(start: 2020-10-01T00:00:00Z)
+    b = bounded_stream
         |> filter(fn: (r) => r._measurement == "disk")
         |> aggregateWindow(fn: last, every: 5m, createEmpty: false)
         |> v1.fieldsAsCols()
