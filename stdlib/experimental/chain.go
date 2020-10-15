@@ -6,10 +6,10 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
@@ -46,10 +46,10 @@ func chainCall(ctx context.Context, args values.Object) (values.Value, error) {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object compilation")
 	}
 
-	if !execdeps.HaveExecutionDependencies(ctx) {
+	if !execute.HaveExecutionDependencies(ctx) {
 		return nil, errors.New(codes.Internal, "no execution context for chain to use")
 	}
-	deps := execdeps.GetExecutionDependencies(ctx)
+	deps := execute.GetExecutionDependencies(ctx)
 
 	if program, ok := program.(lang.LoggingProgram); ok {
 		program.SetLogger(deps.Logger)

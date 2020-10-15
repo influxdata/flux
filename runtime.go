@@ -22,7 +22,7 @@ type Runtime interface {
 	MergePackages(dst, src ASTHandle) error
 
 	// Eval accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
-	Eval(ctx context.Context, astPkg ASTHandle, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error)
+	Eval(ctx context.Context, astPkg ASTHandle, es interpreter.ExecutionOptions, opts ...ScopeMutator) ([]interpreter.SideEffect, values.Scope, error)
 
 	// IsPreludePackage will return if the named package is part
 	// of the prelude for this runtime.

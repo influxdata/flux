@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -20,18 +20,42 @@ const (
 	NowOption   = "now"
 )
 
-type Interpreter struct {
-	sideEffects []SideEffect // a list of the side effects occurred during the last call to `Eval`.
-	pkgName     string
+// This interface is used by the interpreter to set options that are relevant
+// to the execution engine. For most cases it would be sufficient to pull
+// options out after the interpreter is run, however it is possible for the
+// interpreter to invoke the execution engine via tableFind and chain
+// functions. These options need to get immediately installed in the execution
+// dependencies when they are interpreted. We cannot access them directly here
+// due to circular dependencies, so we use an interface, with an implementation
+// defined by the caller.
+type ExecutionOptions interface {
+	ConfigureProfiler(ctx context.Context, profilerNames []string)
+	ConfigureNow(ctx context.Context, now time.Time)
 }
 
-func NewInterpreter(pkg *Package) *Interpreter {
+// A default execution options implementation that discards the settings.
+type executionOptions struct{}
+
+func (es *executionOptions) ConfigureProfiler(ctx context.Context, profilerNames []string) {}
+func (es *executionOptions) ConfigureNow(ctx context.Context, now time.Time)               {}
+
+type Interpreter struct {
+	sideEffects      []SideEffect // a list of the side effects occurred during the last call to `Eval`.
+	pkgName          string
+	executionOptions ExecutionOptions
+}
+
+func NewInterpreter(pkg *Package, es ExecutionOptions) *Interpreter {
 	var pkgName string
 	if pkg != nil {
 		pkgName = pkg.Name()
 	}
+	if es == nil {
+		es = &executionOptions{}
+	}
 	return &Interpreter{
-		pkgName: pkgName,
+		pkgName:          pkgName,
+		executionOptions: es,
 	}
 }
 
@@ -168,9 +192,6 @@ func (irtp *Interpreter) evaluateNowOption(ctx context.Context, name string, ini
 	if name != NowOption {
 		return
 	}
-	if !execdeps.HaveExecutionDependencies(ctx) {
-		return
-	}
 
 	// Evaluate now.
 	nowTime, err := init.Function().Call(ctx, nil)
@@ -179,12 +200,30 @@ func (irtp *Interpreter) evaluateNowOption(ctx context.Context, name string, ini
 	}
 	now := nowTime.Time().Time()
 
-	// Stash in the execution dependencies. The deps use a pointer and we
-	// overwrite the dest of the pointer. Overwritng the pointer would have no
-	// effect as context changes are passed down only.
-	deps := execdeps.GetExecutionDependencies(ctx)
-	*deps.Now = now
-	deps.Inject(ctx)
+	irtp.executionOptions.ConfigureNow(ctx, now)
+}
+
+func convert(rules values.Array) ([]string, error) {
+	noRules := rules.Len()
+	rs := make([]string, noRules)
+	rules.Range(func(i int, v values.Value) {
+		rs[i] = v.Str()
+	})
+	return rs, nil
+}
+
+func (irtp *Interpreter) evaluateProfilerOption(ctx context.Context, pkg values.Package, name string, init values.Value) {
+	if pkg.Name() == "profiler" && name == "enabledProfilers" {
+
+		arr := init.Array()
+
+		profilerNames, err := convert(arr)
+		if err != nil {
+			return
+		}
+
+		irtp.executionOptions.ConfigureProfiler(ctx, profilerNames)
+	}
 }
 
 func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.OptionStatement, scope values.Scope) (values.Value, error) {
@@ -229,7 +268,11 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 		if !ok {
 			return nil, errors.Newf(codes.Invalid, "%s: cannot set option %q on non-package value", a.Location(), a.Member.Property)
 		}
+
 		v, _ := values.SetOption(pkg, a.Member.Property, init)
+
+		itrp.evaluateProfilerOption(ctx, pkg, a.Member.Property, init)
+
 		return v, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "unsupported assignment %T", a)

@@ -1,4 +1,4 @@
-package execdeps
+package execute
 
 import (
 	"context"
@@ -13,6 +13,11 @@ type key int
 
 const executionDependenciesKey key = iota
 
+type ExecutionOptions struct {
+	OperatorProfiler *OperatorProfiler
+	Profilers        []Profiler
+}
+
 // ExecutionDependencies represents the dependencies that a function call
 // executed by the Interpreter needs in order to trigger the execution of a flux.Program
 type ExecutionDependencies struct {
@@ -26,6 +31,8 @@ type ExecutionDependencies struct {
 	// Metadata is passed up from any invocations of execution up to the parent
 	// execution, and out through the statistics.
 	Metadata metadata.Metadata
+
+	ExecutionOptions *ExecutionOptions
 }
 
 func (d ExecutionDependencies) Inject(ctx context.Context) context.Context {
@@ -52,10 +59,11 @@ func NewExecutionDependencies(allocator *memory.Allocator, now *time.Time, logge
 		now = &nowVar
 	}
 	return ExecutionDependencies{
-		Allocator: allocator,
-		Now:       now,
-		Logger:    logger,
-		Metadata:  make(metadata.Metadata),
+		Allocator:        allocator,
+		Now:              now,
+		Logger:           logger,
+		Metadata:         make(metadata.Metadata),
+		ExecutionOptions: &ExecutionOptions{},
 	}
 }
 

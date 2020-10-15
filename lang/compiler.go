@@ -13,7 +13,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
@@ -288,9 +287,13 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 		},
 	}
 
-	if execdeps.HaveExecutionDependencies(ctx) {
-		deps := execdeps.GetExecutionDependencies(ctx)
+	if execute.HaveExecutionDependencies(ctx) {
+		deps := execute.GetExecutionDependencies(ctx)
 		q.stats.Metadata.AddAll(deps.Metadata)
+
+		if deps.ExecutionOptions.OperatorProfiler != nil {
+			cctx = context.WithValue(cctx, execute.OperatorProfilerContextKey, deps.ExecutionOptions.OperatorProfiler)
+		}
 	}
 
 	q.stats.Metadata.Add("flux/query-plan",
@@ -368,6 +371,59 @@ func (p *AstProgram) GetAst() (flux.ASTHandle, error) {
 	return p.Ast, nil
 }
 
+// The ExecutionOptions structure implements the interpreter.ExecutionOptions
+// interface, which the interpreter uses to configure options relevant to the
+// execution engine. The interpreter is able to invoke the execution engine via
+// tableFind and others, and thereore must be able to install these options
+// into the execution dependency state. We use an interface to break the import
+// cycle implied by accessing the execution module from the interpreter.
+type ExecutionOptions struct {
+}
+
+func (es *ExecutionOptions) ConfigureProfiler(ctx context.Context, profilerNames []string) {
+	var tfProfiler *execute.OperatorProfiler
+	dedupeMap := make(map[string]bool)
+	profilers := make([]execute.Profiler, 0)
+	for _, profilerName := range profilerNames {
+		if createProfilerFn, exists := execute.AllProfilers[profilerName]; !exists {
+			// profiler does not exist
+			continue
+		} else {
+			if _, exists := dedupeMap[profilerName]; exists {
+				// Ignore duplicates
+				continue
+			}
+			dedupeMap[profilerName] = true
+			profiler := createProfilerFn()
+			if tfp, ok := profiler.(*execute.OperatorProfiler); ok {
+				// The operator profiler needs to be in the context so transformations
+				// and data sources can easily locate it when creating spans.
+				// We cache the operator profiler here in addition to the Profilers
+				// array to avoid the array look-up.
+
+				tfProfiler = tfp
+			}
+			profilers = append(profilers, profiler)
+		}
+	}
+
+	if execute.HaveExecutionDependencies(ctx) {
+		deps := execute.GetExecutionDependencies(ctx)
+		deps.ExecutionOptions.OperatorProfiler = tfProfiler
+		deps.ExecutionOptions.Profilers = profilers
+		deps.Inject(ctx)
+	}
+}
+
+func (es *ExecutionOptions) ConfigureNow(ctx context.Context, now time.Time) {
+	// Stash in the execution dependencies. The deps use a pointer and we
+	// overwrite the dest of the pointer. Overwritng the pointer would have no
+	// effect as context changes are passed down only.
+	deps := execute.GetExecutionDependencies(ctx)
+	*deps.Now = now
+	deps.Inject(ctx)
+}
+
 func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flux.Spec, values.Scope, error) {
 	ast, astErr := p.GetAst()
 	if astErr != nil {
@@ -376,7 +432,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, flux.SetNowOption(p.Now))
+	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecutionOptions{}, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -403,7 +459,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Query, error) {
 	// The program must inject execution dependencies to make it available to
 	// function calls during the evaluation phase (see `tableFind`).
-	deps := execdeps.NewExecutionDependencies(alloc, &p.Now, p.Logger)
+	deps := execute.NewExecutionDependencies(alloc, &p.Now, p.Logger)
 	ctx = deps.Inject(ctx)
 
 	// Evaluation.
@@ -420,7 +476,7 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	if err := p.updateOpts(scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading options while starting program")
 	}
-	if err := p.updateProfilers(scope); err != nil {
+	if err := p.updateProfilers(ctx, scope); err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in reading profiler settings while starting program")
 	}
 	ps, err := buildPlan(cctx, sp, p.opts)
@@ -442,41 +498,12 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	return p.Program.Start(cctx, alloc)
 }
 
-func (p *AstProgram) updateProfilers(scope values.Scope) error {
-	pkg, ok := getPackageFromScope("profiler", scope)
-	if !ok {
-		return nil
-	}
-	if pkg.Type().Nature() != semantic.Object {
-		// No import for profiler, this is useless.
-		return nil
-	}
-
-	profilerNames, err := getOptionValues(pkg.Object(), "enabledProfilers")
-	if err != nil {
-		return err
-	}
-	dedupeMap := make(map[string]bool)
-	p.Profilers = make([]execute.Profiler, 0)
-	for _, profilerName := range profilerNames {
-		if createProfilerFn, exists := execute.AllProfilers[profilerName]; !exists {
-			// profiler does not exist
-			continue
-		} else {
-			if _, exists := dedupeMap[profilerName]; exists {
-				// Ignore duplicates
-				continue
-			}
-			dedupeMap[profilerName] = true
-			profiler := createProfilerFn()
-			if tfp, ok := profiler.(*execute.OperatorProfiler); ok {
-				// The operator profiler needs to be in the context so transformations
-				// and data sources can easily locate it when creating spans.
-				// We cache the operator profiler here in addition to the Profilers
-				// array to avoid the array look-up.
-				p.tfProfiler = tfp
-			}
-			p.Profilers = append(p.Profilers, profiler)
+func (p *AstProgram) updateProfilers(ctx context.Context, scope values.Scope) error {
+	if execute.HaveExecutionDependencies(ctx) {
+		deps := execute.GetExecutionDependencies(ctx)
+		if deps.ExecutionOptions.OperatorProfiler != nil {
+			p.tfProfiler = deps.ExecutionOptions.OperatorProfiler
+			p.Profilers = deps.ExecutionOptions.Profilers
 		}
 	}
 	return nil

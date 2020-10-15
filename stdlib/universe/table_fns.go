@@ -11,7 +11,6 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/lang"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -79,11 +78,11 @@ func tableFindCall(ctx context.Context, args values.Object) (values.Value, error
 // Returns an error in the second return value, or the found table in the first
 // return value, or nil to indicate that no table was found.
 func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredicateFn) (*objects.Table, error) {
-	if !execdeps.HaveExecutionDependencies(ctx) {
+	if !execute.HaveExecutionDependencies(ctx) {
 		return nil, errors.New(codes.Internal, "no execution context for tableFind to use")
 	}
 
-	deps := execdeps.GetExecutionDependencies(ctx)
+	deps := execute.GetExecutionDependencies(ctx)
 
 	c := lang.TableObjectCompiler{
 		Tables: to,
@@ -98,6 +97,13 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 	if p, ok := p.(lang.LoggingProgram); ok {
 		p.SetLogger(deps.Logger)
 	}
+
+	// If there is an operator profiler in the execution options, and it is not
+	// in the context standalone, add it.
+	if deps.ExecutionOptions.OperatorProfiler != nil {
+		ctx = context.WithValue(ctx, execute.OperatorProfilerContextKey, deps.ExecutionOptions.OperatorProfiler)
+	}
+
 	q, err := p.Start(ctx, deps.Allocator)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object start")
