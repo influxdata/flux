@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -52,16 +51,20 @@ type OperatorProfilingSpan struct {
 	Result   OperatorProfilingResult
 }
 
-func (t *OperatorProfilingSpan) finish() time.Time {
-	t.Result.Stop = time.Now()
-	if t.profiler != nil && t.profiler.ch != nil {
-		t.profiler.ch <- t.Result
+func (t *OperatorProfilingSpan) finish(finishTime time.Time) time.Time {
+	if finishTime.IsZero() {
+		t.Result.Stop = time.Now()
+	} else {
+		t.Result.Stop = finishTime
+	}
+	if t.profiler != nil && t.profiler.chIn != nil {
+		t.profiler.chIn <- t.Result
 	}
 	return t.Result.Stop
 }
 
 func (t *OperatorProfilingSpan) Finish() {
-	finishTime := t.finish()
+	finishTime := t.finish(time.Time{})
 	if t.Span != nil {
 		t.Span.FinishWithOptions(opentracing.FinishOptions{
 			FinishTime: finishTime,
@@ -70,7 +73,7 @@ func (t *OperatorProfilingSpan) Finish() {
 }
 
 func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions) {
-	finishTime := t.finish()
+	finishTime := t.finish(opts.FinishTime)
 	opts.FinishTime = finishTime
 	if t.Span != nil {
 		t.Span.FinishWithOptions(opts)
@@ -79,25 +82,42 @@ func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions
 
 const OperatorProfilerContextKey = "operator-profiler"
 
+type OperatorProfilingResultAggregate struct {
+	resultCount int64
+	resultMin   int64
+	resultMax   int64
+	resultSum   int64
+	resultMean  float64
+}
+
 type OperatorProfiler struct {
-	results []OperatorProfilingResult
 	// Receive the profiling results from the spans.
-	ch chan OperatorProfilingResult
-	mu sync.Mutex
+	chIn  chan OperatorProfilingResult
+	chOut chan OperatorProfilingResultAggregate
 }
 
 func createOperatorProfiler() Profiler {
 	p := &OperatorProfiler{
-		results: make([]OperatorProfilingResult, 0),
-		ch:      make(chan OperatorProfilingResult),
+		chIn:  make(chan OperatorProfilingResult),
+		chOut: make(chan OperatorProfilingResultAggregate),
 	}
-	go func(p *OperatorProfiler) {
-		for result := range p.ch {
-			p.mu.Lock()
-			p.results = append(p.results, result)
-			p.mu.Unlock()
+	a := &OperatorProfilingResultAggregate{}
+	go func(p *OperatorProfiler, a *OperatorProfilingResultAggregate) {
+		for result := range p.chIn {
+			a.resultCount += 1
+			duration := result.Stop.Sub(result.Start).Nanoseconds()
+			if duration > a.resultMax {
+				a.resultMax = duration
+			}
+			if duration < a.resultMin || a.resultMin == 0 {
+				a.resultMin = duration
+			}
+			a.resultSum += duration
 		}
-	}(p)
+		a.resultMean = float64(a.resultSum) / float64(a.resultCount)
+		p.chOut <- *a
+	}(p, a)
+
 	return p
 }
 
@@ -106,9 +126,9 @@ func (o *OperatorProfiler) Name() string {
 }
 
 func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
-	if o.ch != nil {
-		close(o.ch)
-		o.ch = nil
+	if o.chIn != nil {
+		close(o.chIn)
+		o.chIn = nil
 	}
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
@@ -128,24 +148,24 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 			Type:  flux.TString,
 		},
 		{
-			Label: "Begin",
-			Type:  flux.TTime,
-		},
-		{
-			Label: "End",
-			Type:  flux.TTime,
-		},
-		{
-			Label: "Type",
-			Type:  flux.TString,
-		},
-		{
-			Label: "Label",
-			Type:  flux.TString,
-		},
-		{
-			Label: "Duration",
+			Label: "OperationCount",
 			Type:  flux.TInt,
+		},
+		{
+			Label: "MinimumDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MaximumDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "DurationSum",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MeanDuration",
+			Type:  flux.TFloat,
 		},
 	}
 	for _, col := range colMeta {
@@ -153,18 +173,15 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 			return nil, err
 		}
 	}
-	o.mu.Lock()
-	if o.results != nil && len(o.results) > 0 {
-		for _, result := range o.results {
-			b.AppendString(0, "profiler/operator")
-			b.AppendTime(1, values.Time(result.Start.UnixNano()))
-			b.AppendTime(2, values.Time(result.Stop.UnixNano()))
-			b.AppendString(3, result.Type)
-			b.AppendString(4, result.Label)
-			b.AppendInt(5, result.Stop.Sub(result.Start).Nanoseconds())
-		}
-	}
-	o.mu.Unlock()
+
+	agg := <-o.chOut
+	b.AppendString(0, "profiler/operator")
+	b.AppendInt(1, agg.resultCount)
+	b.AppendInt(2, agg.resultMin)
+	b.AppendInt(3, agg.resultMax)
+	b.AppendInt(4, agg.resultSum)
+	b.AppendFloat(5, agg.resultMean)
+
 	tbl, err := b.Table()
 	if err != nil {
 		return nil, err
@@ -177,11 +194,21 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 // the Span produced by this function can be very different.
 // It could be a no-op span, a Jaeger span, a no-op span wrapped by a profiling span, or
 // a Jaeger span wrapped by a profiling span.
-func StartSpanFromContext(ctx context.Context, operationName string, label string) (context.Context, opentracing.Span) {
+func StartSpanFromContext(ctx context.Context, operationName string, label string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span) {
 	var span opentracing.Span
-	start := time.Now()
+	var start time.Time
+	for _, opt := range opts {
+		if st, ok := opt.(opentracing.StartTime); ok {
+			start = time.Time(st)
+			break
+		}
+	}
+	if start.IsZero() {
+		start = time.Now()
+		opts = append(opts, opentracing.StartTime(start))
+	}
 	if flux.IsQueryTracingEnabled(ctx) {
-		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
+		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opts...)
 	}
 
 	if HaveExecutionDependencies(ctx) {

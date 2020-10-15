@@ -19,6 +19,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/mock"
+	"github.com/opentracing/opentracing-go"
 )
 
 // Simulates setting the profilers option in flux to "operator"
@@ -46,38 +47,36 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 	// every time the test is run.
 	var wantStr bytes.Buffer
 	// Need to have the goroutines to sync on their writes to the buffer.
-	var mu sync.Mutex
 	wantStr.WriteString(`
-#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,string,string,long
+#datatype,string,long,string,long,long,long,long,double
 #group,false,false,true,false,false,false,false,false
 #default,_profiler,,,,,,,
-,result,table,_measurement,Begin,End,Type,Label,Duration
+,result,table,_measurement,OperationCount,MinimumDuration,MaximumDuration,DurationSum,MeanDuration
 `)
-	// Unfortunately, the operator profiler result is only grouped on _measurement, it cannot
-	// ensure a deterministic row order with our executetest.EqualResultIterators
-	// Therefore, currently I only set this goroutine count to 2.
 	count := 2
 	wg := sync.WaitGroup{}
 	wg.Add(count)
-	fn := func(label string, ctx context.Context) {
-		_, span := execute.StartSpanFromContext(ctx, "tf", label)
+	fn := func(label string, ctx context.Context, offset int) {
+		st := time.Date(2020, 10, 14, 12, 30, 0, 0, time.UTC)
+		_, span := execute.StartSpanFromContext(ctx, "tf", label, opentracing.StartTime(st))
 		profilerSpan := span.(*execute.OperatorProfilingSpan)
 		// Finish() will write the data to the profiler
 		// In Flux runtime, this is called when an execution node finishes execution
-		profilerSpan.Finish()
-		mu.Lock()
-		// Write the expected result from raw span data.
-		wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,tf,%s,%d\n",
-			profilerSpan.Result.Start.Format(time.RFC3339Nano),
-			profilerSpan.Result.Stop.Format(time.RFC3339Nano),
-			profilerSpan.Result.Label,
-			profilerSpan.Result.Stop.Sub(profilerSpan.Result.Start).Nanoseconds()))
-		mu.Unlock()
+		profilerSpan.FinishWithOptions(opentracing.FinishOptions{
+			FinishTime: time.Date(2020, 10, 14, 12, 30, 0, 1234+offset, time.UTC),
+		})
 		wg.Done()
 	}
 	for i := 0; i < count; i++ {
-		go fn(fmt.Sprintf("op%d", i), ctx)
+		go fn(fmt.Sprintf("op%d", i), ctx, 100*(i+1))
 	}
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%d,%d,%d,%d,%f\n",
+		2,
+		1334,
+		1434,
+		2768,
+		1384.0,
+	))
 	wg.Wait()
 	// Wait a bit for the profiling results to be added.
 	// In the query code path this is guaranteed because we only access the result
