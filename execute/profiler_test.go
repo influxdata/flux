@@ -42,10 +42,7 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 	p := configureOperatorProfiler(ctx)
 
 	// Build the "want" table.
-	// This table is built dynamically because the table includes time data which changes
-	// every time the test is run.
 	var wantStr bytes.Buffer
-	// Need to have the goroutines to sync on their writes to the buffer.
 	wantStr.WriteString(`
 #datatype,string,long,string,string,string,long,long,long,long,double
 #group,false,false,true,false,false,false,false,false,false,false
@@ -70,8 +67,8 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 		op := fmt.Sprintf("type%d", i%2)
 		go fn(op, "lab0", ctx, 100+i*i)
 		// Waiting between each loop seems to ensure better consistency of row order
-		// for final table. However, this is still not guaranteed, becausethe result
-		// aggregates are stored in a map, and thus order is not 100% guaranteed.
+		// for final table. However, because the result aggregates are stored in a map,
+		// the order in which the rows are written cannot be guaranteed
 		time.Sleep(100 * time.Millisecond)
 	}
 	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
@@ -119,10 +116,7 @@ func TestOperatorProfiler_GroupByLabel(t *testing.T) {
 	// And inject it to the context.
 	ctx := context.WithValue(context.Background(), execute.OperatorProfilerContextKey, p)
 	// Build the "want" table.
-	// This table is built dynamically because the table includes time data which changes
-	// every time the test is run.
 	var wantStr bytes.Buffer
-	// Need to have the goroutines to sync on their writes to the buffer.
 	wantStr.WriteString(`
 #datatype,string,long,string,string,string,long,long,long,long,double
 #group,false,false,true,false,false,false,false,false,false,false
@@ -147,7 +141,7 @@ func TestOperatorProfiler_GroupByLabel(t *testing.T) {
 		label := fmt.Sprintf("lab%d", i%2)
 		go fn("type0", label, ctx, 100+i*i)
 		// Waiting between each loop seems to ensure better consistency of row order
-		// for final table. However, this is still not guaranteed, becausethe result
+		// for final table. However, this is still not guaranteed, because the result
 		// aggregates are stored in a map, and thus order is not 100% guaranteed.
 		time.Sleep(100 * time.Millisecond)
 	}
