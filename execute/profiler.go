@@ -82,28 +82,37 @@ func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions
 
 const OperatorProfilerContextKey = "operator-profiler"
 
-type OperatorProfilingResultAggregate struct {
-	resultCount int64
-	resultMin   int64
-	resultMax   int64
-	resultSum   int64
-	resultMean  float64
+type operatorProfilingResultAggregate struct {
+	operationType string
+	label         string
+	resultCount   int64
+	resultMin     int64
+	resultMax     int64
+	resultSum     int64
+	resultMean    float64
 }
+
+type operatorProfilerGroupedAggregates = map[string]map[string]operatorProfilingResultAggregate
 
 type OperatorProfiler struct {
 	// Receive the profiling results from the spans.
 	chIn  chan OperatorProfilingResult
-	chOut chan OperatorProfilingResultAggregate
+	chOut chan operatorProfilingResultAggregate
 }
 
 func createOperatorProfiler() Profiler {
 	p := &OperatorProfiler{
 		chIn:  make(chan OperatorProfilingResult),
-		chOut: make(chan OperatorProfilingResultAggregate),
+		chOut: make(chan operatorProfilingResultAggregate),
 	}
-	a := &OperatorProfilingResultAggregate{}
-	go func(p *OperatorProfiler, a *OperatorProfilingResultAggregate) {
+	go func(p *OperatorProfiler) {
+		aggs := make(operatorProfilerGroupedAggregates)
 		for result := range p.chIn {
+			_, ok := aggs[result.Type]
+			if !ok {
+				aggs[result.Type] = make(map[string]operatorProfilingResultAggregate)
+			}
+			a := aggs[result.Type][result.Label]
 			a.resultCount += 1
 			duration := result.Stop.Sub(result.Start).Nanoseconds()
 			if duration > a.resultMax {
@@ -113,10 +122,19 @@ func createOperatorProfiler() Profiler {
 				a.resultMin = duration
 			}
 			a.resultSum += duration
+			aggs[result.Type][result.Label] = a
 		}
-		a.resultMean = float64(a.resultSum) / float64(a.resultCount)
-		p.chOut <- *a
-	}(p, a)
+
+		for typ, labels := range aggs {
+			for label, agg := range labels {
+				agg.resultMean = float64(agg.resultSum) / float64(agg.resultCount)
+				agg.operationType = typ
+				agg.label = label
+				p.chOut <- agg
+			}
+		}
+		close(p.chOut)
+	}(p)
 
 	return p
 }
@@ -148,15 +166,23 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 			Type:  flux.TString,
 		},
 		{
-			Label: "OperationCount",
+			Label: "Type",
+			Type:  flux.TString,
+		},
+		{
+			Label: "Label",
+			Type:  flux.TString,
+		},
+		{
+			Label: "Count",
 			Type:  flux.TInt,
 		},
 		{
-			Label: "MinimumDuration",
+			Label: "MinDuration",
 			Type:  flux.TInt,
 		},
 		{
-			Label: "MaximumDuration",
+			Label: "MaxDuration",
 			Type:  flux.TInt,
 		},
 		{
@@ -174,13 +200,16 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 		}
 	}
 
-	agg := <-o.chOut
-	b.AppendString(0, "profiler/operator")
-	b.AppendInt(1, agg.resultCount)
-	b.AppendInt(2, agg.resultMin)
-	b.AppendInt(3, agg.resultMax)
-	b.AppendInt(4, agg.resultSum)
-	b.AppendFloat(5, agg.resultMean)
+	for agg := range o.chOut {
+		b.AppendString(0, "profiler/operator")
+		b.AppendString(1, agg.operationType)
+		b.AppendString(2, agg.label)
+		b.AppendInt(3, agg.resultCount)
+		b.AppendInt(4, agg.resultMin)
+		b.AppendInt(5, agg.resultMax)
+		b.AppendInt(6, agg.resultSum)
+		b.AppendFloat(7, agg.resultMean)
+	}
 
 	tbl, err := b.Table()
 	if err != nil {
