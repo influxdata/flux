@@ -246,13 +246,13 @@ pub unsafe extern "C" fn flux_error_str(errh: *const ErrorHandle) -> CString {
     CString::new(format!("{}", errh.err)).unwrap()
 }
 
+/// flux_merge_ast_pkg_files merges the files of a given input ast::Package into the file
+/// vector of an output ast::Package.
+///
 /// # Safety
 ///
 /// This function is unsafe because it dereferences a raw pointer passed as a
 /// parameter
-///
-/// flux_merge_ast_pkg_files merges the files of a given input ast::Package into the file
-/// vector of an output ast::Package.
 #[no_mangle]
 pub unsafe extern "C" fn flux_merge_ast_pkgs(
     out_pkg: *mut ast::Package,
@@ -273,7 +273,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
 /// merge_packages takes an input package and an output package, checks that the package
 /// clauses match and merges the files from the input package into the output package. If
-/// package clauses fail validation then an option with an Error is returned.
+/// package clauses fail validation then an Option with an Error is returned.
 pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> Option<Error> {
     let out_pkg_name = if let Some(pc) = &out_pkg.files[0].package {
         &pc.name.name
@@ -307,7 +307,7 @@ pub fn merge_packages(out_pkg: &mut ast::Package, in_pkg: &mut ast::Package) -> 
     None
 }
 
-/// flux_analyze is a C-compatible wrapper around the analyze() function below
+/// flux_analyze is a C-compatible wrapper around the analyze() function below.
 ///
 /// Note that Box<T> is used to indicate we are receiving/returning a C pointer and also
 /// transferring ownership.
@@ -444,7 +444,7 @@ pub unsafe extern "C" fn flux_new_semantic_analyzer() -> Box<Result<SemanticAnal
     Box::new(new_semantic_analyzer())
 }
 
-/// Free a previously allocated semantic analyzer
+/// Free a previously allocated semantic analyzer.
 #[no_mangle]
 pub extern "C" fn flux_free_semantic_analyzer(
     _: Option<Box<Result<SemanticAnalyzer, core::Error>>>,
@@ -493,8 +493,8 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given
-/// type environment, and returns a semantic package that has not been type-injected and an
-/// inferred type environment and substitution.
+/// type environment, and returns a semantic package that has not been type-injected, an
+/// inferred type environment, and a substitution.
 /// This function is aware of the standard library and prelude.
 pub fn infer_with_env(
     ast_pkg: ast::Package,
