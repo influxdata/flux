@@ -159,9 +159,11 @@ csv.from(url: "https://influx-testdata.s3.amazonaws.com/noaa.csv")
 # Calculate a percentage using a defined set with a filter and only querying the data once
 
 Select the raw data set into a variable. 
-Create a 2nd variable which uses the selected data to count the total of the set and returns that as a scalar.
+Create a 2nd variable which uses the selected data to count the total of the set by series.
 Create a 3rd varibable which uses the selected data and filters by the specified criteria and then counts the number of records.
-Use Map to return the percentage.
+Join the 2nd and 3rd variables (which are tables) -- join key can simply be measurement. 
+You won't be able to join on time as the calculation of the counts occur at different times. 
+Use Map to return the percentage in the value field for each series.
 
 ```
 data = from(bucket:v.bucket)
@@ -169,12 +171,13 @@ data = from(bucket:v.bucket)
   |> filter(fn: (r) => r["_measurement"] == "nginx")
   |> filter(fn: (r) => r["_field"] == "active")
 
-cnt_total = data
+count_total = data
   |> count()
-  |> findRecord(fn: (key) => true, idx: 0)
 
-data
+count_subset = data
   |> filter(fn: (r) => r["_value"] > 10)
   |> count()
-  |> map(fn: (r) => ({ r with _value: float(v: r["_value"]) / float(v: cnt_total["_value"]) * 100.0 }))
+  
+join(tables: {count_total: count_total, count_subset: count_subset}, on: ["_measurement"], method: "inner")
+|> map(fn: (r) => ({ r with _value: float(v: r["_value_count_subset"]) / float(v: r["_value_count_total"]) * 100.0 }))  
 ```
