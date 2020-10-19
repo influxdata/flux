@@ -371,16 +371,16 @@ func (p *AstProgram) GetAst() (flux.ASTHandle, error) {
 	return p.Ast, nil
 }
 
-// The ExecutionOptions structure implements the interpreter.ExecutionOptions
+// The ExecOptsConfig structure implements the interpreter.ExecOptsConfig
 // interface, which the interpreter uses to configure options relevant to the
 // execution engine. The interpreter is able to invoke the execution engine via
 // tableFind and others, and thereore must be able to install these options
 // into the execution dependency state. We use an interface to break the import
 // cycle implied by accessing the execution module from the interpreter.
-type ExecutionOptions struct {
+type ExecOptsConfig struct {
 }
 
-func (es *ExecutionOptions) ConfigureProfiler(ctx context.Context, profilerNames []string) {
+func (eoc *ExecOptsConfig) ConfigureProfiler(ctx context.Context, profilerNames []string) {
 	var tfProfiler *execute.OperatorProfiler
 	dedupeMap := make(map[string]bool)
 	profilers := make([]execute.Profiler, 0)
@@ -415,7 +415,7 @@ func (es *ExecutionOptions) ConfigureProfiler(ctx context.Context, profilerNames
 	}
 }
 
-func (es *ExecutionOptions) ConfigureNow(ctx context.Context, now time.Time) {
+func (eoc *ExecOptsConfig) ConfigureNow(ctx context.Context, now time.Time) {
 	// Stash in the execution dependencies. The deps use a pointer and we
 	// overwrite the dest of the pointer. Overwritng the pointer would have no
 	// effect as context changes are passed down only.
@@ -432,7 +432,7 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecutionOptions{}, flux.SetNowOption(p.Now))
+	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecOptsConfig{}, flux.SetNowOption(p.Now))
 	if err != nil {
 		return nil, nil, err
 	}

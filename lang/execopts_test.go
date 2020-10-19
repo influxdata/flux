@@ -49,7 +49,7 @@ func TestExecutionOptions(t *testing.T) {
 	// dependencies. The goal of this test is to verify the option
 	// configuration is called, and also that they are installed into the
 	// execution environment.
-	itrp := interpreter.NewInterpreter(nil, &ExecutionOptions{})
+	itrp := interpreter.NewInterpreter(nil, &ExecOptsConfig{})
 
 	semPkg, err := runtime.AnalyzePackage(h)
 	if err != nil {

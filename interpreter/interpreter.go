@@ -28,34 +28,34 @@ const (
 // dependencies when they are interpreted. We cannot access them directly here
 // due to circular dependencies, so we use an interface, with an implementation
 // defined by the caller.
-type ExecutionOptions interface {
+type ExecOptsConfig interface {
 	ConfigureProfiler(ctx context.Context, profilerNames []string)
 	ConfigureNow(ctx context.Context, now time.Time)
 }
 
 // A default execution options implementation that discards the settings.
-type executionOptions struct{}
+type defExecOptsConfig struct{}
 
-func (es *executionOptions) ConfigureProfiler(ctx context.Context, profilerNames []string) {}
-func (es *executionOptions) ConfigureNow(ctx context.Context, now time.Time)               {}
+func (es *defExecOptsConfig) ConfigureProfiler(ctx context.Context, profilerNames []string) {}
+func (es *defExecOptsConfig) ConfigureNow(ctx context.Context, now time.Time)               {}
 
 type Interpreter struct {
-	sideEffects      []SideEffect // a list of the side effects occurred during the last call to `Eval`.
-	pkgName          string
-	executionOptions ExecutionOptions
+	sideEffects    []SideEffect // a list of the side effects occurred during the last call to `Eval`.
+	pkgName        string
+	execOptsConfig ExecOptsConfig
 }
 
-func NewInterpreter(pkg *Package, es ExecutionOptions) *Interpreter {
+func NewInterpreter(pkg *Package, eoc ExecOptsConfig) *Interpreter {
 	var pkgName string
 	if pkg != nil {
 		pkgName = pkg.Name()
 	}
-	if es == nil {
-		es = &executionOptions{}
+	if eoc == nil {
+		eoc = &defExecOptsConfig{}
 	}
 	return &Interpreter{
-		pkgName:          pkgName,
-		executionOptions: es,
+		pkgName:        pkgName,
+		execOptsConfig: eoc,
 	}
 }
 
@@ -200,7 +200,7 @@ func (irtp *Interpreter) evaluateNowOption(ctx context.Context, name string, ini
 	}
 	now := nowTime.Time().Time()
 
-	irtp.executionOptions.ConfigureNow(ctx, now)
+	irtp.execOptsConfig.ConfigureNow(ctx, now)
 }
 
 func convert(rules values.Array) ([]string, error) {
@@ -222,7 +222,7 @@ func (irtp *Interpreter) evaluateProfilerOption(ctx context.Context, pkg values.
 			return
 		}
 
-		irtp.executionOptions.ConfigureProfiler(ctx, profilerNames)
+		irtp.execOptsConfig.ConfigureProfiler(ctx, profilerNames)
 	}
 }
 

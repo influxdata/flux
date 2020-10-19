@@ -58,7 +58,7 @@ func New(ctx context.Context, deps flux.Dependencies) *REPL {
 		ctx:      ctx,
 		deps:     deps,
 		scope:    scope,
-		itrp:     interpreter.NewInterpreter(nil, &lang.ExecutionOptions{}),
+		itrp:     interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
 		analyzer: libflux.NewAnalyzer(),
 		importer: importer,
 	}
