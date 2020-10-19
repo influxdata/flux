@@ -66,20 +66,7 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 	for i := 0; i < count; i++ {
 		op := fmt.Sprintf("type%d", i%2)
 		go fn(op, "lab0", ctx, 100+i*i)
-		// Waiting between each loop seems to ensure better consistency of row order
-		// for final table. However, because the result aggregates are stored in a map,
-		// the order in which the rows are written cannot be guaranteed
-		time.Sleep(100 * time.Millisecond)
 	}
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
-		"type0",
-		"lab0",
-		2,
-		1100,
-		1104,
-		2204,
-		1102.0,
-	))
 	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
 		"type1",
 		"lab0",
@@ -89,12 +76,21 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 		2210,
 		1105.0,
 	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type0",
+		"lab0",
+		2,
+		1100,
+		1104,
+		2204,
+		1102.0,
+	))
 	wg.Wait()
 	// Wait a bit for the profiling results to be added.
 	// In the query code path this is guaranteed because we only access the result
 	// after the query finishes execution AND its result tables are read and encoded.
 	time.Sleep(100 * time.Millisecond)
-	tbl, err := p.GetResult(nil, &memory.Allocator{})
+	tbl, err := p.GetSortedResult(nil, &memory.Allocator{}, []string{"MeanDuration"}, true)
 	if err != nil {
 		t.Error(err)
 	}
@@ -140,20 +136,7 @@ func TestOperatorProfiler_GroupByLabel(t *testing.T) {
 	for i := 0; i < count; i++ {
 		label := fmt.Sprintf("lab%d", i%2)
 		go fn("type0", label, ctx, 100+i*i)
-		// Waiting between each loop seems to ensure better consistency of row order
-		// for final table. However, this is still not guaranteed, because the result
-		// aggregates are stored in a map, and thus order is not 100% guaranteed.
-		time.Sleep(100 * time.Millisecond)
 	}
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
-		"type0",
-		"lab0",
-		2,
-		1100,
-		1104,
-		2204,
-		1102.0,
-	))
 	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
 		"type0",
 		"lab1",
@@ -163,12 +146,21 @@ func TestOperatorProfiler_GroupByLabel(t *testing.T) {
 		2210,
 		1105.0,
 	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type0",
+		"lab0",
+		2,
+		1100,
+		1104,
+		2204,
+		1102.0,
+	))
 	wg.Wait()
 	// Wait a bit for the profiling results to be added.
 	// In the query code path this is guaranteed because we only access the result
 	// after the query finishes execution AND its result tables are read and encoded.
 	time.Sleep(100 * time.Millisecond)
-	tbl, err := p.GetResult(nil, &memory.Allocator{})
+	tbl, err := p.GetSortedResult(nil, &memory.Allocator{}, []string{"MeanDuration"}, true)
 	if err != nil {
 		t.Error(err)
 	}

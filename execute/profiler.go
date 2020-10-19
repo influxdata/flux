@@ -15,6 +15,7 @@ import (
 type Profiler interface {
 	Name() string
 	GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error)
+	GetSortedResult(q flux.Query, alloc *memory.Allocator, sortKeys []string, desc bool) (flux.Table, error)
 }
 
 type CreateProfilerFunc func() Profiler
@@ -108,11 +109,15 @@ func createOperatorProfiler() Profiler {
 	go func(p *OperatorProfiler) {
 		aggs := make(operatorProfilerGroupedAggregates)
 		for result := range p.chIn {
+			// Because we're using nested maps, we need to check if the inner map
+			// exists before we started manipulating it. If it doesn't, we create one.
 			_, ok := aggs[result.Type]
 			if !ok {
 				aggs[result.Type] = make(map[string]operatorProfilingResultAggregate)
 			}
 			a := aggs[result.Type][result.Label]
+
+			// Aggregate the results
 			a.resultCount += 1
 			duration := result.Stop.Sub(result.Start).Nanoseconds()
 			if duration > a.resultMax {
@@ -125,6 +130,8 @@ func createOperatorProfiler() Profiler {
 			aggs[result.Type][result.Label] = a
 		}
 
+		// Write the aggregated results to chOut, where they'll be
+		// converted into rows and appended to the final table
 		for typ, labels := range aggs {
 			for label, agg := range labels {
 				agg.resultMean = float64(agg.resultSum) / float64(agg.resultCount)
@@ -210,7 +217,84 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 		b.AppendInt(6, agg.resultSum)
 		b.AppendFloat(7, agg.resultMean)
 	}
+	tbl, err := b.Table()
+	if err != nil {
+		return nil, err
+	}
+	return tbl, nil
+}
 
+// GetSortedResult is identical to GetResult, except it accept it calls Sort()
+// on the ColListTableBuilder to make testing easier.
+// sortKeys and desc are passed directly into the Sort() call
+func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, sortKeys []string, desc bool) (flux.Table, error) {
+	if o.chIn != nil {
+		close(o.chIn)
+		o.chIn = nil
+	}
+	groupKey := NewGroupKey(
+		[]flux.ColMeta{
+			{
+				Label: "_measurement",
+				Type:  flux.TString,
+			},
+		},
+		[]values.Value{
+			values.NewString("profiler/operator"),
+		},
+	)
+	b := NewColListTableBuilder(groupKey, alloc)
+	colMeta := []flux.ColMeta{
+		{
+			Label: "_measurement",
+			Type:  flux.TString,
+		},
+		{
+			Label: "Type",
+			Type:  flux.TString,
+		},
+		{
+			Label: "Label",
+			Type:  flux.TString,
+		},
+		{
+			Label: "Count",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MinDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MaxDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "DurationSum",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MeanDuration",
+			Type:  flux.TFloat,
+		},
+	}
+	for _, col := range colMeta {
+		if _, err := b.AddCol(col); err != nil {
+			return nil, err
+		}
+	}
+
+	for agg := range o.chOut {
+		b.AppendString(0, "profiler/operator")
+		b.AppendString(1, agg.operationType)
+		b.AppendString(2, agg.label)
+		b.AppendInt(3, agg.resultCount)
+		b.AppendInt(4, agg.resultMin)
+		b.AppendInt(5, agg.resultMax)
+		b.AppendInt(6, agg.resultSum)
+		b.AppendFloat(7, agg.resultMean)
+	}
+	b.Sort(sortKeys, desc)
 	tbl, err := b.Table()
 	if err != nil {
 		return nil, err
@@ -368,6 +452,117 @@ func (s *QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.T
 			b.AppendString(i, colData[i].(string))
 		}
 	}
+	tbl, err := b.Table()
+	if err != nil {
+		return nil, err
+	}
+	return tbl, nil
+}
+
+// GetSortedResult is identical to GetResult, except it accept it calls Sort()
+// on the ColListTableBuilder to make testing easier.
+// sortKeys and desc are passed directly into the Sort() call
+func (s *QueryProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, sortKeys []string, desc bool) (flux.Table, error) {
+	groupKey := NewGroupKey(
+		[]flux.ColMeta{
+			{
+				Label: "_measurement",
+				Type:  flux.TString,
+			},
+		},
+		[]values.Value{
+			values.NewString("profiler/query"),
+		},
+	)
+	b := NewColListTableBuilder(groupKey, alloc)
+	stats := q.Statistics()
+	colMeta := []flux.ColMeta{
+		{
+			Label: "_measurement",
+			Type:  flux.TString,
+		},
+		{
+			Label: "TotalDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "CompileDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "QueueDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "PlanDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "RequeueDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "ExecuteDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "Concurrency",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MaxAllocated",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "TotalAllocated",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "RuntimeErrors",
+			Type:  flux.TString,
+		},
+	}
+	colData := []interface{}{
+		"profiler/query",
+		stats.TotalDuration.Nanoseconds(),
+		stats.CompileDuration.Nanoseconds(),
+		stats.QueueDuration.Nanoseconds(),
+		stats.PlanDuration.Nanoseconds(),
+		stats.RequeueDuration.Nanoseconds(),
+		stats.ExecuteDuration.Nanoseconds(),
+		int64(stats.Concurrency),
+		stats.MaxAllocated,
+		stats.TotalAllocated,
+		strings.Join(stats.RuntimeErrors, "\n"),
+	}
+	stats.Metadata.Range(func(key string, value interface{}) bool {
+		var ty flux.ColType
+		if intValue, ok := value.(int); ok {
+			ty = flux.TInt
+			colData = append(colData, int64(intValue))
+		} else {
+			ty = flux.TString
+			colData = append(colData, fmt.Sprintf("%v", value))
+		}
+		colMeta = append(colMeta, flux.ColMeta{
+			Label: key,
+			Type:  ty,
+		})
+		return true
+	})
+	for _, col := range colMeta {
+		if _, err := b.AddCol(col); err != nil {
+			return nil, err
+		}
+	}
+	for i := 0; i < len(colData); i++ {
+		if intValue, ok := colData[i].(int64); ok {
+			b.AppendInt(i, intValue)
+		} else {
+			b.AppendString(i, colData[i].(string))
+		}
+	}
+	b.Sort(sortKeys, desc)
 	tbl, err := b.Table()
 	if err != nil {
 		return nil, err
