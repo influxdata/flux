@@ -1666,7 +1666,12 @@ impl Parser {
                         });
                         self.parse_function_expression(lparen, t, params)
                     }
-                    _ => Expression::Identifier(key),
+                    _ => Expression::Paren(Box::new(ParenExpr {
+                        base: self.base_node_from_tokens(&lparen, &t),
+                        lparen: self.make_comments(&lparen),
+                        expression: Expression::Identifier(key),
+                        rparen: self.make_comments(&t),
+                    })),
                 }
             }
             TOK_ASSIGN => {

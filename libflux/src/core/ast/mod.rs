@@ -75,6 +75,9 @@ impl SourceLocation {
     pub fn is_valid(&self) -> bool {
         self.start.is_valid() && self.end.is_valid()
     }
+    pub fn is_multiline(&self) -> bool {
+        self.start.line != self.end.line
+    }
 }
 
 fn skip_string_option(opt_str: &Option<String>) -> bool {
@@ -339,7 +342,9 @@ impl BaseNode {
     pub fn is_empty(&self) -> bool {
         self.errors.is_empty() && !self.location.is_valid()
     }
-
+    pub fn is_multiline(&self) -> bool {
+        self.location.is_multiline()
+    }
     pub fn set_comments(&mut self, comments: CommentList) {
         self.comments = comments;
     }

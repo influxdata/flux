@@ -3195,6 +3195,92 @@ builtin foo
 }
 
 #[test]
+fn comment_function_body() {
+    let mut p = Parser::new(
+        r#"fn = (tables=<-) =>
+// comment
+(tables)"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 3, 9),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
+                base: BaseNode {
+                    location: loc.get(1, 1, 3, 9),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 3),
+                        ..BaseNode::default()
+                    },
+                    name: "fn".to_string()
+                },
+                init: Expression::Function(Box::new(FunctionExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 6, 3, 9),
+                        ..BaseNode::default()
+                    },
+                    lparen: None,
+                    params: vec![Property {
+                        base: BaseNode {
+                            location: loc.get(1, 7, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        key: PropertyKey::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 7, 1, 13),
+                                ..BaseNode::default()
+                            },
+                            name: "tables".to_string()
+                        }),
+                        separator: None,
+                        value: Some(Expression::PipeLit(PipeLit {
+                            base: BaseNode {
+                                location: loc.get(1, 14, 1, 16),
+                                ..BaseNode::default()
+                            },
+                        })),
+                        comma: None,
+                    }],
+                    rparen: None,
+                    arrow: None,
+                    body: FunctionBody::Expr(Expression::Paren(Box::new(ParenExpr {
+                        base: BaseNode {
+                            location: loc.get(3, 1, 3, 9),
+                            ..BaseNode::default()
+                        },
+                        lparen: Some(Box::new(Comment {
+                            lit: "// comment\n".to_string(),
+                            next: None,
+                        })),
+                        expression: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(3, 2, 3, 8),
+                                ..BaseNode::default()
+                            },
+                            name: "tables".to_string(),
+                        }),
+                        rparen: None,
+                    })))
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
 fn identifier_with_number() {
     let mut p = Parser::new(r#"tan2()"#);
     let parsed = p.parse_file("".to_string());
@@ -8831,6 +8917,97 @@ fn arrow_function_return_map() {
                             rbrace: None,
                         })),
                         rparen: None,
+                    }))),
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn arrow_function() {
+    let mut p = Parser::new(r#"(x,y) => x == y"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 16),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 16),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Function(Box::new(FunctionExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    lparen: None,
+                    params: vec![
+                        Property {
+                            base: BaseNode {
+                                location: loc.get(1, 2, 1, 3),
+                                ..BaseNode::default()
+                            },
+                            key: PropertyKey::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(1, 2, 1, 3),
+                                    ..BaseNode::default()
+                                },
+                                name: "x".to_string()
+                            }),
+                            separator: None,
+                            value: None,
+                            comma: None,
+                        },
+                        Property {
+                            base: BaseNode {
+                                location: loc.get(1, 4, 1, 5),
+                                ..BaseNode::default()
+                            },
+                            key: PropertyKey::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(1, 4, 1, 5),
+                                    ..BaseNode::default()
+                                },
+                                name: "y".to_string()
+                            }),
+                            separator: None,
+                            value: None,
+                            comma: None,
+                        }
+                    ],
+                    rparen: None,
+                    arrow: None,
+                    body: FunctionBody::Expr(Expression::Binary(Box::new(BinaryExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 10, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::EqualOperator,
+                        left: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 10, 1, 11),
+                                ..BaseNode::default()
+                            },
+                            name: "x".to_string(),
+                        }),
+                        right: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 15, 1, 16),
+                                ..BaseNode::default()
+                            },
+                            name: "y".to_string(),
+                        }),
                     }))),
                 }))
             }))],
