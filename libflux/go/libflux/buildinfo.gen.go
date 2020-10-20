@@ -188,7 +188,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/tasks/last_success_duration_option_test.flux":       "e1decdb6a6ef5ae0fe522e2c07523c48f903d79b89002d48d61eb1fc55c1b93d",
 	"stdlib/influxdata/influxdb/tasks/last_success_with_option_test.flux":           "76d47e2dbb4841c8ec8f0ab0034be05f08d46eae54fb5afd1ecdb7d1db6e027c",
 	"stdlib/influxdata/influxdb/tasks/last_success_without_option_test.flux":        "88cd46269d337bdf67f3e8290289a0fff2ba93f5938e94749bb7b3966895c24f",
-	"stdlib/influxdata/influxdb/tasks/tasks.flux":                                   "8fb93e302956dd006471a825c4cac962bd5b5cfcb3ebc418357cfb3715fdee94",
+	"stdlib/influxdata/influxdb/tasks/tasks.flux":                                   "2b6f7bf7f4e77cb4b2e770a43494cfb977227706594cb88ee311f9c472320735",
 	"stdlib/influxdata/influxdb/v1/v1.flux":                                         "90996f2581f7ab8661128955719e1a7656bdc1e6110d67ea84c8e00f40ef2174",
 	"stdlib/internal/debug/debug.flux":                                              "8b2b545dc487e26283fadb47b71fbf187a6c184ead2c0ed22da33c9cbf426801",
 	"stdlib/internal/gen/gen.flux":                                                  "c7160953bd9eb51a575642b2d2d29ce528d43af6a2ee0dbb408c4715d8015433",
