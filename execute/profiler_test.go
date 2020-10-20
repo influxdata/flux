@@ -49,7 +49,19 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 #default,_profiler,,,,,,,,,
 ,result,table,_measurement,Type,Label,Count,MinDuration,MaxDuration,DurationSum,MeanDuration
 `)
-	count := 4
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type0", "lab0", 4, 1000, 1606, 5212, 1303.0,
+	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type1", "lab0", 4, 1101, 1707, 5616, 1404.0,
+	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type0", "lab1", 4, 1808, 2414, 8444, 2111.0,
+	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type1", "lab1", 4, 1909, 2515, 8848, 2212.0,
+	))
+	count := 16
 	wg := sync.WaitGroup{}
 	wg.Add(count)
 	fn := func(opType string, label string, ctx context.Context, offset int) {
@@ -64,103 +76,12 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 		wg.Done()
 	}
 	for i := 0; i < count; i++ {
-		op := fmt.Sprintf("type%d", i%2)
-		go fn(op, "lab0", ctx, 100+i*i)
+		typ := fmt.Sprintf("type%d", i%2)
+		label := fmt.Sprintf("lab%d", i/8)
+		go fn(typ, label, ctx, 100*i+i)
 	}
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
-		"type1",
-		"lab0",
-		2,
-		1101,
-		1109,
-		2210,
-		1105.0,
-	))
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
-		"type0",
-		"lab0",
-		2,
-		1100,
-		1104,
-		2204,
-		1102.0,
-	))
 	wg.Wait()
-	// Wait a bit for the profiling results to be added.
-	// In the query code path this is guaranteed because we only access the result
-	// after the query finishes execution AND its result tables are read and encoded.
-	time.Sleep(100 * time.Millisecond)
-	tbl, err := p.GetSortedResult(nil, &memory.Allocator{}, []string{"MeanDuration"}, true)
-	if err != nil {
-		t.Error(err)
-	}
-	result := table.NewProfilerResult(tbl)
-	got := flux.NewSliceResultIterator([]flux.Result{&result})
-	dec := csv.NewMultiResultDecoder(csv.ResultDecoderConfig{})
-	want, e := dec.Decode(ioutil.NopCloser(strings.NewReader(wantStr.String())))
-	if e != nil {
-		t.Error(err)
-	}
-	if err := executetest.EqualResultIterators(want, got); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestOperatorProfiler_GroupByLabel(t *testing.T) {
-	// Create an operator profiler
-	p := execute.AllProfilers["operator"]()
-	// And inject it to the context.
-	ctx := context.WithValue(context.Background(), execute.OperatorProfilerContextKey, p)
-	// Build the "want" table.
-	var wantStr bytes.Buffer
-	wantStr.WriteString(`
-#datatype,string,long,string,string,string,long,long,long,long,double
-#group,false,false,true,false,false,false,false,false,false,false
-#default,_profiler,,,,,,,,,
-,result,table,_measurement,Type,Label,Count,MinDuration,MaxDuration,DurationSum,MeanDuration
-`)
-	count := 4
-	wg := sync.WaitGroup{}
-	wg.Add(count)
-	fn := func(opType string, label string, ctx context.Context, offset int) {
-		st := time.Date(2020, 10, 14, 12, 30, 0, 0, time.UTC)
-		_, span := execute.StartSpanFromContext(ctx, opType, label, opentracing.StartTime(st))
-		profilerSpan := span.(*execute.OperatorProfilingSpan)
-		// Finish() will write the data to the profiler
-		// In Flux runtime, this is called when an execution node finishes execution
-		profilerSpan.FinishWithOptions(opentracing.FinishOptions{
-			FinishTime: time.Date(2020, 10, 14, 12, 30, 0, 1000+offset, time.UTC),
-		})
-		wg.Done()
-	}
-	for i := 0; i < count; i++ {
-		label := fmt.Sprintf("lab%d", i%2)
-		go fn("type0", label, ctx, 100+i*i)
-	}
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
-		"type0",
-		"lab1",
-		2,
-		1101,
-		1109,
-		2210,
-		1105.0,
-	))
-	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
-		"type0",
-		"lab0",
-		2,
-		1100,
-		1104,
-		2204,
-		1102.0,
-	))
-	wg.Wait()
-	// Wait a bit for the profiling results to be added.
-	// In the query code path this is guaranteed because we only access the result
-	// after the query finishes execution AND its result tables are read and encoded.
-	time.Sleep(100 * time.Millisecond)
-	tbl, err := p.GetSortedResult(nil, &memory.Allocator{}, []string{"MeanDuration"}, true)
+	tbl, err := p.GetSortedResult(nil, &memory.Allocator{}, false, "MeanDuration")
 	if err != nil {
 		t.Error(err)
 	}
