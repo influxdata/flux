@@ -12,7 +12,8 @@ option lastSuccessTime = _zeroTime
 
 // _lastSuccess will return the time set on the option lastSuccessTime
 // or it will return the orTime.
-builtin _lastSuccess: (orTime: time, lastSuccessTime: time) => time
+builtin _lastSuccess:
+    (orTime: T, lastSuccessTime: time) => time where T: Timeable
 
 // lastSuccess will return the last successful time a task ran
 // within an influxdb task. If the task has not successfully run,
