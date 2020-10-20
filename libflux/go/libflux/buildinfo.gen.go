@@ -184,6 +184,8 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/schema/show_tag_values_test.flux":                   "0826642fc2d6dadaa6358a819d60af146823b7ed705a4a7d57dd9ababb636df9",
 	"stdlib/influxdata/influxdb/secrets/secrets.flux":                               "757d48af577572a25361b27fab833f40278b02c9fbb9ba0e62672596f44ab3cf",
 	"stdlib/influxdata/influxdb/secrets/secrets_test.flux":                          "53284936c805a65d0d408d246d970ee541d4c0fbe9559a603c19dd4f418c7c05",
+	"stdlib/influxdata/influxdb/tasks/last_success_duration_no_option_test.flux":    "efd8e08f486555adbf63a8b5e2bb6bcb0b042e10d7cf6422d4463a19a401c7e6",
+	"stdlib/influxdata/influxdb/tasks/last_success_duration_option_test.flux":       "e1decdb6a6ef5ae0fe522e2c07523c48f903d79b89002d48d61eb1fc55c1b93d",
 	"stdlib/influxdata/influxdb/tasks/last_success_with_option_test.flux":           "76d47e2dbb4841c8ec8f0ab0034be05f08d46eae54fb5afd1ecdb7d1db6e027c",
 	"stdlib/influxdata/influxdb/tasks/last_success_without_option_test.flux":        "88cd46269d337bdf67f3e8290289a0fff2ba93f5938e94749bb7b3966895c24f",
 	"stdlib/influxdata/influxdb/tasks/tasks.flux":                                   "8fb93e302956dd006471a825c4cac962bd5b5cfcb3ebc418357cfb3715fdee94",
