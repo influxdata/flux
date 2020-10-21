@@ -308,18 +308,70 @@ fn comments() {
     assert_unchanged("(1 + 1\n    // attach to close paren\n    )");
     assert_unchanged("1 * \n    // attach to open paren\n    (1 + 1)");
     assert_unchanged("1 * (1 + 1\n    // attach to close paren\n    )");
-    assert_unchanged("from\n    //comment\n    (bucket: bucket)");
-    assert_unchanged("from(\n    //comment\n    bucket: bucket)");
-    assert_unchanged("from(\n    bucket\n        //comment\n        : bucket,\n)");
-    assert_unchanged("from(\n    bucket: \n        //comment\n        bucket,\n)");
-    assert_unchanged("from(bucket: bucket\n    //comment\n    )");
-    assert_unchanged("from(\n    //comment\n    bucket)");
-    assert_unchanged("from(\n    bucket\n        //comment\n        ,\n        _option,\n    )");
-    assert_unchanged("from(\n    bucket,\n    \n        //comment\n        _option,\n)");
-    assert_unchanged("from(\n    bucket,\n    _option,\n\n    //comment\n    )");
+    assert_unchanged(
+        "from
+    //comment
+    (bucket: bucket)",
+    );
+    assert_unchanged(
+        "from(
+    //comment
+    bucket: bucket)",
+    );
+    assert_unchanged(
+        "from(
+    bucket
+        //comment
+        : bucket,
+)",
+    );
+    assert_unchanged(
+        "from(
+    bucket: 
+        //comment
+        bucket,
+)",
+    );
+    assert_unchanged(
+        "from(bucket: bucket
+    //comment
+    )",
+    );
+    assert_unchanged(
+        "from(
+    //comment
+    bucket)",
+    );
+    assert_unchanged(
+        "from(
+    bucket
+        //comment
+        ,
+        _option,
+    )",
+    );
+    assert_unchanged(
+        "from(
+    bucket,
+    //comment
+    _option,
+)",
+    );
+    assert_unchanged(
+        "from(
+    bucket,
+    _option,
+//comment
+)",
+    );
     assert_format(
-        "from(bucket, _option//comment1\n,//comment2\n)",
-        "from(bucket, _option\n    //comment1\n    //comment2\n)",
+        "from(bucket, _option//comment1
+,//comment2
+)",
+        "from(bucket, _option
+    //comment1
+    //comment2
+)",
     );
 
     /* Expressions. */
@@ -343,7 +395,6 @@ fn comments() {
     assert_unchanged("option a.\n    //comment\n    b = 1");
     assert_unchanged("option a.b\n    //comment\n     = 1");
 
-    // Some funny business here. Propbably need to scan write_string for \n
     assert_unchanged("f = \n    //comment\n    (a) => a()");
     assert_unchanged("f = (\n    //comment\n    a) => a()");
     assert_unchanged("f = (\n    //comment\n    a, b) => a()");
@@ -405,49 +456,131 @@ fn comments() {
     assert_unchanged("a = b[\n    //comment\n    1]");
     assert_unchanged("a = b[1\n    //comment\n    ]");
 
-    assert_unchanged("//comment\n{_time: r._time, io_time: r._value}");
-    assert_unchanged("{\n    //comment\n    _time: r._time,\n    io_time: r._value,\n}");
     assert_unchanged(
-        "{\n    _time\n        //comment\n        : r._time,\n    io_time: r._value,\n}",
+        "//comment
+{_time: r._time, io_time: r._value}",
     );
     assert_unchanged(
-        "{\n    _time: \n        //comment\n        r._time,\n    io_time: r._value,\n}",
+        "{
+    //comment
+    _time: r._time,
+    io_time: r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r\n        //comment\n        ._time,\n    io_time: r._value,\n}",
+        "{
+    _time
+        //comment
+        : r._time,
+    io_time: r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r.\n        //comment\n        _time,\n    io_time: r._value,\n}",
+        "{
+    _time: 
+        //comment
+        r._time,
+    io_time: r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r\n        //comment\n        [\"_time\"],\n    io_time: r._value,\n}",
+        "{
+    _time: r
+        //comment
+        ._time,
+    io_time: r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r._time\n        //comment\n        ,\n        io_time: r._value,\n    }",
+        "{
+    _time: r.
+        //comment
+        _time,
+    io_time: r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r._time,\n    \n        //comment\n        io_time: r._value,\n}",
+        "{
+    _time: r
+        //comment
+        [\"_time\"],
+    io_time: r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r._time,\n    io_time\n        //comment\n        : r._value,\n}",
+        "{
+    _time: r._time
+        //comment
+        ,
+        io_time: r._value,
+    }",
     );
     assert_unchanged(
-        "{\n    _time: r._time,\n    io_time: \n        //comment\n        r._value,\n}",
+        "{
+    _time: r._time,
+    //comment
+    io_time: r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r._time,\n    io_time: r\n        //comment\n        ._value,\n}",
+        "{
+    _time: r._time,
+    io_time
+        //comment
+        : r._value,
+}",
     );
     assert_unchanged(
-        "{\n    _time: r._time,\n    io_time: r.\n        //comment\n        _value,\n}",
+        "{
+    _time: r._time,
+    io_time: 
+        //comment
+        r._value,
+}",
     );
-    assert_unchanged("{\n    _time: r._time,\n    io_time: r._value,\n\n    //comment\n    }");
+    assert_unchanged(
+        "{
+    _time: r._time,
+    io_time: r
+        //comment
+        ._value,
+}",
+    );
+    assert_unchanged(
+        "{
+    _time: r._time,
+    io_time: r.
+        //comment
+        _value,
+}",
+    );
+    assert_unchanged(
+        "{
+    _time: r._time,
+    io_time: r._value,
+//comment
+}",
+    );
     assert_format(
-        "{_time: r._time, io_time: r._value\n    //comment\n    ,}",
-        "{\n    _time: r._time,\n    io_time: r._value\n        //comment\n        ,\n    }",
+        "{_time: r._time, io_time: r._value
+    //comment
+    ,}",
+        "{
+    _time: r._time,
+    io_time: r._value
+        //comment
+        ,
+    }",
     );
     assert_format(
-        "{_time: r._time, io_time: r._value,\n    //comment\n    }",
-        "{\n    _time: r._time,\n    io_time: r._value,\n\n    //comment\n    }",
+        "{_time: r._time, io_time: r._value,
+    //comment
+    }",
+        "{
+    _time: r._time,
+    io_time: r._value,
+//comment
+}",
     );
 
     assert_unchanged("//comment\nimport \"foo\"");
@@ -536,9 +669,8 @@ j
 {
     _time: r._time,
     io_time: r._value,
-
-    // this is the end
-    }
+// this is the end
+}
 
 // minimal
 foo = (arg=[1, 2]) => 1
@@ -569,9 +701,8 @@ left = from(bucket: "test")
 right = from(bucket: "test")
     |> range(
         start: 2018-05-22T19:53:00Z,
-        
-            // please stop
-            stop: 2018-05-22T19:55:00Z,
+        // please stop
+        stop: 2018-05-22T19:55:00Z,
     )
     |> drop(
         // spare me the pain
@@ -691,5 +822,25 @@ fn type_expressions() {
 ) => {x with a: int, b: string} where
     A: Timeable,
     B: Record"#,
+    );
+}
+
+#[test]
+fn temp_indent() {
+    // The formatter uses a temporary indent when it finds a comment where
+    // the line would normally be on a single line
+
+    assert_unchanged(
+        r#"a + 
+    // comment
+    b"#,
+    );
+    assert_unchanged(
+        r#"call(
+    a: 1,
+    b: 2,
+    // c is special
+    c: "special",
+)"#,
     );
 }

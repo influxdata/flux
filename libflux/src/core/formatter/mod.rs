@@ -65,10 +65,14 @@ impl Formatter {
         Ok(self.builder.clone())
     }
 
-    // Do not use to send newline. This is not (yet) setting clear
-    // appropriately.
     fn write_string(&mut self, s: &str) {
         self.clear = false;
+        // check if the string ends in whitespace
+        if let Some(nl) = s.rfind('\n') {
+            if s[nl..s.len()].trim().is_empty() {
+                self.clear = true;
+            }
+        }
         (&mut self.builder).push_str(s);
     }
 
