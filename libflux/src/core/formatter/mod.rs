@@ -87,7 +87,7 @@ impl Formatter {
 
     fn write_indent(&mut self) {
         for _ in 0..self.indentation {
-            self.write_rune('\t')
+            (&mut self.builder).push_str("    ")
         }
     }
     fn indent(&mut self) {

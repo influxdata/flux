@@ -41,7 +41,7 @@ fn funcs() {
     assert_unchanged(r#"(r) => ({r with _value: r._value + 1})"#);
     assert_unchanged(
         r#"(r) => ({r with
-	_value: r._value + 1,
+    _value: r._value + 1,
 })"#,
     );
 
@@ -52,15 +52,15 @@ fn funcs() {
     // multiline based on pipe depth
     assert_unchanged(
         r#"(tables) => tables
-	|> a()
-	|> b()"#,
+    |> a()
+    |> b()"#,
     );
     // single line
     assert_unchanged(r#"(tables) => tables |> a()"#);
     // multiline based on initial conditions
     assert_unchanged(
         r#"(tables) => tables
-	|> a()"#,
+    |> a()"#,
     );
 }
 
@@ -71,9 +71,9 @@ fn object() {
     assert_unchanged("{a, b, c}"); // implicit key object literal
     assert_unchanged(r#"{"a": 1, "b": 2}"#); // object with string literal keys
     assert_unchanged(r#"{"a": 1, b: 2}"#); // object with mixed keys
-    assert_unchanged("{\n\ta: 1,\n\tb: 2,\n\tc: 3,\n\td: 4,\n}"); // multiline object based on property count
-    assert_unchanged("{\n\ta: 1,\n\tb: 2,\n}"); // multiline object based on initial conditions
-    assert_unchanged("{x with\n\ta: 1,\n\tb: 2,\n}"); // multiline object using "with"
+    assert_unchanged("{\n    a: 1,\n    b: 2,\n    c: 3,\n    d: 4,\n}"); // multiline object based on property count
+    assert_unchanged("{\n    a: 1,\n    b: 2,\n}"); // multiline object based on initial conditions
+    assert_unchanged("{x with\n    a: 1,\n    b: 2,\n}"); // multiline object using "with"
 }
 
 #[test]
@@ -126,8 +126,8 @@ fn vars() {
 fn block() {
     assert_unchanged(
         r#"foo = () => {
-	foo(f: 1)
-	1 + 1
+    foo(f: 1)
+    1 + 1
 }"#,
     );
     assert_format(
@@ -175,14 +175,14 @@ import bar "path/bar""#,
         r#"import foo "path/foo"
 
 foo.from(bucket: "testdb")
-	|> range(start: 2018-05-20T19:53:26Z)"#,
+    |> range(start: 2018-05-20T19:53:26Z)"#,
     ); // no_package
     assert_unchanged(
         r#"package foo
 
 
 from(bucket: "testdb")
-	|> range(start: 2018-05-20T19:53:26Z)"#,
+    |> range(start: 2018-05-20T19:53:26Z)"#,
     ); // no_imports
     assert_unchanged(
         r#"package foo
@@ -192,7 +192,7 @@ import "path/foo"
 import bar "path/bar"
 
 from(bucket: "testdb")
-	|> range(start: 2018-05-20T19:53:26Z)"#,
+    |> range(start: 2018-05-20T19:53:26Z)"#,
     ); // package import
 }
 
@@ -200,10 +200,10 @@ from(bucket: "testdb")
 fn simple() {
     assert_unchanged(
         r#"from(bucket: "testdb")
-	|> range(start: 2018-05-20T19:53:26Z)
-	|> filter(fn: (r) => r.name =~ /.*0/)
-	|> group(by: ["_measurement", "_start"])
-	|> map(fn: (r) => ({_time: r._time, io_time: r._value}))"#,
+    |> range(start: 2018-05-20T19:53:26Z)
+    |> filter(fn: (r) => r.name =~ /.*0/)
+    |> group(by: ["_measurement", "_start"])
+    |> map(fn: (r) => ({_time: r._time, io_time: r._value}))"#,
     );
 }
 
@@ -211,10 +211,10 @@ fn simple() {
 fn medium() {
     assert_unchanged(
         r#"from(bucket: "testdb")
-	|> range(start: 2018-05-20T19:53:26Z)
-	|> filter(fn: (r) => r.name =~ /.*0/)
-	|> group(by: ["_measurement", "_start"])
-	|> map(fn: (r) => ({_time: r1._time, io_time: r._value}))"#,
+    |> range(start: 2018-05-20T19:53:26Z)
+    |> filter(fn: (r) => r.name =~ /.*0/)
+    |> group(by: ["_measurement", "_start"])
+    |> map(fn: (r) => ({_time: r1._time, io_time: r._value}))"#,
     )
 }
 
@@ -222,15 +222,15 @@ fn medium() {
 fn complex() {
     assert_unchanged(
         r#"left = from(bucket: "test")
-	|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-	|> drop(columns: ["_start", "_stop"])
-	|> filter(fn: (r) => r.user == "user1")
-	|> group(by: ["user"])
+    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+    |> drop(columns: ["_start", "_stop"])
+    |> filter(fn: (r) => r.user == "user1")
+    |> group(by: ["user"])
 right = from(bucket: "test")
-	|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-	|> drop(columns: ["_start", "_stop"])
-	|> filter(fn: (r) => r.user == "user2")
-	|> group(by: ["_measurement"])
+    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+    |> drop(columns: ["_start", "_stop"])
+    |> filter(fn: (r) => r.user == "user2")
+    |> group(by: ["_measurement"])
 
 join(tables: {left: left, right: right}, on: ["_time", "_measurement"])"#,
     );
@@ -240,19 +240,19 @@ join(tables: {left: left, right: right}, on: ["_time", "_measurement"])"#,
 fn option_complete() {
     assert_unchanged(
         r#"option task = {
-	name: "foo",
-	every: 1h,
-	delay: 10m,
-	cron: "02***",
-	retry: 5,
+    name: "foo",
+    every: 1h,
+    delay: 10m,
+    cron: "02***",
+    retry: 5,
 }
 
 from(bucket: "test")
-	|> range(start: 2018-05-22T19:53:26Z)
-	|> window(every: task.every)
-	|> group(by: ["_field", "host"])
-	|> sum()
-	|> to(bucket: "test", tagColumns: ["host", "_field"])"#,
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> window(every: task.every)
+    |> group(by: ["_field", "host"])
+    |> sum()
+    |> to(bucket: "test", tagColumns: ["host", "_field"])"#,
     )
 }
 
@@ -261,13 +261,13 @@ fn functions_complete() {
     assert_unchanged(
         r#"foo = () => from(bucket: "testdb")
 bar = (x=<-) => x
-	|> filter(fn: (r) => r.name =~ /.*0/)
+    |> filter(fn: (r) => r.name =~ /.*0/)
 baz = (y=<-) => y
-	|> map(fn: (r) => ({_time: r._time, io_time: r._value}))
+    |> map(fn: (r) => ({_time: r._time, io_time: r._value}))
 
 foo()
-	|> bar()
-	|> baz()"#,
+    |> bar()
+    |> baz()"#,
     )
 }
 
@@ -275,22 +275,22 @@ foo()
 fn multi_indent() {
     assert_unchanged(
         r#"_sortLimit = (n, desc, columns=["_value"], tables=<-) => tables
-	|> sort(columns: columns, desc: desc)
-	|> limit(n: n)
+    |> sort(columns: columns, desc: desc)
+    |> limit(n: n)
 _highestOrLowest = (n, _sortLimit, reducer, columns=["_value"], by, tables=<-) => tables
-	|> group(by: by)
-	|> reducer()
-	|> group(none: true)
-	|> _sortLimit(n: n, columns: columns)
+    |> group(by: by)
+    |> reducer()
+    |> group(none: true)
+    |> _sortLimit(n: n, columns: columns)
 highestAverage = (n, columns=["_value"], by, tables=<-) => tables
-	|> _highestOrLowest(
-		n: n,
-		columns: columns,
-		by: by,
-		reducer: (tables=<-) => tables
-			|> mean(columns: [columns[0]]),
-		_sortLimit: top,
-	)"#,
+    |> _highestOrLowest(
+        n: n,
+        columns: columns,
+        by: by,
+        reducer: (tables=<-) => tables
+            |> mean(columns: [columns[0]]),
+        _sortLimit: top,
+    )"#,
     )
 }
 
@@ -305,147 +305,169 @@ fn comments() {
     assert_unchanged("// attach to duration\n2m");
     assert_unchanged("// attach to bool\ntrue");
     assert_unchanged("// attach to open paren\n(1 + 1)");
-    assert_unchanged("(1 + 1\n\t// attach to close paren\n\t)");
-    assert_unchanged("1 * \n\t// attach to open paren\n\t(1 + 1)");
-    assert_unchanged("1 * (1 + 1\n\t// attach to close paren\n\t)");
-    assert_unchanged("from\n\t//comment\n\t(bucket: bucket)");
-    assert_unchanged("from(\n\t//comment\n\tbucket: bucket)");
-    assert_unchanged("from(\n\tbucket\n\t\t//comment\n\t\t: bucket,\n)");
-    assert_unchanged("from(\n\tbucket: \n\t\t//comment\n\t\tbucket,\n)");
-    assert_unchanged("from(bucket: bucket\n\t//comment\n\t)");
-    assert_unchanged("from(\n\t//comment\n\tbucket)");
-    assert_unchanged("from(\n\tbucket\n\t\t//comment\n\t\t,\n\t\t_option,\n\t)");
-    assert_unchanged("from(\n\tbucket,\n\t\n\t\t//comment\n\t\t_option,\n)");
-    assert_unchanged("from(\n\tbucket,\n\t_option,\n\n\t//comment\n\t)");
+    assert_unchanged("(1 + 1\n    // attach to close paren\n    )");
+    assert_unchanged("1 * \n    // attach to open paren\n    (1 + 1)");
+    assert_unchanged("1 * (1 + 1\n    // attach to close paren\n    )");
+    assert_unchanged("from\n    //comment\n    (bucket: bucket)");
+    assert_unchanged("from(\n    //comment\n    bucket: bucket)");
+    assert_unchanged("from(\n    bucket\n        //comment\n        : bucket,\n)");
+    assert_unchanged("from(\n    bucket: \n        //comment\n        bucket,\n)");
+    assert_unchanged("from(bucket: bucket\n    //comment\n    )");
+    assert_unchanged("from(\n    //comment\n    bucket)");
+    assert_unchanged("from(\n    bucket\n        //comment\n        ,\n        _option,\n    )");
+    assert_unchanged("from(\n    bucket,\n    \n        //comment\n        _option,\n)");
+    assert_unchanged("from(\n    bucket,\n    _option,\n\n    //comment\n    )");
     assert_format(
         "from(bucket, _option//comment1\n,//comment2\n)",
-        "from(bucket, _option\n\t//comment1\n\t//comment2\n)",
+        "from(bucket, _option\n    //comment1\n    //comment2\n)",
     );
 
     /* Expressions. */
-    assert_unchanged("1 \n\t//comment\n\t<= 1");
-    assert_unchanged("1 \n\t//comment\n\t+ 1");
-    assert_unchanged("1 \n\t//comment\n\t* 1");
-    assert_unchanged("from()\n\t//comment\n\t|> to()");
+    assert_unchanged("1 \n    //comment\n    <= 1");
+    assert_unchanged("1 \n    //comment\n    + 1");
+    assert_unchanged("1 \n    //comment\n    * 1");
+    assert_unchanged("from()\n    //comment\n    |> to()");
     assert_unchanged("//comment\n+1");
-    assert_format("1 * //comment\n-1", "1 * (\n\t//comment\n\t-1)");
-    assert_unchanged("i = \n\t//comment\n\tnot true");
+    assert_format("1 * //comment\n-1", "1 * (\n    //comment\n    -1)");
+    assert_unchanged("i = \n    //comment\n    not true");
     assert_unchanged("//comment\nexists 1");
-    assert_unchanged("a \n\t//comment\n\t=~ /foo/");
-    assert_unchanged("a \n\t//comment\n\t!~ /foo/");
-    assert_unchanged("a \n\t//comment\n\tand b");
-    assert_unchanged("a \n\t//comment\n\tor b");
+    assert_unchanged("a \n    //comment\n    =~ /foo/");
+    assert_unchanged("a \n    //comment\n    !~ /foo/");
+    assert_unchanged("a \n    //comment\n    and b");
+    assert_unchanged("a \n    //comment\n    or b");
 
-    assert_unchanged("a\n\t//comment\n\t = 1");
+    assert_unchanged("a\n    //comment\n     = 1");
     assert_unchanged("//comment\noption a = 1");
-    assert_unchanged("option a\n\t//comment\n\t = 1");
-    assert_unchanged("option a\n\t//comment\n\t.b = 1");
-    assert_unchanged("option a.\n\t//comment\n\tb = 1");
-    assert_unchanged("option a.b\n\t//comment\n\t = 1");
+    assert_unchanged("option a\n    //comment\n     = 1");
+    assert_unchanged("option a\n    //comment\n    .b = 1");
+    assert_unchanged("option a.\n    //comment\n    b = 1");
+    assert_unchanged("option a.b\n    //comment\n     = 1");
 
     // Some funny business here. Propbably need to scan write_string for \n
-    assert_unchanged("f = \n\t//comment\n\t(a) => a()");
-    assert_unchanged("f = (\n\t//comment\n\ta) => a()");
-    assert_unchanged("f = (\n\t//comment\n\ta, b) => a()");
-    assert_unchanged("f = (a\n\t//comment\n\t, b) => a()");
-    assert_unchanged("f = (a\n\t//comment\n\t=1, b=2) => a()");
-    assert_unchanged("f = (a=\n\t//comment\n\t1, b=2) => a()");
-    assert_unchanged("f = (a=1\n\t//comment\n\t, b=2) => a()");
-    assert_unchanged("f = (a=1, \n\t//comment\n\tb=2) => a()");
-    assert_unchanged("f = (a=1, b\n\t//comment\n\t=2) => a()");
-    assert_unchanged("f = (a=1, b=\n\t//comment\n\t2) => a()");
+    assert_unchanged("f = \n    //comment\n    (a) => a()");
+    assert_unchanged("f = (\n    //comment\n    a) => a()");
+    assert_unchanged("f = (\n    //comment\n    a, b) => a()");
+    assert_unchanged("f = (a\n    //comment\n    , b) => a()");
+    assert_unchanged("f = (a\n    //comment\n    =1, b=2) => a()");
+    assert_unchanged("f = (a=\n    //comment\n    1, b=2) => a()");
+    assert_unchanged("f = (a=1\n    //comment\n    , b=2) => a()");
+    assert_unchanged("f = (a=1, \n    //comment\n    b=2) => a()");
+    assert_unchanged("f = (a=1, b\n    //comment\n    =2) => a()");
+    assert_unchanged("f = (a=1, b=\n    //comment\n    2) => a()");
     assert_format(
-        "f = (a=1, b=2//comment\n,) =>\n\t(a())",
-        "f = (a=1, b=2\n\t//comment\n\t) => a()",
+        "f = (a=1, b=2//comment\n,) =>\n    (a())",
+        "f = (a=1, b=2\n    //comment\n    ) => a()",
     );
-    assert_unchanged("f = (a=1, b=2\n\t//comment\n\t) => a()");
+    assert_unchanged("f = (a=1, b=2\n    //comment\n    ) => a()");
     assert_format(
-        "f = (a=1, b=2,//comment\n) =>\n\t(a())",
-        "f = (a=1, b=2\n\t//comment\n\t) => a()",
+        "f = (a=1, b=2,//comment\n) =>\n    (a())",
+        "f = (a=1, b=2\n    //comment\n    ) => a()",
     );
     assert_format(
-        "f = (a=1, b=2//comment1\n,//comment2\n) =>\n\t(a())",
-        "f = (a=1, b=2\n\t//comment1\n\t//comment2\n\t) => a()",
+        "f = (a=1, b=2//comment1\n,//comment2\n) =>\n    (a())",
+        "f = (a=1, b=2\n    //comment1\n    //comment2\n    ) => a()",
     );
-    assert_unchanged("f = (a=1, b=2) \n\t//comment\n\t=> a()");
+    assert_unchanged("f = (a=1, b=2) \n    //comment\n    => a()");
     assert_format(
-        "f = (x=1, y=2) =>\n\t//comment\n(a())",
-        "f = (x=1, y=2) => \n\t//comment\n\t(a())",
+        "f = (x=1, y=2) =>\n    //comment\n(a())",
+        "f = (x=1, y=2) => \n    //comment\n    (a())",
     );
-    assert_unchanged("f = (a=1, b=2) => \n\t//comment\n\ta()");
+    assert_unchanged("f = (a=1, b=2) => \n    //comment\n    a()");
 
     assert_unchanged("//comment\ntest a = 1");
-    assert_unchanged("test \n\t//comment\n\ta = 1");
-    assert_unchanged("test a\n\t//comment\n\t = 1");
-    assert_unchanged("test a = \n\t//comment\n\t1");
+    assert_unchanged("test \n    //comment\n    a = 1");
+    assert_unchanged("test a\n    //comment\n     = 1");
+    assert_unchanged("test a = \n    //comment\n    1");
 
     assert_unchanged("//comment\nreturn x");
-    assert_unchanged("return \n\t//comment\n\tx");
+    assert_unchanged("return \n    //comment\n    x");
 
     assert_unchanged("//comment\nif 1 then 2 else 3");
-    assert_unchanged("if \n\t//comment\n\t1 then 2 else 3");
-    assert_unchanged("if 1\n\t//comment\n\t then 2 else 3");
-    assert_unchanged("if 1 then \n\t//comment\n\t2 else 3");
-    assert_unchanged("if 1 then 2\n\t//comment\n\t else 3");
-    assert_unchanged("if 1 then 2 else \n\t//comment\n\t3");
+    assert_unchanged("if \n    //comment\n    1 then 2 else 3");
+    assert_unchanged("if 1\n    //comment\n     then 2 else 3");
+    assert_unchanged("if 1 then \n    //comment\n    2 else 3");
+    assert_unchanged("if 1 then 2\n    //comment\n     else 3");
+    assert_unchanged("if 1 then 2 else \n    //comment\n    3");
 
     assert_unchanged("//comment\nfoo[\"bar\"]");
-    assert_unchanged("foo\n\t//comment\n\t[\"bar\"]");
-    assert_unchanged("foo[\n\t//comment\n\t\"bar\"]");
-    assert_unchanged("foo[\"bar\"\n\t//comment\n\t]");
+    assert_unchanged("foo\n    //comment\n    [\"bar\"]");
+    assert_unchanged("foo[\n    //comment\n    \"bar\"]");
+    assert_unchanged("foo[\"bar\"\n    //comment\n    ]");
 
-    assert_unchanged("a = \n\t//comment\n\t[1, 2, 3]");
-    assert_unchanged("a = [\n\t//comment\n\t1, 2, 3]");
-    assert_unchanged("a = [1\n\t//comment\n\t, 2, 3]");
-    assert_unchanged("a = [1, \n\t//comment\n\t2, 3]");
-    assert_unchanged("a = [1, \n\t//comment1\n\t2\n\t//comment2\n\t, 3]");
-    assert_unchanged("a = [1, 2, 3\n\t//comment\n\t]");
+    assert_unchanged("a = \n    //comment\n    [1, 2, 3]");
+    assert_unchanged("a = [\n    //comment\n    1, 2, 3]");
+    assert_unchanged("a = [1\n    //comment\n    , 2, 3]");
+    assert_unchanged("a = [1, \n    //comment\n    2, 3]");
+    assert_unchanged("a = [1, \n    //comment1\n    2\n    //comment2\n    , 3]");
+    assert_unchanged("a = [1, 2, 3\n    //comment\n    ]");
 
-    assert_unchanged("a = b\n\t//comment\n\t[1]");
-    assert_unchanged("a = b[\n\t//comment\n\t1]");
-    assert_unchanged("a = b[1\n\t//comment\n\t]");
+    assert_unchanged("a = b\n    //comment\n    [1]");
+    assert_unchanged("a = b[\n    //comment\n    1]");
+    assert_unchanged("a = b[1\n    //comment\n    ]");
 
     assert_unchanged("//comment\n{_time: r._time, io_time: r._value}");
-    assert_unchanged("{\n\t//comment\n\t_time: r._time,\n\tio_time: r._value,\n}");
-    assert_unchanged("{\n\t_time\n\t\t//comment\n\t\t: r._time,\n\tio_time: r._value,\n}");
-    assert_unchanged("{\n\t_time: \n\t\t//comment\n\t\tr._time,\n\tio_time: r._value,\n}");
-    assert_unchanged("{\n\t_time: r\n\t\t//comment\n\t\t._time,\n\tio_time: r._value,\n}");
-    assert_unchanged("{\n\t_time: r.\n\t\t//comment\n\t\t_time,\n\tio_time: r._value,\n}");
-    assert_unchanged("{\n\t_time: r\n\t\t//comment\n\t\t[\"_time\"],\n\tio_time: r._value,\n}");
-    assert_unchanged("{\n\t_time: r._time\n\t\t//comment\n\t\t,\n\t\tio_time: r._value,\n\t}");
-    assert_unchanged("{\n\t_time: r._time,\n\t\n\t\t//comment\n\t\tio_time: r._value,\n}");
-    assert_unchanged("{\n\t_time: r._time,\n\tio_time\n\t\t//comment\n\t\t: r._value,\n}");
-    assert_unchanged("{\n\t_time: r._time,\n\tio_time: \n\t\t//comment\n\t\tr._value,\n}");
-    assert_unchanged("{\n\t_time: r._time,\n\tio_time: r\n\t\t//comment\n\t\t._value,\n}");
-    assert_unchanged("{\n\t_time: r._time,\n\tio_time: r.\n\t\t//comment\n\t\t_value,\n}");
-    assert_unchanged("{\n\t_time: r._time,\n\tio_time: r._value,\n\n\t//comment\n\t}");
+    assert_unchanged("{\n    //comment\n    _time: r._time,\n    io_time: r._value,\n}");
+    assert_unchanged(
+        "{\n    _time\n        //comment\n        : r._time,\n    io_time: r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: \n        //comment\n        r._time,\n    io_time: r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r\n        //comment\n        ._time,\n    io_time: r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r.\n        //comment\n        _time,\n    io_time: r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r\n        //comment\n        [\"_time\"],\n    io_time: r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r._time\n        //comment\n        ,\n        io_time: r._value,\n    }",
+    );
+    assert_unchanged(
+        "{\n    _time: r._time,\n    \n        //comment\n        io_time: r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r._time,\n    io_time\n        //comment\n        : r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r._time,\n    io_time: \n        //comment\n        r._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r._time,\n    io_time: r\n        //comment\n        ._value,\n}",
+    );
+    assert_unchanged(
+        "{\n    _time: r._time,\n    io_time: r.\n        //comment\n        _value,\n}",
+    );
+    assert_unchanged("{\n    _time: r._time,\n    io_time: r._value,\n\n    //comment\n    }");
     assert_format(
-        "{_time: r._time, io_time: r._value\n\t//comment\n\t,}",
-        "{\n\t_time: r._time,\n\tio_time: r._value\n\t\t//comment\n\t\t,\n\t}",
+        "{_time: r._time, io_time: r._value\n    //comment\n    ,}",
+        "{\n    _time: r._time,\n    io_time: r._value\n        //comment\n        ,\n    }",
     );
     assert_format(
-        "{_time: r._time, io_time: r._value,\n\t//comment\n\t}",
-        "{\n\t_time: r._time,\n\tio_time: r._value,\n\n\t//comment\n\t}",
+        "{_time: r._time, io_time: r._value,\n    //comment\n    }",
+        "{\n    _time: r._time,\n    io_time: r._value,\n\n    //comment\n    }",
     );
 
     assert_unchanged("//comment\nimport \"foo\"");
-    assert_unchanged("import \n\t//comment\n\t\"foo\"");
-    assert_unchanged("import \n\t//comment\n\tfoo \"foo\"");
+    assert_unchanged("import \n    //comment\n    \"foo\"");
+    assert_unchanged("import \n    //comment\n    foo \"foo\"");
 
     assert_unchanged("//comment\npackage foo\n");
-    assert_unchanged("package \n\t//comment\n\tfoo\n");
+    assert_unchanged("package \n    //comment\n    foo\n");
 
-    assert_unchanged("{\n\t//comment\n\tfoo with\n\ta: 1,\n\tb: 2,\n}");
-    assert_unchanged("{foo\n\t//comment\n\t with\n\ta: 1,\n\tb: 2,\n}");
-    assert_unchanged("{foo with\n\t//comment\n\ta: 1,\n\tb: 2,\n}");
+    assert_unchanged("{\n    //comment\n    foo with\n    a: 1,\n    b: 2,\n}");
+    assert_unchanged("{foo\n    //comment\n     with\n    a: 1,\n    b: 2,\n}");
+    assert_unchanged("{foo with\n    //comment\n    a: 1,\n    b: 2,\n}");
 
-    assert_unchanged("fn = (tables=\n\t//comment\n\t<-) => tables");
-    assert_unchanged("fn = (tables=<-) => \n\t//comment\n\ttables");
-    assert_unchanged("fn = (tables=<-) => \n\t//comment\n\t(tables)");
+    assert_unchanged("fn = (tables=\n    //comment\n    <-) => tables");
+    assert_unchanged("fn = (tables=<-) => \n    //comment\n    tables");
+    assert_unchanged("fn = (tables=<-) => \n    //comment\n    (tables)");
 
     // Comments around braces needs some work.
-    assert_unchanged("fn = (a) => \n\t//comment\n\t{\n\treturn a\n}");
-    assert_unchanged("fn = (a) => {\n\treturn a\n// ending\n}");
+    assert_unchanged("fn = (a) => \n    //comment\n    {\n    return a\n}");
+    assert_unchanged("fn = (a) => {\n    return a\n// ending\n}");
 
     assert_format(
         r#"    // hi
@@ -458,38 +480,38 @@ foo = (arg=[1, 2]) => (1)
 
 // left
 left = from(bucket: "test")
-	|> range(start: 2018-05-22T19:53:00Z
-	// i write too many comments
-	, stop: 2018-05-22T19:55:00Z)
-	// and put them in strange places
-	|>  drop
+    |> range(start: 2018-05-22T19:53:00Z
+    // i write too many comments
+    , stop: 2018-05-22T19:55:00Z)
+    // and put them in strange places
+    |>  drop
 
-		// this hurts my eyes
+        // this hurts my eyes
 (columns: ["_start", "_stop"])
-		// just terrible
-	|> filter(fn: (r) =>
-		(r.user 
+        // just terrible
+    |> filter(fn: (r) =>
+        (r.user 
 
-		// (don't fire me, this is intentional)
-		== "user1"))
-	|> group(by
-	// strange place for a comment
+        // (don't fire me, this is intentional)
+        == "user1"))
+    |> group(by
+    // strange place for a comment
 : ["user"])
 
 right = from(bucket: "test")
-	|> range(start: 2018-05-22T19:53:00Z,
-			// please stop
-			stop: 2018-05-22T19:55:00Z)
-	|> drop( // spare me the pain
+    |> range(start: 2018-05-22T19:53:00Z,
+            // please stop
+            stop: 2018-05-22T19:55:00Z)
+    |> drop( // spare me the pain
 // this hurts
 columns: ["_start", "_stop"// what
 ])
-	|> filter(
-		// just why
-		fn: (r) =>
-		// user 2 is the best user
-		(r.user == "user2"))
-	|> group(by: //just stop
+    |> filter(
+        // just why
+        fn: (r) =>
+        // user 2 is the best user
+        (r.user == "user2"))
+    |> group(by: //just stop
 ["_measurement"])
 
 join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
@@ -512,73 +534,73 @@ j
         r#"// hi
 // there
 {
-	_time: r._time,
-	io_time: r._value,
+    _time: r._time,
+    io_time: r._value,
 
-	// this is the end
-	}
+    // this is the end
+    }
 
 // minimal
 foo = (arg=[1, 2]) => 1
 
 // left
 left = from(bucket: "test")
-	|> range(
-		start: 2018-05-22T19:53:00Z
-			// i write too many comments
-			,
-			stop: 2018-05-22T19:55:00Z,
-		)
-	// and put them in strange places
-	|> drop
-		// this hurts my eyes
-		(columns: ["_start", "_stop"])
-	// just terrible
-	|> filter(
-		fn: (r) => r.user 
-			// (don't fire me, this is intentional)
-			== "user1",
-	)
-	|> group(
-		by
-			// strange place for a comment
-			: ["user"],
-	)
+    |> range(
+        start: 2018-05-22T19:53:00Z
+            // i write too many comments
+            ,
+            stop: 2018-05-22T19:55:00Z,
+        )
+    // and put them in strange places
+    |> drop
+        // this hurts my eyes
+        (columns: ["_start", "_stop"])
+    // just terrible
+    |> filter(
+        fn: (r) => r.user 
+            // (don't fire me, this is intentional)
+            == "user1",
+    )
+    |> group(
+        by
+            // strange place for a comment
+            : ["user"],
+    )
 right = from(bucket: "test")
-	|> range(
-		start: 2018-05-22T19:53:00Z,
-		
-			// please stop
-			stop: 2018-05-22T19:55:00Z,
-	)
-	|> drop(
-		// spare me the pain
-		// this hurts
-		columns: ["_start", "_stop"
-			// what
-			],
-	)
-	|> filter(
-		// just why
-		fn: (r) => 
-			// user 2 is the best user
-			(r.user == "user2"),
-	)
-	|> group(
-		by: 
-			//just stop
-			["_measurement"],
-	)
+    |> range(
+        start: 2018-05-22T19:53:00Z,
+        
+            // please stop
+            stop: 2018-05-22T19:55:00Z,
+    )
+    |> drop(
+        // spare me the pain
+        // this hurts
+        columns: ["_start", "_stop"
+            // what
+            ],
+    )
+    |> filter(
+        // just why
+        fn: (r) => 
+            // user 2 is the best user
+            (r.user == "user2"),
+    )
+    |> group(
+        by: 
+            //just stop
+            ["_measurement"],
+    )
 
 join(tables: {left: left, right: right}, on: ["_time", "_measurement"])
 from(bucket, _option
-	// friends
-	// stick together
+    // friends
+    // stick together
 )
 
 i = 
-	// definitely
-	not true
+    // definitely
+    not true
 
 // a
 // list
@@ -602,9 +624,9 @@ fn builtin() {
 x = 1",
     );
     assert_unchanged("// comment\nbuiltin foo : int");
-    assert_unchanged("builtin \n\t// comment\n\tfoo : int");
-    assert_unchanged("builtin foo\n\t// comment\n\t: int");
-    assert_unchanged("builtin foo : \n\t// comment\n\tint");
+    assert_unchanged("builtin \n    // comment\n    foo : int");
+    assert_unchanged("builtin foo\n    // comment\n    : int");
+    assert_unchanged("builtin foo : \n    // comment\n    int");
 }
 
 #[test]
@@ -612,13 +634,13 @@ fn parens() {
     // test that parens are preserved when needed and removed if uneccessary
     assert_format("(1 * 1)", "1 * 1");
     assert_unchanged("// comment\n(1 * 1)");
-    assert_unchanged("(1 * 1\n\t// comment\n\t)");
+    assert_unchanged("(1 * 1\n    // comment\n    )");
     assert_unchanged("1 + (1 * 1)");
     assert_format("(1 + (1 * 1))", "1 + (1 * 1)");
     assert_format("((1 + 1) + 1)", "1 + 1 + 1");
     assert_format("(1 + (1 + 1))", "1 + (1 + 1)");
     assert_unchanged("() => ({_value: 1})");
-    assert_unchanged("() => \n\t// comment\n\t({_value: 1})");
+    assert_unchanged("() => \n    // comment\n    ({_value: 1})");
 }
 
 #[test]
@@ -626,48 +648,48 @@ fn type_expressions() {
     assert_unchanged(r#"builtin foo : (a: int, b: string) => int"#);
     assert_unchanged(
         r#"builtin foo : (
-	a: int,
-	b: string,
+    a: int,
+    b: string,
 ) => int"#,
     );
     assert_unchanged(r#"builtin foo : {a: int, b: string}"#);
     assert_unchanged(
         r#"builtin foo : {
-	a: int,
-	b: string,
+    a: int,
+    b: string,
 }"#,
     );
     assert_unchanged(
         r#"builtin foo : {X with
-	a: int,
-	b: string,
+    a: int,
+    b: string,
 }"#,
     );
     assert_format(
         r#"builtin foo : {a: A, b: B, c: C, d: D, e: E} where A: Numeric, B: Numeric, C: Numeric, D: Numeric, E: Numeric"#,
         r#"builtin foo : {
-	a: A,
-	b: B,
-	c: C,
-	d: D,
-	e: E,
+    a: A,
+    b: B,
+    c: C,
+    d: D,
+    e: E,
 } where
-	A: Numeric,
-	B: Numeric,
-	C: Numeric,
-	D: Numeric,
-	E: Numeric"#,
+    A: Numeric,
+    B: Numeric,
+    C: Numeric,
+    D: Numeric,
+    E: Numeric"#,
     );
     assert_unchanged(
         r#"builtin foo : (
-	a: int,
-	b: string,
-	c: A,
-	d: [int],
-	e: [[B]],
-	fn: () => int,
+    a: int,
+    b: string,
+    c: A,
+    d: [int],
+    e: [[B]],
+    fn: () => int,
 ) => {x with a: int, b: string} where
-	A: Timeable,
-	B: Record"#,
+    A: Timeable,
+    B: Record"#,
     );
 }
