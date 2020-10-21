@@ -15,16 +15,32 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/mock"
 )
 
+// Simulates setting the profilers option in flux to "operator"
+func configureOperatorProfiler(ctx context.Context) *execute.OperatorProfiler {
+	profilerNames := []string{"operator"}
+
+	execOptsConfig := lang.ExecOptsConfig{}
+	execOptsConfig.ConfigureProfiler(ctx, profilerNames)
+
+	deps := execute.GetExecutionDependencies(ctx)
+	return deps.ExecutionOptions.OperatorProfiler
+}
+
 func TestOperatorProfiler_GetResult(t *testing.T) {
-	// Create an operator profiler
-	p := execute.AllProfilers["operator"]()
-	// And inject it to the context.
-	ctx := context.WithValue(context.Background(), execute.OperatorProfilerContextKey, p)
+	// Create a base execution dependencies.
+	deps := execute.DefaultExecutionDependencies()
+	ctx := deps.Inject(context.Background())
+
+	// Add operator profiler to context
+	p := configureOperatorProfiler(ctx)
+
+	// And inject it into the context.
 	// Build the "want" table.
 	// This table is built dynamically because the table includes time data which changes
 	// every time the test is run.

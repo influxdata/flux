@@ -98,12 +98,6 @@ func tableFind(ctx context.Context, to *flux.TableObject, fn *execute.TablePredi
 		p.SetLogger(deps.Logger)
 	}
 
-	// If there is an operator profiler in the execution options, and it is not
-	// in the context standalone, add it.
-	if deps.ExecutionOptions.OperatorProfiler != nil {
-		ctx = context.WithValue(ctx, execute.OperatorProfilerContextKey, deps.ExecutionOptions.OperatorProfiler)
-	}
-
 	q, err := p.Start(ctx, deps.Allocator)
 	if err != nil {
 		return nil, errors.Wrap(err, codes.Inherit, "error in table object start")

@@ -290,10 +290,6 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 	if execute.HaveExecutionDependencies(ctx) {
 		deps := execute.GetExecutionDependencies(ctx)
 		q.stats.Metadata.AddAll(deps.Metadata)
-
-		if deps.ExecutionOptions.OperatorProfiler != nil {
-			cctx = context.WithValue(cctx, execute.OperatorProfilerContextKey, deps.ExecutionOptions.OperatorProfiler)
-		}
 	}
 
 	q.stats.Metadata.Add("flux/query-plan",
@@ -374,7 +370,7 @@ func (p *AstProgram) GetAst() (flux.ASTHandle, error) {
 // The ExecOptsConfig structure implements the interpreter.ExecOptsConfig
 // interface, which the interpreter uses to configure options relevant to the
 // execution engine. The interpreter is able to invoke the execution engine via
-// tableFind and others, and thereore must be able to install these options
+// tableFind and others, and therefore must be able to install these options
 // into the execution dependency state. We use an interface to break the import
 // cycle implied by accessing the execution module from the interpreter.
 type ExecOptsConfig struct {
@@ -488,12 +484,6 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 
 	// Execution.
 	s, cctx = opentracing.StartSpanFromContext(ctx, "start-program")
-	if p.tfProfiler != nil {
-		// If we have an active operator profiler, put that into the execution context
-		// so that the data sources and the transformations can properly create spans that link
-		// to this profiler and send over their profiling data.
-		cctx = context.WithValue(cctx, execute.OperatorProfilerContextKey, p.tfProfiler)
-	}
 	defer s.Finish()
 	return p.Program.Start(cctx, alloc)
 }

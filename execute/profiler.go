@@ -183,15 +183,20 @@ func StartSpanFromContext(ctx context.Context, operationName string, label strin
 	if flux.IsQueryTracingEnabled(ctx) {
 		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
 	}
-	if tfp, ok := ctx.Value(OperatorProfilerContextKey).(*OperatorProfiler); ok {
-		span = &OperatorProfilingSpan{
-			Span:     span,
-			profiler: tfp,
-			Result: OperatorProfilingResult{
-				Type:  operationName,
-				Label: label,
-				Start: start,
-			},
+
+	if HaveExecutionDependencies(ctx) {
+		deps := GetExecutionDependencies(ctx)
+		if deps.ExecutionOptions.OperatorProfiler != nil {
+			tfp := deps.ExecutionOptions.OperatorProfiler
+			span = &OperatorProfilingSpan{
+				Span:     span,
+				profiler: tfp,
+				Result: OperatorProfilingResult{
+					Type:  operationName,
+					Label: label,
+					Start: start,
+				},
+			}
 		}
 	}
 	return ctx, span
