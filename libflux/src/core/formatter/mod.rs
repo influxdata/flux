@@ -154,9 +154,9 @@ impl Formatter {
             let cur = stmt.typ();
             if i != 0 {
                 self.write_rune(sep);
-                // separate different statements with double newline
-                if cur != prev {
-                    self.write_rune(sep)
+                // separate different statements with double newline or statements with comments
+                if cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
+                    self.write_rune(sep);
                 }
             }
             self.write_indent();
@@ -579,8 +579,8 @@ impl Formatter {
             self.write_rune(sep);
 
             if i != 0 {
-                // separate different statements with double newline
-                if cur != prev {
+                // separate different statements with double newline or statements with comments
+                if cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
                     self.write_rune(sep);
                 }
             }
@@ -1119,6 +1119,64 @@ fn at_least_pipe_depth(depth: i32, p: &ast::PipeExpr) -> bool {
     match &p.argument {
         ast::Expression::PipeExpr(p) => at_least_pipe_depth(depth - 1, &p),
         _ => false,
+    }
+}
+
+// starts_with_comment reports if the node has a comment that it would format before anything else as part
+// of the node.
+fn starts_with_comment(n: Node) -> bool {
+    match n {
+        Node::Package(n) => n.base.comments.is_some(),
+        Node::File(n) => {
+            if let Some(pkg) = &n.package {
+                return starts_with_comment(Node::PackageClause(pkg));
+            }
+            if let Some(imp) = &n.imports.first() {
+                return starts_with_comment(Node::ImportDeclaration(imp));
+            }
+            if let Some(stmt) = &n.body.first() {
+                return starts_with_comment(Node::from_stmt(stmt));
+            }
+            n.eof.is_some()
+        }
+        Node::PackageClause(n) => n.base.comments.is_some(),
+        Node::ImportDeclaration(n) => n.base.comments.is_some(),
+        Node::Identifier(n) => n.base.comments.is_some(),
+        Node::ArrayExpr(n) => n.lbrack.is_some(),
+        Node::FunctionExpr(n) => n.lparen.is_some(),
+        Node::LogicalExpr(n) => starts_with_comment(Node::from_expr(&n.left)),
+        Node::ObjectExpr(n) => n.lbrace.is_some(),
+        Node::MemberExpr(n) => starts_with_comment(Node::from_expr(&n.object)),
+        Node::IndexExpr(n) => starts_with_comment(Node::from_expr(&n.array)),
+        Node::BinaryExpr(n) => starts_with_comment(Node::from_expr(&n.left)),
+        Node::UnaryExpr(n) => n.base.comments.is_some(),
+        Node::PipeExpr(n) => starts_with_comment(Node::from_expr(&n.argument)),
+        Node::CallExpr(n) => starts_with_comment(Node::from_expr(&n.callee)),
+        Node::ConditionalExpr(n) => n.tk_if.is_some(),
+        Node::StringExpr(n) => n.base.comments.is_some(),
+        Node::ParenExpr(n) => n.lparen.is_some(),
+        Node::IntegerLit(n) => n.base.comments.is_some(),
+        Node::FloatLit(n) => n.base.comments.is_some(),
+        Node::StringLit(n) => n.base.comments.is_some(),
+        Node::DurationLit(n) => n.base.comments.is_some(),
+        Node::UintLit(n) => n.base.comments.is_some(),
+        Node::BooleanLit(n) => n.base.comments.is_some(),
+        Node::DateTimeLit(n) => n.base.comments.is_some(),
+        Node::RegexpLit(n) => n.base.comments.is_some(),
+        Node::PipeLit(n) => n.base.comments.is_some(),
+        Node::BadExpr(_) => false,
+        Node::ExprStmt(n) => starts_with_comment(Node::from_expr(&n.expression)),
+        Node::OptionStmt(n) => n.base.comments.is_some(),
+        Node::ReturnStmt(n) => n.base.comments.is_some(),
+        Node::BadStmt(_) => false,
+        Node::TestStmt(n) => n.base.comments.is_some(),
+        Node::BuiltinStmt(n) => n.base.comments.is_some(),
+        Node::Block(n) => n.lbrace.is_some(),
+        Node::Property(_) => false,
+        Node::TextPart(_) => false,
+        Node::InterpolatedPart(_) => false,
+        Node::VariableAssgn(n) => starts_with_comment(Node::Identifier(&n.id)),
+        Node::MemberAssgn(n) => starts_with_comment(Node::MemberExpr(&n.member)),
     }
 }
 
