@@ -7,9 +7,9 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/opentracing/opentracing-go"
 )
 
@@ -139,11 +139,11 @@ func FromScript(ctx context.Context, runtime flux.Runtime, now time.Time, script
 	}
 	s.Finish()
 
-	deps := execdeps.NewExecutionDependencies(nil, &now, nil)
+	deps := execute.NewExecutionDependencies(nil, &now, nil)
 	ctx = deps.Inject(ctx)
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
-	sideEffects, scope, err := runtime.Eval(cctx, astPkg, flux.SetNowOption(now))
+	sideEffects, scope, err := runtime.Eval(cctx, astPkg, nil, flux.SetNowOption(now))
 	if err != nil {
 		return nil, err
 	}

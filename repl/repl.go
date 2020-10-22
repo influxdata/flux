@@ -18,7 +18,7 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/lang/execdeps"
+	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"
@@ -58,7 +58,7 @@ func New(ctx context.Context, deps flux.Dependencies) *REPL {
 		ctx:      ctx,
 		deps:     deps,
 		scope:    scope,
-		itrp:     interpreter.NewInterpreter(nil),
+		itrp:     interpreter.NewInterpreter(nil, &lang.ExecOptsConfig{}),
 		analyzer: libflux.NewAnalyzer(),
 		importer: importer,
 	}
@@ -160,7 +160,7 @@ func (r *REPL) Eval(t string) ([]interpreter.SideEffect, error) {
 		return nil, err
 	}
 
-	deps := execdeps.DefaultExecutionDependencies()
+	deps := execute.DefaultExecutionDependencies()
 	r.ctx = deps.Inject(r.ctx)
 
 	return r.itrp.Eval(r.ctx, pkg, r.scope, r.importer)

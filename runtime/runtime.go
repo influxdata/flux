@@ -117,7 +117,7 @@ func (r *runtime) Prelude() values.Scope {
 	return scope
 }
 
-func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, es interpreter.ExecOptsConfig, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	semPkg, err := AnalyzePackage(astPkg)
 	if err != nil {
 		return nil, nil, err
@@ -136,7 +136,7 @@ func (r *runtime) Eval(ctx context.Context, astPkg flux.ASTHandle, opts ...flux.
 	}
 
 	// Execute the interpreter over the package.
-	itrp := interpreter.NewInterpreter(nil)
+	itrp := interpreter.NewInterpreter(nil, es)
 	sideEffects, err := itrp.Eval(ctx, semPkg, scope, importer)
 	if err != nil {
 		return nil, nil, err

@@ -48,7 +48,7 @@ func Eval(ctx context.Context, flux string, opts ...flux.ScopeMutator) ([]interp
 	if err != nil {
 		return nil, nil, err
 	}
-	return Default.Eval(ctx, h, opts...)
+	return Default.Eval(ctx, h, nil, opts...)
 }
 
 // EvalAST accepts a Flux AST and evaluates it to produce a set of side effects (as a slice of values) and a scope.
@@ -61,11 +61,11 @@ func EvalAST(ctx context.Context, astPkg *ast.Package, opts ...flux.ScopeMutator
 	if err != nil {
 		return nil, nil, err
 	}
-	return Default.Eval(ctx, hdl, opts...)
+	return Default.Eval(ctx, hdl, nil, opts...)
 }
 
 // EvalOptions is like EvalAST, but only evaluates options.
-func EvalOptions(ctx context.Context, astPkg *ast.Package, opts ...flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
+func EvalOptions(ctx context.Context, astPkg *ast.Package, opts []flux.ScopeMutator) ([]interpreter.SideEffect, values.Scope, error) {
 	return EvalAST(ctx, options(astPkg), opts...)
 }
 
