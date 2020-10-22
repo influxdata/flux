@@ -168,7 +168,7 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 	return tbl, nil
 }
 
-// GetSortedResult is identical to GetResult, except it accept it calls Sort()
+// GetSortedResult is identical to GetResult, except it calls Sort()
 // on the ColListTableBuilder to make testing easier.
 // sortKeys and desc are passed directly into the Sort() call
 func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
@@ -313,7 +313,7 @@ func (s *QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.T
 	return tbl, nil
 }
 
-// GetSortedResult is identical to GetResult, except it accept it calls Sort()
+// GetSortedResult is identical to GetResult, except it calls Sort()
 // on the ColListTableBuilder to make testing easier.
 // sortKeys and desc are passed directly into the Sort() call
 func (s *QueryProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
