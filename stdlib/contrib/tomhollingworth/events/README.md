@@ -1,6 +1,6 @@
 # Events Package
 
-Use this Flux Package calculate the time between a record and the next record. The function `events.duration` peeks at the next record and calculates the duration an between records and associates it with the start of the event. For the final record it can be compared against a stop column or a timestamp. This function differs to existing `elapsed` which removes the first entry and `stateDuration` which totalized on a function.
+Use this Flux Package to calculate the time between a record and the next record. The function `events.duration` peeks at the next record and calculates the duration an between records and associates it with the start of the event. For the final record it can be compared against a stop column or a timestamp. This function differs to existing `elapsed` which removes the first entry and `stateDuration` which totalized on a function.
 
 See also
 - [elapsed](https://docs.influxdata.com/influxdb/v2.0/reference/flux/stdlib/built-in/transformations/elapsed/)
@@ -60,11 +60,11 @@ csv.from(csv: inData)
   |> range(start: 2020-01-01T08:00:00Z, stop: 2020-01-01T08:30:00Z)
 ```
 
-`|> elapsed()` yields the following. The first record is dropped and durations are associated with subsequent records. Totalizing on filter on value and summing the elasped column would have the duration swapped between open and closed.
+`|> elapsed()` yields the following. The first record is dropped and durations are associated with subsequent records. Totalizing on filter on value and summing the elapsed column would have the duration swapped between open and closed.
 
 ```diff
 -,  result, table,               _start,                _stop, _time, _value, _field
-+,  result, table,               _start,                _stop, _time, _value, _field,       elasped
++,  result, table,               _start,                _stop, _time, _value, _field,       elapsed
 -,        ,     0, 2020-01-01T08:00:00Z, 2020-01-01T08:30:00Z, 2020-01-01T08:00:00Z, Closed,  value
 -,        ,     0, 2020-01-01T08:00:00Z, 2020-01-01T08:30:00Z, 2020-01-01T08:10:00Z, Closed,  value
 +,        ,     0, 2020-01-01T08:00:00Z, 2020-01-01T08:30:00Z, 2020-01-01T08:10:00Z, Closed,  value,          1600
@@ -132,4 +132,4 @@ csv.from(csv: inData)
 - Author: Tom Hollingworth
 - Email: tom.hollingworth@spruiktec.com
 - Github: [@tomhollingworth](https://github.com/tomhollingworth)
-- Influx Slack: [@tomhollingworth](https://influxdata.com/slack)
+- Influx Community Slack: [@tomhollingworth](https://influxcommunity.slack.com)

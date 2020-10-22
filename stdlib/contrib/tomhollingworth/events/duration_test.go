@@ -4,13 +4,168 @@ import (
 	"testing"
 	"time"
 
-	"github.com/influxdata/flux/querytest"
-
 	"github.com/influxdata/flux"
+	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/universe"
 )
+
+func TestDuration_NewQuery(t *testing.T) {
+	tests := []querytest.NewQueryTestCase{
+		{
+			Name:    "duration missing stop column",
+			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h) |> drop(columns: ["_stop"]  |> events.duration()`,
+			WantErr: true,
+		},
+		{
+			Name:    "duration missing time column",
+			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h) |> drop(columns: ["_time"]  |> events.duration()`,
+			WantErr: true,
+		},
+		{
+			Name:    "duration default",
+			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h)  |> events.duration()`,
+			WantErr: false,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "mydb"},
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop:        flux.Now,
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "duration2",
+						Spec: &events.DurationOpSpec{
+							Unit:       flux.ConvertDuration(time.Second),
+							TimeColumn: "_time",
+							ColumnName: "duration",
+							StopColumn: "_stop",
+							Stop:       flux.Now,
+							IsStop:     false,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "duration2"},
+				},
+			},
+		},
+		{
+			Name:    "duration different unit and columns",
+			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h)  |> events.duration(unit: 1ms, timeColumn: "start", stopColumn: "end", columnName: "result")`,
+			WantErr: false,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "mydb"},
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop:        flux.Now,
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "duration2",
+						Spec: &events.DurationOpSpec{
+							Unit:       flux.ConvertDuration(time.Millisecond),
+							TimeColumn: "start",
+							ColumnName: "result",
+							StopColumn: "end",
+							Stop:       flux.Now,
+							IsStop:     false,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "duration2"},
+				},
+			},
+		},
+		{
+			Name:    "duration with stop",
+			Raw:     `import "contrib/tomhollingworth/events" from(bucket:"mydb") |> range(start:-1h)  |> events.duration(stop: 2020-10-20T08:30:00Z)`,
+			WantErr: false,
+			Want: &flux.Spec{
+				Operations: []*flux.Operation{
+					{
+						ID: "from0",
+						Spec: &influxdb.FromOpSpec{
+							Bucket: influxdb.NameOrID{Name: "mydb"},
+						},
+					},
+					{
+						ID: "range1",
+						Spec: &universe.RangeOpSpec{
+							Start: flux.Time{
+								Relative:   -1 * time.Hour,
+								IsRelative: true,
+							},
+							Stop:        flux.Now,
+							TimeColumn:  "_time",
+							StartColumn: "_start",
+							StopColumn:  "_stop",
+						},
+					},
+					{
+						ID: "duration2",
+						Spec: &events.DurationOpSpec{
+							Unit:       flux.ConvertDuration(time.Second),
+							TimeColumn: "_time",
+							ColumnName: "duration",
+							StopColumn: "_stop",
+							Stop: flux.Time{
+								Absolute: time.Date(2020, 10, 20, 8, 30, 0, 0, time.UTC),
+							},
+							IsStop: true,
+						},
+					},
+				},
+				Edges: []flux.Edge{
+					{Parent: "from0", Child: "range1"},
+					{Parent: "range1", Child: "duration2"},
+				},
+			},
+		},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			querytest.NewQueryTestHelper(t, tc)
+		})
+	}
+}
 
 func TestDurationOperation_Marshaling(t *testing.T) {
 	data := []byte(`{"id":"duration","kind":"duration","spec":{"timeColumn": "_time"}}`)
@@ -23,7 +178,7 @@ func TestDurationOperation_Marshaling(t *testing.T) {
 	querytest.OperationMarshalingTestHelper(t, data, op)
 }
 
-func TestDtepDuration_PassThrough(t *testing.T) {
+func TestDuration_PassThrough(t *testing.T) {
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 		s := events.NewDurationTransformation(
 			d,
@@ -32,6 +187,33 @@ func TestDtepDuration_PassThrough(t *testing.T) {
 		)
 		return s
 	})
+}
+
+func TestDuration_DurationProcedureSpec(t *testing.T) {
+	goTime, _ := time.Parse(time.RFC3339, "2020-10-10T08:00:00Z")
+
+	s := events.DurationProcedureSpec{
+		Unit:       flux.ConvertDuration(time.Nanosecond),
+		TimeColumn: execute.DefaultTimeColLabel,
+		ColumnName: "duration",
+		StopColumn: execute.DefaultStopColLabel,
+		Stop: flux.Time{
+			IsRelative: false,
+			Relative:   time.Duration(0),
+			Absolute:   goTime,
+		},
+		IsStop: true,
+	}
+
+	if s.Kind() != "duration" {
+		t.Errorf("s.Kind() != %s; want duration", s.Kind())
+	}
+
+	sCopy := s.Copy()
+
+	if sCopy.Kind() != s.Kind() {
+		t.Errorf("sCopy.Kind() != %s; want %s", sCopy.Kind(), s.Kind())
+	}
 }
 
 func TestDuration_Process(t *testing.T) {
