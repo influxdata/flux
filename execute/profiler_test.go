@@ -19,6 +19,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/mock"
+	"github.com/opentracing/opentracing-go"
 )
 
 // Simulates setting the profilers option in flux to "operator"
@@ -40,50 +41,47 @@ func TestOperatorProfiler_GetResult(t *testing.T) {
 	// Add operator profiler to context
 	p := configureOperatorProfiler(ctx)
 
-	// And inject it into the context.
 	// Build the "want" table.
-	// This table is built dynamically because the table includes time data which changes
-	// every time the test is run.
 	var wantStr bytes.Buffer
-	// Need to have the goroutines to sync on their writes to the buffer.
-	var mu sync.Mutex
 	wantStr.WriteString(`
-#datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,string,string,long
-#group,false,false,true,false,false,false,false,false
-#default,_profiler,,,,,,,
-,result,table,_measurement,Begin,End,Type,Label,Duration
+#datatype,string,long,string,string,string,long,long,long,long,double
+#group,false,false,true,false,false,false,false,false,false,false
+#default,_profiler,,,,,,,,,
+,result,table,_measurement,Type,Label,Count,MinDuration,MaxDuration,DurationSum,MeanDuration
 `)
-	// Unfortunately, the operator profiler result is only grouped on _measurement, it cannot
-	// ensure a deterministic row order with our executetest.EqualResultIterators
-	// Therefore, currently I only set this goroutine count to 2.
-	count := 2
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type0", "lab0", 4, 1000, 1606, 5212, 1303.0,
+	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type1", "lab0", 4, 1101, 1707, 5616, 1404.0,
+	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type0", "lab1", 4, 1808, 2414, 8444, 2111.0,
+	))
+	wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,%d,%d,%d,%d,%f\n",
+		"type1", "lab1", 4, 1909, 2515, 8848, 2212.0,
+	))
+	count := 16
 	wg := sync.WaitGroup{}
 	wg.Add(count)
-	fn := func(label string, ctx context.Context) {
-		_, span := execute.StartSpanFromContext(ctx, "tf", label)
+	fn := func(opType string, label string, ctx context.Context, offset int) {
+		st := time.Date(2020, 10, 14, 12, 30, 0, 0, time.UTC)
+		_, span := execute.StartSpanFromContext(ctx, opType, label, opentracing.StartTime(st))
 		profilerSpan := span.(*execute.OperatorProfilingSpan)
 		// Finish() will write the data to the profiler
 		// In Flux runtime, this is called when an execution node finishes execution
-		profilerSpan.Finish()
-		mu.Lock()
-		// Write the expected result from raw span data.
-		wantStr.WriteString(fmt.Sprintf(",,0,profiler/operator,%s,%s,tf,%s,%d\n",
-			profilerSpan.Result.Start.Format(time.RFC3339Nano),
-			profilerSpan.Result.Stop.Format(time.RFC3339Nano),
-			profilerSpan.Result.Label,
-			profilerSpan.Result.Stop.Sub(profilerSpan.Result.Start).Nanoseconds()))
-		mu.Unlock()
+		profilerSpan.FinishWithOptions(opentracing.FinishOptions{
+			FinishTime: time.Date(2020, 10, 14, 12, 30, 0, 1000+offset, time.UTC),
+		})
 		wg.Done()
 	}
 	for i := 0; i < count; i++ {
-		go fn(fmt.Sprintf("op%d", i), ctx)
+		typ := fmt.Sprintf("type%d", i%2)
+		label := fmt.Sprintf("lab%d", i/8)
+		go fn(typ, label, ctx, 100*i+i)
 	}
 	wg.Wait()
-	// Wait a bit for the profiling results to be added.
-	// In the query code path this is guaranteed because we only access the result
-	// after the query finishes execution AND its result tables are read and encoded.
-	time.Sleep(100 * time.Millisecond)
-	tbl, err := p.GetResult(nil, &memory.Allocator{})
+	tbl, err := p.GetSortedResult(nil, &memory.Allocator{}, false, "MeanDuration")
 	if err != nil {
 		t.Error(err)
 	}

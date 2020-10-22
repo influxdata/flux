@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/influxdata/flux"
@@ -16,6 +15,7 @@ import (
 type Profiler interface {
 	Name() string
 	GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error)
+	GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error)
 }
 
 type CreateProfilerFunc func() Profiler
@@ -52,16 +52,16 @@ type OperatorProfilingSpan struct {
 	Result   OperatorProfilingResult
 }
 
-func (t *OperatorProfilingSpan) finish() time.Time {
-	t.Result.Stop = time.Now()
-	if t.profiler != nil && t.profiler.ch != nil {
-		t.profiler.ch <- t.Result
+func (t *OperatorProfilingSpan) finish(finishTime time.Time) time.Time {
+	t.Result.Stop = finishTime
+	if t.profiler != nil && t.profiler.chIn != nil {
+		t.profiler.chIn <- t.Result
 	}
 	return t.Result.Stop
 }
 
 func (t *OperatorProfilingSpan) Finish() {
-	finishTime := t.finish()
+	finishTime := t.finish(time.Now())
 	if t.Span != nil {
 		t.Span.FinishWithOptions(opentracing.FinishOptions{
 			FinishTime: finishTime,
@@ -70,7 +70,7 @@ func (t *OperatorProfilingSpan) Finish() {
 }
 
 func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions) {
-	finishTime := t.finish()
+	finishTime := t.finish(opts.FinishTime)
 	opts.FinishTime = finishTime
 	if t.Span != nil {
 		t.Span.FinishWithOptions(opts)
@@ -79,25 +79,68 @@ func (t *OperatorProfilingSpan) FinishWithOptions(opts opentracing.FinishOptions
 
 const OperatorProfilerContextKey = "operator-profiler"
 
+type operatorProfilingResultAggregate struct {
+	operationType string
+	label         string
+	resultCount   int64
+	resultMin     int64
+	resultMax     int64
+	resultSum     int64
+	resultMean    float64
+}
+
+type operatorProfilerLabelGroup = map[string]*operatorProfilingResultAggregate
+type operatorProfilerTypeGroup = map[string]operatorProfilerLabelGroup
+
 type OperatorProfiler struct {
-	results []OperatorProfilingResult
 	// Receive the profiling results from the spans.
-	ch chan OperatorProfilingResult
-	mu sync.Mutex
+	chIn  chan OperatorProfilingResult
+	chOut chan operatorProfilingResultAggregate
 }
 
 func createOperatorProfiler() Profiler {
 	p := &OperatorProfiler{
-		results: make([]OperatorProfilingResult, 0),
-		ch:      make(chan OperatorProfilingResult),
+		chIn:  make(chan OperatorProfilingResult),
+		chOut: make(chan operatorProfilingResultAggregate),
 	}
 	go func(p *OperatorProfiler) {
-		for result := range p.ch {
-			p.mu.Lock()
-			p.results = append(p.results, result)
-			p.mu.Unlock()
+		aggs := make(operatorProfilerTypeGroup)
+		for result := range p.chIn {
+			_, ok := aggs[result.Type]
+			if !ok {
+				aggs[result.Type] = make(operatorProfilerLabelGroup)
+			}
+			_, ok = aggs[result.Type][result.Label]
+			if !ok {
+				aggs[result.Type][result.Label] = &operatorProfilingResultAggregate{}
+			}
+			a := aggs[result.Type][result.Label]
+
+			// Aggregate the results
+			a.resultCount++
+			duration := result.Stop.Sub(result.Start).Nanoseconds()
+			if duration > a.resultMax {
+				a.resultMax = duration
+			}
+			if duration < a.resultMin || a.resultMin == 0 {
+				a.resultMin = duration
+			}
+			a.resultSum += duration
 		}
+
+		// Write the aggregated results to chOut, where they'll be
+		// converted into rows and appended to the final table
+		for typ, labels := range aggs {
+			for label, agg := range labels {
+				agg.resultMean = float64(agg.resultSum) / float64(agg.resultCount)
+				agg.operationType = typ
+				agg.label = label
+				p.chOut <- *agg
+			}
+		}
+		close(p.chOut)
 	}(p)
+
 	return p
 }
 
@@ -105,11 +148,44 @@ func (o *OperatorProfiler) Name() string {
 	return "operator"
 }
 
-func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
-	if o.ch != nil {
-		close(o.ch)
-		o.ch = nil
+func (o *OperatorProfiler) closeIncomingChannel() {
+	if o.chIn != nil {
+		close(o.chIn)
+		o.chIn = nil
 	}
+}
+
+func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+	o.closeIncomingChannel()
+	b, err := o.getTableBuilder(alloc)
+	if err != nil {
+		return nil, err
+	}
+	tbl, err := b.Table()
+	if err != nil {
+		return nil, err
+	}
+	return tbl, nil
+}
+
+// GetSortedResult is identical to GetResult, except it calls Sort()
+// on the ColListTableBuilder to make testing easier.
+// sortKeys and desc are passed directly into the Sort() call
+func (o *OperatorProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
+	o.closeIncomingChannel()
+	b, err := o.getTableBuilder(alloc)
+	if err != nil {
+		return nil, err
+	}
+	b.Sort(sortKeys, desc)
+	tbl, err := b.Table()
+	if err != nil {
+		return nil, err
+	}
+	return tbl, nil
+}
+
+func (o *OperatorProfiler) getTableBuilder(alloc *memory.Allocator) (*ColListTableBuilder, error) {
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
 			{
@@ -128,14 +204,6 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 			Type:  flux.TString,
 		},
 		{
-			Label: "Begin",
-			Type:  flux.TTime,
-		},
-		{
-			Label: "End",
-			Type:  flux.TTime,
-		},
-		{
 			Label: "Type",
 			Type:  flux.TString,
 		},
@@ -144,8 +212,24 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 			Type:  flux.TString,
 		},
 		{
-			Label: "Duration",
+			Label: "Count",
 			Type:  flux.TInt,
+		},
+		{
+			Label: "MinDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MaxDuration",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "DurationSum",
+			Type:  flux.TInt,
+		},
+		{
+			Label: "MeanDuration",
+			Type:  flux.TFloat,
 		},
 	}
 	for _, col := range colMeta {
@@ -153,23 +237,18 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 			return nil, err
 		}
 	}
-	o.mu.Lock()
-	if o.results != nil && len(o.results) > 0 {
-		for _, result := range o.results {
-			b.AppendString(0, "profiler/operator")
-			b.AppendTime(1, values.Time(result.Start.UnixNano()))
-			b.AppendTime(2, values.Time(result.Stop.UnixNano()))
-			b.AppendString(3, result.Type)
-			b.AppendString(4, result.Label)
-			b.AppendInt(5, result.Stop.Sub(result.Start).Nanoseconds())
-		}
+
+	for agg := range o.chOut {
+		b.AppendString(0, "profiler/operator")
+		b.AppendString(1, agg.operationType)
+		b.AppendString(2, agg.label)
+		b.AppendInt(3, agg.resultCount)
+		b.AppendInt(4, agg.resultMin)
+		b.AppendInt(5, agg.resultMax)
+		b.AppendInt(6, agg.resultSum)
+		b.AppendFloat(7, agg.resultMean)
 	}
-	o.mu.Unlock()
-	tbl, err := b.Table()
-	if err != nil {
-		return nil, err
-	}
-	return tbl, nil
+	return b, nil
 }
 
 // Create a tracing span.
@@ -177,11 +256,21 @@ func (o *OperatorProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flu
 // the Span produced by this function can be very different.
 // It could be a no-op span, a Jaeger span, a no-op span wrapped by a profiling span, or
 // a Jaeger span wrapped by a profiling span.
-func StartSpanFromContext(ctx context.Context, operationName string, label string) (context.Context, opentracing.Span) {
+func StartSpanFromContext(ctx context.Context, operationName string, label string, opts ...opentracing.StartSpanOption) (context.Context, opentracing.Span) {
 	var span opentracing.Span
-	start := time.Now()
+	var start time.Time
+	for _, opt := range opts {
+		if st, ok := opt.(opentracing.StartTime); ok {
+			start = time.Time(st)
+			break
+		}
+	}
+	if start.IsZero() {
+		start = time.Now()
+		opts = append(opts, opentracing.StartTime(start))
+	}
 	if flux.IsQueryTracingEnabled(ctx) {
-		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opentracing.StartTime(start))
+		span, ctx = opentracing.StartSpanFromContext(ctx, operationName, opts...)
 	}
 
 	if HaveExecutionDependencies(ctx) {
@@ -213,6 +302,34 @@ func (s *QueryProfiler) Name() string {
 }
 
 func (s *QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.Table, error) {
+	b, err := s.getTableBuilder(q, alloc)
+	if err != nil {
+		return nil, err
+	}
+	tbl, err := b.Table()
+	if err != nil {
+		return nil, err
+	}
+	return tbl, nil
+}
+
+// GetSortedResult is identical to GetResult, except it calls Sort()
+// on the ColListTableBuilder to make testing easier.
+// sortKeys and desc are passed directly into the Sort() call
+func (s *QueryProfiler) GetSortedResult(q flux.Query, alloc *memory.Allocator, desc bool, sortKeys ...string) (flux.Table, error) {
+	b, err := s.getTableBuilder(q, alloc)
+	if err != nil {
+		return nil, err
+	}
+	b.Sort(sortKeys, desc)
+	tbl, err := b.Table()
+	if err != nil {
+		return nil, err
+	}
+	return tbl, nil
+}
+
+func (s *QueryProfiler) getTableBuilder(q flux.Query, alloc *memory.Allocator) (*ColListTableBuilder, error) {
 	groupKey := NewGroupKey(
 		[]flux.ColMeta{
 			{
@@ -312,9 +429,5 @@ func (s *QueryProfiler) GetResult(q flux.Query, alloc *memory.Allocator) (flux.T
 			b.AppendString(i, colData[i].(string))
 		}
 	}
-	tbl, err := b.Table()
-	if err != nil {
-		return nil, err
-	}
-	return tbl, nil
+	return b, nil
 }
