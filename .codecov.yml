@@ -10,3 +10,4 @@ coverage:
         target: auto
         threshold: 5
         base: auto
+        informational: true
