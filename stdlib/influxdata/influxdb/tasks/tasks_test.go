@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/lang/execdeps"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb/tasks"
 	"github.com/influxdata/flux/values"
 )
@@ -55,10 +55,10 @@ func TestLastSuccess(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			args := values.NewObjectWithValues(tt.args)
-			deps := execdeps.DefaultExecutionDependencies()
+			deps := execute.DefaultExecutionDependencies()
 
 			if !tt.now.IsZero() {
-				deps = execdeps.NewExecutionDependencies(nil, &tt.now, nil)
+				deps = execute.NewExecutionDependencies(nil, &tt.now, nil)
 			}
 
 			got, err := tasks.LastSuccess(deps.Inject(context.Background()), args)

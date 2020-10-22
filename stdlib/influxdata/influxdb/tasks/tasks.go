@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -43,7 +43,7 @@ func LastSuccess(ctx context.Context, args values.Object) (values.Value, error) 
 		}
 
 		if orTime.Type().Nature() == semantic.Duration {
-			deps := execdeps.GetExecutionDependencies(ctx)
+			deps := execute.GetExecutionDependencies(ctx)
 			orTime = values.NewTime(values.ConvertTime(*deps.Now).Add(orTime.Duration()))
 		}
 
