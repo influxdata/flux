@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
 )
@@ -25,6 +25,7 @@ func init() {
 }
 
 func execute(cmd *cobra.Command, args []string) error {
+	fluxinit.FluxInit()
 	deps := flux.NewDefaultDependencies()
 	deps.Deps.FilesystemService = filesystem.SystemFS
 	ctx := deps.Inject(context.Background())

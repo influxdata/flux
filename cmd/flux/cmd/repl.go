@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/repl"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -18,6 +18,7 @@ var replCmd = &cobra.Command{
 	Short: "Launch a Flux REPL",
 	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
+		fluxinit.FluxInit()
 		deps := flux.NewDefaultDependencies()
 		deps.Deps.FilesystemService = filesystem.SystemFS
 		// inject the dependencies to the context.

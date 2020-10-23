@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/runtime"
 	"github.com/spf13/cobra"
@@ -29,6 +29,8 @@ func init() {
 }
 
 func compile(cmd *cobra.Command, args []string) error {
+	fluxinit.FluxInit()
+
 	scriptSource := args[0]
 
 	var script string
