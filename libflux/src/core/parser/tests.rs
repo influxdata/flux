@@ -2346,9 +2346,9 @@ fn test_parse_type_expression_array_string() {
 }
 
 #[test]
-fn test_parse_record_only_properties() {
+fn test_parse_record_type_only_properties() {
     let mut p = Parser::new(r#"{a:int, b:uint}"#);
-    let parsed = p.parse_record();
+    let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
@@ -2417,6 +2417,68 @@ fn test_parse_record_only_properties() {
 }
 
 #[test]
+fn test_parse_record_type_trailing_comma() {
+    let mut p = Parser::new(r#"{a:int,}"#);
+    let parsed = p.parse_record_type();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        MonoType::Record(RecordType {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 9),
+                ..BaseNode::default()
+            },
+            tvar: None,
+            properties: vec![PropertyType {
+                base: BaseNode {
+                    location: loc.get(1, 2, 1, 7),
+                    ..BaseNode::default()
+                },
+                name: Identifier {
+                    name: "a".to_string(),
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 3),
+                        ..BaseNode::default()
+                    },
+                },
+                monotype: MonoType::Basic(NamedType {
+                    base: BaseNode {
+                        location: loc.get(1, 4, 1, 7),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        name: "int".to_string(),
+                        base: BaseNode {
+                            location: loc.get(1, 4, 1, 7),
+                            ..BaseNode::default()
+                        },
+                    }
+                })
+            },]
+        },)
+    )
+}
+
+#[test]
+fn test_parse_record_type_invalid() {
+    let mut p = Parser::new(r#"{a b}"#);
+    let parsed = p.parse_record_type();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        MonoType::Record(RecordType {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 5),
+                errors: vec!["expected RBRACE, got IDENT".to_string()],
+                ..BaseNode::default()
+            },
+            tvar: None,
+            properties: vec![],
+        })
+    )
+}
+
+#[test]
 fn test_parse_constraint_one_ident() {
     let mut p = Parser::new(r#"A : date"#);
     let parsed = p.parse_constraints();
@@ -2446,9 +2508,9 @@ fn test_parse_constraint_one_ident() {
     )
 }
 #[test]
-fn test_parse_record_blank() {
+fn test_parse_record_type_blank() {
     let mut p = Parser::new(r#"{}"#);
-    let parsed = p.parse_record();
+    let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
@@ -2490,6 +2552,69 @@ fn test_parse_type_expression_function_with_no_params() {
                     name: Identifier {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 10),
+                            ..BaseNode::default()
+                        },
+                        name: "int".to_string(),
+                    }
+                }),
+            })),
+            constraints: vec![],
+        },
+    )
+}
+
+#[test]
+fn test_parse_function_type_trailing_comma() {
+    let mut p = Parser::new(r#"(a:int,) => int"#);
+    let parsed = p.parse_type_expression();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        TypeExpression {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 16),
+                ..BaseNode::default()
+            },
+            monotype: MonoType::Function(Box::new(FunctionType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 16),
+                    ..BaseNode::default()
+                },
+
+                parameters: vec![ParameterType::Required {
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 7),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 2, 1, 3),
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string(),
+                    },
+                    monotype: MonoType::Basic(NamedType {
+                        base: BaseNode {
+                            location: loc.get(1, 4, 1, 7),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 4, 1, 7),
+                                ..BaseNode::default()
+                            },
+                            name: "int".to_string(),
+                        },
+                    }),
+                },],
+                monotype: MonoType::Basic(NamedType {
+                    base: BaseNode {
+                        location: loc.get(1, 13, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 13, 1, 16),
                             ..BaseNode::default()
                         },
                         name: "int".to_string(),
@@ -2864,9 +2989,9 @@ fn test_parse_constraint_two_con() {
 }
 
 #[test]
-fn test_parse_record_tvar_properties() {
+fn test_parse_record_type_tvar_properties() {
     let mut p = Parser::new(r#"{A with a:int, b:uint}"#);
-    let parsed = p.parse_record();
+    let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,

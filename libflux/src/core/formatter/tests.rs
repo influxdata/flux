@@ -602,3 +602,54 @@ fn parens() {
     assert_unchanged("() => ({_value: 1})");
     assert_unchanged("() => \n\t// comment\n\t({_value: 1})");
 }
+
+#[test]
+fn type_expressions() {
+    assert_unchanged(r#"builtin foo : (a: int, b: string) => int"#);
+    assert_unchanged(
+        r#"builtin foo : (
+	a: int,
+	b: string,
+) => int"#,
+    );
+    assert_unchanged(r#"builtin foo : {a: int, b: string}"#);
+    assert_unchanged(
+        r#"builtin foo : {
+	a: int,
+	b: string,
+}"#,
+    );
+    assert_unchanged(
+        r#"builtin foo : {X with
+	a: int,
+	b: string,
+}"#,
+    );
+    assert_format(
+        r#"builtin foo : {a: A, b: B, c: C, d: D, e: E} where A: Numeric, B: Numeric, C: Numeric, D: Numeric, E: Numeric"#,
+        r#"builtin foo : {
+	a: A,
+	b: B,
+	c: C,
+	d: D,
+	e: E,
+} where
+	A: Numeric,
+	B: Numeric,
+	C: Numeric,
+	D: Numeric,
+	E: Numeric"#,
+    );
+    assert_unchanged(
+        r#"builtin foo : (
+	a: int,
+	b: string,
+	c: A,
+	d: [int],
+	e: [[B]],
+	fn: () => int,
+) => {x with a: int, b: string} where
+	A: Timeable,
+	B: Record"#,
+    );
+}
