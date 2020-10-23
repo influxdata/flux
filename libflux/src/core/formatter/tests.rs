@@ -130,6 +130,23 @@ fn block() {
 	1 + 1
 }"#,
     );
+    assert_format(
+        r#"foo = 1
+foo
+builtin bar : int
+builtin rab : int
+// comment
+builtin baz : int"#,
+        r#"foo = 1
+
+foo
+
+builtin bar : int
+builtin rab : int
+
+// comment
+builtin baz : int"#,
+    );
 }
 
 #[test]
@@ -503,6 +520,7 @@ j
 
 // minimal
 foo = (arg=[1, 2]) => 1
+
 // left
 left = from(bucket: "test")
 	|> range(
