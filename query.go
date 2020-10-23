@@ -79,9 +79,9 @@ func (s Statistics) Add(other Statistics) Statistics {
 		RequeueDuration: s.RequeueDuration + other.RequeueDuration,
 		ExecuteDuration: s.ExecuteDuration + other.ExecuteDuration,
 		Concurrency:     s.Concurrency + other.Concurrency,
-		RuntimeErrors:   errs,
 		MaxAllocated:    s.MaxAllocated + other.MaxAllocated,
 		TotalAllocated:  s.TotalAllocated + other.TotalAllocated,
+		RuntimeErrors:   errs,
 		Metadata:        md,
 	}
 }
