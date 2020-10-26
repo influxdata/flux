@@ -81,7 +81,7 @@ func (t *Table) Normalize() {
 }
 
 func (t *Table) Empty() bool {
-	return len(t.Data) == 0
+	return len(t.Data) == 0 && t.Err == nil
 }
 
 func (t *Table) Cols() []flux.ColMeta {

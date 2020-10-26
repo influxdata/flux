@@ -1,11 +1,13 @@
 package influxdb_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	influxdeps "github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
@@ -49,7 +51,11 @@ func TestFromRemoteRule_WithHost(t *testing.T) {
 		After: &plantest.PlanSpec{
 			Nodes: []plan.Node{
 				plan.CreatePhysicalNode("fromRemote", &influxdb.FromRemoteProcedureSpec{
-					FromProcedureSpec: &fromSpec,
+					Config: influxdb.Config{
+						Org:    *fromSpec.Org,
+						Bucket: fromSpec.Bucket,
+						Host:   *fromSpec.Host,
+					},
 				}),
 				plan.CreateLogicalNode("range", &rangeSpec),
 			},
@@ -148,6 +154,12 @@ func TestFromRemoteRule_WithoutRangeValidation(t *testing.T) {
 }
 
 func TestMergeRemoteRangeRule(t *testing.T) {
+	deps := flux.NewDefaultDependencies()
+	ctx := deps.Inject(context.Background())
+	ctx = influxdeps.Dependency{
+		Provider: influxdeps.HttpProvider{},
+	}.Inject(ctx)
+
 	fromSpec := influxdb.FromProcedureSpec{
 		Bucket: influxdb.NameOrID{Name: "telegraf"},
 		Host:   stringPtr("http://localhost:9999"),
@@ -165,7 +177,8 @@ func TestMergeRemoteRangeRule(t *testing.T) {
 	}
 
 	tc := plantest.RuleTestCase{
-		Name: "MergeRemoteRange",
+		Name:    "MergeRemoteRange",
+		Context: ctx,
 		Rules: []plan.Rule{
 			influxdb.FromRemoteRule{},
 			influxdb.MergeRemoteRangeRule{},
@@ -180,8 +193,11 @@ func TestMergeRemoteRangeRule(t *testing.T) {
 		After: &plantest.PlanSpec{
 			Nodes: []plan.Node{
 				plan.CreatePhysicalNode("merged_fromRemote_range", &influxdb.FromRemoteProcedureSpec{
-					FromProcedureSpec: &fromSpec,
-					Range:             &rangeSpec,
+					Config: influxdb.Config{
+						Bucket: fromSpec.Bucket,
+						Host:   *fromSpec.Host,
+					},
+					Bounds: rangeSpec.Bounds,
 				}),
 			},
 		},
@@ -190,6 +206,12 @@ func TestMergeRemoteRangeRule(t *testing.T) {
 }
 
 func TestMergeRemoteFilterRule(t *testing.T) {
+	deps := flux.NewDefaultDependencies()
+	ctx := deps.Inject(context.Background())
+	ctx = influxdeps.Dependency{
+		Provider: influxdeps.HttpProvider{},
+	}.Inject(ctx)
+
 	fromSpec := influxdb.FromProcedureSpec{
 		Bucket: influxdb.NameOrID{Name: "telegraf"},
 		Host:   stringPtr("http://localhost:9999"),
@@ -213,7 +235,8 @@ func TestMergeRemoteFilterRule(t *testing.T) {
 	}
 
 	tc := plantest.RuleTestCase{
-		Name: "MergeRemoteRange",
+		Name:    "MergeRemoteRange",
+		Context: ctx,
 		Rules: []plan.Rule{
 			influxdb.FromRemoteRule{},
 			influxdb.MergeRemoteRangeRule{},
@@ -233,11 +256,15 @@ func TestMergeRemoteFilterRule(t *testing.T) {
 		After: &plantest.PlanSpec{
 			Nodes: []plan.Node{
 				plan.CreatePhysicalNode("merged_fromRemote_range_filter", &influxdb.FromRemoteProcedureSpec{
-					FromProcedureSpec: &fromSpec,
-					Range:             &rangeSpec,
-					Transformations: []plan.ProcedureSpec{
-						&filterSpec,
+					Config: influxdb.Config{
+						Bucket: fromSpec.Bucket,
+						Host:   *fromSpec.Host,
 					},
+					Bounds: rangeSpec.Bounds,
+					PredicateSet: influxdb.PredicateSet{{
+						ResolvedFunction: filterSpec.Fn,
+						KeepEmpty:        filterSpec.KeepEmptyTables,
+					}},
 				}),
 			},
 		},
@@ -322,9 +349,9 @@ func TestDefaultFromAttributes(t *testing.T) {
 			After: &plantest.PlanSpec{
 				Nodes: []plan.Node{
 					plan.CreatePhysicalNode("fromRemote", &influxdb.FromRemoteProcedureSpec{
-						FromProcedureSpec: &influxdb.FromProcedureSpec{
+						Config: influxdb.Config{
 							Bucket: influxdb.NameOrID{Name: "telegraf"},
-							Host:   stringPtr("http://localhost:9999"),
+							Host:   "http://localhost:9999",
 						},
 					}),
 				},

@@ -9,11 +9,9 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-const DefaultInfluxDBHost = "http://localhost:9999"
-
 func main() {
 	plan.RegisterLogicalRules(influxdb.DefaultFromAttributes{
-		Host: func(v string) *string { return &v }(DefaultInfluxDBHost),
+		Host: func(v string) *string { return &v }(cmd.DefaultInfluxDBHost),
 	})
 	cmd.Execute()
 }

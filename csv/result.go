@@ -14,13 +14,13 @@ import (
 	"unicode/utf8"
 
 	"github.com/apache/arrow/go/arrow/array"
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/iocounter"
-	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
 
@@ -78,7 +78,7 @@ type ResultDecoderConfig struct {
 	MaxBufferCount int
 	// Allocator is the memory allocator that will be used during decoding.
 	// The default is to use an unlimited allocator when this is not set.
-	Allocator *memory.Allocator
+	Allocator memory.Allocator
 	// Context is the context for this ResultDecoder.
 	// When the context is canceled, the decoder will also be canceled.
 	// This defaults to context.Background.
