@@ -14,13 +14,13 @@ import (
 )
 
 type ider struct {
-	id     int
+	id     *int
 	lookup map[*flux.TableObject]flux.OperationID
 }
 
 func (i *ider) nextID() int {
-	next := i.id
-	i.id++
+	next := *i.id
+	*i.id++
 	return next
 }
 
@@ -44,12 +44,13 @@ func (i *ider) ID(t *flux.TableObject) flux.OperationID {
 }
 
 func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.Time) (*flux.Spec, error) {
+	dep := execute.GetExecutionDependencies(ctx)
 	ider := &ider{
-		id:     0,
+		id:     dep.NextNodeId,
 		lookup: make(map[*flux.TableObject]flux.OperationID),
 	}
 
-	spec := &flux.Spec{Now: now}
+	spec := &flux.Spec{Now: now, NextNodeId: dep.NextNodeId}
 	seen := make(map[*flux.TableObject]bool)
 	objs := make([]*flux.TableObject, 0, len(ses))
 

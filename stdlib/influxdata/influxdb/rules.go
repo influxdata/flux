@@ -17,13 +17,13 @@ func (p FromRemoteRule) Pattern() plan.Pattern {
 	return plan.Pat(FromKind)
 }
 
-func (p FromRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (p FromRemoteRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	spec := node.ProcedureSpec().(*FromProcedureSpec)
 	if spec.Host == nil {
 		return node, false, nil
 	}
 
-	return plan.CreatePhysicalNode("fromRemote", &FromRemoteProcedureSpec{
+	return plan.CreatePhysicalNodeWithId(nextNodeId, "fromRemote", &FromRemoteProcedureSpec{
 		FromProcedureSpec: spec,
 	}), true, nil
 }
@@ -38,7 +38,7 @@ func (p MergeRemoteRangeRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.RangeKind, plan.Pat(FromRemoteKind))
 }
 
-func (p MergeRemoteRangeRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (p MergeRemoteRangeRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	fromNode := node.Predecessors()[0]
 	fromSpec := fromNode.ProcedureSpec().(*FromRemoteProcedureSpec)
 	if fromSpec.Range != nil {
@@ -65,7 +65,7 @@ func (p MergeRemoteFilterRule) Pattern() plan.Pattern {
 	return plan.Pat(universe.FilterKind, plan.Pat(FromRemoteKind))
 }
 
-func (p MergeRemoteFilterRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (p MergeRemoteFilterRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	fromNode := node.Predecessors()[0]
 	fromSpec := fromNode.ProcedureSpec().(*FromRemoteProcedureSpec)
 	if fromSpec.Range == nil {
@@ -92,13 +92,13 @@ func (p BucketsRemoteRule) Pattern() plan.Pattern {
 	return plan.Pat(BucketsKind)
 }
 
-func (p BucketsRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (p BucketsRemoteRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	spec := node.ProcedureSpec().(*BucketsProcedureSpec)
 	if spec.Host == nil {
 		return node, false, nil
 	}
 
-	return plan.CreatePhysicalNode("bucketsRemote", &BucketsRemoteProcedureSpec{
+	return plan.CreatePhysicalNodeWithId(nextNodeId, "bucketsRemote", &BucketsRemoteProcedureSpec{
 		BucketsProcedureSpec: spec,
 	}), true, nil
 }
@@ -122,7 +122,7 @@ func (d DefaultFromAttributes) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-func (d DefaultFromAttributes) Rewrite(ctx context.Context, n plan.Node) (plan.Node, bool, error) {
+func (d DefaultFromAttributes) Rewrite(ctx context.Context, n plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	spec, ok := n.ProcedureSpec().(ProcedureSpec)
 	if !ok {
 		return n, false, nil

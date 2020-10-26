@@ -343,7 +343,7 @@ func (RemoveTrivialFilterRule) Pattern() plan.Pattern {
 	return plan.Pat(FilterKind, plan.Any())
 }
 
-func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
+func (RemoveTrivialFilterRule) Rewrite(ctx context.Context, filterNode plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	filterSpec := filterNode.ProcedureSpec().(*FilterProcedureSpec)
 	if filterSpec.Fn.Fn == nil ||
 		filterSpec.Fn.Fn.Block == nil ||
@@ -374,7 +374,7 @@ func (MergeFiltersRule) Pattern() plan.Pattern {
 	return plan.Pat(FilterKind, plan.Pat(FilterKind, plan.Any()))
 }
 
-func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node) (plan.Node, bool, error) {
+func (MergeFiltersRule) Rewrite(ctx context.Context, filterNode plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	// conditions
 	filterSpec1 := filterNode.ProcedureSpec().(*FilterProcedureSpec)
 	bodyExpr1, ok := filterSpec1.Fn.Fn.GetFunctionBodyExpression()

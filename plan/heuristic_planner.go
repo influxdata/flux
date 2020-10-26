@@ -40,7 +40,7 @@ func (p *heuristicPlanner) clearRules() {
 
 // matchRules applies any applicable rules to the given plan node,
 // and returns the rewritten plan node and whether or not any rewriting was done.
-func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, bool, error) {
+func (p *heuristicPlanner) matchRules(ctx context.Context, node Node, nextNodeId *int) (Node, bool, error) {
 	anyChanged := false
 
 	for _, rule := range p.rules[AnyKind] {
@@ -48,7 +48,7 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, boo
 			continue
 		}
 		if rule.Pattern().Match(node) {
-			newNode, changed, err := rule.Rewrite(ctx, node)
+			newNode, changed, err := rule.Rewrite(ctx, node, nextNodeId)
 			if err != nil {
 				return nil, false, err
 			}
@@ -62,7 +62,7 @@ func (p *heuristicPlanner) matchRules(ctx context.Context, node Node) (Node, boo
 			continue
 		}
 		if rule.Pattern().Match(node) {
-			newNode, changed, err := rule.Rewrite(ctx, node)
+			newNode, changed, err := rule.Rewrite(ctx, node, nextNodeId)
 			if err != nil {
 				return nil, false, err
 			}
@@ -103,7 +103,7 @@ func (p *heuristicPlanner) Plan(ctx context.Context, inputPlan *Spec) (*Spec, er
 			_, alreadyVisited := visited[node]
 
 			if !alreadyVisited {
-				newNode, changed, err := p.matchRules(ctx, node)
+				newNode, changed, err := p.matchRules(ctx, node, inputPlan.NextNodeId)
 				if err != nil {
 					return nil, err
 				}

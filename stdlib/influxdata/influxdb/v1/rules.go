@@ -16,13 +16,13 @@ func (p DatabasesRemoteRule) Pattern() plan.Pattern {
 	return plan.Pat(DatabasesKind)
 }
 
-func (p DatabasesRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (p DatabasesRemoteRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	spec := node.ProcedureSpec().(*DatabasesProcedureSpec)
 	if spec.Host == nil {
 		return node, false, nil
 	}
 
-	return plan.CreatePhysicalNode("databasesRemote", &DatabasesRemoteProcedureSpec{
+	return plan.CreatePhysicalNodeWithId(nextNodeId, "databasesRemote", &DatabasesRemoteProcedureSpec{
 		DatabasesProcedureSpec: spec,
 	}), true, nil
 }

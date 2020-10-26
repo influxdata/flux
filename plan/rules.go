@@ -13,5 +13,5 @@ type Rule interface {
 	// Rewrite an operation into an equivalent one.
 	// The returned node is the new root of the sub tree.
 	// The boolean return value should be true if anything changed during the rewrite.
-	Rewrite(context.Context, Node) (Node, bool, error)
+	Rewrite(context.Context, Node, *int) (Node, bool, error)
 }

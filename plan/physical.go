@@ -164,7 +164,7 @@ func (physicalConverterRule) Pattern() Pattern {
 	return Any()
 }
 
-func (physicalConverterRule) Rewrite(ctx context.Context, pn Node) (Node, bool, error) {
+func (physicalConverterRule) Rewrite(ctx context.Context, pn Node, nextNodeId *int) (Node, bool, error) {
 	if _, ok := pn.(*PhysicalPlanNode); ok {
 		// Already converted
 		return pn, false, nil
@@ -271,6 +271,12 @@ func CreatePhysicalNode(id NodeID, spec PhysicalProcedureSpec) *PhysicalPlanNode
 		id:   id,
 		Spec: spec,
 	}
+}
+
+func CreatePhysicalNodeWithId(nextNodeId *int, idStr NodeID, spec PhysicalProcedureSpec) *PhysicalPlanNode {
+	nodeId := NodeID(fmt.Sprintf("%s%d", idStr, *nextNodeId))
+	*nextNodeId++
+	return CreatePhysicalNode(nodeId, spec)
 }
 
 // PostPhysicalValidator provides an interface that can be implemented by PhysicalProcedureSpecs for any

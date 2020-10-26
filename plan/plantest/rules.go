@@ -19,7 +19,7 @@ func (sr *SimpleRule) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (sr *SimpleRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	for _, nid := range sr.SeenNodes {
 		if nid == node.ID() {
 			return node, false, nil
@@ -46,7 +46,7 @@ func (fr *FunctionRule) Pattern() plan.Pattern {
 	return plan.Any()
 }
 
-func (fr *FunctionRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (fr *FunctionRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	return fr.RewriteFn(ctx, node)
 }
 
@@ -75,7 +75,7 @@ func (spp SmashPlanRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (spp SmashPlanRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (spp SmashPlanRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	var changed bool
 	if len(spp.Kind) > 0 || node == spp.Node {
 		node.AddPredecessors(spp.Intruder)
@@ -112,7 +112,7 @@ func (ccr CreateCycleRule) Pattern() plan.Pattern {
 	return plan.Pat(k, plan.Any())
 }
 
-func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (ccr CreateCycleRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	var changed bool
 	if len(ccr.Kind) > 0 || node == ccr.Node {
 		node.Predecessors()[0].AddPredecessors(node)
@@ -141,7 +141,7 @@ func (sr *MultiRootRule) Pattern() plan.Pattern {
 		plan.Any())
 }
 
-func (sr *MultiRootRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+func (sr *MultiRootRule) Rewrite(ctx context.Context, node plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	sr.SeenNodes = append(sr.SeenNodes, node.ID())
 	return node, false, nil
 }

@@ -59,9 +59,10 @@ type NodeID string
 
 // Spec holds the result nodes of a query plan with associated metadata
 type Spec struct {
-	Roots     map[Node]struct{}
-	Resources flux.ResourceManagement
-	Now       time.Time
+	Roots      map[Node]struct{}
+	Resources  flux.ResourceManagement
+	Now        time.Time
+	NextNodeId *int
 }
 
 // NewPlanSpec initializes a new query plan

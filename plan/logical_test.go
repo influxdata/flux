@@ -342,7 +342,7 @@ func (MergeFiltersRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (MergeFiltersRule) Rewrite(ctx context.Context, pn plan.Node) (plan.Node, bool, error) {
+func (MergeFiltersRule) Rewrite(ctx context.Context, pn plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	specTop := pn.ProcedureSpec()
 
 	filterSpecTop := specTop.(*universe.FilterProcedureSpec)
@@ -401,7 +401,7 @@ func (PushFilterThroughMapRule) Pattern() plan.Pattern {
 			plan.Any()))
 }
 
-func (PushFilterThroughMapRule) Rewrite(ctx context.Context, pn plan.Node) (plan.Node, bool, error) {
+func (PushFilterThroughMapRule) Rewrite(ctx context.Context, pn plan.Node, nextNodeId *int) (plan.Node, bool, error) {
 	// It will not always be possible to push a filter through a map... but this is just a unit test.
 
 	swapped, err := plan.SwapPlanNodes(pn, pn.Predecessors()[0])

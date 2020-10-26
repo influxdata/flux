@@ -14,9 +14,10 @@ type Spec struct {
 	Resources  ResourceManagement `json:"resources"`
 	Now        time.Time          `json:"now"`
 
-	sorted   []*Operation
-	children map[OperationID][]*Operation
-	parents  map[OperationID][]*Operation
+	NextNodeId *int
+	sorted     []*Operation
+	children   map[OperationID][]*Operation
+	parents    map[OperationID][]*Operation
 }
 
 // Edge is a data flow relationship between a parent and a child

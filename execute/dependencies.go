@@ -33,6 +33,7 @@ type ExecutionDependencies struct {
 	Metadata metadata.Metadata
 
 	ExecutionOptions *ExecutionOptions
+	NextNodeId       *int
 }
 
 func (d ExecutionDependencies) Inject(ctx context.Context) context.Context {
@@ -64,6 +65,7 @@ func NewExecutionDependencies(allocator *memory.Allocator, now *time.Time, logge
 		Logger:           logger,
 		Metadata:         make(metadata.Metadata),
 		ExecutionOptions: &ExecutionOptions{},
+		NextNodeId:       new(int),
 	}
 }
 

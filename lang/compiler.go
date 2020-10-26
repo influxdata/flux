@@ -491,10 +491,8 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 func (p *AstProgram) updateProfilers(ctx context.Context, scope values.Scope) error {
 	if execute.HaveExecutionDependencies(ctx) {
 		deps := execute.GetExecutionDependencies(ctx)
-		if deps.ExecutionOptions.OperatorProfiler != nil {
-			p.tfProfiler = deps.ExecutionOptions.OperatorProfiler
-			p.Profilers = deps.ExecutionOptions.Profilers
-		}
+		p.Profilers = deps.ExecutionOptions.Profilers
+		p.tfProfiler = deps.ExecutionOptions.OperatorProfiler
 	}
 	return nil
 }

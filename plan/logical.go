@@ -174,6 +174,7 @@ func createLogicalPlan(spec *flux.Spec) (*Spec, error) {
 	plan := NewPlanSpec()
 	plan.Resources = spec.Resources
 	plan.Now = spec.Now
+	plan.NextNodeId = spec.NextNodeId
 
 	v := &fluxSpecVisitor{
 		a:          admin,
