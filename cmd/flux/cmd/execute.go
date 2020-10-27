@@ -7,6 +7,7 @@ import (
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
 )
@@ -24,10 +25,29 @@ func init() {
 	rootCmd.AddCommand(executeCmd)
 }
 
-func execute(cmd *cobra.Command, args []string) error {
+const DefaultInfluxDBHost = "http://localhost:9999"
+
+func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies) {
 	deps := flux.NewDefaultDependencies()
 	deps.Deps.FilesystemService = filesystem.SystemFS
-	ctx := deps.Inject(context.Background())
+
+	// inject the dependencies to the context.
+	// one useful example is socket.from, kafka.to, and sql.from/sql.to where we need
+	// to access the url validator in deps to validate the user-specified url.
+	ctx = deps.Inject(ctx)
+
+	ip := influxdb.Dependency{
+		Provider: &influxdb.HttpProvider{
+			DefaultConfig: influxdb.Config{
+				Host: DefaultInfluxDBHost,
+			},
+		},
+	}
+	return ip.Inject(ctx), deps
+}
+
+func execute(cmd *cobra.Command, args []string) error {
+	ctx, deps := injectDependencies(context.Background())
 	r := repl.New(ctx, deps)
 	if err := r.Input(args[0]); err != nil {
 		return fmt.Errorf("failed to execute query: %v", err)

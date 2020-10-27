@@ -1,34 +1,40 @@
-// From is an operation that mocks the real implementation of InfluxDB's from.
-// It is used in Flux to compile queries that resemble real queries issued against InfluxDB.
-// Implementors of the real from are expected to replace its implementation via flux.ReplacePackageValue.
+// Package influxdb implements the standard library functions
+// for interacting with influxdb. It uses the influxdb
+// dependency from the dependencies/influxdb package
+// to implement the builtins.
 package influxdb
 
 import (
-	"fmt"
-
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
 )
 
 const (
+	PackageName    = "influxdata/influxdb"
 	FromKind       = "from"
 	FromRemoteKind = "influxdata/influxdb.fromRemote"
 )
 
-// NameOrID signifies the name of an organization/bucket
-// or an ID for an organization/bucket.
-type NameOrID struct {
-	ID   string
-	Name string
-}
+type (
+	// NameOrID signifies the name of an organization/bucket
+	// or an ID for an organization/bucket.
+	NameOrID = influxdb.NameOrID
+
+	// Config contains the common configuration for interacting with an influxdb instance.
+	Config = influxdb.Config
+
+	// Predicate defines a predicate to filter storage with.
+	Predicate = influxdb.Predicate
+
+	// PredicateSet holds a set of predicates that will filter the results.
+	PredicateSet = influxdb.PredicateSet
+)
 
 type FromOpSpec struct {
 	Org    *NameOrID
@@ -164,10 +170,9 @@ func (s *FromProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 
 type FromRemoteProcedureSpec struct {
 	plan.DefaultCost
-
-	*FromProcedureSpec
-	Range           *universe.RangeProcedureSpec
-	Transformations []plan.ProcedureSpec
+	influxdb.Config
+	Bounds       flux.Bounds
+	PredicateSet influxdb.PredicateSet
 }
 
 func (s *FromRemoteProcedureSpec) Kind() plan.ProcedureKind {
@@ -179,9 +184,9 @@ func (s *FromRemoteProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *pl
 	bounds := &plan.Bounds{}
 
 	// set the bounds to the range specified in from call, if there is one
-	if s.Range != nil {
-		bounds.Start = values.ConvertTime(s.Range.Bounds.Start.Time(s.Range.Bounds.Now))
-		bounds.Stop = values.ConvertTime(s.Range.Bounds.Stop.Time(s.Range.Bounds.Now))
+	if !s.Bounds.IsEmpty() {
+		bounds.Start = values.ConvertTime(s.Bounds.Start.Time(s.Bounds.Now))
+		bounds.Stop = values.ConvertTime(s.Bounds.Stop.Time(s.Bounds.Now))
 	}
 	if predecessorBounds != nil {
 		bounds = bounds.Intersect(predecessorBounds)
@@ -192,21 +197,12 @@ func (s *FromRemoteProcedureSpec) TimeBounds(predecessorBounds *plan.Bounds) *pl
 func (s *FromRemoteProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromRemoteProcedureSpec)
 	*ns = *s
-	ns.FromProcedureSpec = s.FromProcedureSpec.Copy().(*FromProcedureSpec)
-	if s.Range != nil {
-		ns.Range = s.Range.Copy().(*universe.RangeProcedureSpec)
-	}
-	if len(s.Transformations) > 0 {
-		// Add an extra slot for a transformation in anticipation
-		// of one being appended.
-		ns.Transformations = make([]plan.ProcedureSpec, len(s.Transformations), len(s.Transformations)+1)
-		copy(ns.Transformations, s.Transformations)
-	}
+	ns.PredicateSet = s.PredicateSet.Copy()
 	return ns
 }
 
 func (s *FromRemoteProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
-	if s.Range == nil {
+	if s.Bounds.IsEmpty() {
 		var bucket string
 		if s.Bucket.Name != "" {
 			bucket = s.Bucket.Name
@@ -220,150 +216,19 @@ func (s *FromRemoteProcedureSpec) PostPhysicalValidate(id plan.NodeID) error {
 
 func createFromSource(ps plan.ProcedureSpec, id execute.DatasetID, a execute.Administration) (execute.Source, error) {
 	spec := ps.(*FromRemoteProcedureSpec)
-	if spec.Range == nil {
+	if spec.Bounds.IsEmpty() {
 		return nil, errors.Newf(codes.Invalid, "bounds must be set")
 	}
-	return CreateSource(id, spec, a)
-}
 
-func (s *FromRemoteProcedureSpec) BuildQuery() *ast.File {
-	imports := make(map[string]*ast.ImportDeclaration)
-	query := &ast.PipeExpression{
-		Argument: &ast.CallExpression{
-			Callee:    &ast.Identifier{Name: "from"},
-			Arguments: []ast.Expression{s.fromArgs()},
-		},
-		Call: &ast.CallExpression{
-			Callee:    &ast.Identifier{Name: "range"},
-			Arguments: []ast.Expression{s.rangeArgs()},
-		},
-	}
-	for _, ps := range s.Transformations {
-		query = &ast.PipeExpression{
-			Argument: query,
-			Call:     s.toAST(ps, imports),
-		}
-	}
-	file := &ast.File{
-		Package: &ast.PackageClause{
-			Name: &ast.Identifier{Name: "main"},
-		},
-		Name: "query.flux",
-		Body: []ast.Statement{
-			&ast.ExpressionStatement{Expression: query},
-		},
+	provider := influxdb.GetProvider(a.Context())
+	reader, err := provider.ReaderFor(a.Context(), spec.Config, spec.Bounds, spec.PredicateSet)
+	if err != nil {
+		return nil, err
 	}
 
-	if len(imports) > 0 {
-		file.Imports = make([]*ast.ImportDeclaration, 0, len(imports))
-		for _, decl := range imports {
-			file.Imports = append(file.Imports, decl)
-		}
+	itr := &sourceIterator{
+		reader: reader,
+		mem:    a.Allocator(),
 	}
-	return file
-}
-
-func (s *FromRemoteProcedureSpec) fromArgs() *ast.ObjectExpression {
-	var arg ast.Property
-	if s.Bucket.ID != "" {
-		arg.Key = &ast.Identifier{Name: "bucketID"}
-		arg.Value = &ast.StringLiteral{Value: s.Bucket.ID}
-	} else {
-		arg.Key = &ast.Identifier{Name: "bucket"}
-		arg.Value = &ast.StringLiteral{Value: s.Bucket.Name}
-	}
-	return &ast.ObjectExpression{
-		Properties: []*ast.Property{&arg},
-	}
-}
-
-func (s *FromRemoteProcedureSpec) rangeArgs() *ast.ObjectExpression {
-	toLiteral := func(t flux.Time) ast.Expression {
-		if t.IsRelative {
-			// TODO(jsternberg): This seems wrong. Relative should be a values.Duration
-			// and not a time.Duration.
-			d := flux.ConvertDuration(t.Relative)
-			var expr ast.Expression = &ast.DurationLiteral{
-				Values: d.AsValues(),
-			}
-			if d.IsNegative() {
-				expr = &ast.UnaryExpression{
-					Operator: ast.SubtractionOperator,
-					Argument: expr,
-				}
-			}
-			return expr
-		}
-		return &ast.DateTimeLiteral{Value: t.Absolute}
-	}
-
-	args := make([]*ast.Property, 0, 2)
-	args = append(args, &ast.Property{
-		Key:   &ast.Identifier{Name: "start"},
-		Value: toLiteral(s.Range.Bounds.Start),
-	})
-	if stop := s.Range.Bounds.Stop; !stop.IsZero() && !(stop.IsRelative && stop.Relative == 0) {
-		args = append(args, &ast.Property{
-			Key:   &ast.Identifier{Name: "stop"},
-			Value: toLiteral(s.Range.Bounds.Stop),
-		})
-	}
-	return &ast.ObjectExpression{Properties: args}
-}
-
-func (s *FromRemoteProcedureSpec) toAST(spec plan.ProcedureSpec, imports map[string]*ast.ImportDeclaration) *ast.CallExpression {
-	switch spec := spec.(type) {
-	case *universe.FilterProcedureSpec:
-		return s.filterToAST(spec, imports)
-	default:
-		panic(fmt.Sprintf("unable to convert procedure spec of type %T to ast", spec))
-	}
-}
-
-func (s *FromRemoteProcedureSpec) filterToAST(spec *universe.FilterProcedureSpec, imports map[string]*ast.ImportDeclaration) *ast.CallExpression {
-	// Iterate through the scope and include any imports.
-	spec.Fn.Scope.Range(func(k string, v values.Value) {
-		pkg, ok := v.(values.Package)
-		if !ok {
-			return
-		}
-
-		pkgpath := pkg.Path()
-		if pkgpath == "" {
-			return
-		}
-		s.includeImport(imports, k, pkgpath)
-	})
-
-	fn := semantic.ToAST(spec.Fn.Fn).(ast.Expression)
-	properties := []*ast.Property{{
-		Key:   &ast.Identifier{Name: "fn"},
-		Value: fn,
-	}}
-	if spec.KeepEmptyTables {
-		properties = append(properties, &ast.Property{
-			Key:   &ast.Identifier{Name: "onEmpty"},
-			Value: &ast.StringLiteral{Value: "keep"},
-		})
-	}
-	return &ast.CallExpression{
-		Callee: &ast.Identifier{Name: "filter"},
-		Arguments: []ast.Expression{
-			&ast.ObjectExpression{Properties: properties},
-		},
-	}
-}
-
-func (s *FromRemoteProcedureSpec) includeImport(imports map[string]*ast.ImportDeclaration, name, path string) {
-	// Look to see if we have already included an import
-	// with this name.
-	if _, ok := imports[name]; ok {
-		return
-	}
-
-	decl := &ast.ImportDeclaration{
-		Path: &ast.StringLiteral{Value: path},
-		As:   &ast.Identifier{Name: name},
-	}
-	imports[name] = decl
+	return execute.CreateSourceFromIterator(itr, id)
 }
