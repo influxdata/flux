@@ -687,7 +687,7 @@ impl Formatter {
 
     fn format_pipe_expression(&mut self, n: &ast::PipeExpr) {
         let multiline = at_least_pipe_depth(2, n) || n.base.is_multiline();
-        self.format_node(&Node::from_expr(&n.argument));
+        self.format_child_with_parens(Node::PipeExpr(n), Node::from_expr(&n.argument));
         if multiline {
             self.write_rune('\n');
             self.indent();
@@ -1015,6 +1015,7 @@ fn get_precedences(parent: &Node, child: &Node) -> (u32, u32) {
         Node::BinaryExpr(p) => pvp = Operator::new(&p.operator).get_precedence(),
         Node::LogicalExpr(p) => pvp = Operator::new_logical(&p.operator).get_precedence(),
         Node::UnaryExpr(p) => pvp = Operator::new(&p.operator).get_precedence(),
+        Node::PipeExpr(_) => pvp = 2,
         Node::CallExpr(_) => pvp = 1,
         Node::MemberExpr(_) => pvp = 1,
         Node::IndexExpr(_) => pvp = 1,
@@ -1026,6 +1027,7 @@ fn get_precedences(parent: &Node, child: &Node) -> (u32, u32) {
         Node::BinaryExpr(p) => pvc = Operator::new(&p.operator).get_precedence(),
         Node::LogicalExpr(p) => pvc = Operator::new_logical(&p.operator).get_precedence(),
         Node::UnaryExpr(p) => pvc = Operator::new(&p.operator).get_precedence(),
+        Node::PipeExpr(_) => pvc = 2,
         Node::CallExpr(_) => pvc = 1,
         Node::MemberExpr(_) => pvc = 1,
         Node::IndexExpr(_) => pvc = 1,
@@ -1062,32 +1064,32 @@ impl<'a> Operator<'a> {
     fn get_precedence(&self) -> u32 {
         if !self.is_logical {
             return match self.op.unwrap() {
-                ast::Operator::PowerOperator => 2,
+                ast::Operator::PowerOperator => 3,
                 ast::Operator::MultiplicationOperator => 4,
                 ast::Operator::DivisionOperator => 4,
-                ast::Operator::ModuloOperator => 3,
-                ast::Operator::AdditionOperator => 4,
-                ast::Operator::SubtractionOperator => 4,
-                ast::Operator::LessThanEqualOperator => 5,
-                ast::Operator::LessThanOperator => 5,
-                ast::Operator::GreaterThanEqualOperator => 5,
-                ast::Operator::GreaterThanOperator => 5,
-                ast::Operator::StartsWithOperator => 5,
-                ast::Operator::InOperator => 5,
-                ast::Operator::NotEmptyOperator => 5,
-                ast::Operator::EmptyOperator => 5,
-                ast::Operator::EqualOperator => 5,
-                ast::Operator::NotEqualOperator => 5,
-                ast::Operator::RegexpMatchOperator => 5,
-                ast::Operator::NotRegexpMatchOperator => 5,
-                ast::Operator::NotOperator => 6,
-                ast::Operator::ExistsOperator => 6,
+                ast::Operator::ModuloOperator => 4,
+                ast::Operator::AdditionOperator => 5,
+                ast::Operator::SubtractionOperator => 5,
+                ast::Operator::LessThanEqualOperator => 6,
+                ast::Operator::LessThanOperator => 6,
+                ast::Operator::GreaterThanEqualOperator => 6,
+                ast::Operator::GreaterThanOperator => 6,
+                ast::Operator::StartsWithOperator => 6,
+                ast::Operator::InOperator => 6,
+                ast::Operator::NotEmptyOperator => 6,
+                ast::Operator::EmptyOperator => 6,
+                ast::Operator::EqualOperator => 6,
+                ast::Operator::NotEqualOperator => 6,
+                ast::Operator::RegexpMatchOperator => 6,
+                ast::Operator::NotRegexpMatchOperator => 6,
+                ast::Operator::NotOperator => 7,
+                ast::Operator::ExistsOperator => 7,
                 ast::Operator::InvalidOperator => 0,
             };
         }
         match self.l_op.unwrap() {
-            ast::LogicalOperator::AndOperator => 7,
-            ast::LogicalOperator::OrOperator => 8,
+            ast::LogicalOperator::AndOperator => 8,
+            ast::LogicalOperator::OrOperator => 9,
         }
     }
 }
