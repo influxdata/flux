@@ -4191,3727 +4191,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 114,
-					Line:   90,
-				},
-				File:   "measurement_field_keys_test.flux",
-				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"\n\nmeasurement_field_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()\n\ntest measurement_field_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_field_keys_fn})",
-				Start: ast.Position{
-					Column: 1,
-					Line:   1,
-				},
-			},
-		},
-		Body: []ast.Statement{&ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 2,
-						Line:   69,
-					},
-					File:   "measurement_field_keys_test.flux",
-					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"",
-					Start: ast.Position{
-						Column: 1,
-						Line:   5,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 6,
-							Line:   5,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "input",
-						Start: ast.Position{
-							Column: 1,
-							Line:   5,
-						},
-					},
-				},
-				Name: "input",
-			},
-			Init: &ast.StringLiteral{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   69,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"",
-						Start: ast.Position{
-							Column: 9,
-							Line:   5,
-						},
-					},
-				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n",
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 2,
-						Line:   78,
-					},
-					File:   "measurement_field_keys_test.flux",
-					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"",
-					Start: ast.Position{
-						Column: 1,
-						Line:   71,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 7,
-							Line:   71,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "output",
-						Start: ast.Position{
-							Column: 1,
-							Line:   71,
-						},
-					},
-				},
-				Name: "output",
-			},
-			Init: &ast.StringLiteral{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   78,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"",
-						Start: ast.Position{
-							Column: 10,
-							Line:   71,
-						},
-					},
-				},
-				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n",
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 14,
-						Line:   87,
-					},
-					File:   "measurement_field_keys_test.flux",
-					Source: "measurement_field_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
-					Start: ast.Position{
-						Column: 1,
-						Line:   80,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 26,
-							Line:   80,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "measurement_field_keys_fn",
-						Start: ast.Position{
-							Column: 1,
-							Line:   80,
-						},
-					},
-				},
-				Name: "measurement_field_keys_fn",
-			},
-			Init: &ast.FunctionExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 14,
-							Line:   87,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
-						Start: ast.Position{
-							Column: 29,
-							Line:   80,
-						},
-					},
-				},
-				Body: &ast.PipeExpression{
-					Argument: &ast.PipeExpression{
-						Argument: &ast.PipeExpression{
-							Argument: &ast.PipeExpression{
-								Argument: &ast.PipeExpression{
-									Argument: &ast.PipeExpression{
-										Argument: &ast.PipeExpression{
-											Argument: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 50,
-															Line:   80,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "tables",
-														Start: ast.Position{
-															Column: 44,
-															Line:   80,
-														},
-													},
-												},
-												Name: "tables",
-											},
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 70,
-														Line:   81,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
-													Start: ast.Position{
-														Column: 44,
-														Line:   80,
-													},
-												},
-											},
-											Call: &ast.CallExpression{
-												Arguments: []ast.Expression{&ast.ObjectExpression{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 69,
-																Line:   81,
-															},
-															File:   "measurement_field_keys_test.flux",
-															Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
-															Start: ast.Position{
-																Column: 14,
-																Line:   81,
-															},
-														},
-													},
-													Properties: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 41,
-																	Line:   81,
-																},
-																File:   "measurement_field_keys_test.flux",
-																Source: "start: 2018-01-01T00:00:00Z",
-																Start: ast.Position{
-																	Column: 14,
-																	Line:   81,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 19,
-																		Line:   81,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "start",
-																	Start: ast.Position{
-																		Column: 14,
-																		Line:   81,
-																	},
-																},
-															},
-															Name: "start",
-														},
-														Value: &ast.DateTimeLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 41,
-																		Line:   81,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "2018-01-01T00:00:00Z",
-																	Start: ast.Position{
-																		Column: 21,
-																		Line:   81,
-																	},
-																},
-															},
-															Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
-														},
-													}, &ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 69,
-																	Line:   81,
-																},
-																File:   "measurement_field_keys_test.flux",
-																Source: "stop: 2019-01-01T00:00:00Z",
-																Start: ast.Position{
-																	Column: 43,
-																	Line:   81,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 47,
-																		Line:   81,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "stop",
-																	Start: ast.Position{
-																		Column: 43,
-																		Line:   81,
-																	},
-																},
-															},
-															Name: "stop",
-														},
-														Value: &ast.DateTimeLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 69,
-																		Line:   81,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "2019-01-01T00:00:00Z",
-																	Start: ast.Position{
-																		Column: 49,
-																		Line:   81,
-																	},
-																},
-															},
-															Value: parser.MustParseTime("2019-01-01T00:00:00Z"),
-														},
-													}},
-													With: nil,
-												}},
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 70,
-															Line:   81,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
-														Start: ast.Position{
-															Column: 8,
-															Line:   81,
-														},
-													},
-												},
-												Callee: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 13,
-																Line:   81,
-															},
-															File:   "measurement_field_keys_test.flux",
-															Source: "range",
-															Start: ast.Position{
-																Column: 8,
-																Line:   81,
-															},
-														},
-													},
-													Name: "range",
-												},
-											},
-										},
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 50,
-													Line:   82,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")",
-												Start: ast.Position{
-													Column: 44,
-													Line:   80,
-												},
-											},
-										},
-										Call: &ast.CallExpression{
-											Arguments: []ast.Expression{&ast.ObjectExpression{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 49,
-															Line:   82,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "fn: (r) => r._measurement == \"sys\"",
-														Start: ast.Position{
-															Column: 15,
-															Line:   82,
-														},
-													},
-												},
-												Properties: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 49,
-																Line:   82,
-															},
-															File:   "measurement_field_keys_test.flux",
-															Source: "fn: (r) => r._measurement == \"sys\"",
-															Start: ast.Position{
-																Column: 15,
-																Line:   82,
-															},
-														},
-													},
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 17,
-																	Line:   82,
-																},
-																File:   "measurement_field_keys_test.flux",
-																Source: "fn",
-																Start: ast.Position{
-																	Column: 15,
-																	Line:   82,
-																},
-															},
-														},
-														Name: "fn",
-													},
-													Value: &ast.FunctionExpression{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 49,
-																	Line:   82,
-																},
-																File:   "measurement_field_keys_test.flux",
-																Source: "(r) => r._measurement == \"sys\"",
-																Start: ast.Position{
-																	Column: 19,
-																	Line:   82,
-																},
-															},
-														},
-														Body: &ast.BinaryExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 49,
-																		Line:   82,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "r._measurement == \"sys\"",
-																	Start: ast.Position{
-																		Column: 26,
-																		Line:   82,
-																	},
-																},
-															},
-															Left: &ast.MemberExpression{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 40,
-																			Line:   82,
-																		},
-																		File:   "measurement_field_keys_test.flux",
-																		Source: "r._measurement",
-																		Start: ast.Position{
-																			Column: 26,
-																			Line:   82,
-																		},
-																	},
-																},
-																Object: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 27,
-																				Line:   82,
-																			},
-																			File:   "measurement_field_keys_test.flux",
-																			Source: "r",
-																			Start: ast.Position{
-																				Column: 26,
-																				Line:   82,
-																			},
-																		},
-																	},
-																	Name: "r",
-																},
-																Property: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 40,
-																				Line:   82,
-																			},
-																			File:   "measurement_field_keys_test.flux",
-																			Source: "_measurement",
-																			Start: ast.Position{
-																				Column: 28,
-																				Line:   82,
-																			},
-																		},
-																	},
-																	Name: "_measurement",
-																},
-															},
-															Operator: 17,
-															Right: &ast.StringLiteral{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 49,
-																			Line:   82,
-																		},
-																		File:   "measurement_field_keys_test.flux",
-																		Source: "\"sys\"",
-																		Start: ast.Position{
-																			Column: 44,
-																			Line:   82,
-																		},
-																	},
-																},
-																Value: "sys",
-															},
-														},
-														Params: []*ast.Property{&ast.Property{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 21,
-																		Line:   82,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 20,
-																		Line:   82,
-																	},
-																},
-															},
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 21,
-																			Line:   82,
-																		},
-																		File:   "measurement_field_keys_test.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 20,
-																			Line:   82,
-																		},
-																	},
-																},
-																Name: "r",
-															},
-															Value: nil,
-														}},
-													},
-												}},
-												With: nil,
-											}},
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 50,
-														Line:   82,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "filter(fn: (r) => r._measurement == \"sys\")",
-													Start: ast.Position{
-														Column: 8,
-														Line:   82,
-													},
-												},
-											},
-											Callee: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 14,
-															Line:   82,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "filter",
-														Start: ast.Position{
-															Column: 8,
-															Line:   82,
-														},
-													},
-												},
-												Name: "filter",
-											},
-										},
-									},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 49,
-												Line:   83,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")",
-											Start: ast.Position{
-												Column: 44,
-												Line:   80,
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 48,
-														Line:   83,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "fn: (r) => r.host == \"host.local\"",
-													Start: ast.Position{
-														Column: 15,
-														Line:   83,
-													},
-												},
-											},
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 48,
-															Line:   83,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "fn: (r) => r.host == \"host.local\"",
-														Start: ast.Position{
-															Column: 15,
-															Line:   83,
-														},
-													},
-												},
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 17,
-																Line:   83,
-															},
-															File:   "measurement_field_keys_test.flux",
-															Source: "fn",
-															Start: ast.Position{
-																Column: 15,
-																Line:   83,
-															},
-														},
-													},
-													Name: "fn",
-												},
-												Value: &ast.FunctionExpression{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 48,
-																Line:   83,
-															},
-															File:   "measurement_field_keys_test.flux",
-															Source: "(r) => r.host == \"host.local\"",
-															Start: ast.Position{
-																Column: 19,
-																Line:   83,
-															},
-														},
-													},
-													Body: &ast.BinaryExpression{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 48,
-																	Line:   83,
-																},
-																File:   "measurement_field_keys_test.flux",
-																Source: "r.host == \"host.local\"",
-																Start: ast.Position{
-																	Column: 26,
-																	Line:   83,
-																},
-															},
-														},
-														Left: &ast.MemberExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 32,
-																		Line:   83,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "r.host",
-																	Start: ast.Position{
-																		Column: 26,
-																		Line:   83,
-																	},
-																},
-															},
-															Object: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 27,
-																			Line:   83,
-																		},
-																		File:   "measurement_field_keys_test.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 26,
-																			Line:   83,
-																		},
-																	},
-																},
-																Name: "r",
-															},
-															Property: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 32,
-																			Line:   83,
-																		},
-																		File:   "measurement_field_keys_test.flux",
-																		Source: "host",
-																		Start: ast.Position{
-																			Column: 28,
-																			Line:   83,
-																		},
-																	},
-																},
-																Name: "host",
-															},
-														},
-														Operator: 17,
-														Right: &ast.StringLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 48,
-																		Line:   83,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "\"host.local\"",
-																	Start: ast.Position{
-																		Column: 36,
-																		Line:   83,
-																	},
-																},
-															},
-															Value: "host.local",
-														},
-													},
-													Params: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 21,
-																	Line:   83,
-																},
-																File:   "measurement_field_keys_test.flux",
-																Source: "r",
-																Start: ast.Position{
-																	Column: 20,
-																	Line:   83,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 21,
-																		Line:   83,
-																	},
-																	File:   "measurement_field_keys_test.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 20,
-																		Line:   83,
-																	},
-																},
-															},
-															Name: "r",
-														},
-														Value: nil,
-													}},
-												},
-											}},
-											With: nil,
-										}},
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 49,
-													Line:   83,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "filter(fn: (r) => r.host == \"host.local\")",
-												Start: ast.Position{
-													Column: 8,
-													Line:   83,
-												},
-											},
-										},
-										Callee: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 14,
-														Line:   83,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "filter",
-													Start: ast.Position{
-														Column: 8,
-														Line:   83,
-													},
-												},
-											},
-											Name: "filter",
-										},
-									},
-								},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 33,
-											Line:   84,
-										},
-										File:   "measurement_field_keys_test.flux",
-										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])",
-										Start: ast.Position{
-											Column: 44,
-											Line:   80,
-										},
-									},
-								},
-								Call: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 32,
-													Line:   84,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "columns: [\"_field\"]",
-												Start: ast.Position{
-													Column: 13,
-													Line:   84,
-												},
-											},
-										},
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 32,
-														Line:   84,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "columns: [\"_field\"]",
-													Start: ast.Position{
-														Column: 13,
-														Line:   84,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 20,
-															Line:   84,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "columns",
-														Start: ast.Position{
-															Column: 13,
-															Line:   84,
-														},
-													},
-												},
-												Name: "columns",
-											},
-											Value: &ast.ArrayExpression{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 32,
-															Line:   84,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "[\"_field\"]",
-														Start: ast.Position{
-															Column: 22,
-															Line:   84,
-														},
-													},
-												},
-												Elements: []ast.Expression{&ast.StringLiteral{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 31,
-																Line:   84,
-															},
-															File:   "measurement_field_keys_test.flux",
-															Source: "\"_field\"",
-															Start: ast.Position{
-																Column: 23,
-																Line:   84,
-															},
-														},
-													},
-													Value: "_field",
-												}},
-											},
-										}},
-										With: nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 33,
-												Line:   84,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "keep(columns: [\"_field\"])",
-											Start: ast.Position{
-												Column: 8,
-												Line:   84,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 12,
-													Line:   84,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "keep",
-												Start: ast.Position{
-													Column: 8,
-													Line:   84,
-												},
-											},
-										},
-										Name: "keep",
-									},
-								},
-							},
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 15,
-										Line:   85,
-									},
-									File:   "measurement_field_keys_test.flux",
-									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()",
-									Start: ast.Position{
-										Column: 44,
-										Line:   80,
-									},
-								},
-							},
-							Call: &ast.CallExpression{
-								Arguments: nil,
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 15,
-											Line:   85,
-										},
-										File:   "measurement_field_keys_test.flux",
-										Source: "group()",
-										Start: ast.Position{
-											Column: 8,
-											Line:   85,
-										},
-									},
-								},
-								Callee: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 13,
-												Line:   85,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "group",
-											Start: ast.Position{
-												Column: 8,
-												Line:   85,
-											},
-										},
-									},
-									Name: "group",
-								},
-							},
-						},
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 34,
-									Line:   86,
-								},
-								File:   "measurement_field_keys_test.flux",
-								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")",
-								Start: ast.Position{
-									Column: 44,
-									Line:   80,
-								},
-							},
-						},
-						Call: &ast.CallExpression{
-							Arguments: []ast.Expression{&ast.ObjectExpression{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 33,
-											Line:   86,
-										},
-										File:   "measurement_field_keys_test.flux",
-										Source: "column: \"_field\"",
-										Start: ast.Position{
-											Column: 17,
-											Line:   86,
-										},
-									},
-								},
-								Properties: []*ast.Property{&ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 33,
-												Line:   86,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "column: \"_field\"",
-											Start: ast.Position{
-												Column: 17,
-												Line:   86,
-											},
-										},
-									},
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 23,
-													Line:   86,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "column",
-												Start: ast.Position{
-													Column: 17,
-													Line:   86,
-												},
-											},
-										},
-										Name: "column",
-									},
-									Value: &ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 33,
-													Line:   86,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "\"_field\"",
-												Start: ast.Position{
-													Column: 25,
-													Line:   86,
-												},
-											},
-										},
-										Value: "_field",
-									},
-								}},
-								With: nil,
-							}},
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 34,
-										Line:   86,
-									},
-									File:   "measurement_field_keys_test.flux",
-									Source: "distinct(column: \"_field\")",
-									Start: ast.Position{
-										Column: 8,
-										Line:   86,
-									},
-								},
-							},
-							Callee: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 16,
-											Line:   86,
-										},
-										File:   "measurement_field_keys_test.flux",
-										Source: "distinct",
-										Start: ast.Position{
-											Column: 8,
-											Line:   86,
-										},
-									},
-								},
-								Name: "distinct",
-							},
-						},
-					},
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   87,
-							},
-							File:   "measurement_field_keys_test.flux",
-							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
-							Start: ast.Position{
-								Column: 44,
-								Line:   80,
-							},
-						},
-					},
-					Call: &ast.CallExpression{
-						Arguments: nil,
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   87,
-								},
-								File:   "measurement_field_keys_test.flux",
-								Source: "sort()",
-								Start: ast.Position{
-									Column: 8,
-									Line:   87,
-								},
-							},
-						},
-						Callee: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 12,
-										Line:   87,
-									},
-									File:   "measurement_field_keys_test.flux",
-									Source: "sort",
-									Start: ast.Position{
-										Column: 8,
-										Line:   87,
-									},
-								},
-							},
-							Name: "sort",
-						},
-					},
-				},
-				Params: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 39,
-								Line:   80,
-							},
-							File:   "measurement_field_keys_test.flux",
-							Source: "tables=<-",
-							Start: ast.Position{
-								Column: 30,
-								Line:   80,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 36,
-									Line:   80,
-								},
-								File:   "measurement_field_keys_test.flux",
-								Source: "tables",
-								Start: ast.Position{
-									Column: 30,
-									Line:   80,
-								},
-							},
-						},
-						Name: "tables",
-					},
-					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 39,
-								Line:   80,
-							},
-							File:   "measurement_field_keys_test.flux",
-							Source: "<-",
-							Start: ast.Position{
-								Column: 37,
-								Line:   80,
-							},
-						},
-					}},
-				}},
-			},
-		}, &ast.TestStatement{
-			Assignment: &ast.VariableAssignment{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 114,
-							Line:   90,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "measurement_field_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_field_keys_fn})",
-						Start: ast.Position{
-							Column: 6,
-							Line:   89,
-						},
-					},
-				},
-				ID: &ast.Identifier{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 28,
-								Line:   89,
-							},
-							File:   "measurement_field_keys_test.flux",
-							Source: "measurement_field_keys",
-							Start: ast.Position{
-								Column: 6,
-								Line:   89,
-							},
-						},
-					},
-					Name: "measurement_field_keys",
-				},
-				Init: &ast.FunctionExpression{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 114,
-								Line:   90,
-							},
-							File:   "measurement_field_keys_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_field_keys_fn})",
-							Start: ast.Position{
-								Column: 31,
-								Line:   89,
-							},
-						},
-					},
-					Body: &ast.ParenExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 114,
-									Line:   90,
-								},
-								File:   "measurement_field_keys_test.flux",
-								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_field_keys_fn})",
-								Start: ast.Position{
-									Column: 5,
-									Line:   90,
-								},
-							},
-						},
-						Expression: &ast.ObjectExpression{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 113,
-										Line:   90,
-									},
-									File:   "measurement_field_keys_test.flux",
-									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_field_keys_fn}",
-									Start: ast.Position{
-										Column: 6,
-										Line:   90,
-									},
-								},
-							},
-							Properties: []*ast.Property{&ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 45,
-											Line:   90,
-										},
-										File:   "measurement_field_keys_test.flux",
-										Source: "input: testing.loadStorage(csv: input)",
-										Start: ast.Position{
-											Column: 7,
-											Line:   90,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 12,
-												Line:   90,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "input",
-											Start: ast.Position{
-												Column: 7,
-												Line:   90,
-											},
-										},
-									},
-									Name: "input",
-								},
-								Value: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 44,
-													Line:   90,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "csv: input",
-												Start: ast.Position{
-													Column: 34,
-													Line:   90,
-												},
-											},
-										},
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 44,
-														Line:   90,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "csv: input",
-													Start: ast.Position{
-														Column: 34,
-														Line:   90,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 37,
-															Line:   90,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "csv",
-														Start: ast.Position{
-															Column: 34,
-															Line:   90,
-														},
-													},
-												},
-												Name: "csv",
-											},
-											Value: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 44,
-															Line:   90,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "input",
-														Start: ast.Position{
-															Column: 39,
-															Line:   90,
-														},
-													},
-												},
-												Name: "input",
-											},
-										}},
-										With: nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 45,
-												Line:   90,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "testing.loadStorage(csv: input)",
-											Start: ast.Position{
-												Column: 14,
-												Line:   90,
-											},
-										},
-									},
-									Callee: &ast.MemberExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 33,
-													Line:   90,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "testing.loadStorage",
-												Start: ast.Position{
-													Column: 14,
-													Line:   90,
-												},
-											},
-										},
-										Object: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 21,
-														Line:   90,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "testing",
-													Start: ast.Position{
-														Column: 14,
-														Line:   90,
-													},
-												},
-											},
-											Name: "testing",
-										},
-										Property: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 33,
-														Line:   90,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "loadStorage",
-													Start: ast.Position{
-														Column: 22,
-														Line:   90,
-													},
-												},
-											},
-											Name: "loadStorage",
-										},
-									},
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 81,
-											Line:   90,
-										},
-										File:   "measurement_field_keys_test.flux",
-										Source: "want: testing.loadMem(csv: output)",
-										Start: ast.Position{
-											Column: 47,
-											Line:   90,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 51,
-												Line:   90,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "want",
-											Start: ast.Position{
-												Column: 47,
-												Line:   90,
-											},
-										},
-									},
-									Name: "want",
-								},
-								Value: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 80,
-													Line:   90,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "csv: output",
-												Start: ast.Position{
-													Column: 69,
-													Line:   90,
-												},
-											},
-										},
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 80,
-														Line:   90,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "csv: output",
-													Start: ast.Position{
-														Column: 69,
-														Line:   90,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 72,
-															Line:   90,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "csv",
-														Start: ast.Position{
-															Column: 69,
-															Line:   90,
-														},
-													},
-												},
-												Name: "csv",
-											},
-											Value: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 80,
-															Line:   90,
-														},
-														File:   "measurement_field_keys_test.flux",
-														Source: "output",
-														Start: ast.Position{
-															Column: 74,
-															Line:   90,
-														},
-													},
-												},
-												Name: "output",
-											},
-										}},
-										With: nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 81,
-												Line:   90,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "testing.loadMem(csv: output)",
-											Start: ast.Position{
-												Column: 53,
-												Line:   90,
-											},
-										},
-									},
-									Callee: &ast.MemberExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 68,
-													Line:   90,
-												},
-												File:   "measurement_field_keys_test.flux",
-												Source: "testing.loadMem",
-												Start: ast.Position{
-													Column: 53,
-													Line:   90,
-												},
-											},
-										},
-										Object: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 60,
-														Line:   90,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "testing",
-													Start: ast.Position{
-														Column: 53,
-														Line:   90,
-													},
-												},
-											},
-											Name: "testing",
-										},
-										Property: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 68,
-														Line:   90,
-													},
-													File:   "measurement_field_keys_test.flux",
-													Source: "loadMem",
-													Start: ast.Position{
-														Column: 61,
-														Line:   90,
-													},
-												},
-											},
-											Name: "loadMem",
-										},
-									},
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 112,
-											Line:   90,
-										},
-										File:   "measurement_field_keys_test.flux",
-										Source: "fn: measurement_field_keys_fn",
-										Start: ast.Position{
-											Column: 83,
-											Line:   90,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 85,
-												Line:   90,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "fn",
-											Start: ast.Position{
-												Column: 83,
-												Line:   90,
-											},
-										},
-									},
-									Name: "fn",
-								},
-								Value: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 112,
-												Line:   90,
-											},
-											File:   "measurement_field_keys_test.flux",
-											Source: "measurement_field_keys_fn",
-											Start: ast.Position{
-												Column: 87,
-												Line:   90,
-											},
-										},
-									},
-									Name: "measurement_field_keys_fn",
-								},
-							}},
-							With: nil,
-						},
-					},
-					Params: []*ast.Property{},
-				},
-			},
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 114,
-						Line:   90,
-					},
-					File:   "measurement_field_keys_test.flux",
-					Source: "test measurement_field_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_field_keys_fn})",
-					Start: ast.Position{
-						Column: 1,
-						Line:   89,
-					},
-				},
-			},
-		}},
-		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
-			As: nil,
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 17,
-						Line:   3,
-					},
-					File:   "measurement_field_keys_test.flux",
-					Source: "import \"testing\"",
-					Start: ast.Position{
-						Column: 1,
-						Line:   3,
-					},
-				},
-			},
-			Path: &ast.StringLiteral{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 17,
-							Line:   3,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "\"testing\"",
-						Start: ast.Position{
-							Column: 8,
-							Line:   3,
-						},
-					},
-				},
-				Value: "testing",
-			},
-		}},
-		Metadata: "parser-type=rust",
-		Name:     "measurement_field_keys_test.flux",
-		Package: &ast.PackageClause{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 20,
-						Line:   1,
-					},
-					File:   "measurement_field_keys_test.flux",
-					Source: "package schema_test",
-					Start: ast.Position{
-						Column: 1,
-						Line:   1,
-					},
-				},
-			},
-			Name: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 20,
-							Line:   1,
-						},
-						File:   "measurement_field_keys_test.flux",
-						Source: "schema_test",
-						Start: ast.Position{
-							Column: 9,
-							Line:   1,
-						},
-					},
-				},
-				Name: "schema_test",
-			},
-		},
-	}, &ast.File{
-		BaseNode: ast.BaseNode{
-			Errors: nil,
-			Loc: &ast.SourceLocation{
-				End: ast.Position{
-					Column: 114,
-					Line:   90,
-				},
-				File:   "measurement_tag_values_test.flux",
-				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"\n\nmeasurement_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()\n\ntest measurement_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_values_fn})",
-				Start: ast.Position{
-					Column: 1,
-					Line:   1,
-				},
-			},
-		},
-		Body: []ast.Statement{&ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 2,
-						Line:   69,
-					},
-					File:   "measurement_tag_values_test.flux",
-					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"",
-					Start: ast.Position{
-						Column: 1,
-						Line:   5,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 6,
-							Line:   5,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "input",
-						Start: ast.Position{
-							Column: 1,
-							Line:   5,
-						},
-					},
-				},
-				Name: "input",
-			},
-			Init: &ast.StringLiteral{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   69,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"",
-						Start: ast.Position{
-							Column: 9,
-							Line:   5,
-						},
-					},
-				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n",
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 2,
-						Line:   78,
-					},
-					File:   "measurement_tag_values_test.flux",
-					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"",
-					Start: ast.Position{
-						Column: 1,
-						Line:   71,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 7,
-							Line:   71,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "output",
-						Start: ast.Position{
-							Column: 1,
-							Line:   71,
-						},
-					},
-				},
-				Name: "output",
-			},
-			Init: &ast.StringLiteral{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 2,
-							Line:   78,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"",
-						Start: ast.Position{
-							Column: 10,
-							Line:   71,
-						},
-					},
-				},
-				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n",
-			},
-		}, &ast.VariableAssignment{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 14,
-						Line:   87,
-					},
-					File:   "measurement_tag_values_test.flux",
-					Source: "measurement_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
-					Start: ast.Position{
-						Column: 1,
-						Line:   80,
-					},
-				},
-			},
-			ID: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 26,
-							Line:   80,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "measurement_tag_values_fn",
-						Start: ast.Position{
-							Column: 1,
-							Line:   80,
-						},
-					},
-				},
-				Name: "measurement_tag_values_fn",
-			},
-			Init: &ast.FunctionExpression{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 14,
-							Line:   87,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
-						Start: ast.Position{
-							Column: 29,
-							Line:   80,
-						},
-					},
-				},
-				Body: &ast.PipeExpression{
-					Argument: &ast.PipeExpression{
-						Argument: &ast.PipeExpression{
-							Argument: &ast.PipeExpression{
-								Argument: &ast.PipeExpression{
-									Argument: &ast.PipeExpression{
-										Argument: &ast.PipeExpression{
-											Argument: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 50,
-															Line:   80,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "tables",
-														Start: ast.Position{
-															Column: 44,
-															Line:   80,
-														},
-													},
-												},
-												Name: "tables",
-											},
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 70,
-														Line:   81,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
-													Start: ast.Position{
-														Column: 44,
-														Line:   80,
-													},
-												},
-											},
-											Call: &ast.CallExpression{
-												Arguments: []ast.Expression{&ast.ObjectExpression{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 69,
-																Line:   81,
-															},
-															File:   "measurement_tag_values_test.flux",
-															Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
-															Start: ast.Position{
-																Column: 14,
-																Line:   81,
-															},
-														},
-													},
-													Properties: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 41,
-																	Line:   81,
-																},
-																File:   "measurement_tag_values_test.flux",
-																Source: "start: 2018-01-01T00:00:00Z",
-																Start: ast.Position{
-																	Column: 14,
-																	Line:   81,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 19,
-																		Line:   81,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "start",
-																	Start: ast.Position{
-																		Column: 14,
-																		Line:   81,
-																	},
-																},
-															},
-															Name: "start",
-														},
-														Value: &ast.DateTimeLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 41,
-																		Line:   81,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "2018-01-01T00:00:00Z",
-																	Start: ast.Position{
-																		Column: 21,
-																		Line:   81,
-																	},
-																},
-															},
-															Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
-														},
-													}, &ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 69,
-																	Line:   81,
-																},
-																File:   "measurement_tag_values_test.flux",
-																Source: "stop: 2019-01-01T00:00:00Z",
-																Start: ast.Position{
-																	Column: 43,
-																	Line:   81,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 47,
-																		Line:   81,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "stop",
-																	Start: ast.Position{
-																		Column: 43,
-																		Line:   81,
-																	},
-																},
-															},
-															Name: "stop",
-														},
-														Value: &ast.DateTimeLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 69,
-																		Line:   81,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "2019-01-01T00:00:00Z",
-																	Start: ast.Position{
-																		Column: 49,
-																		Line:   81,
-																	},
-																},
-															},
-															Value: parser.MustParseTime("2019-01-01T00:00:00Z"),
-														},
-													}},
-													With: nil,
-												}},
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 70,
-															Line:   81,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
-														Start: ast.Position{
-															Column: 8,
-															Line:   81,
-														},
-													},
-												},
-												Callee: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 13,
-																Line:   81,
-															},
-															File:   "measurement_tag_values_test.flux",
-															Source: "range",
-															Start: ast.Position{
-																Column: 8,
-																Line:   81,
-															},
-														},
-													},
-													Name: "range",
-												},
-											},
-										},
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 50,
-													Line:   82,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")",
-												Start: ast.Position{
-													Column: 44,
-													Line:   80,
-												},
-											},
-										},
-										Call: &ast.CallExpression{
-											Arguments: []ast.Expression{&ast.ObjectExpression{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 49,
-															Line:   82,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "fn: (r) => r._measurement == \"sys\"",
-														Start: ast.Position{
-															Column: 15,
-															Line:   82,
-														},
-													},
-												},
-												Properties: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 49,
-																Line:   82,
-															},
-															File:   "measurement_tag_values_test.flux",
-															Source: "fn: (r) => r._measurement == \"sys\"",
-															Start: ast.Position{
-																Column: 15,
-																Line:   82,
-															},
-														},
-													},
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 17,
-																	Line:   82,
-																},
-																File:   "measurement_tag_values_test.flux",
-																Source: "fn",
-																Start: ast.Position{
-																	Column: 15,
-																	Line:   82,
-																},
-															},
-														},
-														Name: "fn",
-													},
-													Value: &ast.FunctionExpression{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 49,
-																	Line:   82,
-																},
-																File:   "measurement_tag_values_test.flux",
-																Source: "(r) => r._measurement == \"sys\"",
-																Start: ast.Position{
-																	Column: 19,
-																	Line:   82,
-																},
-															},
-														},
-														Body: &ast.BinaryExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 49,
-																		Line:   82,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "r._measurement == \"sys\"",
-																	Start: ast.Position{
-																		Column: 26,
-																		Line:   82,
-																	},
-																},
-															},
-															Left: &ast.MemberExpression{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 40,
-																			Line:   82,
-																		},
-																		File:   "measurement_tag_values_test.flux",
-																		Source: "r._measurement",
-																		Start: ast.Position{
-																			Column: 26,
-																			Line:   82,
-																		},
-																	},
-																},
-																Object: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 27,
-																				Line:   82,
-																			},
-																			File:   "measurement_tag_values_test.flux",
-																			Source: "r",
-																			Start: ast.Position{
-																				Column: 26,
-																				Line:   82,
-																			},
-																		},
-																	},
-																	Name: "r",
-																},
-																Property: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Errors: nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 40,
-																				Line:   82,
-																			},
-																			File:   "measurement_tag_values_test.flux",
-																			Source: "_measurement",
-																			Start: ast.Position{
-																				Column: 28,
-																				Line:   82,
-																			},
-																		},
-																	},
-																	Name: "_measurement",
-																},
-															},
-															Operator: 17,
-															Right: &ast.StringLiteral{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 49,
-																			Line:   82,
-																		},
-																		File:   "measurement_tag_values_test.flux",
-																		Source: "\"sys\"",
-																		Start: ast.Position{
-																			Column: 44,
-																			Line:   82,
-																		},
-																	},
-																},
-																Value: "sys",
-															},
-														},
-														Params: []*ast.Property{&ast.Property{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 21,
-																		Line:   82,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 20,
-																		Line:   82,
-																	},
-																},
-															},
-															Key: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 21,
-																			Line:   82,
-																		},
-																		File:   "measurement_tag_values_test.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 20,
-																			Line:   82,
-																		},
-																	},
-																},
-																Name: "r",
-															},
-															Value: nil,
-														}},
-													},
-												}},
-												With: nil,
-											}},
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 50,
-														Line:   82,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "filter(fn: (r) => r._measurement == \"sys\")",
-													Start: ast.Position{
-														Column: 8,
-														Line:   82,
-													},
-												},
-											},
-											Callee: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 14,
-															Line:   82,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "filter",
-														Start: ast.Position{
-															Column: 8,
-															Line:   82,
-														},
-													},
-												},
-												Name: "filter",
-											},
-										},
-									},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 49,
-												Line:   83,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")",
-											Start: ast.Position{
-												Column: 44,
-												Line:   80,
-											},
-										},
-									},
-									Call: &ast.CallExpression{
-										Arguments: []ast.Expression{&ast.ObjectExpression{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 48,
-														Line:   83,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "fn: (r) => r.host == \"host.local\"",
-													Start: ast.Position{
-														Column: 15,
-														Line:   83,
-													},
-												},
-											},
-											Properties: []*ast.Property{&ast.Property{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 48,
-															Line:   83,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "fn: (r) => r.host == \"host.local\"",
-														Start: ast.Position{
-															Column: 15,
-															Line:   83,
-														},
-													},
-												},
-												Key: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 17,
-																Line:   83,
-															},
-															File:   "measurement_tag_values_test.flux",
-															Source: "fn",
-															Start: ast.Position{
-																Column: 15,
-																Line:   83,
-															},
-														},
-													},
-													Name: "fn",
-												},
-												Value: &ast.FunctionExpression{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 48,
-																Line:   83,
-															},
-															File:   "measurement_tag_values_test.flux",
-															Source: "(r) => r.host == \"host.local\"",
-															Start: ast.Position{
-																Column: 19,
-																Line:   83,
-															},
-														},
-													},
-													Body: &ast.BinaryExpression{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 48,
-																	Line:   83,
-																},
-																File:   "measurement_tag_values_test.flux",
-																Source: "r.host == \"host.local\"",
-																Start: ast.Position{
-																	Column: 26,
-																	Line:   83,
-																},
-															},
-														},
-														Left: &ast.MemberExpression{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 32,
-																		Line:   83,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "r.host",
-																	Start: ast.Position{
-																		Column: 26,
-																		Line:   83,
-																	},
-																},
-															},
-															Object: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 27,
-																			Line:   83,
-																		},
-																		File:   "measurement_tag_values_test.flux",
-																		Source: "r",
-																		Start: ast.Position{
-																			Column: 26,
-																			Line:   83,
-																		},
-																	},
-																},
-																Name: "r",
-															},
-															Property: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Errors: nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 32,
-																			Line:   83,
-																		},
-																		File:   "measurement_tag_values_test.flux",
-																		Source: "host",
-																		Start: ast.Position{
-																			Column: 28,
-																			Line:   83,
-																		},
-																	},
-																},
-																Name: "host",
-															},
-														},
-														Operator: 17,
-														Right: &ast.StringLiteral{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 48,
-																		Line:   83,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "\"host.local\"",
-																	Start: ast.Position{
-																		Column: 36,
-																		Line:   83,
-																	},
-																},
-															},
-															Value: "host.local",
-														},
-													},
-													Params: []*ast.Property{&ast.Property{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 21,
-																	Line:   83,
-																},
-																File:   "measurement_tag_values_test.flux",
-																Source: "r",
-																Start: ast.Position{
-																	Column: 20,
-																	Line:   83,
-																},
-															},
-														},
-														Key: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Errors: nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 21,
-																		Line:   83,
-																	},
-																	File:   "measurement_tag_values_test.flux",
-																	Source: "r",
-																	Start: ast.Position{
-																		Column: 20,
-																		Line:   83,
-																	},
-																},
-															},
-															Name: "r",
-														},
-														Value: nil,
-													}},
-												},
-											}},
-											With: nil,
-										}},
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 49,
-													Line:   83,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "filter(fn: (r) => r.host == \"host.local\")",
-												Start: ast.Position{
-													Column: 8,
-													Line:   83,
-												},
-											},
-										},
-										Callee: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 14,
-														Line:   83,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "filter",
-													Start: ast.Position{
-														Column: 8,
-														Line:   83,
-													},
-												},
-											},
-											Name: "filter",
-										},
-									},
-								},
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 33,
-											Line:   84,
-										},
-										File:   "measurement_tag_values_test.flux",
-										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])",
-										Start: ast.Position{
-											Column: 44,
-											Line:   80,
-										},
-									},
-								},
-								Call: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 32,
-													Line:   84,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "columns: [\"_field\"]",
-												Start: ast.Position{
-													Column: 13,
-													Line:   84,
-												},
-											},
-										},
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 32,
-														Line:   84,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "columns: [\"_field\"]",
-													Start: ast.Position{
-														Column: 13,
-														Line:   84,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 20,
-															Line:   84,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "columns",
-														Start: ast.Position{
-															Column: 13,
-															Line:   84,
-														},
-													},
-												},
-												Name: "columns",
-											},
-											Value: &ast.ArrayExpression{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 32,
-															Line:   84,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "[\"_field\"]",
-														Start: ast.Position{
-															Column: 22,
-															Line:   84,
-														},
-													},
-												},
-												Elements: []ast.Expression{&ast.StringLiteral{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 31,
-																Line:   84,
-															},
-															File:   "measurement_tag_values_test.flux",
-															Source: "\"_field\"",
-															Start: ast.Position{
-																Column: 23,
-																Line:   84,
-															},
-														},
-													},
-													Value: "_field",
-												}},
-											},
-										}},
-										With: nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 33,
-												Line:   84,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "keep(columns: [\"_field\"])",
-											Start: ast.Position{
-												Column: 8,
-												Line:   84,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 12,
-													Line:   84,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "keep",
-												Start: ast.Position{
-													Column: 8,
-													Line:   84,
-												},
-											},
-										},
-										Name: "keep",
-									},
-								},
-							},
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 15,
-										Line:   85,
-									},
-									File:   "measurement_tag_values_test.flux",
-									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()",
-									Start: ast.Position{
-										Column: 44,
-										Line:   80,
-									},
-								},
-							},
-							Call: &ast.CallExpression{
-								Arguments: nil,
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 15,
-											Line:   85,
-										},
-										File:   "measurement_tag_values_test.flux",
-										Source: "group()",
-										Start: ast.Position{
-											Column: 8,
-											Line:   85,
-										},
-									},
-								},
-								Callee: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 13,
-												Line:   85,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "group",
-											Start: ast.Position{
-												Column: 8,
-												Line:   85,
-											},
-										},
-									},
-									Name: "group",
-								},
-							},
-						},
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 34,
-									Line:   86,
-								},
-								File:   "measurement_tag_values_test.flux",
-								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")",
-								Start: ast.Position{
-									Column: 44,
-									Line:   80,
-								},
-							},
-						},
-						Call: &ast.CallExpression{
-							Arguments: []ast.Expression{&ast.ObjectExpression{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 33,
-											Line:   86,
-										},
-										File:   "measurement_tag_values_test.flux",
-										Source: "column: \"_field\"",
-										Start: ast.Position{
-											Column: 17,
-											Line:   86,
-										},
-									},
-								},
-								Properties: []*ast.Property{&ast.Property{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 33,
-												Line:   86,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "column: \"_field\"",
-											Start: ast.Position{
-												Column: 17,
-												Line:   86,
-											},
-										},
-									},
-									Key: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 23,
-													Line:   86,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "column",
-												Start: ast.Position{
-													Column: 17,
-													Line:   86,
-												},
-											},
-										},
-										Name: "column",
-									},
-									Value: &ast.StringLiteral{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 33,
-													Line:   86,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "\"_field\"",
-												Start: ast.Position{
-													Column: 25,
-													Line:   86,
-												},
-											},
-										},
-										Value: "_field",
-									},
-								}},
-								With: nil,
-							}},
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 34,
-										Line:   86,
-									},
-									File:   "measurement_tag_values_test.flux",
-									Source: "distinct(column: \"_field\")",
-									Start: ast.Position{
-										Column: 8,
-										Line:   86,
-									},
-								},
-							},
-							Callee: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 16,
-											Line:   86,
-										},
-										File:   "measurement_tag_values_test.flux",
-										Source: "distinct",
-										Start: ast.Position{
-											Column: 8,
-											Line:   86,
-										},
-									},
-								},
-								Name: "distinct",
-							},
-						},
-					},
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 14,
-								Line:   87,
-							},
-							File:   "measurement_tag_values_test.flux",
-							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
-							Start: ast.Position{
-								Column: 44,
-								Line:   80,
-							},
-						},
-					},
-					Call: &ast.CallExpression{
-						Arguments: nil,
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 14,
-									Line:   87,
-								},
-								File:   "measurement_tag_values_test.flux",
-								Source: "sort()",
-								Start: ast.Position{
-									Column: 8,
-									Line:   87,
-								},
-							},
-						},
-						Callee: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 12,
-										Line:   87,
-									},
-									File:   "measurement_tag_values_test.flux",
-									Source: "sort",
-									Start: ast.Position{
-										Column: 8,
-										Line:   87,
-									},
-								},
-							},
-							Name: "sort",
-						},
-					},
-				},
-				Params: []*ast.Property{&ast.Property{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 39,
-								Line:   80,
-							},
-							File:   "measurement_tag_values_test.flux",
-							Source: "tables=<-",
-							Start: ast.Position{
-								Column: 30,
-								Line:   80,
-							},
-						},
-					},
-					Key: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 36,
-									Line:   80,
-								},
-								File:   "measurement_tag_values_test.flux",
-								Source: "tables",
-								Start: ast.Position{
-									Column: 30,
-									Line:   80,
-								},
-							},
-						},
-						Name: "tables",
-					},
-					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 39,
-								Line:   80,
-							},
-							File:   "measurement_tag_values_test.flux",
-							Source: "<-",
-							Start: ast.Position{
-								Column: 37,
-								Line:   80,
-							},
-						},
-					}},
-				}},
-			},
-		}, &ast.TestStatement{
-			Assignment: &ast.VariableAssignment{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 114,
-							Line:   90,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "measurement_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_values_fn})",
-						Start: ast.Position{
-							Column: 6,
-							Line:   89,
-						},
-					},
-				},
-				ID: &ast.Identifier{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 28,
-								Line:   89,
-							},
-							File:   "measurement_tag_values_test.flux",
-							Source: "measurement_tag_values",
-							Start: ast.Position{
-								Column: 6,
-								Line:   89,
-							},
-						},
-					},
-					Name: "measurement_tag_values",
-				},
-				Init: &ast.FunctionExpression{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 114,
-								Line:   90,
-							},
-							File:   "measurement_tag_values_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_values_fn})",
-							Start: ast.Position{
-								Column: 31,
-								Line:   89,
-							},
-						},
-					},
-					Body: &ast.ParenExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 114,
-									Line:   90,
-								},
-								File:   "measurement_tag_values_test.flux",
-								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_values_fn})",
-								Start: ast.Position{
-									Column: 5,
-									Line:   90,
-								},
-							},
-						},
-						Expression: &ast.ObjectExpression{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 113,
-										Line:   90,
-									},
-									File:   "measurement_tag_values_test.flux",
-									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_values_fn}",
-									Start: ast.Position{
-										Column: 6,
-										Line:   90,
-									},
-								},
-							},
-							Properties: []*ast.Property{&ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 45,
-											Line:   90,
-										},
-										File:   "measurement_tag_values_test.flux",
-										Source: "input: testing.loadStorage(csv: input)",
-										Start: ast.Position{
-											Column: 7,
-											Line:   90,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 12,
-												Line:   90,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "input",
-											Start: ast.Position{
-												Column: 7,
-												Line:   90,
-											},
-										},
-									},
-									Name: "input",
-								},
-								Value: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 44,
-													Line:   90,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "csv: input",
-												Start: ast.Position{
-													Column: 34,
-													Line:   90,
-												},
-											},
-										},
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 44,
-														Line:   90,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "csv: input",
-													Start: ast.Position{
-														Column: 34,
-														Line:   90,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 37,
-															Line:   90,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "csv",
-														Start: ast.Position{
-															Column: 34,
-															Line:   90,
-														},
-													},
-												},
-												Name: "csv",
-											},
-											Value: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 44,
-															Line:   90,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "input",
-														Start: ast.Position{
-															Column: 39,
-															Line:   90,
-														},
-													},
-												},
-												Name: "input",
-											},
-										}},
-										With: nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 45,
-												Line:   90,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "testing.loadStorage(csv: input)",
-											Start: ast.Position{
-												Column: 14,
-												Line:   90,
-											},
-										},
-									},
-									Callee: &ast.MemberExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 33,
-													Line:   90,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "testing.loadStorage",
-												Start: ast.Position{
-													Column: 14,
-													Line:   90,
-												},
-											},
-										},
-										Object: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 21,
-														Line:   90,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "testing",
-													Start: ast.Position{
-														Column: 14,
-														Line:   90,
-													},
-												},
-											},
-											Name: "testing",
-										},
-										Property: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 33,
-														Line:   90,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "loadStorage",
-													Start: ast.Position{
-														Column: 22,
-														Line:   90,
-													},
-												},
-											},
-											Name: "loadStorage",
-										},
-									},
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 81,
-											Line:   90,
-										},
-										File:   "measurement_tag_values_test.flux",
-										Source: "want: testing.loadMem(csv: output)",
-										Start: ast.Position{
-											Column: 47,
-											Line:   90,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 51,
-												Line:   90,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "want",
-											Start: ast.Position{
-												Column: 47,
-												Line:   90,
-											},
-										},
-									},
-									Name: "want",
-								},
-								Value: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 80,
-													Line:   90,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "csv: output",
-												Start: ast.Position{
-													Column: 69,
-													Line:   90,
-												},
-											},
-										},
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 80,
-														Line:   90,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "csv: output",
-													Start: ast.Position{
-														Column: 69,
-														Line:   90,
-													},
-												},
-											},
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 72,
-															Line:   90,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "csv",
-														Start: ast.Position{
-															Column: 69,
-															Line:   90,
-														},
-													},
-												},
-												Name: "csv",
-											},
-											Value: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Errors: nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 80,
-															Line:   90,
-														},
-														File:   "measurement_tag_values_test.flux",
-														Source: "output",
-														Start: ast.Position{
-															Column: 74,
-															Line:   90,
-														},
-													},
-												},
-												Name: "output",
-											},
-										}},
-										With: nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 81,
-												Line:   90,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "testing.loadMem(csv: output)",
-											Start: ast.Position{
-												Column: 53,
-												Line:   90,
-											},
-										},
-									},
-									Callee: &ast.MemberExpression{
-										BaseNode: ast.BaseNode{
-											Errors: nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 68,
-													Line:   90,
-												},
-												File:   "measurement_tag_values_test.flux",
-												Source: "testing.loadMem",
-												Start: ast.Position{
-													Column: 53,
-													Line:   90,
-												},
-											},
-										},
-										Object: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 60,
-														Line:   90,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "testing",
-													Start: ast.Position{
-														Column: 53,
-														Line:   90,
-													},
-												},
-											},
-											Name: "testing",
-										},
-										Property: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Errors: nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 68,
-														Line:   90,
-													},
-													File:   "measurement_tag_values_test.flux",
-													Source: "loadMem",
-													Start: ast.Position{
-														Column: 61,
-														Line:   90,
-													},
-												},
-											},
-											Name: "loadMem",
-										},
-									},
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 112,
-											Line:   90,
-										},
-										File:   "measurement_tag_values_test.flux",
-										Source: "fn: measurement_tag_values_fn",
-										Start: ast.Position{
-											Column: 83,
-											Line:   90,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 85,
-												Line:   90,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "fn",
-											Start: ast.Position{
-												Column: 83,
-												Line:   90,
-											},
-										},
-									},
-									Name: "fn",
-								},
-								Value: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 112,
-												Line:   90,
-											},
-											File:   "measurement_tag_values_test.flux",
-											Source: "measurement_tag_values_fn",
-											Start: ast.Position{
-												Column: 87,
-												Line:   90,
-											},
-										},
-									},
-									Name: "measurement_tag_values_fn",
-								},
-							}},
-							With: nil,
-						},
-					},
-					Params: []*ast.Property{},
-				},
-			},
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 114,
-						Line:   90,
-					},
-					File:   "measurement_tag_values_test.flux",
-					Source: "test measurement_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_values_fn})",
-					Start: ast.Position{
-						Column: 1,
-						Line:   89,
-					},
-				},
-			},
-		}},
-		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
-			As: nil,
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 17,
-						Line:   3,
-					},
-					File:   "measurement_tag_values_test.flux",
-					Source: "import \"testing\"",
-					Start: ast.Position{
-						Column: 1,
-						Line:   3,
-					},
-				},
-			},
-			Path: &ast.StringLiteral{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 17,
-							Line:   3,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "\"testing\"",
-						Start: ast.Position{
-							Column: 8,
-							Line:   3,
-						},
-					},
-				},
-				Value: "testing",
-			},
-		}},
-		Metadata: "parser-type=rust",
-		Name:     "measurement_tag_values_test.flux",
-		Package: &ast.PackageClause{
-			BaseNode: ast.BaseNode{
-				Errors: nil,
-				Loc: &ast.SourceLocation{
-					End: ast.Position{
-						Column: 20,
-						Line:   1,
-					},
-					File:   "measurement_tag_values_test.flux",
-					Source: "package schema_test",
-					Start: ast.Position{
-						Column: 1,
-						Line:   1,
-					},
-				},
-			},
-			Name: &ast.Identifier{
-				BaseNode: ast.BaseNode{
-					Errors: nil,
-					Loc: &ast.SourceLocation{
-						End: ast.Position{
-							Column: 20,
-							Line:   1,
-						},
-						File:   "measurement_tag_values_test.flux",
-						Source: "schema_test",
-						Start: ast.Position{
-							Column: 9,
-							Line:   1,
-						},
-					},
-				},
-				Name: "schema_test",
-			},
-		},
-	}, &ast.File{
-		BaseNode: ast.BaseNode{
-			Errors: nil,
-			Loc: &ast.SourceLocation{
-				End: ast.Position{
-					Column: 107,
+					Column: 103,
 					Line:   59,
 				},
-				File:   "show_field_keys_test.flux",
-				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n\"\n\nshow_field_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()\n\ntest show_field_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_field_keys_fn})",
+				File:   "show_fields_test.flux",
+				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n\"\n\nshow_fields_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()\n\ntest show_fields = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -7926,7 +4210,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   37,
 					},
-					File:   "show_field_keys_test.flux",
+					File:   "show_fields_test.flux",
 					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -7942,7 +4226,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 6,
 							Line:   5,
 						},
-						File:   "show_field_keys_test.flux",
+						File:   "show_fields_test.flux",
 						Source: "input",
 						Start: ast.Position{
 							Column: 1,
@@ -7960,7 +4244,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   37,
 						},
-						File:   "show_field_keys_test.flux",
+						File:   "show_fields_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n\"",
 						Start: ast.Position{
 							Column: 9,
@@ -7978,7 +4262,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 2,
 						Line:   48,
 					},
-					File:   "show_field_keys_test.flux",
+					File:   "show_fields_test.flux",
 					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n\"",
 					Start: ast.Position{
 						Column: 1,
@@ -7994,7 +4278,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 7,
 							Line:   39,
 						},
-						File:   "show_field_keys_test.flux",
+						File:   "show_fields_test.flux",
 						Source: "output",
 						Start: ast.Position{
 							Column: 1,
@@ -8012,7 +4296,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 2,
 							Line:   48,
 						},
-						File:   "show_field_keys_test.flux",
+						File:   "show_fields_test.flux",
 						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n\"",
 						Start: ast.Position{
 							Column: 10,
@@ -8030,8 +4314,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 14,
 						Line:   56,
 					},
-					File:   "show_field_keys_test.flux",
-					Source: "show_field_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
+					File:   "show_fields_test.flux",
+					Source: "show_fields_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
 					Start: ast.Position{
 						Column: 1,
 						Line:   50,
@@ -8043,18 +4327,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 19,
+							Column: 15,
 							Line:   50,
 						},
-						File:   "show_field_keys_test.flux",
-						Source: "show_field_keys_fn",
+						File:   "show_fields_test.flux",
+						Source: "show_fields_fn",
 						Start: ast.Position{
 							Column: 1,
 							Line:   50,
 						},
 					},
 				},
-				Name: "show_field_keys_fn",
+				Name: "show_fields_fn",
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
@@ -8064,10 +4348,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 14,
 							Line:   56,
 						},
-						File:   "show_field_keys_test.flux",
+						File:   "show_fields_test.flux",
 						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
 						Start: ast.Position{
-							Column: 22,
+							Column: 18,
 							Line:   50,
 						},
 					},
@@ -8083,13 +4367,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
+														Column: 39,
 														Line:   50,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 37,
+														Column: 33,
 														Line:   50,
 													},
 												},
@@ -8103,10 +4387,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 70,
 													Line:   51,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
 												Start: ast.Position{
-													Column: 37,
+													Column: 33,
 													Line:   50,
 												},
 											},
@@ -8120,7 +4404,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 69,
 															Line:   51,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 14,
@@ -8136,7 +4420,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 41,
 																Line:   51,
 															},
-															File:   "show_field_keys_test.flux",
+															File:   "show_fields_test.flux",
 															Source: "start: 2018-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
@@ -8152,7 +4436,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 19,
 																	Line:   51,
 																},
-																File:   "show_field_keys_test.flux",
+																File:   "show_fields_test.flux",
 																Source: "start",
 																Start: ast.Position{
 																	Column: 14,
@@ -8170,7 +4454,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 41,
 																	Line:   51,
 																},
-																File:   "show_field_keys_test.flux",
+																File:   "show_fields_test.flux",
 																Source: "2018-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 21,
@@ -8188,7 +4472,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 69,
 																Line:   51,
 															},
-															File:   "show_field_keys_test.flux",
+															File:   "show_fields_test.flux",
 															Source: "stop: 2019-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 43,
@@ -8204,7 +4488,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 47,
 																	Line:   51,
 																},
-																File:   "show_field_keys_test.flux",
+																File:   "show_fields_test.flux",
 																Source: "stop",
 																Start: ast.Position{
 																	Column: 43,
@@ -8222,7 +4506,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 69,
 																	Line:   51,
 																},
-																File:   "show_field_keys_test.flux",
+																File:   "show_fields_test.flux",
 																Source: "2019-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 49,
@@ -8242,7 +4526,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 70,
 														Line:   51,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
 													Start: ast.Position{
 														Column: 8,
@@ -8258,7 +4542,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 13,
 															Line:   51,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "range",
 														Start: ast.Position{
 															Column: 8,
@@ -8277,10 +4561,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 31,
 												Line:   52,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)",
 											Start: ast.Position{
-												Column: 37,
+												Column: 33,
 												Line:   50,
 											},
 										},
@@ -8294,7 +4578,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 30,
 														Line:   52,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "fn: (r) => true",
 													Start: ast.Position{
 														Column: 15,
@@ -8310,7 +4594,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 30,
 															Line:   52,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "fn: (r) => true",
 														Start: ast.Position{
 															Column: 15,
@@ -8326,7 +4610,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 17,
 																Line:   52,
 															},
-															File:   "show_field_keys_test.flux",
+															File:   "show_fields_test.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 15,
@@ -8344,7 +4628,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 30,
 																Line:   52,
 															},
-															File:   "show_field_keys_test.flux",
+															File:   "show_fields_test.flux",
 															Source: "(r) => true",
 															Start: ast.Position{
 																Column: 19,
@@ -8360,7 +4644,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 30,
 																	Line:   52,
 																},
-																File:   "show_field_keys_test.flux",
+																File:   "show_fields_test.flux",
 																Source: "true",
 																Start: ast.Position{
 																	Column: 26,
@@ -8378,7 +4662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Column: 21,
 																	Line:   52,
 																},
-																File:   "show_field_keys_test.flux",
+																File:   "show_fields_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 20,
@@ -8394,7 +4678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Column: 21,
 																		Line:   52,
 																	},
-																	File:   "show_field_keys_test.flux",
+																	File:   "show_fields_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
@@ -8417,7 +4701,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 31,
 													Line:   52,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "filter(fn: (r) => true)",
 												Start: ast.Position{
 													Column: 8,
@@ -8433,7 +4717,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 14,
 														Line:   52,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "filter",
 													Start: ast.Position{
 														Column: 8,
@@ -8452,10 +4736,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 33,
 											Line:   53,
 										},
-										File:   "show_field_keys_test.flux",
+										File:   "show_fields_test.flux",
 										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])",
 										Start: ast.Position{
-											Column: 37,
+											Column: 33,
 											Line:   50,
 										},
 									},
@@ -8469,7 +4753,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 32,
 													Line:   53,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "columns: [\"_field\"]",
 												Start: ast.Position{
 													Column: 13,
@@ -8485,7 +4769,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 32,
 														Line:   53,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "columns: [\"_field\"]",
 													Start: ast.Position{
 														Column: 13,
@@ -8501,7 +4785,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 20,
 															Line:   53,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 13,
@@ -8519,7 +4803,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 32,
 															Line:   53,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "[\"_field\"]",
 														Start: ast.Position{
 															Column: 22,
@@ -8535,7 +4819,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Column: 31,
 																Line:   53,
 															},
-															File:   "show_field_keys_test.flux",
+															File:   "show_fields_test.flux",
 															Source: "\"_field\"",
 															Start: ast.Position{
 																Column: 23,
@@ -8556,7 +4840,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 33,
 												Line:   53,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "keep(columns: [\"_field\"])",
 											Start: ast.Position{
 												Column: 8,
@@ -8572,7 +4856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 12,
 													Line:   53,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "keep",
 												Start: ast.Position{
 													Column: 8,
@@ -8591,10 +4875,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 15,
 										Line:   54,
 									},
-									File:   "show_field_keys_test.flux",
+									File:   "show_fields_test.flux",
 									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()",
 									Start: ast.Position{
-										Column: 37,
+										Column: 33,
 										Line:   50,
 									},
 								},
@@ -8608,7 +4892,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 15,
 											Line:   54,
 										},
-										File:   "show_field_keys_test.flux",
+										File:   "show_fields_test.flux",
 										Source: "group()",
 										Start: ast.Position{
 											Column: 8,
@@ -8624,7 +4908,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 13,
 												Line:   54,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 8,
@@ -8643,10 +4927,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 34,
 									Line:   55,
 								},
-								File:   "show_field_keys_test.flux",
+								File:   "show_fields_test.flux",
 								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")",
 								Start: ast.Position{
-									Column: 37,
+									Column: 33,
 									Line:   50,
 								},
 							},
@@ -8660,7 +4944,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 33,
 											Line:   55,
 										},
-										File:   "show_field_keys_test.flux",
+										File:   "show_fields_test.flux",
 										Source: "column: \"_field\"",
 										Start: ast.Position{
 											Column: 17,
@@ -8676,7 +4960,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 33,
 												Line:   55,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "column: \"_field\"",
 											Start: ast.Position{
 												Column: 17,
@@ -8692,7 +4976,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 23,
 													Line:   55,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "column",
 												Start: ast.Position{
 													Column: 17,
@@ -8710,7 +4994,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   55,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "\"_field\"",
 												Start: ast.Position{
 													Column: 25,
@@ -8730,7 +5014,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 34,
 										Line:   55,
 									},
-									File:   "show_field_keys_test.flux",
+									File:   "show_fields_test.flux",
 									Source: "distinct(column: \"_field\")",
 									Start: ast.Position{
 										Column: 8,
@@ -8746,7 +5030,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 16,
 											Line:   55,
 										},
-										File:   "show_field_keys_test.flux",
+										File:   "show_fields_test.flux",
 										Source: "distinct",
 										Start: ast.Position{
 											Column: 8,
@@ -8765,10 +5049,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Column: 14,
 								Line:   56,
 							},
-							File:   "show_field_keys_test.flux",
+							File:   "show_fields_test.flux",
 							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
 							Start: ast.Position{
-								Column: 37,
+								Column: 33,
 								Line:   50,
 							},
 						},
@@ -8782,7 +5066,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Column: 14,
 									Line:   56,
 								},
-								File:   "show_field_keys_test.flux",
+								File:   "show_fields_test.flux",
 								Source: "sort()",
 								Start: ast.Position{
 									Column: 8,
@@ -8798,7 +5082,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Column: 12,
 										Line:   56,
 									},
-									File:   "show_field_keys_test.flux",
+									File:   "show_fields_test.flux",
 									Source: "sort",
 									Start: ast.Position{
 										Column: 8,
@@ -8815,13 +5099,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 32,
+								Column: 28,
 								Line:   50,
 							},
-							File:   "show_field_keys_test.flux",
+							File:   "show_fields_test.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
-								Column: 23,
+								Column: 19,
 								Line:   50,
 							},
 						},
@@ -8831,13 +5115,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 29,
+									Column: 25,
 									Line:   50,
 								},
-								File:   "show_field_keys_test.flux",
+								File:   "show_fields_test.flux",
 								Source: "tables",
 								Start: ast.Position{
-									Column: 23,
+									Column: 19,
 									Line:   50,
 								},
 							},
@@ -8848,13 +5132,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 32,
+								Column: 28,
 								Line:   50,
 							},
-							File:   "show_field_keys_test.flux",
+							File:   "show_fields_test.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 30,
+								Column: 26,
 								Line:   50,
 							},
 						},
@@ -8867,11 +5151,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 107,
+							Column: 103,
 							Line:   59,
 						},
-						File:   "show_field_keys_test.flux",
-						Source: "show_field_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_field_keys_fn})",
+						File:   "show_fields_test.flux",
+						Source: "show_fields = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
 						Start: ast.Position{
 							Column: 6,
 							Line:   58,
@@ -8883,31 +5167,31 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 21,
+								Column: 17,
 								Line:   58,
 							},
-							File:   "show_field_keys_test.flux",
-							Source: "show_field_keys",
+							File:   "show_fields_test.flux",
+							Source: "show_fields",
 							Start: ast.Position{
 								Column: 6,
 								Line:   58,
 							},
 						},
 					},
-					Name: "show_field_keys",
+					Name: "show_fields",
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 107,
+								Column: 103,
 								Line:   59,
 							},
-							File:   "show_field_keys_test.flux",
-							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_field_keys_fn})",
+							File:   "show_fields_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
 							Start: ast.Position{
-								Column: 24,
+								Column: 20,
 								Line:   58,
 							},
 						},
@@ -8917,11 +5201,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 107,
+									Column: 103,
 									Line:   59,
 								},
-								File:   "show_field_keys_test.flux",
-								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_field_keys_fn})",
+								File:   "show_fields_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
 								Start: ast.Position{
 									Column: 5,
 									Line:   59,
@@ -8933,11 +5217,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 106,
+										Column: 102,
 										Line:   59,
 									},
-									File:   "show_field_keys_test.flux",
-									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_field_keys_fn}",
+									File:   "show_fields_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn}",
 									Start: ast.Position{
 										Column: 6,
 										Line:   59,
@@ -8952,7 +5236,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 45,
 											Line:   59,
 										},
-										File:   "show_field_keys_test.flux",
+										File:   "show_fields_test.flux",
 										Source: "input: testing.loadStorage(csv: input)",
 										Start: ast.Position{
 											Column: 7,
@@ -8968,7 +5252,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 12,
 												Line:   59,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 7,
@@ -8987,7 +5271,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 44,
 													Line:   59,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
@@ -9003,7 +5287,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 44,
 														Line:   59,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "csv: input",
 													Start: ast.Position{
 														Column: 34,
@@ -9019,7 +5303,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 37,
 															Line:   59,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 34,
@@ -9037,7 +5321,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 44,
 															Line:   59,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "input",
 														Start: ast.Position{
 															Column: 39,
@@ -9057,7 +5341,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 45,
 												Line:   59,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "testing.loadStorage(csv: input)",
 											Start: ast.Position{
 												Column: 14,
@@ -9073,7 +5357,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 33,
 													Line:   59,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 14,
@@ -9089,7 +5373,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 21,
 														Line:   59,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 14,
@@ -9107,7 +5391,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 33,
 														Line:   59,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 22,
@@ -9127,7 +5411,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Column: 81,
 											Line:   59,
 										},
-										File:   "show_field_keys_test.flux",
+										File:   "show_fields_test.flux",
 										Source: "want: testing.loadMem(csv: output)",
 										Start: ast.Position{
 											Column: 47,
@@ -9143,7 +5427,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 51,
 												Line:   59,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 47,
@@ -9162,7 +5446,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 80,
 													Line:   59,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
@@ -9178,7 +5462,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 80,
 														Line:   59,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "csv: output",
 													Start: ast.Position{
 														Column: 69,
@@ -9194,7 +5478,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 72,
 															Line:   59,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 69,
@@ -9212,7 +5496,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Column: 80,
 															Line:   59,
 														},
-														File:   "show_field_keys_test.flux",
+														File:   "show_fields_test.flux",
 														Source: "output",
 														Start: ast.Position{
 															Column: 74,
@@ -9232,7 +5516,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 81,
 												Line:   59,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "testing.loadMem(csv: output)",
 											Start: ast.Position{
 												Column: 53,
@@ -9248,7 +5532,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Column: 68,
 													Line:   59,
 												},
-												File:   "show_field_keys_test.flux",
+												File:   "show_fields_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 53,
@@ -9264,7 +5548,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 60,
 														Line:   59,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 53,
@@ -9282,7 +5566,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Column: 68,
 														Line:   59,
 													},
-													File:   "show_field_keys_test.flux",
+													File:   "show_fields_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 61,
@@ -9299,11 +5583,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 105,
+											Column: 101,
 											Line:   59,
 										},
-										File:   "show_field_keys_test.flux",
-										Source: "fn: show_field_keys_fn",
+										File:   "show_fields_test.flux",
+										Source: "fn: show_fields_fn",
 										Start: ast.Position{
 											Column: 83,
 											Line:   59,
@@ -9318,7 +5602,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Column: 85,
 												Line:   59,
 											},
-											File:   "show_field_keys_test.flux",
+											File:   "show_fields_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 83,
@@ -9333,18 +5617,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 105,
+												Column: 101,
 												Line:   59,
 											},
-											File:   "show_field_keys_test.flux",
-											Source: "show_field_keys_fn",
+											File:   "show_fields_test.flux",
+											Source: "show_fields_fn",
 											Start: ast.Position{
 												Column: 87,
 												Line:   59,
 											},
 										},
 									},
-									Name: "show_field_keys_fn",
+									Name: "show_fields_fn",
 								},
 							}},
 							With: nil,
@@ -9357,11 +5641,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 107,
+						Column: 103,
 						Line:   59,
 					},
-					File:   "show_field_keys_test.flux",
-					Source: "test show_field_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_field_keys_fn})",
+					File:   "show_fields_test.flux",
+					Source: "test show_fields = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
 					Start: ast.Position{
 						Column: 1,
 						Line:   58,
@@ -9378,7 +5662,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 17,
 						Line:   3,
 					},
-					File:   "show_field_keys_test.flux",
+					File:   "show_fields_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
@@ -9394,7 +5678,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 17,
 							Line:   3,
 						},
-						File:   "show_field_keys_test.flux",
+						File:   "show_fields_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
@@ -9406,7 +5690,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}},
 		Metadata: "parser-type=rust",
-		Name:     "show_field_keys_test.flux",
+		Name:     "show_fields_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
@@ -9415,7 +5699,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Column: 20,
 						Line:   1,
 					},
-					File:   "show_field_keys_test.flux",
+					File:   "show_fields_test.flux",
 					Source: "package schema_test",
 					Start: ast.Position{
 						Column: 1,
@@ -9431,7 +5715,1865 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Column: 20,
 							Line:   1,
 						},
-						File:   "show_field_keys_test.flux",
+						File:   "show_fields_test.flux",
+						Source: "schema_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "schema_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 103,
+					Line:   90,
+				},
+				File:   "show_fields_with_pred_test.flux",
+				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,4,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,4,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,4,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,4,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,4,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,4,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,5,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,5,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,5,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,5,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,6,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,6,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,6,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,6,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,7,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,7,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"\n\nshow_fields_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()\n\ntest show_fields = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   69,
+					},
+					File:   "show_fields_with_pred_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,4,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,4,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,4,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,4,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,4,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,4,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,5,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,5,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,5,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,5,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,6,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,6,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,6,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,6,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,7,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,7,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   5,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   5,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   69,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,4,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,4,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,4,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,4,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,4,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,4,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,5,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,5,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,5,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,5,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,6,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,6,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,6,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,6,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,7,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,7,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   5,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,sys,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,sys,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,sys,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,sys,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.global,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.global,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.global,used_percent,82.64\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,long\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,4,2018-05-22T19:53:26Z,sys,host.global,load7,183\n,,4,2018-05-22T19:53:36Z,sys,host.global,load7,172\n,,4,2018-05-22T19:53:46Z,sys,host.global,load7,174\n,,4,2018-05-22T19:53:56Z,sys,host.global,load7,163\n,,4,2018-05-22T19:54:06Z,sys,host.global,load7,191\n,,4,2018-05-22T19:54:16Z,sys,host.global,load7,184\n\n,,5,2018-05-22T19:53:26Z,sys,host.local,load8,198\n,,5,2018-05-22T19:53:36Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:46Z,sys,host.local,load8,197\n,,5,2018-05-22T19:53:56Z,sys,host.local,load8,196\n,,5,2018-05-22T19:54:06Z,sys,host.local,load8,198\n,,5,2018-05-22T19:54:16Z,sys,host.local,load8,197\n\n,,6,2018-05-22T19:53:26Z,sys,host.global,load9,195\n,,6,2018-05-22T19:53:36Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:46Z,sys,host.global,load9,192\n,,6,2018-05-22T19:53:56Z,sys,host.global,load9,189\n,,6,2018-05-22T19:54:06Z,sys,host.global,load9,194\n,,6,2018-05-22T19:54:16Z,sys,host.global,load9,193\n\n,,7,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298\n,,7,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259\n,,7,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   78,
+					},
+					File:   "show_fields_with_pred_test.flux",
+					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   71,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   71,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   71,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   78,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   71,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load3\n,,0,load8\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   87,
+					},
+					File:   "show_fields_with_pred_test.flux",
+					Source: "show_fields_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   80,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   80,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "show_fields_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   80,
+						},
+					},
+				},
+				Name: "show_fields_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   87,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
+						Start: ast.Position{
+							Column: 18,
+							Line:   80,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.PipeExpression{
+											Argument: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   80,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "tables",
+														Start: ast.Position{
+															Column: 33,
+															Line:   80,
+														},
+													},
+												},
+												Name: "tables",
+											},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 70,
+														Line:   81,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 33,
+														Line:   80,
+													},
+												},
+											},
+											Call: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 69,
+																Line:   81,
+															},
+															File:   "show_fields_with_pred_test.flux",
+															Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 14,
+																Line:   81,
+															},
+														},
+													},
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   81,
+																},
+																File:   "show_fields_with_pred_test.flux",
+																Source: "start: 2018-01-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   81,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 19,
+																		Line:   81,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "start",
+																	Start: ast.Position{
+																		Column: 14,
+																		Line:   81,
+																	},
+																},
+															},
+															Name: "start",
+														},
+														Value: &ast.DateTimeLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 41,
+																		Line:   81,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "2018-01-01T00:00:00Z",
+																	Start: ast.Position{
+																		Column: 21,
+																		Line:   81,
+																	},
+																},
+															},
+															Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+														},
+													}, &ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 69,
+																	Line:   81,
+																},
+																File:   "show_fields_with_pred_test.flux",
+																Source: "stop: 2019-01-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 43,
+																	Line:   81,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 47,
+																		Line:   81,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "stop",
+																	Start: ast.Position{
+																		Column: 43,
+																		Line:   81,
+																	},
+																},
+															},
+															Name: "stop",
+														},
+														Value: &ast.DateTimeLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 69,
+																		Line:   81,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "2019-01-01T00:00:00Z",
+																	Start: ast.Position{
+																		Column: 49,
+																		Line:   81,
+																	},
+																},
+															},
+															Value: parser.MustParseTime("2019-01-01T00:00:00Z"),
+														},
+													}},
+													With: nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   81,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
+														Start: ast.Position{
+															Column: 8,
+															Line:   81,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 13,
+																Line:   81,
+															},
+															File:   "show_fields_with_pred_test.flux",
+															Source: "range",
+															Start: ast.Position{
+																Column: 8,
+																Line:   81,
+															},
+														},
+													},
+													Name: "range",
+												},
+											},
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 50,
+													Line:   82,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")",
+												Start: ast.Position{
+													Column: 33,
+													Line:   80,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 49,
+															Line:   82,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "fn: (r) => r._measurement == \"sys\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   82,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 49,
+																Line:   82,
+															},
+															File:   "show_fields_with_pred_test.flux",
+															Source: "fn: (r) => r._measurement == \"sys\"",
+															Start: ast.Position{
+																Column: 15,
+																Line:   82,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 17,
+																	Line:   82,
+																},
+																File:   "show_fields_with_pred_test.flux",
+																Source: "fn",
+																Start: ast.Position{
+																	Column: 15,
+																	Line:   82,
+																},
+															},
+														},
+														Name: "fn",
+													},
+													Value: &ast.FunctionExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 49,
+																	Line:   82,
+																},
+																File:   "show_fields_with_pred_test.flux",
+																Source: "(r) => r._measurement == \"sys\"",
+																Start: ast.Position{
+																	Column: 19,
+																	Line:   82,
+																},
+															},
+														},
+														Body: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 49,
+																		Line:   82,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "r._measurement == \"sys\"",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   82,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 40,
+																			Line:   82,
+																		},
+																		File:   "show_fields_with_pred_test.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   82,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 27,
+																				Line:   82,
+																			},
+																			File:   "show_fields_with_pred_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   82,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 40,
+																				Line:   82,
+																			},
+																			File:   "show_fields_with_pred_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 28,
+																				Line:   82,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 49,
+																			Line:   82,
+																		},
+																		File:   "show_fields_with_pred_test.flux",
+																		Source: "\"sys\"",
+																		Start: ast.Position{
+																			Column: 44,
+																			Line:   82,
+																		},
+																	},
+																},
+																Value: "sys",
+															},
+														},
+														Params: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   82,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   82,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 21,
+																			Line:   82,
+																		},
+																		File:   "show_fields_with_pred_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 20,
+																			Line:   82,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Value: nil,
+														}},
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   82,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "filter(fn: (r) => r._measurement == \"sys\")",
+													Start: ast.Position{
+														Column: 8,
+														Line:   82,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 14,
+															Line:   82,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "filter",
+														Start: ast.Position{
+															Column: 8,
+															Line:   82,
+														},
+													},
+												},
+												Name: "filter",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   83,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")",
+											Start: ast.Position{
+												Column: 33,
+												Line:   80,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   83,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "fn: (r) => r.host == \"host.local\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   83,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 48,
+															Line:   83,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "fn: (r) => r.host == \"host.local\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   83,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   83,
+															},
+															File:   "show_fields_with_pred_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   83,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 48,
+																Line:   83,
+															},
+															File:   "show_fields_with_pred_test.flux",
+															Source: "(r) => r.host == \"host.local\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   83,
+															},
+														},
+													},
+													Body: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 48,
+																	Line:   83,
+																},
+																File:   "show_fields_with_pred_test.flux",
+																Source: "r.host == \"host.local\"",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   83,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 32,
+																		Line:   83,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "r.host",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   83,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 27,
+																			Line:   83,
+																		},
+																		File:   "show_fields_with_pred_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   83,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 32,
+																			Line:   83,
+																		},
+																		File:   "show_fields_with_pred_test.flux",
+																		Source: "host",
+																		Start: ast.Position{
+																			Column: 28,
+																			Line:   83,
+																		},
+																	},
+																},
+																Name: "host",
+															},
+														},
+														Operator: 17,
+														Right: &ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 48,
+																		Line:   83,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "\"host.local\"",
+																	Start: ast.Position{
+																		Column: 36,
+																		Line:   83,
+																	},
+																},
+															},
+															Value: "host.local",
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   83,
+																},
+																File:   "show_fields_with_pred_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   83,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   83,
+																	},
+																	File:   "show_fields_with_pred_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   83,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   83,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "filter(fn: (r) => r.host == \"host.local\")",
+												Start: ast.Position{
+													Column: 8,
+													Line:   83,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   83,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 8,
+														Line:   83,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   84,
+										},
+										File:   "show_fields_with_pred_test.flux",
+										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])",
+										Start: ast.Position{
+											Column: 33,
+											Line:   80,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 32,
+													Line:   84,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "columns: [\"_field\"]",
+												Start: ast.Position{
+													Column: 13,
+													Line:   84,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 32,
+														Line:   84,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "columns: [\"_field\"]",
+													Start: ast.Position{
+														Column: 13,
+														Line:   84,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   84,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "columns",
+														Start: ast.Position{
+															Column: 13,
+															Line:   84,
+														},
+													},
+												},
+												Name: "columns",
+											},
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 32,
+															Line:   84,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "[\"_field\"]",
+														Start: ast.Position{
+															Column: 22,
+															Line:   84,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 31,
+																Line:   84,
+															},
+															File:   "show_fields_with_pred_test.flux",
+															Source: "\"_field\"",
+															Start: ast.Position{
+																Column: 23,
+																Line:   84,
+															},
+														},
+													},
+													Value: "_field",
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   84,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "keep(columns: [\"_field\"])",
+											Start: ast.Position{
+												Column: 8,
+												Line:   84,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   84,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "keep",
+												Start: ast.Position{
+													Column: 8,
+													Line:   84,
+												},
+											},
+										},
+										Name: "keep",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   85,
+									},
+									File:   "show_fields_with_pred_test.flux",
+									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()",
+									Start: ast.Position{
+										Column: 33,
+										Line:   80,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   85,
+										},
+										File:   "show_fields_with_pred_test.flux",
+										Source: "group()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   85,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   85,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   85,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   86,
+								},
+								File:   "show_fields_with_pred_test.flux",
+								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")",
+								Start: ast.Position{
+									Column: 33,
+									Line:   80,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   86,
+										},
+										File:   "show_fields_with_pred_test.flux",
+										Source: "column: \"_field\"",
+										Start: ast.Position{
+											Column: 17,
+											Line:   86,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   86,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "column: \"_field\"",
+											Start: ast.Position{
+												Column: 17,
+												Line:   86,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   86,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 17,
+													Line:   86,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   86,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "\"_field\"",
+												Start: ast.Position{
+													Column: 25,
+													Line:   86,
+												},
+											},
+										},
+										Value: "_field",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 34,
+										Line:   86,
+									},
+									File:   "show_fields_with_pred_test.flux",
+									Source: "distinct(column: \"_field\")",
+									Start: ast.Position{
+										Column: 8,
+										Line:   86,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   86,
+										},
+										File:   "show_fields_with_pred_test.flux",
+										Source: "distinct",
+										Start: ast.Position{
+											Column: 8,
+											Line:   86,
+										},
+									},
+								},
+								Name: "distinct",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   87,
+							},
+							File:   "show_fields_with_pred_test.flux",
+							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"sys\")\n    |> filter(fn: (r) => r.host == \"host.local\")\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
+							Start: ast.Position{
+								Column: 33,
+								Line:   80,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   87,
+								},
+								File:   "show_fields_with_pred_test.flux",
+								Source: "sort()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   87,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   87,
+									},
+									File:   "show_fields_with_pred_test.flux",
+									Source: "sort",
+									Start: ast.Position{
+										Column: 8,
+										Line:   87,
+									},
+								},
+							},
+							Name: "sort",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   80,
+							},
+							File:   "show_fields_with_pred_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 19,
+								Line:   80,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   80,
+								},
+								File:   "show_fields_with_pred_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 19,
+									Line:   80,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 28,
+								Line:   80,
+							},
+							File:   "show_fields_with_pred_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 26,
+								Line:   80,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 103,
+							Line:   90,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "show_fields = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   89,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   89,
+							},
+							File:   "show_fields_with_pred_test.flux",
+							Source: "show_fields",
+							Start: ast.Position{
+								Column: 6,
+								Line:   89,
+							},
+						},
+					},
+					Name: "show_fields",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 103,
+								Line:   90,
+							},
+							File:   "show_fields_with_pred_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
+							Start: ast.Position{
+								Column: 20,
+								Line:   89,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 103,
+									Line:   90,
+								},
+								File:   "show_fields_with_pred_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   90,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 102,
+										Line:   90,
+									},
+									File:   "show_fields_with_pred_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   90,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   90,
+										},
+										File:   "show_fields_with_pred_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   90,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   90,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   90,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   90,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   90,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   90,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   90,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   90,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   90,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   90,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   90,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   90,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   90,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   90,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   90,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   90,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   90,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   90,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   90,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   90,
+										},
+										File:   "show_fields_with_pred_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   90,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   90,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   90,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   90,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   90,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   90,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   90,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   90,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   90,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   90,
+														},
+														File:   "show_fields_with_pred_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   90,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   90,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   90,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   90,
+												},
+												File:   "show_fields_with_pred_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   90,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   90,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   90,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   90,
+													},
+													File:   "show_fields_with_pred_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   90,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 101,
+											Line:   90,
+										},
+										File:   "show_fields_with_pred_test.flux",
+										Source: "fn: show_fields_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   90,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   90,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   90,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 101,
+												Line:   90,
+											},
+											File:   "show_fields_with_pred_test.flux",
+											Source: "show_fields_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   90,
+											},
+										},
+									},
+									Name: "show_fields_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 103,
+						Line:   90,
+					},
+					File:   "show_fields_with_pred_test.flux",
+					Source: "test show_fields = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   89,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "show_fields_with_pred_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "show_fields_with_pred_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "show_fields_with_pred_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "show_fields_with_pred_test.flux",
+					Source: "package schema_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "show_fields_with_pred_test.flux",
 						Source: "schema_test",
 						Start: ast.Position{
 							Column: 9,
@@ -10988,10 +9130,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 109,
-					Line:   65,
+					Line:   76,
 				},
 				File:   "show_measurements_with_many_preds_test.flux",
-				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"\n\nshow_measurements_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()\n\ntest show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu-alt,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"\n\nshow_measurements_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()\n\ntest show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -11108,10 +9250,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   46,
+						Line:   57,
 					},
 					File:   "show_measurements_with_many_preds_test.flux",
-					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu-alt,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   7,
@@ -11142,17 +9284,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   46,
+							Line:   57,
 						},
 						File:   "show_measurements_with_many_preds_test.flux",
-						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu-alt,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
 						Start: ast.Position{
 							Column: 9,
 							Line:   7,
 						},
 					},
 				},
-				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu-alt,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu-alt,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu-alt,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -11160,13 +9302,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   54,
+						Line:   65,
 					},
 					File:   "show_measurements_with_many_preds_test.flux",
 					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   48,
+						Line:   59,
 					},
 				},
 			},
@@ -11176,13 +9318,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   48,
+							Line:   59,
 						},
 						File:   "show_measurements_with_many_preds_test.flux",
 						Source: "output",
 						Start: ast.Position{
 							Column: 1,
-							Line:   48,
+							Line:   59,
 						},
 					},
 				},
@@ -11194,13 +9336,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   54,
+							Line:   65,
 						},
 						File:   "show_measurements_with_many_preds_test.flux",
 						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   48,
+							Line:   59,
 						},
 					},
 				},
@@ -11212,13 +9354,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   62,
+						Line:   73,
 					},
 					File:   "show_measurements_with_many_preds_test.flux",
 					Source: "show_measurements_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
 					Start: ast.Position{
 						Column: 1,
-						Line:   56,
+						Line:   67,
 					},
 				},
 			},
@@ -11228,13 +9370,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   56,
+							Line:   67,
 						},
 						File:   "show_measurements_with_many_preds_test.flux",
 						Source: "show_measurements_fn",
 						Start: ast.Position{
 							Column: 1,
-							Line:   56,
+							Line:   67,
 						},
 					},
 				},
@@ -11246,13 +9388,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   62,
+							Line:   73,
 						},
 						File:   "show_measurements_with_many_preds_test.flux",
 						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
 						Start: ast.Position{
 							Column: 24,
-							Line:   56,
+							Line:   67,
 						},
 					},
 				},
@@ -11268,13 +9410,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   56,
+														Line:   67,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "tables",
 													Start: ast.Position{
 														Column: 39,
-														Line:   56,
+														Line:   67,
 													},
 												},
 											},
@@ -11285,13 +9427,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   57,
+													Line:   68,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)",
 												Start: ast.Position{
 													Column: 39,
-													Line:   56,
+													Line:   67,
 												},
 											},
 										},
@@ -11302,13 +9444,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
-															Line:   57,
+															Line:   68,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "start: 2018-01-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 14,
-															Line:   57,
+															Line:   68,
 														},
 													},
 												},
@@ -11318,13 +9460,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
-																Line:   57,
+																Line:   68,
 															},
 															File:   "show_measurements_with_many_preds_test.flux",
 															Source: "start: 2018-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
-																Line:   57,
+																Line:   68,
 															},
 														},
 													},
@@ -11334,13 +9476,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
-																	Line:   57,
+																	Line:   68,
 																},
 																File:   "show_measurements_with_many_preds_test.flux",
 																Source: "start",
 																Start: ast.Position{
 																	Column: 14,
-																	Line:   57,
+																	Line:   68,
 																},
 															},
 														},
@@ -11352,13 +9494,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
-																	Line:   57,
+																	Line:   68,
 																},
 																File:   "show_measurements_with_many_preds_test.flux",
 																Source: "2018-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   57,
+																	Line:   68,
 																},
 															},
 														},
@@ -11372,13 +9514,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
-														Line:   57,
+														Line:   68,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "range(start: 2018-01-01T00:00:00Z)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   57,
+														Line:   68,
 													},
 												},
 											},
@@ -11388,13 +9530,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
-															Line:   57,
+															Line:   68,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "range",
 														Start: ast.Position{
 															Column: 8,
-															Line:   57,
+															Line:   68,
 														},
 													},
 												},
@@ -11407,13 +9549,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
-												Line:   58,
+												Line:   69,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")",
 											Start: ast.Position{
 												Column: 39,
-												Line:   56,
+												Line:   67,
 											},
 										},
 									},
@@ -11424,13 +9566,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
-														Line:   58,
+														Line:   69,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
 													Start: ast.Position{
 														Column: 15,
-														Line:   58,
+														Line:   69,
 													},
 												},
 											},
@@ -11440,13 +9582,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
-															Line:   58,
+															Line:   69,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
 														Start: ast.Position{
 															Column: 15,
-															Line:   58,
+															Line:   69,
 														},
 													},
 												},
@@ -11456,13 +9598,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
-																Line:   58,
+																Line:   69,
 															},
 															File:   "show_measurements_with_many_preds_test.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 15,
-																Line:   58,
+																Line:   69,
 															},
 														},
 													},
@@ -11474,13 +9616,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 80,
-																Line:   58,
+																Line:   69,
 															},
 															File:   "show_measurements_with_many_preds_test.flux",
 															Source: "(r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
 															Start: ast.Position{
 																Column: 19,
-																Line:   58,
+																Line:   69,
 															},
 														},
 													},
@@ -11490,13 +9632,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 80,
-																	Line:   58,
+																	Line:   69,
 																},
 																File:   "show_measurements_with_many_preds_test.flux",
 																Source: "r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   58,
+																	Line:   69,
 																},
 															},
 														},
@@ -11506,13 +9648,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 50,
-																		Line:   58,
+																		Line:   69,
 																	},
 																	File:   "show_measurements_with_many_preds_test.flux",
 																	Source: "r._field == \"usage_idle\"",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   58,
+																		Line:   69,
 																	},
 																},
 															},
@@ -11522,13 +9664,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 34,
-																			Line:   58,
+																			Line:   69,
 																		},
 																		File:   "show_measurements_with_many_preds_test.flux",
 																		Source: "r._field",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   58,
+																			Line:   69,
 																		},
 																	},
 																},
@@ -11538,13 +9680,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 27,
-																				Line:   58,
+																				Line:   69,
 																			},
 																			File:   "show_measurements_with_many_preds_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 26,
-																				Line:   58,
+																				Line:   69,
 																			},
 																		},
 																	},
@@ -11556,13 +9698,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
-																				Line:   58,
+																				Line:   69,
 																			},
 																			File:   "show_measurements_with_many_preds_test.flux",
 																			Source: "_field",
 																			Start: ast.Position{
 																				Column: 28,
-																				Line:   58,
+																				Line:   69,
 																			},
 																		},
 																	},
@@ -11576,13 +9718,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 50,
-																			Line:   58,
+																			Line:   69,
 																		},
 																		File:   "show_measurements_with_many_preds_test.flux",
 																		Source: "\"usage_idle\"",
 																		Start: ast.Position{
 																			Column: 38,
-																			Line:   58,
+																			Line:   69,
 																		},
 																	},
 																},
@@ -11596,13 +9738,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 80,
-																		Line:   58,
+																		Line:   69,
 																	},
 																	File:   "show_measurements_with_many_preds_test.flux",
 																	Source: "r.host == \"euterpe.local\"",
 																	Start: ast.Position{
 																		Column: 55,
-																		Line:   58,
+																		Line:   69,
 																	},
 																},
 															},
@@ -11612,13 +9754,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 61,
-																			Line:   58,
+																			Line:   69,
 																		},
 																		File:   "show_measurements_with_many_preds_test.flux",
 																		Source: "r.host",
 																		Start: ast.Position{
 																			Column: 55,
-																			Line:   58,
+																			Line:   69,
 																		},
 																	},
 																},
@@ -11628,13 +9770,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 56,
-																				Line:   58,
+																				Line:   69,
 																			},
 																			File:   "show_measurements_with_many_preds_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 55,
-																				Line:   58,
+																				Line:   69,
 																			},
 																		},
 																	},
@@ -11646,13 +9788,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 61,
-																				Line:   58,
+																				Line:   69,
 																			},
 																			File:   "show_measurements_with_many_preds_test.flux",
 																			Source: "host",
 																			Start: ast.Position{
 																				Column: 57,
-																				Line:   58,
+																				Line:   69,
 																			},
 																		},
 																	},
@@ -11666,13 +9808,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 80,
-																			Line:   58,
+																			Line:   69,
 																		},
 																		File:   "show_measurements_with_many_preds_test.flux",
 																		Source: "\"euterpe.local\"",
 																		Start: ast.Position{
 																			Column: 65,
-																			Line:   58,
+																			Line:   69,
 																		},
 																	},
 																},
@@ -11686,13 +9828,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
-																	Line:   58,
+																	Line:   69,
 																},
 																File:   "show_measurements_with_many_preds_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   58,
+																	Line:   69,
 																},
 															},
 														},
@@ -11702,13 +9844,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   58,
+																		Line:   69,
 																	},
 																	File:   "show_measurements_with_many_preds_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
-																		Line:   58,
+																		Line:   69,
 																	},
 																},
 															},
@@ -11725,13 +9867,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 81,
-													Line:   58,
+													Line:   69,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")",
 												Start: ast.Position{
 													Column: 8,
-													Line:   58,
+													Line:   69,
 												},
 											},
 										},
@@ -11741,13 +9883,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   58,
+														Line:   69,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "filter",
 													Start: ast.Position{
 														Column: 8,
-														Line:   58,
+														Line:   69,
 													},
 												},
 											},
@@ -11760,13 +9902,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   59,
+											Line:   70,
 										},
 										File:   "show_measurements_with_many_preds_test.flux",
 										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])",
 										Start: ast.Position{
 											Column: 39,
-											Line:   56,
+											Line:   67,
 										},
 									},
 								},
@@ -11777,13 +9919,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   59,
+													Line:   70,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "columns: [\"_measurement\"]",
 												Start: ast.Position{
 													Column: 13,
-													Line:   59,
+													Line:   70,
 												},
 											},
 										},
@@ -11793,13 +9935,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   59,
+														Line:   70,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "columns: [\"_measurement\"]",
 													Start: ast.Position{
 														Column: 13,
-														Line:   59,
+														Line:   70,
 													},
 												},
 											},
@@ -11809,13 +9951,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   59,
+															Line:   70,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 13,
-															Line:   59,
+															Line:   70,
 														},
 													},
 												},
@@ -11827,13 +9969,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
-															Line:   59,
+															Line:   70,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "[\"_measurement\"]",
 														Start: ast.Position{
 															Column: 22,
-															Line:   59,
+															Line:   70,
 														},
 													},
 												},
@@ -11843,13 +9985,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   59,
+																Line:   70,
 															},
 															File:   "show_measurements_with_many_preds_test.flux",
 															Source: "\"_measurement\"",
 															Start: ast.Position{
 																Column: 23,
-																Line:   59,
+																Line:   70,
 															},
 														},
 													},
@@ -11864,13 +10006,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   59,
+												Line:   70,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "keep(columns: [\"_measurement\"])",
 											Start: ast.Position{
 												Column: 8,
-												Line:   59,
+												Line:   70,
 											},
 										},
 									},
@@ -11880,13 +10022,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
-													Line:   59,
+													Line:   70,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "keep",
 												Start: ast.Position{
 													Column: 8,
-													Line:   59,
+													Line:   70,
 												},
 											},
 										},
@@ -11899,13 +10041,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   60,
+										Line:   71,
 									},
 									File:   "show_measurements_with_many_preds_test.flux",
 									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()",
 									Start: ast.Position{
 										Column: 39,
-										Line:   56,
+										Line:   67,
 									},
 								},
 							},
@@ -11916,13 +10058,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   60,
+											Line:   71,
 										},
 										File:   "show_measurements_with_many_preds_test.flux",
 										Source: "group()",
 										Start: ast.Position{
 											Column: 8,
-											Line:   60,
+											Line:   71,
 										},
 									},
 								},
@@ -11932,13 +10074,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   60,
+												Line:   71,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 8,
-												Line:   60,
+												Line:   71,
 											},
 										},
 									},
@@ -11951,13 +10093,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   61,
+									Line:   72,
 								},
 								File:   "show_measurements_with_many_preds_test.flux",
 								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")",
 								Start: ast.Position{
 									Column: 39,
-									Line:   56,
+									Line:   67,
 								},
 							},
 						},
@@ -11968,13 +10110,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   61,
+											Line:   72,
 										},
 										File:   "show_measurements_with_many_preds_test.flux",
 										Source: "column: \"_measurement\"",
 										Start: ast.Position{
 											Column: 17,
-											Line:   61,
+											Line:   72,
 										},
 									},
 								},
@@ -11984,13 +10126,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   61,
+												Line:   72,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "column: \"_measurement\"",
 											Start: ast.Position{
 												Column: 17,
-												Line:   61,
+												Line:   72,
 											},
 										},
 									},
@@ -12000,13 +10142,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   61,
+													Line:   72,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "column",
 												Start: ast.Position{
 													Column: 17,
-													Line:   61,
+													Line:   72,
 												},
 											},
 										},
@@ -12018,13 +10160,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
-													Line:   61,
+													Line:   72,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "\"_measurement\"",
 												Start: ast.Position{
 													Column: 25,
-													Line:   61,
+													Line:   72,
 												},
 											},
 										},
@@ -12038,13 +10180,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   61,
+										Line:   72,
 									},
 									File:   "show_measurements_with_many_preds_test.flux",
 									Source: "distinct(column: \"_measurement\")",
 									Start: ast.Position{
 										Column: 8,
-										Line:   61,
+										Line:   72,
 									},
 								},
 							},
@@ -12054,13 +10196,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   61,
+											Line:   72,
 										},
 										File:   "show_measurements_with_many_preds_test.flux",
 										Source: "distinct",
 										Start: ast.Position{
 											Column: 8,
-											Line:   61,
+											Line:   72,
 										},
 									},
 								},
@@ -12073,13 +10215,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   62,
+								Line:   73,
 							},
 							File:   "show_measurements_with_many_preds_test.flux",
 							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
 							Start: ast.Position{
 								Column: 39,
-								Line:   56,
+								Line:   67,
 							},
 						},
 					},
@@ -12090,13 +10232,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   62,
+									Line:   73,
 								},
 								File:   "show_measurements_with_many_preds_test.flux",
 								Source: "sort()",
 								Start: ast.Position{
 									Column: 8,
-									Line:   62,
+									Line:   73,
 								},
 							},
 						},
@@ -12106,13 +10248,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   62,
+										Line:   73,
 									},
 									File:   "show_measurements_with_many_preds_test.flux",
 									Source: "sort",
 									Start: ast.Position{
 										Column: 8,
-										Line:   62,
+										Line:   73,
 									},
 								},
 							},
@@ -12126,13 +10268,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   56,
+								Line:   67,
 							},
 							File:   "show_measurements_with_many_preds_test.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 25,
-								Line:   56,
+								Line:   67,
 							},
 						},
 					},
@@ -12142,13 +10284,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   56,
+									Line:   67,
 								},
 								File:   "show_measurements_with_many_preds_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 25,
-									Line:   56,
+									Line:   67,
 								},
 							},
 						},
@@ -12159,13 +10301,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   56,
+								Line:   67,
 							},
 							File:   "show_measurements_with_many_preds_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 32,
-								Line:   56,
+								Line:   67,
 							},
 						},
 					}},
@@ -12178,13 +10320,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 109,
-							Line:   65,
+							Line:   76,
 						},
 						File:   "show_measurements_with_many_preds_test.flux",
 						Source: "show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   64,
+							Line:   75,
 						},
 					},
 				},
@@ -12194,13 +10336,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   64,
+								Line:   75,
 							},
 							File:   "show_measurements_with_many_preds_test.flux",
 							Source: "show_measurements",
 							Start: ast.Position{
 								Column: 6,
-								Line:   64,
+								Line:   75,
 							},
 						},
 					},
@@ -12212,13 +10354,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 109,
-								Line:   65,
+								Line:   76,
 							},
 							File:   "show_measurements_with_many_preds_test.flux",
 							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   64,
+								Line:   75,
 							},
 						},
 					},
@@ -12228,13 +10370,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 109,
-									Line:   65,
+									Line:   76,
 								},
 								File:   "show_measurements_with_many_preds_test.flux",
 								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   65,
+									Line:   76,
 								},
 							},
 						},
@@ -12244,13 +10386,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 108,
-										Line:   65,
+										Line:   76,
 									},
 									File:   "show_measurements_with_many_preds_test.flux",
 									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn}",
 									Start: ast.Position{
 										Column: 6,
-										Line:   65,
+										Line:   76,
 									},
 								},
 							},
@@ -12260,13 +10402,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   65,
+											Line:   76,
 										},
 										File:   "show_measurements_with_many_preds_test.flux",
 										Source: "input: testing.loadStorage(csv: input)",
 										Start: ast.Position{
 											Column: 7,
-											Line:   65,
+											Line:   76,
 										},
 									},
 								},
@@ -12276,13 +10418,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   65,
+												Line:   76,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 7,
-												Line:   65,
+												Line:   76,
 											},
 										},
 									},
@@ -12295,13 +10437,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   65,
+													Line:   76,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
-													Line:   65,
+													Line:   76,
 												},
 											},
 										},
@@ -12311,13 +10453,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   65,
+														Line:   76,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "csv: input",
 													Start: ast.Position{
 														Column: 34,
-														Line:   65,
+														Line:   76,
 													},
 												},
 											},
@@ -12327,13 +10469,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   65,
+															Line:   76,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 34,
-															Line:   65,
+															Line:   76,
 														},
 													},
 												},
@@ -12345,13 +10487,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
-															Line:   65,
+															Line:   76,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "input",
 														Start: ast.Position{
 															Column: 39,
-															Line:   65,
+															Line:   76,
 														},
 													},
 												},
@@ -12365,13 +10507,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   65,
+												Line:   76,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "testing.loadStorage(csv: input)",
 											Start: ast.Position{
 												Column: 14,
-												Line:   65,
+												Line:   76,
 											},
 										},
 									},
@@ -12381,13 +10523,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   65,
+													Line:   76,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 14,
-													Line:   65,
+													Line:   76,
 												},
 											},
 										},
@@ -12397,13 +10539,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   65,
+														Line:   76,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 14,
-														Line:   65,
+														Line:   76,
 													},
 												},
 											},
@@ -12415,13 +10557,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   65,
+														Line:   76,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 22,
-														Line:   65,
+														Line:   76,
 													},
 												},
 											},
@@ -12435,13 +10577,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
-											Line:   65,
+											Line:   76,
 										},
 										File:   "show_measurements_with_many_preds_test.flux",
 										Source: "want: testing.loadMem(csv: output)",
 										Start: ast.Position{
 											Column: 47,
-											Line:   65,
+											Line:   76,
 										},
 									},
 								},
@@ -12451,13 +10593,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   65,
+												Line:   76,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 47,
-												Line:   65,
+												Line:   76,
 											},
 										},
 									},
@@ -12470,13 +10612,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
-													Line:   65,
+													Line:   76,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
-													Line:   65,
+													Line:   76,
 												},
 											},
 										},
@@ -12486,13 +10628,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
-														Line:   65,
+														Line:   76,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "csv: output",
 													Start: ast.Position{
 														Column: 69,
-														Line:   65,
+														Line:   76,
 													},
 												},
 											},
@@ -12502,13 +10644,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
-															Line:   65,
+															Line:   76,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 69,
-															Line:   65,
+															Line:   76,
 														},
 													},
 												},
@@ -12520,13 +10662,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
-															Line:   65,
+															Line:   76,
 														},
 														File:   "show_measurements_with_many_preds_test.flux",
 														Source: "output",
 														Start: ast.Position{
 															Column: 74,
-															Line:   65,
+															Line:   76,
 														},
 													},
 												},
@@ -12540,13 +10682,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
-												Line:   65,
+												Line:   76,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "testing.loadMem(csv: output)",
 											Start: ast.Position{
 												Column: 53,
-												Line:   65,
+												Line:   76,
 											},
 										},
 									},
@@ -12556,13 +10698,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   65,
+													Line:   76,
 												},
 												File:   "show_measurements_with_many_preds_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 53,
-													Line:   65,
+													Line:   76,
 												},
 											},
 										},
@@ -12572,13 +10714,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   65,
+														Line:   76,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 53,
-														Line:   65,
+														Line:   76,
 													},
 												},
 											},
@@ -12590,13 +10732,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   65,
+														Line:   76,
 													},
 													File:   "show_measurements_with_many_preds_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 61,
-														Line:   65,
+														Line:   76,
 													},
 												},
 											},
@@ -12610,13 +10752,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 107,
-											Line:   65,
+											Line:   76,
 										},
 										File:   "show_measurements_with_many_preds_test.flux",
 										Source: "fn: show_measurements_fn",
 										Start: ast.Position{
 											Column: 83,
-											Line:   65,
+											Line:   76,
 										},
 									},
 								},
@@ -12626,13 +10768,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
-												Line:   65,
+												Line:   76,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 83,
-												Line:   65,
+												Line:   76,
 											},
 										},
 									},
@@ -12644,13 +10786,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 107,
-												Line:   65,
+												Line:   76,
 											},
 											File:   "show_measurements_with_many_preds_test.flux",
 											Source: "show_measurements_fn",
 											Start: ast.Position{
 												Column: 87,
-												Line:   65,
+												Line:   76,
 											},
 										},
 									},
@@ -12668,13 +10810,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 109,
-						Line:   65,
+						Line:   76,
 					},
 					File:   "show_measurements_with_many_preds_test.flux",
 					Source: "test show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   64,
+						Line:   75,
 					},
 				},
 			},
@@ -14424,7 +12566,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   79,
 				},
 				File:   "show_tag_keys_test.flux",
-				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,0,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,0,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,0,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,0,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,0,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,0,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,1,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,1,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,2,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,2,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,2,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,2,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,2,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,2,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,_field\n,,0,_measurement\n,,0,_start\n,,0,_stop\n,,0,host\n,,0,region\n\"\n\nshow_tag_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keys()\n    |> keep(columns: [\"_value\"])\n    |> distinct()\n    |> sort()\n\ntest show_tag_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})",
+				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,3,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,3,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,3,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,3,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,3,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,3,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,4,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,4,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,5,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,5,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,5,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,5,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,5,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,5,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,_field\n,,0,_measurement\n,,0,_start\n,,0,_stop\n,,0,host\n,,0,region\n\"\n\nshow_tag_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keys()\n    |> keep(columns: [\"_value\"])\n    |> distinct()\n    |> sort()\n\ntest show_tag_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -14440,7 +12582,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   55,
 					},
 					File:   "show_tag_keys_test.flux",
-					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,0,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,0,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,0,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,0,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,0,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,0,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,1,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,1,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,2,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,2,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,2,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,2,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,2,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,2,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n\"",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,3,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,3,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,3,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,3,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,3,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,3,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,4,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,4,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,5,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,5,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,5,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,5,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,5,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,5,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   5,
@@ -14474,14 +12616,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   55,
 						},
 						File:   "show_tag_keys_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,0,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,0,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,0,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,0,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,0,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,0,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,1,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,1,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,2,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,2,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,2,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,2,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,2,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,2,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n\"",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,3,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,3,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,3,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,3,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,3,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,3,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,4,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,4,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,5,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,5,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,5,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,5,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,5,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,5,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n\"",
 						Start: ast.Position{
 							Column: 9,
 							Line:   5,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,long\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,0,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,0,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,0,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,0,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,0,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,0,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,1,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,1,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,1,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,1,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,2,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,2,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,2,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,2,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,2,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,2,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n",
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,region,_field,_value\n,,3,2018-05-22T19:53:26Z,system,us-east,host.local,load1,10\n,,3,2018-05-22T19:53:36Z,system,us-east,host.local,load1,11\n,,3,2018-05-22T19:53:46Z,system,us-east,host.local,load1,18\n,,3,2018-05-22T19:53:56Z,system,us-east,host.local,load1,19\n,,3,2018-05-22T19:54:06Z,system,us-east,host.local,load1,17\n,,3,2018-05-22T19:54:16Z,system,us-east,host.local,load1,17\n\n,,4,2018-05-22T19:53:26Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:36Z,system,us-east,host.local,load3,16\n,,4,2018-05-22T19:53:46Z,system,us-east,host.local,load3,15\n,,4,2018-05-22T19:53:56Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:06Z,system,us-east,host.local,load3,19\n,,4,2018-05-22T19:54:16Z,system,us-east,host.local,load3,19\n\n,,5,2018-05-22T19:53:26Z,system,us-west,host.local,load5,19\n,,5,2018-05-22T19:53:36Z,system,us-west,host.local,load5,22\n,,5,2018-05-22T19:53:46Z,system,us-west,host.local,load5,11\n,,5,2018-05-22T19:53:56Z,system,us-west,host.local,load5,12\n,,5,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13\n,,5,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -17484,29 +15626,133 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 107,
-					Line:   59,
+					Line:   77,
 				},
 				File:   "show_tag_values_test.flux",
-				Source: "package schema_test\n\nimport \"testing\"\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n\"\n\nshow_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()\n\ntest show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n,,0,mnemosyne.local\n\"\n\nshow_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()\n\ntest show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body: []ast.Statement{&ast.VariableAssignment{
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   5,
+						},
+						File:   "show_tag_values_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   5,
+							},
+							File:   "show_tag_values_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   5,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   5,
+							},
+							File:   "show_tag_values_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   5,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   5,
+								},
+								File:   "show_tag_values_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   5,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   5,
+									},
+									File:   "show_tag_values_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   5,
+					},
+					File:   "show_tag_values_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   37,
+						Line:   57,
 					},
 					File:   "show_tag_values_test.flux",
-					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n\"",
+					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   7,
 					},
 				},
 			},
@@ -17516,13 +15762,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   5,
+							Line:   7,
 						},
 						File:   "show_tag_values_test.flux",
 						Source: "input",
 						Start: ast.Position{
 							Column: 1,
-							Line:   5,
+							Line:   7,
 						},
 					},
 				},
@@ -17534,17 +15780,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   37,
+							Line:   57,
 						},
 						File:   "show_tag_values_test.flux",
-						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n\"",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   7,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,host.local,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,host.local,load1,1.72\n,,0,2018-05-22T19:53:46Z,system,host.local,load1,1.74\n,,0,2018-05-22T19:53:56Z,system,host.local,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,host.local,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,host.local,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,host.local,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,host.local,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,host.local,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,host.local,load3,1.97\n\n,,2,2018-05-22T19:53:26Z,system,host.local,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:46Z,system,host.local,load5,1.92\n,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89\n,,2,2018-05-22T19:54:06Z,system,host.local,load5,1.94\n,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93\n\n,,3,2018-05-22T19:53:26Z,swap,host.local,used_percent,82.98\n,,3,2018-05-22T19:53:36Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:46Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:53:56Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:06Z,swap,host.local,used_percent,82.59\n,,3,2018-05-22T19:54:16Z,swap,host.local,used_percent,82.64\n",
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -17552,13 +15798,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   48,
+						Line:   66,
 					},
 					File:   "show_tag_values_test.flux",
-					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n\"",
+					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n,,0,mnemosyne.local\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   39,
+						Line:   59,
 					},
 				},
 			},
@@ -17568,13 +15814,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   39,
+							Line:   59,
 						},
 						File:   "show_tag_values_test.flux",
 						Source: "output",
 						Start: ast.Position{
 							Column: 1,
-							Line:   39,
+							Line:   59,
 						},
 					},
 				},
@@ -17586,17 +15832,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   48,
+							Line:   66,
 						},
 						File:   "show_tag_values_test.flux",
-						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n\"",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n,,0,mnemosyne.local\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   39,
+							Line:   59,
 						},
 					},
 				},
-				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,load1\n,,0,load3\n,,0,load5\n,,0,used_percent\n",
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n,,0,mnemosyne.local\n",
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -17604,13 +15850,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   56,
+						Line:   74,
 					},
 					File:   "show_tag_values_test.flux",
-					Source: "show_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
+					Source: "show_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
 					Start: ast.Position{
 						Column: 1,
-						Line:   50,
+						Line:   68,
 					},
 				},
 			},
@@ -17620,13 +15866,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   50,
+							Line:   68,
 						},
 						File:   "show_tag_values_test.flux",
 						Source: "show_tag_values_fn",
 						Start: ast.Position{
 							Column: 1,
-							Line:   50,
+							Line:   68,
 						},
 					},
 				},
@@ -17638,13 +15884,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   56,
+							Line:   74,
 						},
 						File:   "show_tag_values_test.flux",
-						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
 						Start: ast.Position{
 							Column: 22,
-							Line:   50,
+							Line:   68,
 						},
 					},
 				},
@@ -17660,13 +15906,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
-														Line:   50,
+														Line:   68,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "tables",
 													Start: ast.Position{
 														Column: 37,
-														Line:   50,
+														Line:   68,
 													},
 												},
 											},
@@ -17676,14 +15922,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 70,
-													Line:   51,
+													Column: 42,
+													Line:   69,
 												},
 												File:   "show_tag_values_test.flux",
-												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
+												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)",
 												Start: ast.Position{
 													Column: 37,
-													Line:   50,
+													Line:   68,
 												},
 											},
 										},
@@ -17693,14 +15939,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 69,
-															Line:   51,
+															Column: 41,
+															Line:   69,
 														},
 														File:   "show_tag_values_test.flux",
-														Source: "start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z",
+														Source: "start: 2018-01-01T00:00:00Z",
 														Start: ast.Position{
 															Column: 14,
-															Line:   51,
+															Line:   69,
 														},
 													},
 												},
@@ -17710,13 +15956,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
-																Line:   51,
+																Line:   69,
 															},
 															File:   "show_tag_values_test.flux",
 															Source: "start: 2018-01-01T00:00:00Z",
 															Start: ast.Position{
 																Column: 14,
-																Line:   51,
+																Line:   69,
 															},
 														},
 													},
@@ -17726,13 +15972,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
-																	Line:   51,
+																	Line:   69,
 																},
 																File:   "show_tag_values_test.flux",
 																Source: "start",
 																Start: ast.Position{
 																	Column: 14,
-																	Line:   51,
+																	Line:   69,
 																},
 															},
 														},
@@ -17744,69 +15990,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
-																	Line:   51,
+																	Line:   69,
 																},
 																File:   "show_tag_values_test.flux",
 																Source: "2018-01-01T00:00:00Z",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   51,
+																	Line:   69,
 																},
 															},
 														},
 														Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
-													},
-												}, &ast.Property{
-													BaseNode: ast.BaseNode{
-														Errors: nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 69,
-																Line:   51,
-															},
-															File:   "show_tag_values_test.flux",
-															Source: "stop: 2019-01-01T00:00:00Z",
-															Start: ast.Position{
-																Column: 43,
-																Line:   51,
-															},
-														},
-													},
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 47,
-																	Line:   51,
-																},
-																File:   "show_tag_values_test.flux",
-																Source: "stop",
-																Start: ast.Position{
-																	Column: 43,
-																	Line:   51,
-																},
-															},
-														},
-														Name: "stop",
-													},
-													Value: &ast.DateTimeLiteral{
-														BaseNode: ast.BaseNode{
-															Errors: nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 69,
-																	Line:   51,
-																},
-																File:   "show_tag_values_test.flux",
-																Source: "2019-01-01T00:00:00Z",
-																Start: ast.Position{
-																	Column: 49,
-																	Line:   51,
-																},
-															},
-														},
-														Value: parser.MustParseTime("2019-01-01T00:00:00Z"),
 													},
 												}},
 												With: nil,
@@ -17815,14 +16009,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 70,
-														Line:   51,
+														Column: 42,
+														Line:   69,
 													},
 													File:   "show_tag_values_test.flux",
-													Source: "range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)",
+													Source: "range(start: 2018-01-01T00:00:00Z)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   51,
+														Line:   69,
 													},
 												},
 											},
@@ -17832,13 +16026,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
-															Line:   51,
+															Line:   69,
 														},
 														File:   "show_tag_values_test.flux",
 														Source: "range",
 														Start: ast.Position{
 															Column: 8,
-															Line:   51,
+															Line:   69,
 														},
 													},
 												},
@@ -17851,13 +16045,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   52,
+												Line:   70,
 											},
 											File:   "show_tag_values_test.flux",
-											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)",
+											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)",
 											Start: ast.Position{
 												Column: 37,
-												Line:   50,
+												Line:   68,
 											},
 										},
 									},
@@ -17868,13 +16062,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   52,
+														Line:   70,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "fn: (r) => true",
 													Start: ast.Position{
 														Column: 15,
-														Line:   52,
+														Line:   70,
 													},
 												},
 											},
@@ -17884,13 +16078,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
-															Line:   52,
+															Line:   70,
 														},
 														File:   "show_tag_values_test.flux",
 														Source: "fn: (r) => true",
 														Start: ast.Position{
 															Column: 15,
-															Line:   52,
+															Line:   70,
 														},
 													},
 												},
@@ -17900,13 +16094,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
-																Line:   52,
+																Line:   70,
 															},
 															File:   "show_tag_values_test.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 15,
-																Line:   52,
+																Line:   70,
 															},
 														},
 													},
@@ -17918,13 +16112,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   52,
+																Line:   70,
 															},
 															File:   "show_tag_values_test.flux",
 															Source: "(r) => true",
 															Start: ast.Position{
 																Column: 19,
-																Line:   52,
+																Line:   70,
 															},
 														},
 													},
@@ -17934,13 +16128,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   52,
+																	Line:   70,
 																},
 																File:   "show_tag_values_test.flux",
 																Source: "true",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   52,
+																	Line:   70,
 																},
 															},
 														},
@@ -17952,13 +16146,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
-																	Line:   52,
+																	Line:   70,
 																},
 																File:   "show_tag_values_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 20,
-																	Line:   52,
+																	Line:   70,
 																},
 															},
 														},
@@ -17968,13 +16162,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   52,
+																		Line:   70,
 																	},
 																	File:   "show_tag_values_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
-																		Line:   52,
+																		Line:   70,
 																	},
 																},
 															},
@@ -17991,13 +16185,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
-													Line:   52,
+													Line:   70,
 												},
 												File:   "show_tag_values_test.flux",
 												Source: "filter(fn: (r) => true)",
 												Start: ast.Position{
 													Column: 8,
-													Line:   52,
+													Line:   70,
 												},
 											},
 										},
@@ -18007,13 +16201,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   52,
+														Line:   70,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "filter",
 													Start: ast.Position{
 														Column: 8,
-														Line:   52,
+														Line:   70,
 													},
 												},
 											},
@@ -18025,14 +16219,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 33,
-											Line:   53,
+											Column: 31,
+											Line:   71,
 										},
 										File:   "show_tag_values_test.flux",
-										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])",
+										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])",
 										Start: ast.Position{
 											Column: 37,
-											Line:   50,
+											Line:   68,
 										},
 									},
 								},
@@ -18042,14 +16236,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 32,
-													Line:   53,
+													Column: 30,
+													Line:   71,
 												},
 												File:   "show_tag_values_test.flux",
-												Source: "columns: [\"_field\"]",
+												Source: "columns: [\"host\"]",
 												Start: ast.Position{
 													Column: 13,
-													Line:   53,
+													Line:   71,
 												},
 											},
 										},
@@ -18058,14 +16252,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 32,
-														Line:   53,
+														Column: 30,
+														Line:   71,
 													},
 													File:   "show_tag_values_test.flux",
-													Source: "columns: [\"_field\"]",
+													Source: "columns: [\"host\"]",
 													Start: ast.Position{
 														Column: 13,
-														Line:   53,
+														Line:   71,
 													},
 												},
 											},
@@ -18075,13 +16269,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   53,
+															Line:   71,
 														},
 														File:   "show_tag_values_test.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 13,
-															Line:   53,
+															Line:   71,
 														},
 													},
 												},
@@ -18092,14 +16286,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
-															Line:   53,
+															Column: 30,
+															Line:   71,
 														},
 														File:   "show_tag_values_test.flux",
-														Source: "[\"_field\"]",
+														Source: "[\"host\"]",
 														Start: ast.Position{
 															Column: 22,
-															Line:   53,
+															Line:   71,
 														},
 													},
 												},
@@ -18108,18 +16302,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 31,
-																Line:   53,
+																Column: 29,
+																Line:   71,
 															},
 															File:   "show_tag_values_test.flux",
-															Source: "\"_field\"",
+															Source: "\"host\"",
 															Start: ast.Position{
 																Column: 23,
-																Line:   53,
+																Line:   71,
 															},
 														},
 													},
-													Value: "_field",
+													Value: "host",
 												}},
 											},
 										}},
@@ -18129,14 +16323,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 33,
-												Line:   53,
+												Column: 31,
+												Line:   71,
 											},
 											File:   "show_tag_values_test.flux",
-											Source: "keep(columns: [\"_field\"])",
+											Source: "keep(columns: [\"host\"])",
 											Start: ast.Position{
 												Column: 8,
-												Line:   53,
+												Line:   71,
 											},
 										},
 									},
@@ -18146,13 +16340,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
-													Line:   53,
+													Line:   71,
 												},
 												File:   "show_tag_values_test.flux",
 												Source: "keep",
 												Start: ast.Position{
 													Column: 8,
-													Line:   53,
+													Line:   71,
 												},
 											},
 										},
@@ -18165,13 +16359,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   54,
+										Line:   72,
 									},
 									File:   "show_tag_values_test.flux",
-									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()",
+									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])\n    |> group()",
 									Start: ast.Position{
 										Column: 37,
-										Line:   50,
+										Line:   68,
 									},
 								},
 							},
@@ -18182,13 +16376,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   54,
+											Line:   72,
 										},
 										File:   "show_tag_values_test.flux",
 										Source: "group()",
 										Start: ast.Position{
 											Column: 8,
-											Line:   54,
+											Line:   72,
 										},
 									},
 								},
@@ -18198,13 +16392,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   54,
+												Line:   72,
 											},
 											File:   "show_tag_values_test.flux",
 											Source: "group",
 											Start: ast.Position{
 												Column: 8,
-												Line:   54,
+												Line:   72,
 											},
 										},
 									},
@@ -18216,14 +16410,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 34,
-									Line:   55,
+									Column: 32,
+									Line:   73,
 								},
 								File:   "show_tag_values_test.flux",
-								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")",
+								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")",
 								Start: ast.Position{
 									Column: 37,
-									Line:   50,
+									Line:   68,
 								},
 							},
 						},
@@ -18233,14 +16427,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 33,
-											Line:   55,
+											Column: 31,
+											Line:   73,
 										},
 										File:   "show_tag_values_test.flux",
-										Source: "column: \"_field\"",
+										Source: "column: \"host\"",
 										Start: ast.Position{
 											Column: 17,
-											Line:   55,
+											Line:   73,
 										},
 									},
 								},
@@ -18249,14 +16443,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 33,
-												Line:   55,
+												Column: 31,
+												Line:   73,
 											},
 											File:   "show_tag_values_test.flux",
-											Source: "column: \"_field\"",
+											Source: "column: \"host\"",
 											Start: ast.Position{
 												Column: 17,
-												Line:   55,
+												Line:   73,
 											},
 										},
 									},
@@ -18266,13 +16460,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   55,
+													Line:   73,
 												},
 												File:   "show_tag_values_test.flux",
 												Source: "column",
 												Start: ast.Position{
 													Column: 17,
-													Line:   55,
+													Line:   73,
 												},
 											},
 										},
@@ -18283,18 +16477,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 33,
-													Line:   55,
+													Column: 31,
+													Line:   73,
 												},
 												File:   "show_tag_values_test.flux",
-												Source: "\"_field\"",
+												Source: "\"host\"",
 												Start: ast.Position{
 													Column: 25,
-													Line:   55,
+													Line:   73,
 												},
 											},
 										},
-										Value: "_field",
+										Value: "host",
 									},
 								}},
 								With: nil,
@@ -18303,14 +16497,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 34,
-										Line:   55,
+										Column: 32,
+										Line:   73,
 									},
 									File:   "show_tag_values_test.flux",
-									Source: "distinct(column: \"_field\")",
+									Source: "distinct(column: \"host\")",
 									Start: ast.Position{
 										Column: 8,
-										Line:   55,
+										Line:   73,
 									},
 								},
 							},
@@ -18320,13 +16514,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   55,
+											Line:   73,
 										},
 										File:   "show_tag_values_test.flux",
 										Source: "distinct",
 										Start: ast.Position{
 											Column: 8,
-											Line:   55,
+											Line:   73,
 										},
 									},
 								},
@@ -18339,13 +16533,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   56,
+								Line:   74,
 							},
 							File:   "show_tag_values_test.flux",
-							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"_field\"])\n    |> group()\n    |> distinct(column: \"_field\")\n    |> sort()",
+							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
 							Start: ast.Position{
 								Column: 37,
-								Line:   50,
+								Line:   68,
 							},
 						},
 					},
@@ -18356,13 +16550,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   56,
+									Line:   74,
 								},
 								File:   "show_tag_values_test.flux",
 								Source: "sort()",
 								Start: ast.Position{
 									Column: 8,
-									Line:   56,
+									Line:   74,
 								},
 							},
 						},
@@ -18372,13 +16566,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   56,
+										Line:   74,
 									},
 									File:   "show_tag_values_test.flux",
 									Source: "sort",
 									Start: ast.Position{
 										Column: 8,
-										Line:   56,
+										Line:   74,
 									},
 								},
 							},
@@ -18392,13 +16586,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   50,
+								Line:   68,
 							},
 							File:   "show_tag_values_test.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   50,
+								Line:   68,
 							},
 						},
 					},
@@ -18408,13 +16602,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   50,
+									Line:   68,
 								},
 								File:   "show_tag_values_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 23,
-									Line:   50,
+									Line:   68,
 								},
 							},
 						},
@@ -18425,13 +16619,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   50,
+								Line:   68,
 							},
 							File:   "show_tag_values_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 30,
-								Line:   50,
+								Line:   68,
 							},
 						},
 					}},
@@ -18444,13 +16638,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 107,
-							Line:   59,
+							Line:   77,
 						},
 						File:   "show_tag_values_test.flux",
 						Source: "show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   58,
+							Line:   76,
 						},
 					},
 				},
@@ -18460,13 +16654,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   58,
+								Line:   76,
 							},
 							File:   "show_tag_values_test.flux",
 							Source: "show_tag_values",
 							Start: ast.Position{
 								Column: 6,
-								Line:   58,
+								Line:   76,
 							},
 						},
 					},
@@ -18478,13 +16672,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 107,
-								Line:   59,
+								Line:   77,
 							},
 							File:   "show_tag_values_test.flux",
 							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
 							Start: ast.Position{
 								Column: 24,
-								Line:   58,
+								Line:   76,
 							},
 						},
 					},
@@ -18494,13 +16688,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 107,
-									Line:   59,
+									Line:   77,
 								},
 								File:   "show_tag_values_test.flux",
 								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   59,
+									Line:   77,
 								},
 							},
 						},
@@ -18510,13 +16704,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 106,
-										Line:   59,
+										Line:   77,
 									},
 									File:   "show_tag_values_test.flux",
 									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn}",
 									Start: ast.Position{
 										Column: 6,
-										Line:   59,
+										Line:   77,
 									},
 								},
 							},
@@ -18526,13 +16720,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   59,
+											Line:   77,
 										},
 										File:   "show_tag_values_test.flux",
 										Source: "input: testing.loadStorage(csv: input)",
 										Start: ast.Position{
 											Column: 7,
-											Line:   59,
+											Line:   77,
 										},
 									},
 								},
@@ -18542,13 +16736,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   59,
+												Line:   77,
 											},
 											File:   "show_tag_values_test.flux",
 											Source: "input",
 											Start: ast.Position{
 												Column: 7,
-												Line:   59,
+												Line:   77,
 											},
 										},
 									},
@@ -18561,13 +16755,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   59,
+													Line:   77,
 												},
 												File:   "show_tag_values_test.flux",
 												Source: "csv: input",
 												Start: ast.Position{
 													Column: 34,
-													Line:   59,
+													Line:   77,
 												},
 											},
 										},
@@ -18577,13 +16771,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   59,
+														Line:   77,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "csv: input",
 													Start: ast.Position{
 														Column: 34,
-														Line:   59,
+														Line:   77,
 													},
 												},
 											},
@@ -18593,13 +16787,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   59,
+															Line:   77,
 														},
 														File:   "show_tag_values_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 34,
-															Line:   59,
+															Line:   77,
 														},
 													},
 												},
@@ -18611,13 +16805,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
-															Line:   59,
+															Line:   77,
 														},
 														File:   "show_tag_values_test.flux",
 														Source: "input",
 														Start: ast.Position{
 															Column: 39,
-															Line:   59,
+															Line:   77,
 														},
 													},
 												},
@@ -18631,13 +16825,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   59,
+												Line:   77,
 											},
 											File:   "show_tag_values_test.flux",
 											Source: "testing.loadStorage(csv: input)",
 											Start: ast.Position{
 												Column: 14,
-												Line:   59,
+												Line:   77,
 											},
 										},
 									},
@@ -18647,13 +16841,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   59,
+													Line:   77,
 												},
 												File:   "show_tag_values_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
 													Column: 14,
-													Line:   59,
+													Line:   77,
 												},
 											},
 										},
@@ -18663,13 +16857,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   59,
+														Line:   77,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 14,
-														Line:   59,
+														Line:   77,
 													},
 												},
 											},
@@ -18681,13 +16875,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   59,
+														Line:   77,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
 														Column: 22,
-														Line:   59,
+														Line:   77,
 													},
 												},
 											},
@@ -18701,13 +16895,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
-											Line:   59,
+											Line:   77,
 										},
 										File:   "show_tag_values_test.flux",
 										Source: "want: testing.loadMem(csv: output)",
 										Start: ast.Position{
 											Column: 47,
-											Line:   59,
+											Line:   77,
 										},
 									},
 								},
@@ -18717,13 +16911,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   59,
+												Line:   77,
 											},
 											File:   "show_tag_values_test.flux",
 											Source: "want",
 											Start: ast.Position{
 												Column: 47,
-												Line:   59,
+												Line:   77,
 											},
 										},
 									},
@@ -18736,13 +16930,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
-													Line:   59,
+													Line:   77,
 												},
 												File:   "show_tag_values_test.flux",
 												Source: "csv: output",
 												Start: ast.Position{
 													Column: 69,
-													Line:   59,
+													Line:   77,
 												},
 											},
 										},
@@ -18752,13 +16946,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
-														Line:   59,
+														Line:   77,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "csv: output",
 													Start: ast.Position{
 														Column: 69,
-														Line:   59,
+														Line:   77,
 													},
 												},
 											},
@@ -18768,13 +16962,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
-															Line:   59,
+															Line:   77,
 														},
 														File:   "show_tag_values_test.flux",
 														Source: "csv",
 														Start: ast.Position{
 															Column: 69,
-															Line:   59,
+															Line:   77,
 														},
 													},
 												},
@@ -18786,13 +16980,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
-															Line:   59,
+															Line:   77,
 														},
 														File:   "show_tag_values_test.flux",
 														Source: "output",
 														Start: ast.Position{
 															Column: 74,
-															Line:   59,
+															Line:   77,
 														},
 													},
 												},
@@ -18806,13 +17000,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
-												Line:   59,
+												Line:   77,
 											},
 											File:   "show_tag_values_test.flux",
 											Source: "testing.loadMem(csv: output)",
 											Start: ast.Position{
 												Column: 53,
-												Line:   59,
+												Line:   77,
 											},
 										},
 									},
@@ -18822,13 +17016,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
-													Line:   59,
+													Line:   77,
 												},
 												File:   "show_tag_values_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
 													Column: 53,
-													Line:   59,
+													Line:   77,
 												},
 											},
 										},
@@ -18838,13 +17032,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   59,
+														Line:   77,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "testing",
 													Start: ast.Position{
 														Column: 53,
-														Line:   59,
+														Line:   77,
 													},
 												},
 											},
@@ -18856,13 +17050,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
-														Line:   59,
+														Line:   77,
 													},
 													File:   "show_tag_values_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
 														Column: 61,
-														Line:   59,
+														Line:   77,
 													},
 												},
 											},
@@ -18876,13 +17070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 105,
-											Line:   59,
+											Line:   77,
 										},
 										File:   "show_tag_values_test.flux",
 										Source: "fn: show_tag_values_fn",
 										Start: ast.Position{
 											Column: 83,
-											Line:   59,
+											Line:   77,
 										},
 									},
 								},
@@ -18892,13 +17086,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
-												Line:   59,
+												Line:   77,
 											},
 											File:   "show_tag_values_test.flux",
 											Source: "fn",
 											Start: ast.Position{
 												Column: 83,
-												Line:   59,
+												Line:   77,
 											},
 										},
 									},
@@ -18910,13 +17104,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 105,
-												Line:   59,
+												Line:   77,
 											},
 											File:   "show_tag_values_test.flux",
 											Source: "show_tag_values_fn",
 											Start: ast.Position{
 												Column: 87,
-												Line:   59,
+												Line:   77,
 											},
 										},
 									},
@@ -18934,13 +17128,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 107,
-						Line:   59,
+						Line:   77,
 					},
 					File:   "show_tag_values_test.flux",
 					Source: "test show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   58,
+						Line:   76,
 					},
 				},
 			},
@@ -19008,6 +17202,1776 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   1,
 						},
 						File:   "show_tag_values_test.flux",
+						Source: "schema_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "schema_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 107,
+					Line:   77,
+				},
+				File:   "show_tag_values_with_pred_test.flux",
+				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n\"\n\n// This should return \"euterpe.local\" and not \"mnemosyne.local\"\nshow_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()\n\ntest show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   5,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   5,
+							},
+							File:   "show_tag_values_with_pred_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   5,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   5,
+							},
+							File:   "show_tag_values_with_pred_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   5,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   5,
+								},
+								File:   "show_tag_values_with_pred_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   5,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   5,
+									},
+									File:   "show_tag_values_with_pred_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   5,
+					},
+					File:   "show_tag_values_with_pred_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   57,
+					},
+					File:   "show_tag_values_with_pred_test.flux",
+					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   7,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   57,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   7,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   65,
+					},
+					File:   "show_tag_values_with_pred_test.flux",
+					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   59,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   59,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   59,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   65,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   59,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   74,
+					},
+					File:   "show_tag_values_with_pred_test.flux",
+					Source: "show_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   68,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   68,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "show_tag_values_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   68,
+						},
+					},
+				},
+				Name: "show_tag_values_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   74,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
+						Start: ast.Position{
+							Column: 22,
+							Line:   68,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 43,
+														Line:   68,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "tables",
+													Start: ast.Position{
+														Column: 37,
+														Line:   68,
+													},
+												},
+											},
+											Name: "tables",
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   69,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 37,
+													Line:   68,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   69,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "start: 2018-01-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 14,
+															Line:   69,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   69,
+															},
+															File:   "show_tag_values_with_pred_test.flux",
+															Source: "start: 2018-01-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 14,
+																Line:   69,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   69,
+																},
+																File:   "show_tag_values_with_pred_test.flux",
+																Source: "start",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   69,
+																},
+															},
+														},
+														Name: "start",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   69,
+																},
+																File:   "show_tag_values_with_pred_test.flux",
+																Source: "2018-01-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   69,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   69,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "range(start: 2018-01-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 8,
+														Line:   69,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 13,
+															Line:   69,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "range",
+														Start: ast.Position{
+															Column: 8,
+															Line:   69,
+														},
+													},
+												},
+												Name: "range",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   70,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")",
+											Start: ast.Position{
+												Column: 37,
+												Line:   68,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   70,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   70,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 78,
+															Line:   70,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   70,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   70,
+															},
+															File:   "show_tag_values_with_pred_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   70,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 78,
+																Line:   70,
+															},
+															File:   "show_tag_values_with_pred_test.flux",
+															Source: "(r) => r._field == \"usage_user\" and r._measurement == \"cpu\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   70,
+															},
+														},
+													},
+													Body: &ast.LogicalExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 78,
+																	Line:   70,
+																},
+																File:   "show_tag_values_with_pred_test.flux",
+																Source: "r._field == \"usage_user\" and r._measurement == \"cpu\"",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   70,
+																},
+															},
+														},
+														Left: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 50,
+																		Line:   70,
+																	},
+																	File:   "show_tag_values_with_pred_test.flux",
+																	Source: "r._field == \"usage_user\"",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   70,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 34,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_with_pred_test.flux",
+																		Source: "r._field",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   70,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 27,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_with_pred_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 34,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_with_pred_test.flux",
+																			Source: "_field",
+																			Start: ast.Position{
+																				Column: 28,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "_field",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 50,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_with_pred_test.flux",
+																		Source: "\"usage_user\"",
+																		Start: ast.Position{
+																			Column: 38,
+																			Line:   70,
+																		},
+																	},
+																},
+																Value: "usage_user",
+															},
+														},
+														Operator: 1,
+														Right: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 78,
+																		Line:   70,
+																	},
+																	File:   "show_tag_values_with_pred_test.flux",
+																	Source: "r._measurement == \"cpu\"",
+																	Start: ast.Position{
+																		Column: 55,
+																		Line:   70,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 69,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_with_pred_test.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 55,
+																			Line:   70,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 56,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_with_pred_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 55,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 69,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_with_pred_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 57,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 78,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_with_pred_test.flux",
+																		Source: "\"cpu\"",
+																		Start: ast.Position{
+																			Column: 73,
+																			Line:   70,
+																		},
+																	},
+																},
+																Value: "cpu",
+															},
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   70,
+																},
+																File:   "show_tag_values_with_pred_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   70,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   70,
+																	},
+																	File:   "show_tag_values_with_pred_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   70,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   70,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")",
+												Start: ast.Position{
+													Column: 8,
+													Line:   70,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   70,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 8,
+														Line:   70,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   71,
+										},
+										File:   "show_tag_values_with_pred_test.flux",
+										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")\n    |> keep(columns: [\"host\"])",
+										Start: ast.Position{
+											Column: 37,
+											Line:   68,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   71,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "columns: [\"host\"]",
+												Start: ast.Position{
+													Column: 13,
+													Line:   71,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   71,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "columns: [\"host\"]",
+													Start: ast.Position{
+														Column: 13,
+														Line:   71,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   71,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "columns",
+														Start: ast.Position{
+															Column: 13,
+															Line:   71,
+														},
+													},
+												},
+												Name: "columns",
+											},
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 30,
+															Line:   71,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "[\"host\"]",
+														Start: ast.Position{
+															Column: 22,
+															Line:   71,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 29,
+																Line:   71,
+															},
+															File:   "show_tag_values_with_pred_test.flux",
+															Source: "\"host\"",
+															Start: ast.Position{
+																Column: 23,
+																Line:   71,
+															},
+														},
+													},
+													Value: "host",
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   71,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "keep(columns: [\"host\"])",
+											Start: ast.Position{
+												Column: 8,
+												Line:   71,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   71,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "keep",
+												Start: ast.Position{
+													Column: 8,
+													Line:   71,
+												},
+											},
+										},
+										Name: "keep",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   72,
+									},
+									File:   "show_tag_values_with_pred_test.flux",
+									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")\n    |> keep(columns: [\"host\"])\n    |> group()",
+									Start: ast.Position{
+										Column: 37,
+										Line:   68,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   72,
+										},
+										File:   "show_tag_values_with_pred_test.flux",
+										Source: "group()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   72,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   72,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   72,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   73,
+								},
+								File:   "show_tag_values_with_pred_test.flux",
+								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")",
+								Start: ast.Position{
+									Column: 37,
+									Line:   68,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   73,
+										},
+										File:   "show_tag_values_with_pred_test.flux",
+										Source: "column: \"host\"",
+										Start: ast.Position{
+											Column: 17,
+											Line:   73,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   73,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "column: \"host\"",
+											Start: ast.Position{
+												Column: 17,
+												Line:   73,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   73,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 17,
+													Line:   73,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   73,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "\"host\"",
+												Start: ast.Position{
+													Column: 25,
+													Line:   73,
+												},
+											},
+										},
+										Value: "host",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   73,
+									},
+									File:   "show_tag_values_with_pred_test.flux",
+									Source: "distinct(column: \"host\")",
+									Start: ast.Position{
+										Column: 8,
+										Line:   73,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   73,
+										},
+										File:   "show_tag_values_with_pred_test.flux",
+										Source: "distinct",
+										Start: ast.Position{
+											Column: 8,
+											Line:   73,
+										},
+									},
+								},
+								Name: "distinct",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   74,
+							},
+							File:   "show_tag_values_with_pred_test.flux",
+							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\" and r._measurement == \"cpu\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
+							Start: ast.Position{
+								Column: 37,
+								Line:   68,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   74,
+								},
+								File:   "show_tag_values_with_pred_test.flux",
+								Source: "sort()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   74,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   74,
+									},
+									File:   "show_tag_values_with_pred_test.flux",
+									Source: "sort",
+									Start: ast.Position{
+										Column: 8,
+										Line:   74,
+									},
+								},
+							},
+							Name: "sort",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   68,
+							},
+							File:   "show_tag_values_with_pred_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   68,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   68,
+								},
+								File:   "show_tag_values_with_pred_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 23,
+									Line:   68,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   68,
+							},
+							File:   "show_tag_values_with_pred_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 30,
+								Line:   68,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 107,
+							Line:   77,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   76,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 21,
+								Line:   76,
+							},
+							File:   "show_tag_values_with_pred_test.flux",
+							Source: "show_tag_values",
+							Start: ast.Position{
+								Column: 6,
+								Line:   76,
+							},
+						},
+					},
+					Name: "show_tag_values",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 107,
+								Line:   77,
+							},
+							File:   "show_tag_values_with_pred_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+							Start: ast.Position{
+								Column: 24,
+								Line:   76,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 107,
+									Line:   77,
+								},
+								File:   "show_tag_values_with_pred_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   77,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 106,
+										Line:   77,
+									},
+									File:   "show_tag_values_with_pred_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   77,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   77,
+										},
+										File:   "show_tag_values_with_pred_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   77,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   77,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   77,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   77,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   77,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   77,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   77,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   77,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   77,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   77,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   77,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   77,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   77,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   77,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   77,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   77,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   77,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   77,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   77,
+										},
+										File:   "show_tag_values_with_pred_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   77,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   77,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   77,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   77,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   77,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   77,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   77,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   77,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   77,
+														},
+														File:   "show_tag_values_with_pred_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   77,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   77,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   77,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   77,
+												},
+												File:   "show_tag_values_with_pred_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   77,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   77,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   77,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   77,
+													},
+													File:   "show_tag_values_with_pred_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   77,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 105,
+											Line:   77,
+										},
+										File:   "show_tag_values_with_pred_test.flux",
+										Source: "fn: show_tag_values_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   77,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   77,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 105,
+												Line:   77,
+											},
+											File:   "show_tag_values_with_pred_test.flux",
+											Source: "show_tag_values_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   77,
+											},
+										},
+									},
+									Name: "show_tag_values_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 107,
+						Line:   77,
+					},
+					File:   "show_tag_values_with_pred_test.flux",
+					Source: "test show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   76,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "show_tag_values_with_pred_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "show_tag_values_with_pred_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "show_tag_values_with_pred_test.flux",
+					Source: "package schema_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "show_tag_values_with_pred_test.flux",
 						Source: "schema_test",
 						Start: ast.Position{
 							Column: 9,
