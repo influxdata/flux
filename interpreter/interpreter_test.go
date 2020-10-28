@@ -433,6 +433,133 @@ func TestEval(t *testing.T) {
 		})
 	}
 }
+func TestEval_Operator_Precedence(t *testing.T) {
+	testCases := []struct {
+		src  string
+		want values.Value
+	}{
+		{
+			src:  "2.0 * 3.0 ^ 2.0",
+			want: values.NewFloat(18.0),
+		},
+		{
+			src:  "(2.0 * 3.0) ^ 2.0",
+			want: values.NewFloat(36.0),
+		},
+		{
+			src:  "4.0 / 2.0 ^ 2.0",
+			want: values.NewFloat(1.0),
+		},
+		{
+			src:  "(4.0 / 2.0) ^ 2.0",
+			want: values.NewFloat(4.0),
+		},
+		{
+			src:  "2.0 % 4.0 ^ 2.0",
+			want: values.NewFloat(2.0),
+		},
+		{
+			src:  "(2.0 % 4.0) ^ 2.0",
+			want: values.NewFloat(4.0),
+		},
+		{
+			src:  "1.0 + 2.0 * 3.0",
+			want: values.NewFloat(7.0),
+		},
+		{
+			src:  "(1.0 + 2.0) * 3.0",
+			want: values.NewFloat(9.0),
+		},
+		{
+			src:  "1.0 - 2.0 * 3.0",
+			want: values.NewFloat(-5.0),
+		},
+		{
+			src:  "(1.0 - 2.0) * 3.0",
+			want: values.NewFloat(-3.0),
+		},
+		{
+			src:  "1.0 + 4.0 / 2.0",
+			want: values.NewFloat(3.0),
+		},
+		{
+			src:  "(1.0 + 4.0) / 2.0",
+			want: values.NewFloat(2.5),
+		},
+		{
+			src:  "1.0 - 4.0 / 2.0",
+			want: values.NewFloat(-1.0),
+		},
+		{
+			src:  "(1.0 - 4.0) / 2.0",
+			want: values.NewFloat(-1.5),
+		},
+		{
+			src:  "1.0 + 2.0 + 3.0",
+			want: values.NewFloat(6.0),
+		},
+		{
+			src:  "1.0 + (2.0 + 3.0)",
+			want: values.NewFloat(6.0),
+		},
+		{
+			src:  "1.0 + 2.0 < 4.0",
+			want: values.NewBool(true),
+		},
+		{
+			src:  "(1.0 + 2.0) < 4.0",
+			want: values.NewBool(true),
+		},
+		{
+			src:  "1.0 + 2.0 <= 4.0",
+			want: values.NewBool(true),
+		},
+		{
+			src:  "(1.0 + 2.0) <= 4.0",
+			want: values.NewBool(true),
+		},
+		{
+			src:  "1.0 + 2.0 > 4.0",
+			want: values.NewBool(false),
+		},
+		{
+			src:  "(1.0 + 2.0) > 4.0",
+			want: values.NewBool(false),
+		},
+		{
+			src:  "1.0 + 2.0 >= 4.0",
+			want: values.NewBool(false),
+		},
+		{
+			src:  "(1.0 + 2.0) >= 4.0",
+			want: values.NewBool(false),
+		},
+		{
+			src:  "false and true or true",
+			want: values.NewBool(true),
+		},
+		{
+			src:  "false and (true or true)",
+			want: values.NewBool(false),
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.src, func(t *testing.T) {
+			ctx := dependenciestest.Default().Inject(context.Background())
+			sideEffects, _, err := runtime.Eval(ctx, tc.src)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+
+			vs := getSideEffectsValues(sideEffects)
+			want := []values.Value{tc.want}
+			if !cmp.Equal(want, vs, semantictest.CmpOptions...) {
+				t.Fatalf("unexpected side effect values -want/+got: \n%s", cmp.Diff(want, vs, semantictest.CmpOptions...))
+			}
+		})
+	}
+}
 
 func TestInterpreter_MultiPhaseInterpretation(t *testing.T) {
 	testCases := []struct {
