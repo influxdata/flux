@@ -55,6 +55,19 @@ func TestCompileAndEval(t *testing.T) {
 			wantCompileErr: true,
 		},
 		{
+			name: "interpolated string expression null",
+			fn:   `(r) => "n = ${r.n}"`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("n"), Value: semantic.BasicString},
+				})},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{}),
+			}),
+			wantEvalErr: true,
+		},
+		{
 			name: "simple ident return",
 			fn:   `(r) => r`,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
