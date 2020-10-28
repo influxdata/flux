@@ -95,6 +95,38 @@ a[i]"#,
 fn conditional() {
     assert_unchanged("if a then b else c");
     assert_unchanged(r#"if not a or b and c then 2 / (3 * 2) else obj.a(par: "foo")"#);
+    assert_unchanged(
+        "if x then
+    y
+else
+    z",
+    );
+    assert_unchanged(
+        "if x then
+    {a: 1, b: 2}
+else
+    {a: 2, b: 1}",
+    );
+    assert_unchanged(
+        "if x then
+    {
+        a: 1,
+        b: 2,
+    }
+else
+    {
+        a: 2,
+        b: 1,
+    }",
+    );
+    assert_unchanged(
+        "if a == b then
+    r.x
+else if a == c then
+    r.y
+else
+    r.z",
+    );
 }
 
 #[test]
@@ -434,11 +466,11 @@ fn comments() {
     assert_unchanged("return \n    //comment\n    x");
 
     assert_unchanged("//comment\nif 1 then 2 else 3");
-    assert_unchanged("if \n    //comment\n    1 then 2 else 3");
-    assert_unchanged("if 1\n    //comment\n     then 2 else 3");
-    assert_unchanged("if 1 then \n    //comment\n    2 else 3");
-    assert_unchanged("if 1 then 2\n    //comment\n     else 3");
-    assert_unchanged("if 1 then 2 else \n    //comment\n    3");
+    assert_unchanged("if \n    //comment\n    1 then\n    2\nelse\n    3");
+    assert_unchanged("if 1\n    //comment\n     then\n    2\nelse\n    3");
+    assert_unchanged("if 1 then\n    //comment\n    2\nelse\n    3");
+    assert_unchanged("if 1 then\n    2\n//comment\nelse\n    3");
+    assert_unchanged("if 1 then\n    2\nelse\n    //comment\n    3");
 
     assert_unchanged("//comment\nfoo[\"bar\"]");
     assert_unchanged("foo\n    //comment\n    [\"bar\"]");

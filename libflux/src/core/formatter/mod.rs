@@ -782,15 +782,40 @@ impl Formatter {
     }
 
     fn format_conditional_expression(&mut self, n: &ast::ConditionalExpr) {
+        let multiline = n.base.is_multiline();
+        let nested = matches!(&n.alternate, ast::Expression::Conditional(_));
         self.format_comments(&n.tk_if);
         self.write_string("if ");
         self.format_node(&Node::from_expr(&n.test));
         self.format_comments(&n.tk_then);
-        self.write_string(" then ");
+        self.write_string(" then");
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        } else {
+            self.write_rune(' ');
+        }
         self.format_node(&Node::from_expr(&n.consequent));
+        if multiline {
+            self.write_rune('\n');
+            self.unindent();
+        } else {
+            self.write_rune(' ');
+        }
         self.format_comments(&n.tk_else);
-        self.write_string(" else ");
+        self.write_string("else");
+        if multiline && !nested {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        } else {
+            self.write_rune(' ');
+        }
         self.format_node(&Node::from_expr(&n.alternate));
+        if multiline && !nested {
+            self.unindent();
+        }
     }
 
     fn format_member_assignment(&mut self, n: &ast::MemberAssgn) {
