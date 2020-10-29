@@ -62,12 +62,12 @@ output = "
 #default,0,,
 ,result,table,_value
 ,,0,euterpe.local
-,,0,mnemosyne.local
 "
 
+// This should return "euterpe.local" and not "mnemosyne.local"
 show_tag_values_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z)
-    |> filter(fn: (r) => true)
+    |> filter(fn: (r) => r._field == "usage_user" and r._measurement == "cpu")
     |> keep(columns: ["host"])
     |> group()
     |> distinct(column: "host")

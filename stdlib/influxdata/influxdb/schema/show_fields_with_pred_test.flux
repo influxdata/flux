@@ -39,33 +39,33 @@ input = "
 #group,false,false,false,true,true,true,false
 #default,_result,,,,,,
 ,result,table,_time,_measurement,host,_field,_value
-,,0,2018-05-22T19:53:26Z,sys,host.global,load7,183
-,,0,2018-05-22T19:53:36Z,sys,host.global,load7,172
-,,0,2018-05-22T19:53:46Z,sys,host.global,load7,174
-,,0,2018-05-22T19:53:56Z,sys,host.global,load7,163
-,,0,2018-05-22T19:54:06Z,sys,host.global,load7,191
-,,0,2018-05-22T19:54:16Z,sys,host.global,load7,184
+,,4,2018-05-22T19:53:26Z,sys,host.global,load7,183
+,,4,2018-05-22T19:53:36Z,sys,host.global,load7,172
+,,4,2018-05-22T19:53:46Z,sys,host.global,load7,174
+,,4,2018-05-22T19:53:56Z,sys,host.global,load7,163
+,,4,2018-05-22T19:54:06Z,sys,host.global,load7,191
+,,4,2018-05-22T19:54:16Z,sys,host.global,load7,184
 
-,,1,2018-05-22T19:53:26Z,sys,host.local,load8,198
-,,1,2018-05-22T19:53:36Z,sys,host.local,load8,197
-,,1,2018-05-22T19:53:46Z,sys,host.local,load8,197
-,,1,2018-05-22T19:53:56Z,sys,host.local,load8,196
-,,1,2018-05-22T19:54:06Z,sys,host.local,load8,198
-,,1,2018-05-22T19:54:16Z,sys,host.local,load8,197
+,,5,2018-05-22T19:53:26Z,sys,host.local,load8,198
+,,5,2018-05-22T19:53:36Z,sys,host.local,load8,197
+,,5,2018-05-22T19:53:46Z,sys,host.local,load8,197
+,,5,2018-05-22T19:53:56Z,sys,host.local,load8,196
+,,5,2018-05-22T19:54:06Z,sys,host.local,load8,198
+,,5,2018-05-22T19:54:16Z,sys,host.local,load8,197
 
-,,2,2018-05-22T19:53:26Z,sys,host.global,load9,195
-,,2,2018-05-22T19:53:36Z,sys,host.global,load9,192
-,,2,2018-05-22T19:53:46Z,sys,host.global,load9,192
-,,2,2018-05-22T19:53:56Z,sys,host.global,load9,189
-,,2,2018-05-22T19:54:06Z,sys,host.global,load9,194
-,,2,2018-05-22T19:54:16Z,sys,host.global,load9,193
+,,6,2018-05-22T19:53:26Z,sys,host.global,load9,195
+,,6,2018-05-22T19:53:36Z,sys,host.global,load9,192
+,,6,2018-05-22T19:53:46Z,sys,host.global,load9,192
+,,6,2018-05-22T19:53:56Z,sys,host.global,load9,189
+,,6,2018-05-22T19:54:06Z,sys,host.global,load9,194
+,,6,2018-05-22T19:54:16Z,sys,host.global,load9,193
 
-,,3,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298
-,,3,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259
-,,3,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259
-,,3,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259
-,,3,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259
-,,3,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264
+,,7,2018-05-22T19:53:26Z,swp,host.global,used_percent,8298
+,,7,2018-05-22T19:53:36Z,swp,host.global,used_percent,8259
+,,7,2018-05-22T19:53:46Z,swp,host.global,used_percent,8259
+,,7,2018-05-22T19:53:56Z,swp,host.global,used_percent,8259
+,,7,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259
+,,7,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264
 "
 
 output = "
@@ -77,7 +77,7 @@ output = "
 ,,0,load8
 "
 
-measurement_field_keys_fn = (tables=<-) => tables
+show_fields_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
     |> filter(fn: (r) => r._measurement == "sys")
     |> filter(fn: (r) => r.host == "host.local")
@@ -86,5 +86,5 @@ measurement_field_keys_fn = (tables=<-) => tables
     |> distinct(column: "_field")
     |> sort()
 
-test measurement_field_keys = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_field_keys_fn})
+test show_fields = () =>
+    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})
