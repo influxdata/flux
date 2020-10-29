@@ -205,6 +205,17 @@ func (d Duration) IsZero() bool {
 	return d.months == 0 && d.nsecs == 0
 }
 
+// MonthsOnly returns true if this duration does not have a
+// nanosecond component.
+func (d Duration) MonthsOnly() bool {
+	return d.Months() != 0 && d.Nanoseconds() == 0
+}
+
+// NanoOnly returns true if this duration does not have a month component.
+func (d Duration) NanoOnly() bool {
+	return d.Months() == 0 && d.Nanoseconds() != 0
+}
+
 func (d Duration) Months() int64      { return d.months }
 func (d Duration) Nanoseconds() int64 { return d.nsecs }
 
@@ -212,6 +223,27 @@ func (d Duration) Nanoseconds() int64 { return d.nsecs }
 // It will ensure that the output duration is the smallest positive
 // duration that is the equivalent of the current duration.
 func (d Duration) Normalize(interval Duration) Duration {
+	if d.MonthsOnly() && interval.MonthsOnly() {
+		r := d.Months() % interval.Months()
+		switch {
+		case d.IsNegative() && interval.IsNegative():
+			return Duration{
+				months: -r + interval.Months(),
+			}
+		case d.IsNegative() && interval.IsPositive():
+			return Duration{
+				months: -r + interval.Months(),
+			}
+		case d.IsPositive() && interval.IsNegative():
+			return Duration{
+				months: r,
+			}
+		case d.IsPositive() && interval.IsPositive():
+			return Duration{
+				months: r,
+			}
+		}
+	}
 	offset, every := int64(d.Duration()), int64(interval.Duration())
 	if offset < 0 {
 		offset += every * ((offset / -every) + 1)

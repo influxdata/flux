@@ -106,7 +106,11 @@ func (w Window) GetOverlappingBounds(b Bounds) []Bounds {
 // truncateByNsecs will truncate the time to the given number
 // of nanoseconds.
 func truncateByNsecs(t Time, d Duration) Time {
-	remainder := int64(t) % d.Nanoseconds()
+	dur := d.Nanoseconds()
+	remainder := int64(t) % dur
+	if remainder < 0 {
+		remainder += dur
+	}
 	return t - Time(remainder)
 }
 
