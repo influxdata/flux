@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
@@ -37,8 +38,13 @@ func LastSuccess(ctx context.Context, args values.Object) (values.Value, error) 
 		orTime, err := args.GetRequired("orTime")
 		if err != nil {
 			return nil, err
-		} else if kind := semantic.Time; orTime.Type().Nature() != kind {
-			return nil, errors.Newf(codes.Invalid, "keyword argument \"orTime\" should be of kind %v, but got %v", kind, orTime.Type().Nature())
+		} else if !values.IsTimeable(orTime) {
+			return nil, errors.Newf(codes.Invalid, "keyword argument \"orTime\" should be a time or duration, but got %v", orTime.Type().Nature())
+		}
+
+		if orTime.Type().Nature() == semantic.Duration {
+			deps := execute.GetExecutionDependencies(ctx)
+			orTime = values.NewTime(values.ConvertTime(*deps.Now).Add(orTime.Duration()))
 		}
 
 		lastSuccess, err := args.GetRequired("lastSuccessTime")

@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
@@ -149,6 +148,7 @@ func TestFrom_Run(t *testing.T) {
 		}}
 	}
 
+	now := mustParseTime("2020-10-22T09:30:00Z")
 	for _, tt := range []struct {
 		name string
 		spec *influxdb.FromRemoteProcedureSpec
@@ -157,21 +157,20 @@ func TestFrom_Run(t *testing.T) {
 		{
 			name: "basic query",
 			spec: &influxdb.FromRemoteProcedureSpec{
-				FromProcedureSpec: &influxdb.FromProcedureSpec{
-					Org:    &influxdb.NameOrID{Name: "influxdata"},
+				Config: influxdb.Config{
+					Org:    influxdb.NameOrID{Name: "influxdata"},
 					Bucket: influxdb.NameOrID{Name: "telegraf"},
-					Token:  stringPtr("mytoken"),
+					Token:  "mytoken",
 				},
-				Range: &universe.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -time.Minute,
-						},
-						Stop: flux.Time{
-							IsRelative: true,
-						},
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						IsRelative: true,
+						Relative:   -time.Minute,
 					},
+					Stop: flux.Time{
+						IsRelative: true,
+					},
+					Now: now,
 				},
 			},
 			want: testutil.Want{
@@ -182,28 +181,27 @@ func TestFrom_Run(t *testing.T) {
 
 
 from(bucket: "telegraf")
-	|> range(start: -1m)`,
+	|> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)`,
 				Tables: defaultTablesFn,
 			},
 		},
 		{
 			name: "basic query with org id and bucket id",
 			spec: &influxdb.FromRemoteProcedureSpec{
-				FromProcedureSpec: &influxdb.FromProcedureSpec{
-					Org:    &influxdb.NameOrID{ID: "97aa81cc0e247dc4"},
+				Config: influxdb.Config{
+					Org:    influxdb.NameOrID{ID: "97aa81cc0e247dc4"},
 					Bucket: influxdb.NameOrID{ID: "1e01ac57da723035"},
-					Token:  stringPtr("mytoken"),
+					Token:  "mytoken",
 				},
-				Range: &universe.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -time.Minute,
-						},
-						Stop: flux.Time{
-							IsRelative: true,
-						},
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						IsRelative: true,
+						Relative:   -time.Minute,
 					},
+					Stop: flux.Time{
+						IsRelative: true,
+					},
+					Now: now,
 				},
 			},
 			want: testutil.Want{
@@ -214,27 +212,26 @@ from(bucket: "telegraf")
 
 
 from(bucketID: "1e01ac57da723035")
-	|> range(start: -1m)`,
+	|> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)`,
 				Tables: defaultTablesFn,
 			},
 		},
 		{
 			name: "basic query with absolute time range",
 			spec: &influxdb.FromRemoteProcedureSpec{
-				FromProcedureSpec: &influxdb.FromProcedureSpec{
-					Org:    &influxdb.NameOrID{Name: "influxdata"},
+				Config: influxdb.Config{
+					Org:    influxdb.NameOrID{Name: "influxdata"},
 					Bucket: influxdb.NameOrID{Name: "telegraf"},
-					Token:  stringPtr("mytoken"),
+					Token:  "mytoken",
 				},
-				Range: &universe.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							Absolute: mustParseTime("2018-05-30T09:00:00Z"),
-						},
-						Stop: flux.Time{
-							Absolute: mustParseTime("2018-05-30T10:00:00Z"),
-						},
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						Absolute: mustParseTime("2018-05-30T09:00:00Z"),
 					},
+					Stop: flux.Time{
+						Absolute: mustParseTime("2018-05-30T10:00:00Z"),
+					},
+					Now: now,
 				},
 			},
 			want: testutil.Want{
@@ -252,30 +249,27 @@ from(bucket: "telegraf")
 		{
 			name: "filter query",
 			spec: &influxdb.FromRemoteProcedureSpec{
-				FromProcedureSpec: &influxdb.FromProcedureSpec{
-					Org:    &influxdb.NameOrID{Name: "influxdata"},
+				Config: influxdb.Config{
+					Org:    influxdb.NameOrID{Name: "influxdata"},
 					Bucket: influxdb.NameOrID{Name: "telegraf"},
-					Token:  stringPtr("mytoken"),
+					Token:  "mytoken",
 				},
-				Range: &universe.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -time.Minute,
-						},
-						Stop: flux.Time{
-							IsRelative: true,
-						},
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						IsRelative: true,
+						Relative:   -time.Minute,
 					},
-				},
-				Transformations: []plan.ProcedureSpec{
-					&universe.FilterProcedureSpec{
-						Fn: interpreter.ResolvedFunction{
-							Fn:    executetest.FunctionExpression(t, `(r) => r._value >= 0.0`),
-							Scope: valuestest.Scope(),
-						},
+					Stop: flux.Time{
+						IsRelative: true,
 					},
+					Now: now,
 				},
+				PredicateSet: influxdb.PredicateSet{{
+					ResolvedFunction: interpreter.ResolvedFunction{
+						Fn:    executetest.FunctionExpression(t, `(r) => r._value >= 0.0`),
+						Scope: valuestest.Scope(),
+					},
+				}},
 			},
 			want: testutil.Want{
 				Params: url.Values{
@@ -285,7 +279,7 @@ from(bucket: "telegraf")
 
 
 from(bucket: "telegraf")
-	|> range(start: -1m)
+	|> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
 	|> filter(fn: (r) => {
 		return r["_value"] >= 0.0
 	})`,
@@ -295,31 +289,28 @@ from(bucket: "telegraf")
 		{
 			name: "filter query with keep empty",
 			spec: &influxdb.FromRemoteProcedureSpec{
-				FromProcedureSpec: &influxdb.FromProcedureSpec{
-					Org:    &influxdb.NameOrID{Name: "influxdata"},
+				Config: influxdb.Config{
+					Org:    influxdb.NameOrID{Name: "influxdata"},
 					Bucket: influxdb.NameOrID{Name: "telegraf"},
-					Token:  stringPtr("mytoken"),
+					Token:  "mytoken",
 				},
-				Range: &universe.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -time.Minute,
-						},
-						Stop: flux.Time{
-							IsRelative: true,
-						},
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						IsRelative: true,
+						Relative:   -time.Minute,
 					},
-				},
-				Transformations: []plan.ProcedureSpec{
-					&universe.FilterProcedureSpec{
-						Fn: interpreter.ResolvedFunction{
-							Fn:    executetest.FunctionExpression(t, `(r) => r._value >= 0.0`),
-							Scope: valuestest.Scope(),
-						},
-						KeepEmptyTables: true,
+					Stop: flux.Time{
+						IsRelative: true,
 					},
+					Now: now,
 				},
+				PredicateSet: influxdb.PredicateSet{{
+					ResolvedFunction: interpreter.ResolvedFunction{
+						Fn:    executetest.FunctionExpression(t, `(r) => r._value >= 0.0`),
+						Scope: valuestest.Scope(),
+					},
+					KeepEmpty: true,
+				}},
 			},
 			want: testutil.Want{
 				Params: url.Values{
@@ -329,7 +320,7 @@ from(bucket: "telegraf")
 
 
 from(bucket: "telegraf")
-	|> range(start: -1m)
+	|> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
 	|> filter(fn: (r) => {
 		return r["_value"] >= 0.0
 	}, onEmpty: "keep")`,
@@ -339,48 +330,45 @@ from(bucket: "telegraf")
 		{
 			name: "filter query with import",
 			spec: &influxdb.FromRemoteProcedureSpec{
-				FromProcedureSpec: &influxdb.FromProcedureSpec{
-					Org:    &influxdb.NameOrID{Name: "influxdata"},
+				Config: influxdb.Config{
+					Org:    influxdb.NameOrID{Name: "influxdata"},
 					Bucket: influxdb.NameOrID{Name: "telegraf"},
-					Token:  stringPtr("mytoken"),
+					Token:  "mytoken",
 				},
-				Range: &universe.RangeProcedureSpec{
-					Bounds: flux.Bounds{
-						Start: flux.Time{
-							IsRelative: true,
-							Relative:   -time.Minute,
-						},
-						Stop: flux.Time{
-							IsRelative: true,
-						},
+				Bounds: flux.Bounds{
+					Start: flux.Time{
+						IsRelative: true,
+						Relative:   -time.Minute,
 					},
+					Stop: flux.Time{
+						IsRelative: true,
+					},
+					Now: now,
 				},
-				Transformations: []plan.ProcedureSpec{
-					&universe.FilterProcedureSpec{
-						Fn: interpreter.ResolvedFunction{
-							Fn: executetest.FunctionExpression(t, `
+				PredicateSet: influxdb.PredicateSet{{
+					ResolvedFunction: interpreter.ResolvedFunction{
+						Fn: executetest.FunctionExpression(t, `
 import "math"
 (r) => r._value >= math.pi`,
-							),
-							Scope: func() values.Scope {
-								imp := runtime.StdLib()
-								// This is needed to prime the importer since universe
-								// depends on math and the anti-cyclical import detection
-								// doesn't work if you import math first.
-								_, _ = imp.ImportPackageObject("universe")
-								pkg, err := imp.ImportPackageObject("math")
-								if err != nil {
-									t.Fatal(err)
-								}
+						),
+						Scope: func() values.Scope {
+							imp := runtime.StdLib()
+							// This is needed to prime the importer since universe
+							// depends on math and the anti-cyclical import detection
+							// doesn't work if you import math first.
+							_, _ = imp.ImportPackageObject("universe")
+							pkg, err := imp.ImportPackageObject("math")
+							if err != nil {
+								t.Fatal(err)
+							}
 
-								scope := values.NewScope()
-								scope.Set("math", pkg)
-								return scope
-							}(),
-						},
-						KeepEmptyTables: true,
+							scope := values.NewScope()
+							scope.Set("math", pkg)
+							return scope
+						}(),
 					},
-				},
+					KeepEmpty: true,
+				}},
 			},
 			want: testutil.Want{
 				Params: url.Values{
@@ -392,7 +380,7 @@ import "math"
 import math "math"
 
 from(bucket: "telegraf")
-	|> range(start: -1m)
+	|> range(start: 2020-10-22T09:29:00Z, stop: 2020-10-22T09:30:00Z)
 	|> filter(fn: (r) => {
 		return r["_value"] >= math["pi"]
 	}, onEmpty: "keep")`,
@@ -408,20 +396,18 @@ from(bucket: "telegraf")
 
 func TestFrom_Run_Errors(t *testing.T) {
 	testutil.RunSourceErrorTestHelper(t, &influxdb.FromRemoteProcedureSpec{
-		FromProcedureSpec: &influxdb.FromProcedureSpec{
-			Org:    &influxdb.NameOrID{Name: "influxdata"},
+		Config: influxdb.Config{
+			Org:    influxdb.NameOrID{Name: "influxdata"},
 			Bucket: influxdb.NameOrID{Name: "telegraf"},
-			Token:  stringPtr("mytoken"),
+			Token:  "mytoken",
 		},
-		Range: &universe.RangeProcedureSpec{
-			Bounds: flux.Bounds{
-				Start: flux.Time{
-					IsRelative: true,
-					Relative:   -time.Minute,
-				},
-				Stop: flux.Time{
-					IsRelative: true,
-				},
+		Bounds: flux.Bounds{
+			Start: flux.Time{
+				IsRelative: true,
+				Relative:   -time.Minute,
+			},
+			Stop: flux.Time{
+				IsRelative: true,
 			},
 		},
 	})
@@ -429,20 +415,18 @@ func TestFrom_Run_Errors(t *testing.T) {
 
 func TestFrom_URLValidator(t *testing.T) {
 	testutil.RunSourceURLValidatorTestHelper(t, &influxdb.FromRemoteProcedureSpec{
-		FromProcedureSpec: &influxdb.FromProcedureSpec{
-			Org:    &influxdb.NameOrID{Name: "influxdata"},
+		Config: influxdb.Config{
+			Org:    influxdb.NameOrID{Name: "influxdata"},
 			Bucket: influxdb.NameOrID{Name: "telegraf"},
-			Token:  stringPtr("mytoken"),
+			Token:  "mytoken",
 		},
-		Range: &universe.RangeProcedureSpec{
-			Bounds: flux.Bounds{
-				Start: flux.Time{
-					IsRelative: true,
-					Relative:   -time.Minute,
-				},
-				Stop: flux.Time{
-					IsRelative: true,
-				},
+		Bounds: flux.Bounds{
+			Start: flux.Time{
+				IsRelative: true,
+				Relative:   -time.Minute,
+			},
+			Stop: flux.Time{
+				IsRelative: true,
 			},
 		},
 	})
@@ -450,20 +434,18 @@ func TestFrom_URLValidator(t *testing.T) {
 
 func TestFrom_HTTPClient(t *testing.T) {
 	testutil.RunSourceHTTPClientTestHelper(t, &influxdb.FromRemoteProcedureSpec{
-		FromProcedureSpec: &influxdb.FromProcedureSpec{
-			Org:    &influxdb.NameOrID{Name: "influxdata"},
+		Config: influxdb.Config{
+			Org:    influxdb.NameOrID{Name: "influxdata"},
 			Bucket: influxdb.NameOrID{Name: "telegraf"},
-			Token:  stringPtr("mytoken"),
+			Token:  "mytoken",
 		},
-		Range: &universe.RangeProcedureSpec{
-			Bounds: flux.Bounds{
-				Start: flux.Time{
-					IsRelative: true,
-					Relative:   -time.Minute,
-				},
-				Stop: flux.Time{
-					IsRelative: true,
-				},
+		Bounds: flux.Bounds{
+			Start: flux.Time{
+				IsRelative: true,
+				Relative:   -time.Minute,
+			},
+			Stop: flux.Time{
+				IsRelative: true,
 			},
 		},
 	})

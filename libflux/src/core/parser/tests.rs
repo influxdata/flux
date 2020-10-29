@@ -2346,9 +2346,9 @@ fn test_parse_type_expression_array_string() {
 }
 
 #[test]
-fn test_parse_record_only_properties() {
+fn test_parse_record_type_only_properties() {
     let mut p = Parser::new(r#"{a:int, b:uint}"#);
-    let parsed = p.parse_record();
+    let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
@@ -2417,6 +2417,68 @@ fn test_parse_record_only_properties() {
 }
 
 #[test]
+fn test_parse_record_type_trailing_comma() {
+    let mut p = Parser::new(r#"{a:int,}"#);
+    let parsed = p.parse_record_type();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        MonoType::Record(RecordType {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 9),
+                ..BaseNode::default()
+            },
+            tvar: None,
+            properties: vec![PropertyType {
+                base: BaseNode {
+                    location: loc.get(1, 2, 1, 7),
+                    ..BaseNode::default()
+                },
+                name: Identifier {
+                    name: "a".to_string(),
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 3),
+                        ..BaseNode::default()
+                    },
+                },
+                monotype: MonoType::Basic(NamedType {
+                    base: BaseNode {
+                        location: loc.get(1, 4, 1, 7),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        name: "int".to_string(),
+                        base: BaseNode {
+                            location: loc.get(1, 4, 1, 7),
+                            ..BaseNode::default()
+                        },
+                    }
+                })
+            },]
+        },)
+    )
+}
+
+#[test]
+fn test_parse_record_type_invalid() {
+    let mut p = Parser::new(r#"{a b}"#);
+    let parsed = p.parse_record_type();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        MonoType::Record(RecordType {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 5),
+                errors: vec!["expected RBRACE, got IDENT".to_string()],
+                ..BaseNode::default()
+            },
+            tvar: None,
+            properties: vec![],
+        })
+    )
+}
+
+#[test]
 fn test_parse_constraint_one_ident() {
     let mut p = Parser::new(r#"A : date"#);
     let parsed = p.parse_constraints();
@@ -2446,9 +2508,9 @@ fn test_parse_constraint_one_ident() {
     )
 }
 #[test]
-fn test_parse_record_blank() {
+fn test_parse_record_type_blank() {
     let mut p = Parser::new(r#"{}"#);
-    let parsed = p.parse_record();
+    let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
@@ -2490,6 +2552,69 @@ fn test_parse_type_expression_function_with_no_params() {
                     name: Identifier {
                         base: BaseNode {
                             location: loc.get(1, 7, 1, 10),
+                            ..BaseNode::default()
+                        },
+                        name: "int".to_string(),
+                    }
+                }),
+            })),
+            constraints: vec![],
+        },
+    )
+}
+
+#[test]
+fn test_parse_function_type_trailing_comma() {
+    let mut p = Parser::new(r#"(a:int,) => int"#);
+    let parsed = p.parse_type_expression();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        TypeExpression {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 16),
+                ..BaseNode::default()
+            },
+            monotype: MonoType::Function(Box::new(FunctionType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 16),
+                    ..BaseNode::default()
+                },
+
+                parameters: vec![ParameterType::Required {
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 7),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 2, 1, 3),
+                            ..BaseNode::default()
+                        },
+                        name: "a".to_string(),
+                    },
+                    monotype: MonoType::Basic(NamedType {
+                        base: BaseNode {
+                            location: loc.get(1, 4, 1, 7),
+                            ..BaseNode::default()
+                        },
+                        name: Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 4, 1, 7),
+                                ..BaseNode::default()
+                            },
+                            name: "int".to_string(),
+                        },
+                    }),
+                },],
+                monotype: MonoType::Basic(NamedType {
+                    base: BaseNode {
+                        location: loc.get(1, 13, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 13, 1, 16),
                             ..BaseNode::default()
                         },
                         name: "int".to_string(),
@@ -2864,9 +2989,9 @@ fn test_parse_constraint_two_con() {
 }
 
 #[test]
-fn test_parse_record_tvar_properties() {
+fn test_parse_record_type_tvar_properties() {
     let mut p = Parser::new(r#"{A with a:int, b:uint}"#);
-    let parsed = p.parse_record();
+    let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
         parsed,
@@ -3188,6 +3313,92 @@ builtin foo
                     }),
                     constraints: vec![]
                 },
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn comment_function_body() {
+    let mut p = Parser::new(
+        r#"fn = (tables=<-) =>
+// comment
+(tables)"#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 3, 9),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Variable(Box::new(VariableAssgn {
+                base: BaseNode {
+                    location: loc.get(1, 1, 3, 9),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 3),
+                        ..BaseNode::default()
+                    },
+                    name: "fn".to_string()
+                },
+                init: Expression::Function(Box::new(FunctionExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 6, 3, 9),
+                        ..BaseNode::default()
+                    },
+                    lparen: None,
+                    params: vec![Property {
+                        base: BaseNode {
+                            location: loc.get(1, 7, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        key: PropertyKey::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 7, 1, 13),
+                                ..BaseNode::default()
+                            },
+                            name: "tables".to_string()
+                        }),
+                        separator: None,
+                        value: Some(Expression::PipeLit(PipeLit {
+                            base: BaseNode {
+                                location: loc.get(1, 14, 1, 16),
+                                ..BaseNode::default()
+                            },
+                        })),
+                        comma: None,
+                    }],
+                    rparen: None,
+                    arrow: None,
+                    body: FunctionBody::Expr(Expression::Paren(Box::new(ParenExpr {
+                        base: BaseNode {
+                            location: loc.get(3, 1, 3, 9),
+                            ..BaseNode::default()
+                        },
+                        lparen: Some(Box::new(Comment {
+                            lit: "// comment\n".to_string(),
+                            next: None,
+                        })),
+                        expression: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(3, 2, 3, 8),
+                                ..BaseNode::default()
+                            },
+                            name: "tables".to_string(),
+                        }),
+                        rparen: None,
+                    })))
+                }))
             }))],
             eof: None,
         },
@@ -8831,6 +9042,97 @@ fn arrow_function_return_map() {
                             rbrace: None,
                         })),
                         rparen: None,
+                    }))),
+                }))
+            }))],
+            eof: None,
+        },
+    )
+}
+
+#[test]
+fn arrow_function() {
+    let mut p = Parser::new(r#"(x,y) => x == y"#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 16),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![Statement::Expr(Box::new(ExprStmt {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 16),
+                    ..BaseNode::default()
+                },
+                expression: Expression::Function(Box::new(FunctionExpr {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 16),
+                        ..BaseNode::default()
+                    },
+                    lparen: None,
+                    params: vec![
+                        Property {
+                            base: BaseNode {
+                                location: loc.get(1, 2, 1, 3),
+                                ..BaseNode::default()
+                            },
+                            key: PropertyKey::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(1, 2, 1, 3),
+                                    ..BaseNode::default()
+                                },
+                                name: "x".to_string()
+                            }),
+                            separator: None,
+                            value: None,
+                            comma: None,
+                        },
+                        Property {
+                            base: BaseNode {
+                                location: loc.get(1, 4, 1, 5),
+                                ..BaseNode::default()
+                            },
+                            key: PropertyKey::Identifier(Identifier {
+                                base: BaseNode {
+                                    location: loc.get(1, 4, 1, 5),
+                                    ..BaseNode::default()
+                                },
+                                name: "y".to_string()
+                            }),
+                            separator: None,
+                            value: None,
+                            comma: None,
+                        }
+                    ],
+                    rparen: None,
+                    arrow: None,
+                    body: FunctionBody::Expr(Expression::Binary(Box::new(BinaryExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 10, 1, 16),
+                            ..BaseNode::default()
+                        },
+                        operator: Operator::EqualOperator,
+                        left: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 10, 1, 11),
+                                ..BaseNode::default()
+                            },
+                            name: "x".to_string(),
+                        }),
+                        right: Expression::Identifier(Identifier {
+                            base: BaseNode {
+                                location: loc.get(1, 15, 1, 16),
+                                ..BaseNode::default()
+                            },
+                            name: "y".to_string(),
+                        }),
                     }))),
                 }))
             }))],

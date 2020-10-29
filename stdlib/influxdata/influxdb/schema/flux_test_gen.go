@@ -10987,6 +10987,3439 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 109,
+					Line:   65,
+				},
+				File:   "show_measurements_with_many_preds_test.flux",
+				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"\n\nshow_measurements_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()\n\ntest show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   5,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   5,
+							},
+							File:   "show_measurements_with_many_preds_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   5,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   5,
+							},
+							File:   "show_measurements_with_many_preds_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   5,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   5,
+								},
+								File:   "show_measurements_with_many_preds_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   5,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   5,
+									},
+									File:   "show_measurements_with_many_preds_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   5,
+					},
+					File:   "show_measurements_with_many_preds_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   46,
+					},
+					File:   "show_measurements_with_many_preds_test.flux",
+					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   7,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   46,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   7,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   54,
+					},
+					File:   "show_measurements_with_many_preds_test.flux",
+					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   48,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   48,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   48,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   54,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   48,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   62,
+					},
+					File:   "show_measurements_with_many_preds_test.flux",
+					Source: "show_measurements_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   56,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   56,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "show_measurements_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   56,
+						},
+					},
+				},
+				Name: "show_measurements_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   62,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
+						Start: ast.Position{
+							Column: 24,
+							Line:   56,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   56,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "tables",
+													Start: ast.Position{
+														Column: 39,
+														Line:   56,
+													},
+												},
+											},
+											Name: "tables",
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   57,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 39,
+													Line:   56,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   57,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "start: 2018-01-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 14,
+															Line:   57,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   57,
+															},
+															File:   "show_measurements_with_many_preds_test.flux",
+															Source: "start: 2018-01-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 14,
+																Line:   57,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   57,
+																},
+																File:   "show_measurements_with_many_preds_test.flux",
+																Source: "start",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   57,
+																},
+															},
+														},
+														Name: "start",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   57,
+																},
+																File:   "show_measurements_with_many_preds_test.flux",
+																Source: "2018-01-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   57,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   57,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "range(start: 2018-01-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 8,
+														Line:   57,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 13,
+															Line:   57,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "range",
+														Start: ast.Position{
+															Column: 8,
+															Line:   57,
+														},
+													},
+												},
+												Name: "range",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   58,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")",
+											Start: ast.Position{
+												Column: 39,
+												Line:   56,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   58,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   58,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   58,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   58,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   58,
+															},
+															File:   "show_measurements_with_many_preds_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   58,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 80,
+																Line:   58,
+															},
+															File:   "show_measurements_with_many_preds_test.flux",
+															Source: "(r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   58,
+															},
+														},
+													},
+													Body: &ast.LogicalExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 80,
+																	Line:   58,
+																},
+																File:   "show_measurements_with_many_preds_test.flux",
+																Source: "r._field == \"usage_idle\" and r.host == \"euterpe.local\"",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   58,
+																},
+															},
+														},
+														Left: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 50,
+																		Line:   58,
+																	},
+																	File:   "show_measurements_with_many_preds_test.flux",
+																	Source: "r._field == \"usage_idle\"",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   58,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 34,
+																			Line:   58,
+																		},
+																		File:   "show_measurements_with_many_preds_test.flux",
+																		Source: "r._field",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   58,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 27,
+																				Line:   58,
+																			},
+																			File:   "show_measurements_with_many_preds_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   58,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 34,
+																				Line:   58,
+																			},
+																			File:   "show_measurements_with_many_preds_test.flux",
+																			Source: "_field",
+																			Start: ast.Position{
+																				Column: 28,
+																				Line:   58,
+																			},
+																		},
+																	},
+																	Name: "_field",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 50,
+																			Line:   58,
+																		},
+																		File:   "show_measurements_with_many_preds_test.flux",
+																		Source: "\"usage_idle\"",
+																		Start: ast.Position{
+																			Column: 38,
+																			Line:   58,
+																		},
+																	},
+																},
+																Value: "usage_idle",
+															},
+														},
+														Operator: 1,
+														Right: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 80,
+																		Line:   58,
+																	},
+																	File:   "show_measurements_with_many_preds_test.flux",
+																	Source: "r.host == \"euterpe.local\"",
+																	Start: ast.Position{
+																		Column: 55,
+																		Line:   58,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 61,
+																			Line:   58,
+																		},
+																		File:   "show_measurements_with_many_preds_test.flux",
+																		Source: "r.host",
+																		Start: ast.Position{
+																			Column: 55,
+																			Line:   58,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 56,
+																				Line:   58,
+																			},
+																			File:   "show_measurements_with_many_preds_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 55,
+																				Line:   58,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 61,
+																				Line:   58,
+																			},
+																			File:   "show_measurements_with_many_preds_test.flux",
+																			Source: "host",
+																			Start: ast.Position{
+																				Column: 57,
+																				Line:   58,
+																			},
+																		},
+																	},
+																	Name: "host",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 80,
+																			Line:   58,
+																		},
+																		File:   "show_measurements_with_many_preds_test.flux",
+																		Source: "\"euterpe.local\"",
+																		Start: ast.Position{
+																			Column: 65,
+																			Line:   58,
+																		},
+																	},
+																},
+																Value: "euterpe.local",
+															},
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   58,
+																},
+																File:   "show_measurements_with_many_preds_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   58,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   58,
+																	},
+																	File:   "show_measurements_with_many_preds_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   58,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 81,
+													Line:   58,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")",
+												Start: ast.Position{
+													Column: 8,
+													Line:   58,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   58,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 8,
+														Line:   58,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   59,
+										},
+										File:   "show_measurements_with_many_preds_test.flux",
+										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])",
+										Start: ast.Position{
+											Column: 39,
+											Line:   56,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 38,
+													Line:   59,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "columns: [\"_measurement\"]",
+												Start: ast.Position{
+													Column: 13,
+													Line:   59,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   59,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "columns: [\"_measurement\"]",
+													Start: ast.Position{
+														Column: 13,
+														Line:   59,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   59,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "columns",
+														Start: ast.Position{
+															Column: 13,
+															Line:   59,
+														},
+													},
+												},
+												Name: "columns",
+											},
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 38,
+															Line:   59,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "[\"_measurement\"]",
+														Start: ast.Position{
+															Column: 22,
+															Line:   59,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 37,
+																Line:   59,
+															},
+															File:   "show_measurements_with_many_preds_test.flux",
+															Source: "\"_measurement\"",
+															Start: ast.Position{
+																Column: 23,
+																Line:   59,
+															},
+														},
+													},
+													Value: "_measurement",
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   59,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "keep(columns: [\"_measurement\"])",
+											Start: ast.Position{
+												Column: 8,
+												Line:   59,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   59,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "keep",
+												Start: ast.Position{
+													Column: 8,
+													Line:   59,
+												},
+											},
+										},
+										Name: "keep",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   60,
+									},
+									File:   "show_measurements_with_many_preds_test.flux",
+									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()",
+									Start: ast.Position{
+										Column: 39,
+										Line:   56,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   60,
+										},
+										File:   "show_measurements_with_many_preds_test.flux",
+										Source: "group()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   60,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   60,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   60,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   61,
+								},
+								File:   "show_measurements_with_many_preds_test.flux",
+								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")",
+								Start: ast.Position{
+									Column: 39,
+									Line:   56,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   61,
+										},
+										File:   "show_measurements_with_many_preds_test.flux",
+										Source: "column: \"_measurement\"",
+										Start: ast.Position{
+											Column: 17,
+											Line:   61,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   61,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "column: \"_measurement\"",
+											Start: ast.Position{
+												Column: 17,
+												Line:   61,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   61,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 17,
+													Line:   61,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   61,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "\"_measurement\"",
+												Start: ast.Position{
+													Column: 25,
+													Line:   61,
+												},
+											},
+										},
+										Value: "_measurement",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   61,
+									},
+									File:   "show_measurements_with_many_preds_test.flux",
+									Source: "distinct(column: \"_measurement\")",
+									Start: ast.Position{
+										Column: 8,
+										Line:   61,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   61,
+										},
+										File:   "show_measurements_with_many_preds_test.flux",
+										Source: "distinct",
+										Start: ast.Position{
+											Column: 8,
+											Line:   61,
+										},
+									},
+								},
+								Name: "distinct",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   62,
+							},
+							File:   "show_measurements_with_many_preds_test.flux",
+							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\" and r.host == \"euterpe.local\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
+							Start: ast.Position{
+								Column: 39,
+								Line:   56,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   62,
+								},
+								File:   "show_measurements_with_many_preds_test.flux",
+								Source: "sort()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   62,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   62,
+									},
+									File:   "show_measurements_with_many_preds_test.flux",
+									Source: "sort",
+									Start: ast.Position{
+										Column: 8,
+										Line:   62,
+									},
+								},
+							},
+							Name: "sort",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   56,
+							},
+							File:   "show_measurements_with_many_preds_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 25,
+								Line:   56,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   56,
+								},
+								File:   "show_measurements_with_many_preds_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 25,
+									Line:   56,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   56,
+							},
+							File:   "show_measurements_with_many_preds_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 32,
+								Line:   56,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 109,
+							Line:   65,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   64,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   64,
+							},
+							File:   "show_measurements_with_many_preds_test.flux",
+							Source: "show_measurements",
+							Start: ast.Position{
+								Column: 6,
+								Line:   64,
+							},
+						},
+					},
+					Name: "show_measurements",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 109,
+								Line:   65,
+							},
+							File:   "show_measurements_with_many_preds_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+							Start: ast.Position{
+								Column: 26,
+								Line:   64,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 109,
+									Line:   65,
+								},
+								File:   "show_measurements_with_many_preds_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   65,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 108,
+										Line:   65,
+									},
+									File:   "show_measurements_with_many_preds_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   65,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   65,
+										},
+										File:   "show_measurements_with_many_preds_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   65,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   65,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   65,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   65,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   65,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   65,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   65,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   65,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   65,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   65,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   65,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   65,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   65,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   65,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   65,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   65,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   65,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   65,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   65,
+										},
+										File:   "show_measurements_with_many_preds_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   65,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   65,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   65,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   65,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   65,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   65,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   65,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   65,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   65,
+														},
+														File:   "show_measurements_with_many_preds_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   65,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   65,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   65,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   65,
+												},
+												File:   "show_measurements_with_many_preds_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   65,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   65,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   65,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   65,
+													},
+													File:   "show_measurements_with_many_preds_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   65,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 107,
+											Line:   65,
+										},
+										File:   "show_measurements_with_many_preds_test.flux",
+										Source: "fn: show_measurements_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   65,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   65,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 107,
+												Line:   65,
+											},
+											File:   "show_measurements_with_many_preds_test.flux",
+											Source: "show_measurements_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   65,
+											},
+										},
+									},
+									Name: "show_measurements_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 109,
+						Line:   65,
+					},
+					File:   "show_measurements_with_many_preds_test.flux",
+					Source: "test show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   64,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "show_measurements_with_many_preds_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "show_measurements_with_many_preds_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "show_measurements_with_many_preds_test.flux",
+					Source: "package schema_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "show_measurements_with_many_preds_test.flux",
+						Source: "schema_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "schema_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 109,
+					Line:   65,
+				},
+				File:   "show_measurements_with_pred_test.flux",
+				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"\n\nshow_measurements_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()\n\ntest show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   5,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   5,
+							},
+							File:   "show_measurements_with_pred_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   5,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   5,
+							},
+							File:   "show_measurements_with_pred_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   5,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   5,
+								},
+								File:   "show_measurements_with_pred_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   5,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   5,
+									},
+									File:   "show_measurements_with_pred_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   5,
+					},
+					File:   "show_measurements_with_pred_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   46,
+					},
+					File:   "show_measurements_with_pred_test.flux",
+					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   7,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   46,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   7,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   54,
+					},
+					File:   "show_measurements_with_pred_test.flux",
+					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   48,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   48,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   48,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   54,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   48,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,cpu\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   62,
+					},
+					File:   "show_measurements_with_pred_test.flux",
+					Source: "show_measurements_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   56,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   56,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "show_measurements_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   56,
+						},
+					},
+				},
+				Name: "show_measurements_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   62,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
+						Start: ast.Position{
+							Column: 24,
+							Line:   56,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   56,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "tables",
+													Start: ast.Position{
+														Column: 39,
+														Line:   56,
+													},
+												},
+											},
+											Name: "tables",
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   57,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 39,
+													Line:   56,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   57,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "start: 2018-01-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 14,
+															Line:   57,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   57,
+															},
+															File:   "show_measurements_with_pred_test.flux",
+															Source: "start: 2018-01-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 14,
+																Line:   57,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   57,
+																},
+																File:   "show_measurements_with_pred_test.flux",
+																Source: "start",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   57,
+																},
+															},
+														},
+														Name: "start",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   57,
+																},
+																File:   "show_measurements_with_pred_test.flux",
+																Source: "2018-01-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   57,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   57,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "range(start: 2018-01-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 8,
+														Line:   57,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 13,
+															Line:   57,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "range",
+														Start: ast.Position{
+															Column: 8,
+															Line:   57,
+														},
+													},
+												},
+												Name: "range",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   58,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")",
+											Start: ast.Position{
+												Column: 39,
+												Line:   56,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   58,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "fn: (r) => r._field == \"usage_idle\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   58,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 50,
+															Line:   58,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "fn: (r) => r._field == \"usage_idle\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   58,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   58,
+															},
+															File:   "show_measurements_with_pred_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   58,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 50,
+																Line:   58,
+															},
+															File:   "show_measurements_with_pred_test.flux",
+															Source: "(r) => r._field == \"usage_idle\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   58,
+															},
+														},
+													},
+													Body: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 50,
+																	Line:   58,
+																},
+																File:   "show_measurements_with_pred_test.flux",
+																Source: "r._field == \"usage_idle\"",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   58,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 34,
+																		Line:   58,
+																	},
+																	File:   "show_measurements_with_pred_test.flux",
+																	Source: "r._field",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   58,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 27,
+																			Line:   58,
+																		},
+																		File:   "show_measurements_with_pred_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   58,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 34,
+																			Line:   58,
+																		},
+																		File:   "show_measurements_with_pred_test.flux",
+																		Source: "_field",
+																		Start: ast.Position{
+																			Column: 28,
+																			Line:   58,
+																		},
+																	},
+																},
+																Name: "_field",
+															},
+														},
+														Operator: 17,
+														Right: &ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 50,
+																		Line:   58,
+																	},
+																	File:   "show_measurements_with_pred_test.flux",
+																	Source: "\"usage_idle\"",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   58,
+																	},
+																},
+															},
+															Value: "usage_idle",
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   58,
+																},
+																File:   "show_measurements_with_pred_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   58,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   58,
+																	},
+																	File:   "show_measurements_with_pred_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   58,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   58,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "filter(fn: (r) => r._field == \"usage_idle\")",
+												Start: ast.Position{
+													Column: 8,
+													Line:   58,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   58,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 8,
+														Line:   58,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   59,
+										},
+										File:   "show_measurements_with_pred_test.flux",
+										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> keep(columns: [\"_measurement\"])",
+										Start: ast.Position{
+											Column: 39,
+											Line:   56,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 38,
+													Line:   59,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "columns: [\"_measurement\"]",
+												Start: ast.Position{
+													Column: 13,
+													Line:   59,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   59,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "columns: [\"_measurement\"]",
+													Start: ast.Position{
+														Column: 13,
+														Line:   59,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   59,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "columns",
+														Start: ast.Position{
+															Column: 13,
+															Line:   59,
+														},
+													},
+												},
+												Name: "columns",
+											},
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 38,
+															Line:   59,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "[\"_measurement\"]",
+														Start: ast.Position{
+															Column: 22,
+															Line:   59,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 37,
+																Line:   59,
+															},
+															File:   "show_measurements_with_pred_test.flux",
+															Source: "\"_measurement\"",
+															Start: ast.Position{
+																Column: 23,
+																Line:   59,
+															},
+														},
+													},
+													Value: "_measurement",
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   59,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "keep(columns: [\"_measurement\"])",
+											Start: ast.Position{
+												Column: 8,
+												Line:   59,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   59,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "keep",
+												Start: ast.Position{
+													Column: 8,
+													Line:   59,
+												},
+											},
+										},
+										Name: "keep",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   60,
+									},
+									File:   "show_measurements_with_pred_test.flux",
+									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()",
+									Start: ast.Position{
+										Column: 39,
+										Line:   56,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   60,
+										},
+										File:   "show_measurements_with_pred_test.flux",
+										Source: "group()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   60,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   60,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   60,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   61,
+								},
+								File:   "show_measurements_with_pred_test.flux",
+								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")",
+								Start: ast.Position{
+									Column: 39,
+									Line:   56,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   61,
+										},
+										File:   "show_measurements_with_pred_test.flux",
+										Source: "column: \"_measurement\"",
+										Start: ast.Position{
+											Column: 17,
+											Line:   61,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   61,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "column: \"_measurement\"",
+											Start: ast.Position{
+												Column: 17,
+												Line:   61,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   61,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 17,
+													Line:   61,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   61,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "\"_measurement\"",
+												Start: ast.Position{
+													Column: 25,
+													Line:   61,
+												},
+											},
+										},
+										Value: "_measurement",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   61,
+									},
+									File:   "show_measurements_with_pred_test.flux",
+									Source: "distinct(column: \"_measurement\")",
+									Start: ast.Position{
+										Column: 8,
+										Line:   61,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   61,
+										},
+										File:   "show_measurements_with_pred_test.flux",
+										Source: "distinct",
+										Start: ast.Position{
+											Column: 8,
+											Line:   61,
+										},
+									},
+								},
+								Name: "distinct",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   62,
+							},
+							File:   "show_measurements_with_pred_test.flux",
+							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> keep(columns: [\"_measurement\"])\n    |> group()\n    |> distinct(column: \"_measurement\")\n    |> sort()",
+							Start: ast.Position{
+								Column: 39,
+								Line:   56,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   62,
+								},
+								File:   "show_measurements_with_pred_test.flux",
+								Source: "sort()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   62,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   62,
+									},
+									File:   "show_measurements_with_pred_test.flux",
+									Source: "sort",
+									Start: ast.Position{
+										Column: 8,
+										Line:   62,
+									},
+								},
+							},
+							Name: "sort",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   56,
+							},
+							File:   "show_measurements_with_pred_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 25,
+								Line:   56,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   56,
+								},
+								File:   "show_measurements_with_pred_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 25,
+									Line:   56,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 34,
+								Line:   56,
+							},
+							File:   "show_measurements_with_pred_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 32,
+								Line:   56,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 109,
+							Line:   65,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   64,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   64,
+							},
+							File:   "show_measurements_with_pred_test.flux",
+							Source: "show_measurements",
+							Start: ast.Position{
+								Column: 6,
+								Line:   64,
+							},
+						},
+					},
+					Name: "show_measurements",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 109,
+								Line:   65,
+							},
+							File:   "show_measurements_with_pred_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+							Start: ast.Position{
+								Column: 26,
+								Line:   64,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 109,
+									Line:   65,
+								},
+								File:   "show_measurements_with_pred_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   65,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 108,
+										Line:   65,
+									},
+									File:   "show_measurements_with_pred_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   65,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   65,
+										},
+										File:   "show_measurements_with_pred_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   65,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   65,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   65,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   65,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   65,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   65,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   65,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   65,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   65,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   65,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   65,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   65,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   65,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   65,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   65,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   65,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   65,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   65,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   65,
+										},
+										File:   "show_measurements_with_pred_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   65,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   65,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   65,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   65,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   65,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   65,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   65,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   65,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   65,
+														},
+														File:   "show_measurements_with_pred_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   65,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   65,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   65,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   65,
+												},
+												File:   "show_measurements_with_pred_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   65,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   65,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   65,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   65,
+													},
+													File:   "show_measurements_with_pred_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   65,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 107,
+											Line:   65,
+										},
+										File:   "show_measurements_with_pred_test.flux",
+										Source: "fn: show_measurements_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   65,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   65,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 107,
+												Line:   65,
+											},
+											File:   "show_measurements_with_pred_test.flux",
+											Source: "show_measurements_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   65,
+											},
+										},
+									},
+									Name: "show_measurements_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 109,
+						Line:   65,
+					},
+					File:   "show_measurements_with_pred_test.flux",
+					Source: "test show_measurements = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   64,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "show_measurements_with_pred_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "show_measurements_with_pred_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "show_measurements_with_pred_test.flux",
+					Source: "package schema_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "show_measurements_with_pred_test.flux",
+						Source: "schema_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "schema_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 105,
 					Line:   79,
 				},
@@ -12442,6 +15875,1599 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   1,
 						},
 						File:   "show_tag_keys_test.flux",
+						Source: "schema_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "schema_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 105,
+					Line:   71,
+				},
+				File:   "show_tag_keys_with_pred_test.flux",
+				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,_field\n,,0,_measurement\n,,0,_start\n,,0,_stop\n,,0,cpu\n,,0,host\n,,0,region\n\"\n\nshow_tag_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")\n    |> keys()\n    |> keep(columns: [\"_value\"])\n    |> distinct()\n    |> sort()\n\ntest show_tag_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   5,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   5,
+							},
+							File:   "show_tag_keys_with_pred_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   5,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   5,
+							},
+							File:   "show_tag_keys_with_pred_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   5,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   5,
+								},
+								File:   "show_tag_keys_with_pred_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   5,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   5,
+									},
+									File:   "show_tag_keys_with_pred_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   5,
+					},
+					File:   "show_tag_keys_with_pred_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   46,
+					},
+					File:   "show_tag_keys_with_pred_test.flux",
+					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   7,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   46,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   7,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,6,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,6,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,7,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   60,
+					},
+					File:   "show_tag_keys_with_pred_test.flux",
+					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,_field\n,,0,_measurement\n,,0,_start\n,,0,_stop\n,,0,cpu\n,,0,host\n,,0,region\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   48,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   48,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   48,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   60,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,_field\n,,0,_measurement\n,,0,_start\n,,0,_stop\n,,0,cpu\n,,0,host\n,,0,region\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   48,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,_field\n,,0,_measurement\n,,0,_start\n,,0,_stop\n,,0,cpu\n,,0,host\n,,0,region\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   68,
+					},
+					File:   "show_tag_keys_with_pred_test.flux",
+					Source: "show_tag_keys_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")\n    |> keys()\n    |> keep(columns: [\"_value\"])\n    |> distinct()\n    |> sort()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   62,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   62,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "show_tag_keys_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   62,
+						},
+					},
+				},
+				Name: "show_tag_keys_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   68,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")\n    |> keys()\n    |> keep(columns: [\"_value\"])\n    |> distinct()\n    |> sort()",
+						Start: ast.Position{
+							Column: 20,
+							Line:   62,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   62,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "tables",
+													Start: ast.Position{
+														Column: 35,
+														Line:   62,
+													},
+												},
+											},
+											Name: "tables",
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   63,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 35,
+													Line:   62,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   63,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "start: 2018-01-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 14,
+															Line:   63,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   63,
+															},
+															File:   "show_tag_keys_with_pred_test.flux",
+															Source: "start: 2018-01-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 14,
+																Line:   63,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   63,
+																},
+																File:   "show_tag_keys_with_pred_test.flux",
+																Source: "start",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   63,
+																},
+															},
+														},
+														Name: "start",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   63,
+																},
+																File:   "show_tag_keys_with_pred_test.flux",
+																Source: "2018-01-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   63,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   63,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "range(start: 2018-01-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 8,
+														Line:   63,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 13,
+															Line:   63,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "range",
+														Start: ast.Position{
+															Column: 8,
+															Line:   63,
+														},
+													},
+												},
+												Name: "range",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   64,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")",
+											Start: ast.Position{
+												Column: 35,
+												Line:   62,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 50,
+														Line:   64,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "fn: (r) => r._field == \"usage_user\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   64,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 50,
+															Line:   64,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "fn: (r) => r._field == \"usage_user\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   64,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   64,
+															},
+															File:   "show_tag_keys_with_pred_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   64,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 50,
+																Line:   64,
+															},
+															File:   "show_tag_keys_with_pred_test.flux",
+															Source: "(r) => r._field == \"usage_user\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   64,
+															},
+														},
+													},
+													Body: &ast.BinaryExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 50,
+																	Line:   64,
+																},
+																File:   "show_tag_keys_with_pred_test.flux",
+																Source: "r._field == \"usage_user\"",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   64,
+																},
+															},
+														},
+														Left: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 34,
+																		Line:   64,
+																	},
+																	File:   "show_tag_keys_with_pred_test.flux",
+																	Source: "r._field",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   64,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 27,
+																			Line:   64,
+																		},
+																		File:   "show_tag_keys_with_pred_test.flux",
+																		Source: "r",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   64,
+																		},
+																	},
+																},
+																Name: "r",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 34,
+																			Line:   64,
+																		},
+																		File:   "show_tag_keys_with_pred_test.flux",
+																		Source: "_field",
+																		Start: ast.Position{
+																			Column: 28,
+																			Line:   64,
+																		},
+																	},
+																},
+																Name: "_field",
+															},
+														},
+														Operator: 17,
+														Right: &ast.StringLiteral{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 50,
+																		Line:   64,
+																	},
+																	File:   "show_tag_keys_with_pred_test.flux",
+																	Source: "\"usage_user\"",
+																	Start: ast.Position{
+																		Column: 38,
+																		Line:   64,
+																	},
+																},
+															},
+															Value: "usage_user",
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   64,
+																},
+																File:   "show_tag_keys_with_pred_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   64,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   64,
+																	},
+																	File:   "show_tag_keys_with_pred_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   64,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   64,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "filter(fn: (r) => r._field == \"usage_user\")",
+												Start: ast.Position{
+													Column: 8,
+													Line:   64,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   64,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 8,
+														Line:   64,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 14,
+											Line:   65,
+										},
+										File:   "show_tag_keys_with_pred_test.flux",
+										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")\n    |> keys()",
+										Start: ast.Position{
+											Column: 35,
+											Line:   62,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: nil,
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 14,
+												Line:   65,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "keys()",
+											Start: ast.Position{
+												Column: 8,
+												Line:   65,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   65,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "keys",
+												Start: ast.Position{
+													Column: 8,
+													Line:   65,
+												},
+											},
+										},
+										Name: "keys",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 33,
+										Line:   66,
+									},
+									File:   "show_tag_keys_with_pred_test.flux",
+									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")\n    |> keys()\n    |> keep(columns: [\"_value\"])",
+									Start: ast.Position{
+										Column: 35,
+										Line:   62,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 32,
+												Line:   66,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "columns: [\"_value\"]",
+											Start: ast.Position{
+												Column: 13,
+												Line:   66,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 32,
+													Line:   66,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "columns: [\"_value\"]",
+												Start: ast.Position{
+													Column: 13,
+													Line:   66,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 20,
+														Line:   66,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 13,
+														Line:   66,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 32,
+														Line:   66,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "[\"_value\"]",
+													Start: ast.Position{
+														Column: 22,
+														Line:   66,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 31,
+															Line:   66,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "\"_value\"",
+														Start: ast.Position{
+															Column: 23,
+															Line:   66,
+														},
+													},
+												},
+												Value: "_value",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   66,
+										},
+										File:   "show_tag_keys_with_pred_test.flux",
+										Source: "keep(columns: [\"_value\"])",
+										Start: ast.Position{
+											Column: 8,
+											Line:   66,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   66,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "keep",
+											Start: ast.Position{
+												Column: 8,
+												Line:   66,
+											},
+										},
+									},
+									Name: "keep",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   67,
+								},
+								File:   "show_tag_keys_with_pred_test.flux",
+								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")\n    |> keys()\n    |> keep(columns: [\"_value\"])\n    |> distinct()",
+								Start: ast.Position{
+									Column: 35,
+									Line:   62,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 18,
+										Line:   67,
+									},
+									File:   "show_tag_keys_with_pred_test.flux",
+									Source: "distinct()",
+									Start: ast.Position{
+										Column: 8,
+										Line:   67,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   67,
+										},
+										File:   "show_tag_keys_with_pred_test.flux",
+										Source: "distinct",
+										Start: ast.Position{
+											Column: 8,
+											Line:   67,
+										},
+									},
+								},
+								Name: "distinct",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   68,
+							},
+							File:   "show_tag_keys_with_pred_test.flux",
+							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._field == \"usage_user\")\n    |> keys()\n    |> keep(columns: [\"_value\"])\n    |> distinct()\n    |> sort()",
+							Start: ast.Position{
+								Column: 35,
+								Line:   62,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   68,
+								},
+								File:   "show_tag_keys_with_pred_test.flux",
+								Source: "sort()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   68,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   68,
+									},
+									File:   "show_tag_keys_with_pred_test.flux",
+									Source: "sort",
+									Start: ast.Position{
+										Column: 8,
+										Line:   68,
+									},
+								},
+							},
+							Name: "sort",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   62,
+							},
+							File:   "show_tag_keys_with_pred_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 21,
+								Line:   62,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 27,
+									Line:   62,
+								},
+								File:   "show_tag_keys_with_pred_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 21,
+									Line:   62,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 30,
+								Line:   62,
+							},
+							File:   "show_tag_keys_with_pred_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 28,
+								Line:   62,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 105,
+							Line:   71,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "show_tag_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   70,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   70,
+							},
+							File:   "show_tag_keys_with_pred_test.flux",
+							Source: "show_tag_keys",
+							Start: ast.Position{
+								Column: 6,
+								Line:   70,
+							},
+						},
+					},
+					Name: "show_tag_keys",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 105,
+								Line:   71,
+							},
+							File:   "show_tag_keys_with_pred_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})",
+							Start: ast.Position{
+								Column: 22,
+								Line:   70,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 105,
+									Line:   71,
+								},
+								File:   "show_tag_keys_with_pred_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   71,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 104,
+										Line:   71,
+									},
+									File:   "show_tag_keys_with_pred_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   71,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   71,
+										},
+										File:   "show_tag_keys_with_pred_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   71,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   71,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   71,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   71,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   71,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   71,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   71,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   71,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   71,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   71,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   71,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   71,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   71,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   71,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   71,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   71,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   71,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   71,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   71,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   71,
+										},
+										File:   "show_tag_keys_with_pred_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   71,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   71,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   71,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   71,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   71,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   71,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   71,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   71,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   71,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   71,
+														},
+														File:   "show_tag_keys_with_pred_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   71,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   71,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   71,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   71,
+												},
+												File:   "show_tag_keys_with_pred_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   71,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   71,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   71,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   71,
+													},
+													File:   "show_tag_keys_with_pred_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   71,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 103,
+											Line:   71,
+										},
+										File:   "show_tag_keys_with_pred_test.flux",
+										Source: "fn: show_tag_keys_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   71,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   71,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   71,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 103,
+												Line:   71,
+											},
+											File:   "show_tag_keys_with_pred_test.flux",
+											Source: "show_tag_keys_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   71,
+											},
+										},
+									},
+									Name: "show_tag_keys_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 105,
+						Line:   71,
+					},
+					File:   "show_tag_keys_with_pred_test.flux",
+					Source: "test show_tag_keys = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   70,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "show_tag_keys_with_pred_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "show_tag_keys_with_pred_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "show_tag_keys_with_pred_test.flux",
+					Source: "package schema_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "show_tag_keys_with_pred_test.flux",
 						Source: "schema_test",
 						Start: ast.Position{
 							Column: 9,

@@ -49,7 +49,7 @@ func FunctionExpression(t testing.TB, source string, args ...interface{}) *seman
 	// Interpret and resolve the function which will replace
 	// variables with their values (notably identifiers "true"
 	// and "false" will be replaced with boolean literals)
-	itrp := interpreter.NewInterpreter(nil)
+	itrp := interpreter.NewInterpreter(nil, nil)
 	se, err := itrp.Eval(context.Background(), pkg, prelude, stdlib)
 	if err != nil {
 		t.Fatal(err)

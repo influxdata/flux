@@ -9,7 +9,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/lang/execdeps"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -37,7 +36,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					second := nowTime.Add(v1.Duration().Duration()).Second()
@@ -64,7 +63,7 @@ func init() {
 					return values.NewInt(int64(v1.Time().Time().Minute())), nil
 				}
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					minute := nowTime.Add(v1.Duration().Duration()).Minute()
@@ -91,7 +90,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					hour := nowTime.Add(v1.Duration().Duration()).Hour()
@@ -117,7 +116,7 @@ func init() {
 					return values.NewInt(int64(v1.Time().Time().Weekday())), nil
 				}
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					weekDay := nowTime.Add(v1.Duration().Duration()).Weekday()
@@ -143,7 +142,7 @@ func init() {
 					return values.NewInt(int64(v1.Time().Time().Day())), nil
 				}
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					day := nowTime.Add(v1.Duration().Duration()).Day()
@@ -170,7 +169,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					yearDay := nowTime.Add(v1.Duration().Duration()).YearDay()
@@ -197,7 +196,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					month := nowTime.Add(v1.Duration().Duration()).Month()
@@ -224,7 +223,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					year := nowTime.Add(v1.Duration().Duration()).Year()
@@ -253,7 +252,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					_, week := nowTime.Add(v1.Duration().Duration()).ISOWeek()
@@ -282,7 +281,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					month := nowTime.Add(v1.Duration().Duration()).Month()
@@ -310,7 +309,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond()) / int64(time.Millisecond)), nil
@@ -337,7 +336,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond()) / int64(time.Microsecond)), nil
@@ -364,7 +363,7 @@ func init() {
 				}
 
 				if v1.Type().Nature() == semantic.Duration {
-					deps := execdeps.GetExecutionDependencies(ctx)
+					deps := execute.GetExecutionDependencies(ctx)
 					nowTime := *deps.Now
 
 					return values.NewInt(int64(nowTime.Add(v1.Duration().Duration()).Nanosecond())), nil
@@ -408,7 +407,7 @@ func init() {
 							return nil, err
 						}
 
-						deps := execdeps.GetExecutionDependencies(ctx)
+						deps := execute.GetExecutionDependencies(ctx)
 						nowTime := *deps.Now
 
 						b := w.GetEarliestBounds(values.ConvertTime(nowTime.Add(v.Duration().Duration())))

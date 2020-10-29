@@ -77,7 +77,7 @@ func (imp *importer) ImportPackageObject(path string) (*interpreter.Package, err
 	// Run the interpreter on the package to construct the values
 	// created by the package. Pass in the previously initialized
 	// packages as importable packages as we evaluate these in order.
-	itrp := interpreter.NewInterpreter(nil)
+	itrp := interpreter.NewInterpreter(nil, nil)
 	if _, err := itrp.Eval(context.Background(), semPkg, scope, imp); err != nil {
 		return nil, err
 	}

@@ -24,14 +24,21 @@ pub fn convert_to_string(file: &File) -> Result<String, String> {
 
 pub fn format(contents: String) -> Result<String, String> {
     let file = parse_string("", contents.as_str());
-
     convert_to_string(&file)
 }
 
 pub struct Formatter {
     builder: String,
     indentation: u32,
+    // clear is true if the last line consists of only whitespace
     clear: bool,
+    // temp_indent is true if we have a temporary indent because of a comment
+    // interrupting what would normally be a single line.
+    // For example '1 * 1' is formatted on a single line, but if you introduce a comment in the
+    // middle of the expression we indent like this:
+    // 1 *
+    //     // comment
+    //     1
     temp_indent: bool,
     err: Option<Error>,
 }
@@ -58,10 +65,14 @@ impl Formatter {
         Ok(self.builder.clone())
     }
 
-    // Do not use to send newline. This is not (yet) setting clear
-    // appropriately.
     fn write_string(&mut self, s: &str) {
         self.clear = false;
+        // check if the string ends in whitespace
+        if let Some(nl) = s.rfind('\n') {
+            if s[nl..s.len()].trim().is_empty() {
+                self.clear = true;
+            }
+        }
         (&mut self.builder).push_str(s);
     }
 
@@ -80,7 +91,7 @@ impl Formatter {
 
     fn write_indent(&mut self) {
         for _ in 0..self.indentation {
-            self.write_rune('\t')
+            (&mut self.builder).push_str("    ")
         }
     }
     fn indent(&mut self) {
@@ -143,17 +154,17 @@ impl Formatter {
         }
 
         let mut prev: i8 = -1;
-        for (i, value) in n.body.iter().enumerate() {
-            let cur = n.body.get(i).unwrap().typ();
+        for (i, stmt) in (&n.body).iter().enumerate() {
+            let cur = stmt.typ();
             if i != 0 {
                 self.write_rune(sep);
-                // separate different statements with double newline
-                if cur != prev {
-                    self.write_rune(sep)
+                // separate different statements with double newline or statements with comments
+                if cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
+                    self.write_rune(sep);
                 }
             }
             self.write_indent();
-            self.format_node(&Node::from_stmt(value));
+            self.format_node(&Node::from_stmt(stmt));
             prev = cur;
         }
 
@@ -240,7 +251,7 @@ impl Formatter {
         self.format_identifier(&n.id);
         self.format_comments(&n.colon);
         if n.colon == None {
-            self.write_string(" ");
+            self.write_rune(' ');
         }
         self.write_string(": ");
         self.format_type_expression(&n.ty);
@@ -249,37 +260,75 @@ impl Formatter {
     fn format_type_expression(&mut self, n: &ast::TypeExpression) {
         self.format_monotype(&n.monotype);
         if !n.constraints.is_empty() {
-            self.write_string(" where ");
-            self.format_constraints(&n.constraints);
+            let multiline = n.constraints.len() > 4 || n.base.is_multiline();
+            self.write_string(" where");
+            if multiline {
+                self.write_rune('\n');
+                self.indent();
+                self.write_indent();
+            } else {
+                self.write_rune(' ');
+            }
+            let sep = match multiline {
+                true => ",\n",
+                false => ", ",
+            };
+            for (i, c) in (&n.constraints).iter().enumerate() {
+                if i != 0 {
+                    self.write_string(sep);
+                    if multiline {
+                        self.write_indent();
+                    }
+                }
+                self.format_constraint(c);
+            }
+            if multiline {
+                self.unindent();
+            }
         }
     }
 
     fn format_monotype(&mut self, n: &ast::MonoType) {
         match n {
             ast::MonoType::Tvar(tv) => self.format_tvar(tv),
-            ast::MonoType::Basic(nt) => self.format_basic(&nt),
-            ast::MonoType::Array(arr) => self.format_array(&*arr),
-            ast::MonoType::Record(rec) => self.format_record(&rec),
-            ast::MonoType::Function(fun) => self.format_function(&*fun),
+            ast::MonoType::Basic(nt) => self.format_basic_type(&nt),
+            ast::MonoType::Array(arr) => self.format_array_type(&*arr),
+            ast::MonoType::Record(rec) => self.format_record_type(&rec),
+            ast::MonoType::Function(fun) => self.format_function_type(&*fun),
         }
     }
-    fn format_function(&mut self, n: &ast::FunctionType) {
-        self.write_string("(");
-        if !n.parameters.is_empty() {
-            self.format_parameters(&n.parameters)
+    fn format_function_type(&mut self, n: &ast::FunctionType) {
+        let multiline = n.parameters.len() > 4 || n.base.is_multiline();
+        self.format_comments(&n.base.comments);
+        self.write_rune('(');
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
         }
-        self.write_string(")");
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
+        };
+        for (i, p) in (&n.parameters).iter().enumerate() {
+            if i != 0 {
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent();
+                }
+            }
+            self.format_parameter_type(p);
+        }
+        if multiline {
+            self.write_string(sep);
+            self.unindent();
+            self.write_indent();
+        }
+        self.write_rune(')');
         self.write_string(" => ");
-        self.format_monotype(&n.monotype)
+        self.format_monotype(&n.monotype);
     }
-    fn format_parameters(&mut self, n: &[ast::ParameterType]) {
-        self.format_parameter(&n[0]);
-        for p in &n[1..] {
-            self.write_string(", ");
-            self.format_parameter(p);
-        }
-    }
-    fn format_parameter(&mut self, n: &ast::ParameterType) {
+    fn format_parameter_type(&mut self, n: &ast::ParameterType) {
         match &n {
             ast::ParameterType::Required {
                 base: _,
@@ -295,7 +344,7 @@ impl Formatter {
                 name,
                 monotype,
             } => {
-                self.write_string("?");
+                self.write_rune('?');
                 self.format_identifier(&name);
                 self.write_string(": ");
                 self.format_monotype(&monotype);
@@ -315,48 +364,54 @@ impl Formatter {
             }
         }
     }
-    fn format_record(&mut self, n: &ast::RecordType) {
-        self.write_string("{");
-        match &n.tvar {
-            Some(tv) => {
-                self.format_identifier(tv);
-                self.write_string(" with ");
-                self.format_properties(&n.properties);
+    fn format_record_type(&mut self, n: &ast::RecordType) {
+        let multiline = n.properties.len() > 4 || n.base.is_multiline();
+        self.format_comments(&n.base.comments);
+        self.write_rune('{');
+        if let Some(tv) = &n.tvar {
+            self.format_identifier(tv);
+            self.write_string(" with");
+            if !multiline {
+                self.write_rune(' ');
             }
-            None => {
-                if !n.properties.is_empty() {
-                    self.format_properties(&n.properties);
+        }
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        }
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
+        };
+        for (i, p) in (&n.properties).iter().enumerate() {
+            if i != 0 {
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent();
                 }
             }
+            self.format_property_type(p);
         }
-        self.write_string("}");
-    }
-    fn format_properties(&mut self, n: &[ast::PropertyType]) {
-        self.format_property_type(&n[0]);
-        for p in &n[1..] {
-            self.write_string(", ");
-            self.format_property_type(&p);
+        if multiline {
+            self.write_string(sep);
+            self.unindent();
+            self.write_indent();
         }
+        self.write_rune('}');
     }
     fn format_property_type(&mut self, n: &ast::PropertyType) {
         self.format_identifier(&n.name);
         self.write_string(": ");
         self.format_monotype(&n.monotype);
     }
-    fn format_array(&mut self, n: &ast::ArrayType) {
-        self.write_string("[");
+    fn format_array_type(&mut self, n: &ast::ArrayType) {
+        self.write_rune('[');
         self.format_monotype(&n.element);
-        self.write_string("]");
+        self.write_rune(']');
     }
-    fn format_basic(&mut self, n: &ast::NamedType) {
+    fn format_basic_type(&mut self, n: &ast::NamedType) {
         self.format_identifier(&n.name);
-    }
-    fn format_constraints(&mut self, n: &[ast::TypeConstraint]) {
-        self.format_constraint(&n[0]);
-        for c in &n[1..] {
-            self.write_string(", ");
-            self.format_constraint(c);
-        }
     }
     fn format_constraint(&mut self, n: &ast::TypeConstraint) {
         self.format_identifier(&n.tvar);
@@ -387,12 +442,11 @@ impl Formatter {
         self.format_comments(&n.lparen);
         self.write_rune('(');
         let sep = ", ";
-        for (i, _) in n.params.iter().enumerate() {
+        for (i, property) in (&n.params).iter().enumerate() {
             if i != 0 {
                 self.write_string(sep)
             }
             // treat properties differently than in general case
-            let property = n.params.get(i).unwrap();
             self.format_function_argument(property);
             self.format_comments(&property.comma);
         }
@@ -400,20 +454,31 @@ impl Formatter {
         self.write_string(") ");
         self.format_comments(&n.arrow);
         self.write_string("=>");
+
         // must wrap body with parenthesis in order to discriminate between:
-        //  - returning an object: (x) => ({foo: x})
+        //  - returning a record: (x) => ({foo: x})
         //  - and block statements:
         //		(x) => {
         //			return x + 1
         //		}
         match &n.body {
             ast::FunctionBody::Expr(b) => {
-                self.write_rune('\n');
-                self.indent();
-                self.write_indent();
-                self.write_rune('(');
-                self.format_node(&Node::from_expr(&b));
-                self.write_rune(')')
+                // Remove any parentheses around the body, we will re add them if needed.
+                let b = strip_parens(b);
+                match b {
+                    ast::Expression::Object(_) => {
+                        // Add parens because we have an object literal for the body
+                        self.write_rune(' ');
+                        self.write_rune('(');
+                        self.format_node(&Node::from_expr(&b));
+                        self.write_rune(')')
+                    }
+                    _ => {
+                        // Do not add parens for everything else
+                        self.write_rune(' ');
+                        self.format_node(&Node::from_expr(&b));
+                    }
+                }
             }
             ast::FunctionBody::Block(b) => {
                 self.write_rune(' ');
@@ -441,12 +506,17 @@ impl Formatter {
     }
 
     fn format_paren_expression(&mut self, n: &ast::ParenExpr) {
-        // This could mix up ordering, but since the parens are programatically
-        // added back, we would need to pass any closing comments down,
-        // seriously complicating the function interface. For now, permit reordering.
-        self.format_comments(&n.lparen);
-        self.format_node(&Node::from_expr(&n.expression));
-        self.format_comments(&n.rparen);
+        if has_parens(&Node::ParenExpr(n)) {
+            // The paren node has comments so we should format them
+            self.format_comments(&n.lparen);
+            self.write_rune('(');
+            self.format_node(&Node::from_expr(&n.expression));
+            self.format_comments(&n.rparen);
+            self.write_rune(')');
+        } else {
+            // The paren node does not have comments so we can skip adding the parens
+            self.format_node(&Node::from_expr(&n.expression));
+        }
     }
 
     fn format_string_expression(&mut self, n: &ast::StringExpr) {
@@ -472,18 +542,17 @@ impl Formatter {
     fn format_interpolated_part(&mut self, n: &ast::InterpolatedPart) {
         self.write_string("${");
         self.format_node(&Node::from_expr(&n.expression));
-        self.write_string("}")
+        self.write_rune('}')
     }
 
     fn format_array_expression(&mut self, n: &ast::ArrayExpr) {
         self.format_comments(&n.lbrack);
         self.write_rune('[');
         let sep = ", ";
-        for (i, _) in n.elements.iter().enumerate() {
+        for (i, item) in (&n.elements).iter().enumerate() {
             if i != 0 {
                 self.write_string(sep)
             }
-            let item = n.elements.get(i).unwrap();
             self.format_node(&Node::from_expr(&item.expression));
             self.format_comments(&item.comma);
         }
@@ -509,18 +578,18 @@ impl Formatter {
         }
 
         let mut prev: i8 = -1;
-        for (i, smt) in n.body.iter().enumerate() {
-            let cur = smt.typ();
+        for (i, stmt) in n.body.iter().enumerate() {
+            let cur = stmt.typ();
             self.write_rune(sep);
 
             if i != 0 {
-                // separate different statements with double newline
-                if cur != prev {
+                // separate different statements with double newline or statements with comments
+                if cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
                     self.write_rune(sep);
                 }
             }
             self.write_indent();
-            self.format_node(&Node::from_stmt(smt));
+            self.format_node(&Node::from_stmt(stmt));
             prev = cur;
         }
         if !n.body.is_empty() {
@@ -587,9 +656,14 @@ impl Formatter {
     }
 
     fn format_node_with_parens(&mut self, node: &Node) {
-        self.write_rune('(');
-        self.format_node(node);
-        self.write_rune(')')
+        if has_parens(node) {
+            // If the AST already has parens here do not double add them
+            self.format_node(node);
+        } else {
+            self.write_rune('(');
+            self.format_node(node);
+            self.write_rune(')')
+        }
     }
 
     fn format_member_expression(&mut self, n: &ast::MemberExpr) {
@@ -612,10 +686,15 @@ impl Formatter {
     }
 
     fn format_pipe_expression(&mut self, n: &ast::PipeExpr) {
+        let multiline = at_least_pipe_depth(2, n) || n.base.is_multiline();
         self.format_node(&Node::from_expr(&n.argument));
-        self.write_rune('\n');
-        self.indent();
-        self.write_indent();
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        } else {
+            self.write_rune(' ');
+        }
         self.format_comments(&n.base.comments);
         self.write_string("|> ");
         self.format_node(&Node::CallExpr(&n.call));
@@ -647,7 +726,7 @@ impl Formatter {
     }
 
     fn format_object_expression_braces(&mut self, n: &ast::ObjectExpr, braces: bool) {
-        let multiline = n.properties.len() > 3;
+        let multiline = n.properties.len() > 4 || n.base.is_multiline();
         self.format_comments(&n.lbrace);
         if braces {
             self.write_rune('{');
@@ -655,27 +734,27 @@ impl Formatter {
         if let Some(with) = &n.with {
             self.format_identifier(&with.source);
             self.format_comments(&with.with);
-            self.write_string(" with ");
+            self.write_string(" with");
+            if !multiline {
+                self.write_rune(' ');
+            }
         }
         if multiline {
             self.write_rune('\n');
             self.indent();
             self.write_indent();
         }
-        let sep: &str;
-        if multiline {
-            sep = ",\n"
-        } else {
-            sep = ", "
-        }
-        for (i, _) in n.properties.iter().enumerate() {
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
+        };
+        for (i, property) in (&n.properties).iter().enumerate() {
             if i != 0 {
                 self.write_string(sep);
                 if multiline {
                     self.write_indent()
                 }
             }
-            let property = n.properties.get(i).unwrap();
             self.format_node(&Node::Property(property));
             self.format_comments(&property.comma);
         }
@@ -703,15 +782,40 @@ impl Formatter {
     }
 
     fn format_conditional_expression(&mut self, n: &ast::ConditionalExpr) {
+        let multiline = n.base.is_multiline();
+        let nested = matches!(&n.alternate, ast::Expression::Conditional(_));
         self.format_comments(&n.tk_if);
         self.write_string("if ");
         self.format_node(&Node::from_expr(&n.test));
         self.format_comments(&n.tk_then);
-        self.write_string(" then ");
+        self.write_string(" then");
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        } else {
+            self.write_rune(' ');
+        }
         self.format_node(&Node::from_expr(&n.consequent));
+        if multiline {
+            self.write_rune('\n');
+            self.unindent();
+        } else {
+            self.write_rune(' ');
+        }
         self.format_comments(&n.tk_else);
-        self.write_string(" else ");
+        self.write_string("else");
+        if multiline && !nested {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        } else {
+            self.write_rune(' ');
+        }
         self.format_node(&Node::from_expr(&n.alternate));
+        if multiline && !nested {
+            self.unindent();
+        }
     }
 
     fn format_member_assignment(&mut self, n: &ast::MemberAssgn) {
@@ -1009,6 +1113,100 @@ fn needs_parenthesis(pvp: u32, pvc: u32, is_right: bool) -> bool {
     // If one of the precedence values is invalid, then we shouldn't apply any parenthesis.
     let par = pvc != 0 && pvp != 0;
     par && ((!is_right && pvc > pvp) || (is_right && pvc >= pvp))
+}
+
+// has_parens reports whether the node will be formatted with parens.
+//
+// Only format parens if they have associated comments.
+// Otherwise we skip formatting them because anytime they are needed they are explicitly
+// added back in.
+fn has_parens(n: &Node) -> bool {
+    match n {
+        Node::ParenExpr(p) => !matches!((&p.lparen, &p.rparen), (None, None)),
+        _ => false,
+    }
+}
+
+// strip_parens returns the expression removing any wrapping paren expressions
+// that do not have comments attached
+fn strip_parens(n: &ast::Expression) -> &ast::Expression {
+    match n {
+        ast::Expression::Paren(p) => match (&p.lparen, &p.rparen) {
+            (None, None) => strip_parens(&p.expression),
+            _ => n,
+        },
+        _ => n,
+    }
+}
+
+// at_least_pipe_depth return true if the number of pipes that occur in sequence is greater than or
+// equal to depth
+fn at_least_pipe_depth(depth: i32, p: &ast::PipeExpr) -> bool {
+    if depth == 0 {
+        return true;
+    }
+    match &p.argument {
+        ast::Expression::PipeExpr(p) => at_least_pipe_depth(depth - 1, &p),
+        _ => false,
+    }
+}
+
+// starts_with_comment reports if the node has a comment that it would format before anything else as part
+// of the node.
+fn starts_with_comment(n: Node) -> bool {
+    match n {
+        Node::Package(n) => n.base.comments.is_some(),
+        Node::File(n) => {
+            if let Some(pkg) = &n.package {
+                return starts_with_comment(Node::PackageClause(pkg));
+            }
+            if let Some(imp) = &n.imports.first() {
+                return starts_with_comment(Node::ImportDeclaration(imp));
+            }
+            if let Some(stmt) = &n.body.first() {
+                return starts_with_comment(Node::from_stmt(stmt));
+            }
+            n.eof.is_some()
+        }
+        Node::PackageClause(n) => n.base.comments.is_some(),
+        Node::ImportDeclaration(n) => n.base.comments.is_some(),
+        Node::Identifier(n) => n.base.comments.is_some(),
+        Node::ArrayExpr(n) => n.lbrack.is_some(),
+        Node::FunctionExpr(n) => n.lparen.is_some(),
+        Node::LogicalExpr(n) => starts_with_comment(Node::from_expr(&n.left)),
+        Node::ObjectExpr(n) => n.lbrace.is_some(),
+        Node::MemberExpr(n) => starts_with_comment(Node::from_expr(&n.object)),
+        Node::IndexExpr(n) => starts_with_comment(Node::from_expr(&n.array)),
+        Node::BinaryExpr(n) => starts_with_comment(Node::from_expr(&n.left)),
+        Node::UnaryExpr(n) => n.base.comments.is_some(),
+        Node::PipeExpr(n) => starts_with_comment(Node::from_expr(&n.argument)),
+        Node::CallExpr(n) => starts_with_comment(Node::from_expr(&n.callee)),
+        Node::ConditionalExpr(n) => n.tk_if.is_some(),
+        Node::StringExpr(n) => n.base.comments.is_some(),
+        Node::ParenExpr(n) => n.lparen.is_some(),
+        Node::IntegerLit(n) => n.base.comments.is_some(),
+        Node::FloatLit(n) => n.base.comments.is_some(),
+        Node::StringLit(n) => n.base.comments.is_some(),
+        Node::DurationLit(n) => n.base.comments.is_some(),
+        Node::UintLit(n) => n.base.comments.is_some(),
+        Node::BooleanLit(n) => n.base.comments.is_some(),
+        Node::DateTimeLit(n) => n.base.comments.is_some(),
+        Node::RegexpLit(n) => n.base.comments.is_some(),
+        Node::PipeLit(n) => n.base.comments.is_some(),
+        Node::BadExpr(_) => false,
+        Node::ExprStmt(n) => starts_with_comment(Node::from_expr(&n.expression)),
+        Node::OptionStmt(n) => n.base.comments.is_some(),
+        Node::ReturnStmt(n) => n.base.comments.is_some(),
+        Node::BadStmt(_) => false,
+        Node::TestStmt(n) => n.base.comments.is_some(),
+        Node::BuiltinStmt(n) => n.base.comments.is_some(),
+        Node::Block(n) => n.lbrace.is_some(),
+        Node::Property(_) => false,
+        Node::TextPart(_) => false,
+        Node::InterpolatedPart(_) => false,
+        Node::VariableAssgn(n) => starts_with_comment(Node::Identifier(&n.id)),
+        Node::MemberAssgn(n) => starts_with_comment(Node::MemberExpr(&n.member)),
+    }
 }
 
 #[cfg(test)]

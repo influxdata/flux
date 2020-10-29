@@ -2,6 +2,7 @@ package flux
 
 import (
 	"context"
+
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/http"

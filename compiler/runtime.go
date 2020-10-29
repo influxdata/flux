@@ -150,6 +150,10 @@ func (e *stringExpressionEvaluator) Eval(ctx context.Context, scope Scope) (valu
 		if err != nil {
 			return nil, err
 		}
+
+		if v.IsNull() {
+			return nil, errors.New(codes.Invalid, "string expression evaluated to null")
+		}
 		b.WriteString(v.Str())
 	}
 	return values.NewString(b.String()), nil

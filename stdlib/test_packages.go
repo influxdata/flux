@@ -9,6 +9,7 @@ import (
 	statsmodels "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
 	aggregate "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
 	rows "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
+	events "github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
 	date "github.com/influxdata/flux/stdlib/date"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
 	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
@@ -42,6 +43,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, statsmodels.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
 	pkgs = append(pkgs, rows.FluxTestPackages...)
+	pkgs = append(pkgs, events.FluxTestPackages...)
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate1.FluxTestPackages...)

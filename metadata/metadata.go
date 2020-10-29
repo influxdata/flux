@@ -1,7 +1,7 @@
 package metadata
 
 // Metadata is made as a standalone package to avoid import cycle:
-// influxd -> flux -> flux/interpreter -> flux/lang/execdeps -> flux
+// influxd -> flux -> flux/interpreter -> flux/execute -> flux
 type Metadata map[string][]interface{}
 
 func (md Metadata) Add(key string, value interface{}) {

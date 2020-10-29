@@ -4,23 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"math"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
-	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
+	influxdeps "github.com/influxdata/flux/dependencies/influxdb"
 	urldeps "github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/mock"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/plan"
+	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
+	"github.com/influxdata/flux/stdlib/universe"
+	"go.uber.org/zap/zaptest"
 )
 
 type (
@@ -32,9 +37,10 @@ type Want struct {
 	Params url.Values
 	Query  string
 	Tables func() []*executetest.Table
+	Err    error
 }
 
-func RunSourceTestHelper(t *testing.T, spec SourceProcedureSpec, want Want) {
+func RunSourceTestHelper(t *testing.T, spec plan.PhysicalProcedureSpec, want Want) {
 	t.Helper()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -84,37 +90,25 @@ func RunSourceTestHelper(t *testing.T, spec SourceProcedureSpec, want Want) {
 	}))
 	defer server.Close()
 
-	spec.SetHost(StringPtr(server.URL))
+	if ps, ok := spec.(influxdb.ProcedureSpec); ok {
+		ps.SetHost(&server.URL)
+	}
+
+	provider := influxdeps.Dependency{
+		Provider: influxdeps.HttpProvider{
+			DefaultConfig: influxdeps.Config{
+				Host: server.URL,
+			},
+		},
+	}
 
 	deps := flux.NewDefaultDependencies()
 	ctx := deps.Inject(context.Background())
-	store := executetest.NewDataStore()
-	s, err := CreateSource(ctx, spec)
-	if err != nil {
-		t.Fatal(err)
-	}
-	s.AddTransformation(store)
-	s.Run(context.Background())
-
-	if err := store.Err(); err != nil {
-		t.Fatal(err)
-	}
-
-	got, err := executetest.TablesFromCache(store)
-	if err != nil {
-		t.Fatal(err)
-	}
-	executetest.NormalizeTables(got)
-
-	tables := want.Tables()
-	executetest.NormalizeTables(tables)
-
-	if !cmp.Equal(tables, got) {
-		t.Errorf("unexpected tables returned from server -want/+got:\n%s", cmp.Diff(tables, got))
-	}
+	ctx = provider.Inject(ctx)
+	ExecuteSourceTestHelper(t, ctx, spec, want)
 }
 
-func RunSourceErrorTestHelper(t *testing.T, spec SourceProcedureSpec) {
+func RunSourceErrorTestHelper(t *testing.T, spec plan.PhysicalProcedureSpec) {
 	t.Helper()
 
 	for _, tt := range []struct {
@@ -201,32 +195,31 @@ func RunSourceErrorTestHelper(t *testing.T, spec SourceProcedureSpec) {
 			}))
 			defer server.Close()
 
-			spec.SetHost(StringPtr(server.URL))
+			want := Want{
+				Err: tt.want,
+			}
+
+			if ps, ok := spec.(influxdb.ProcedureSpec); ok {
+				ps.SetHost(&server.URL)
+			}
+
+			provider := influxdeps.Dependency{
+				Provider: influxdeps.HttpProvider{
+					DefaultConfig: influxdeps.Config{
+						Host: server.URL,
+					},
+				},
+			}
 
 			deps := flux.NewDefaultDependencies()
 			ctx := deps.Inject(context.Background())
-			store := executetest.NewDataStore()
-			s, err := CreateSource(ctx, spec)
-			if err != nil {
-				t.Fatal(err)
-			}
-			s.AddTransformation(store)
-			s.Run(context.Background())
-
-			got := store.Err()
-			if got == nil {
-				t.Fatal("expected error")
-			}
-			want := tt.want
-
-			if !cmp.Equal(want, got) {
-				t.Errorf("unexpected error:\n%s", cmp.Diff(want, got))
-			}
+			ctx = provider.Inject(ctx)
+			ExecuteSourceTestHelper(t, ctx, spec, want)
 		})
 	}
 }
 
-func RunSourceURLValidatorTestHelper(t *testing.T, spec SourceProcedureSpec) {
+func RunSourceURLValidatorTestHelper(t *testing.T, spec plan.PhysicalProcedureSpec) {
 	t.Helper()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -234,17 +227,36 @@ func RunSourceURLValidatorTestHelper(t *testing.T, spec SourceProcedureSpec) {
 	}))
 	defer server.Close()
 
-	spec.SetHost(StringPtr(server.URL))
+	want := Want{
+		Err: &flux.Error{
+			Msg: "failed to initialize execute state",
+			Err: &flux.Error{
+				Code: codes.Invalid,
+				Msg:  "url is not valid, it connects to a private IP",
+			},
+		},
+	}
+
+	if ps, ok := spec.(influxdb.ProcedureSpec); ok {
+		ps.SetHost(&server.URL)
+	}
+
+	provider := influxdeps.Dependency{
+		Provider: influxdeps.HttpProvider{
+			DefaultConfig: influxdeps.Config{
+				Host: server.URL,
+			},
+		},
+	}
 
 	deps := flux.NewDefaultDependencies()
 	deps.Deps.URLValidator = urldeps.PrivateIPValidator{}
 	ctx := deps.Inject(context.Background())
-	if _, err := CreateSource(ctx, spec); err == nil {
-		t.Fatal("expected error")
-	}
+	ctx = provider.Inject(ctx)
+	ExecuteSourceTestHelper(t, ctx, spec, want)
 }
 
-func RunSourceHTTPClientTestHelper(t *testing.T, spec SourceProcedureSpec) {
+func RunSourceHTTPClientTestHelper(t *testing.T, spec plan.PhysicalProcedureSpec) {
 	t.Helper()
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -252,7 +264,23 @@ func RunSourceHTTPClientTestHelper(t *testing.T, spec SourceProcedureSpec) {
 	}))
 	defer server.Close()
 
-	spec.SetHost(StringPtr(server.URL))
+	want := Want{
+		Tables: func() []*executetest.Table {
+			return nil
+		},
+	}
+
+	if ps, ok := spec.(influxdb.ProcedureSpec); ok {
+		ps.SetHost(&server.URL)
+	}
+
+	provider := influxdeps.Dependency{
+		Provider: influxdeps.HttpProvider{
+			DefaultConfig: influxdeps.Config{
+				Host: server.URL,
+			},
+		},
+	}
 
 	counter := &requestCounter{}
 	deps := flux.NewDefaultDependencies()
@@ -260,33 +288,74 @@ func RunSourceHTTPClientTestHelper(t *testing.T, spec SourceProcedureSpec) {
 		Transport: counter,
 	}
 	ctx := deps.Inject(context.Background())
-	store := executetest.NewDataStore()
-	s, err := CreateSource(ctx, spec)
-	if err != nil {
-		t.Fatal(err)
-	}
-	s.AddTransformation(store)
-	s.Run(context.Background())
-
-	if err := store.Err(); err != nil {
-		t.Fatal(err)
-	}
+	ctx = provider.Inject(ctx)
+	ExecuteSourceTestHelper(t, ctx, spec, want)
 
 	if counter.Count == 0 {
 		t.Error("custom http client was not used")
 	}
 }
 
-func StringPtr(v string) *string {
-	return &v
-}
+func ExecuteSourceTestHelper(t *testing.T, ctx context.Context, spec plan.PhysicalProcedureSpec, want Want) {
+	t.Helper()
 
-func MustParseTime(v string) time.Time {
-	t, err := time.Parse(time.RFC3339, v)
+	logger := zaptest.NewLogger(t)
+
+	ps := plantest.CreatePlanSpec(&plantest.PlanSpec{
+		Nodes: []plan.Node{
+			plan.CreatePhysicalNode(plan.NodeID(spec.Kind()), spec),
+			plan.CreatePhysicalNode("yield", &universe.YieldProcedureSpec{
+				Name: "_result",
+			}),
+		},
+		Edges: [][2]int{
+			{0, 1},
+		},
+		Resources: flux.ResourceManagement{
+			ConcurrencyQuota: 1,
+			MemoryBytesQuota: math.MaxInt64,
+		},
+	})
+
+	mem := &memory.Allocator{}
+	executor := execute.NewExecutor(logger)
+	results, _, err := executor.Execute(ctx, ps, mem)
 	if err != nil {
-		panic(err)
+		if diff := cmp.Diff(want.Err, err); diff != "" {
+			t.Errorf("unexpected error -want/+got:\n%s", diff)
+		}
+		return
 	}
-	return t
+
+	if len(results) != 1 {
+		t.Fatalf("expected exactly one result, got %d", len(results))
+	}
+
+	var res flux.Result
+	for _, r := range results {
+		res = r
+	}
+
+	if res == nil {
+		t.Fatal("expected non-null result")
+	}
+
+	tables := want.Tables
+	if want.Err != nil {
+		tables = func() []*executetest.Table {
+			return []*executetest.Table{{Err: want.Err}}
+		}
+	}
+
+	var wantT table.Iterator
+	for _, tbl := range tables() {
+		wantT = append(wantT, tbl)
+	}
+	gotT := res.Tables()
+
+	if diff := table.Diff(wantT, gotT); diff != "" {
+		t.Errorf("unexpected output -want/+got:\n%s", diff)
+	}
 }
 
 type requestCounter struct {
@@ -296,14 +365,4 @@ type requestCounter struct {
 func (r *requestCounter) RoundTrip(req *http.Request) (*http.Response, error) {
 	r.Count++
 	return http.DefaultTransport.RoundTrip(req)
-}
-
-func CreateSource(ctx context.Context, ps SourceProcedureSpec) (execute.Source, error) {
-	id := executetest.RandomDatasetID()
-	return influxdb.CreateSource(id, ps, mock.AdministrationWithContext(ctx))
-}
-
-type SourceProcedureSpec interface {
-	influxdb.ProcedureSpec
-	BuildQuery() *ast.File
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
+	"github.com/influxdata/flux/dependencies/influxdb"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
@@ -196,4 +197,13 @@ func (s *source) parseError(p []byte) error {
 		return err
 	}
 	return handleError(e)
+}
+
+type sourceIterator struct {
+	reader influxdb.Reader
+	mem    *memory.Allocator
+}
+
+func (s *sourceIterator) Do(ctx context.Context, f func(flux.Table) error) error {
+	return s.reader.Read(ctx, f, s.mem)
 }

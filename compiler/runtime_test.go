@@ -37,7 +37,7 @@ func TestFunctionValue_Resolve(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		itrp := interpreter.NewInterpreter(nil)
+		itrp := interpreter.NewInterpreter(nil, nil)
 		_, err = itrp.Eval(context.Background(), semPkg, scope, mockImporter{})
 		if err != nil {
 			t.Fatal(err)

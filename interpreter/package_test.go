@@ -89,7 +89,7 @@ func TestAccessNestedImport(t *testing.T) {
 
 	expectedError := fmt.Errorf(`cannot access imported package "a" of imported package "b"`)
 	ctx := dependenciestest.Default().Inject(context.Background())
-	_, err := interpreter.NewInterpreter(interpreter.NewPackage("")).Eval(ctx, node, values.NewScope(), &importer)
+	_, err := interpreter.NewInterpreter(interpreter.NewPackage(""), nil).Eval(ctx, node, values.NewScope(), &importer)
 
 	if err == nil {
 		t.Errorf("expected error")
@@ -367,7 +367,7 @@ func TestInterpreter_EvalPackage(t *testing.T) {
 func TestInterpreter_MutateOption(t *testing.T) {
 	pkg := interpreter.NewPackage("alert")
 	ctx := dependenciestest.Default().Inject(context.Background())
-	itrp := interpreter.NewInterpreter(pkg)
+	itrp := interpreter.NewInterpreter(pkg, nil)
 	script := `
 		package alert
 		import "planner"
@@ -393,7 +393,7 @@ func TestInterpreter_SetQualifiedOption(t *testing.T) {
 		},
 	}
 	ctx := dependenciestest.Default().Inject(context.Background())
-	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""))
+	itrp := interpreter.NewInterpreter(interpreter.NewPackage(""), nil)
 	pkg := `
 		package foo
 		import "alert"

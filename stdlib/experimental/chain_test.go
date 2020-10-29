@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux/dependencies/dependenciestest"
-	"github.com/influxdata/flux/lang/execdeps"
+	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/values"
@@ -60,7 +60,7 @@ func makeArgs(first values.Value, second values.Value) values.Object {
 
 func TestChain(t *testing.T) {
 	context := dependenciestest.Default().Inject(context.Background())
-	context = execdeps.DefaultExecutionDependencies().Inject(context)
+	context = execute.DefaultExecutionDependencies().Inject(context)
 	_, scope, err := runtime.Eval(context, table1)
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
