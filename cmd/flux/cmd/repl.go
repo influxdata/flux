@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 
-	_ "github.com/influxdata/flux/builtin"
+	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/repl"
 	"github.com/influxdata/flux/stdlib/universe"
@@ -16,6 +16,7 @@ var replCmd = &cobra.Command{
 	Short: "Launch a Flux REPL",
 	Long:  "Launch a Flux REPL (Read-Eval-Print-Loop)",
 	Run: func(cmd *cobra.Command, args []string) {
+		fluxinit.FluxInit()
 		ctx, deps := injectDependencies(context.Background())
 		r := repl.New(ctx, deps)
 		r.Run()

@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/influxdb"
+	"github.com/influxdata/flux/fluxinit"
 	"github.com/influxdata/flux/repl"
 	"github.com/spf13/cobra"
 )
@@ -47,6 +47,7 @@ func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies
 }
 
 func execute(cmd *cobra.Command, args []string) error {
+	fluxinit.FluxInit()
 	ctx, deps := injectDependencies(context.Background())
 	r := repl.New(ctx, deps)
 	if err := r.Input(args[0]); err != nil {
