@@ -18,7 +18,7 @@ func TestNewWindow(t *testing.T) {
 			Period: values.ConvertDurationNsecs(time.Minute),
 			Offset: values.ConvertDurationNsecs(time.Second),
 		}
-		got := MustWindow(values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Second), false)
+		got := MustWindow(values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Second))
 		if !cmp.Equal(want, got) {
 			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -34,7 +34,7 @@ func TestNewWindow(t *testing.T) {
 		got := MustWindow(
 			values.ConvertDurationNsecs(time.Minute),
 			values.ConvertDurationNsecs(time.Minute),
-			values.ConvertDurationNsecs(2*time.Minute+30*time.Second), false)
+			values.ConvertDurationNsecs(2*time.Minute+30*time.Second))
 		if !cmp.Equal(want, got) {
 			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -50,7 +50,7 @@ func TestNewWindow(t *testing.T) {
 		got := MustWindow(
 			values.ConvertDurationNsecs(time.Minute),
 			values.ConvertDurationNsecs(time.Minute),
-			values.ConvertDurationNsecs(-2*time.Minute+30*time.Second), false)
+			values.ConvertDurationNsecs(-2*time.Minute+30*time.Second))
 		if !cmp.Equal(want, got) {
 			t.Errorf("window different; -want/+got:\n%v\n", cmp.Diff(want, got))
 		}
@@ -93,7 +93,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute),
-				values.ConvertDurationNsecs(0), false),
+				values.ConvertDurationNsecs(0)),
 			t: execute.Time(6 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(5 * time.Minute),
@@ -105,7 +105,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute),
-				values.ConvertDurationNsecs(30*time.Second), false),
+				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(30 * time.Second),
@@ -117,7 +117,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationMonths(5),
 				values.ConvertDurationMonths(5),
-				values.ConvertDurationMonths(0), true),
+				values.ConvertDurationMonths(0)),
 			t: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
 			want: execute.Bounds{
 				Start: values.ConvertTime(time.Date(1970, time.January, 1, 0, 0, 0, 0, time.UTC)),
@@ -153,7 +153,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationNsecs(2*time.Minute),
 				values.ConvertDurationNsecs(1*time.Minute),
-				values.ConvertDurationNsecs(30*time.Second), false),
+				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(3 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(3*time.Minute + 30*time.Second),
@@ -165,7 +165,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationNsecs(2*time.Minute),
 				values.ConvertDurationNsecs(1*time.Minute),
-				values.ConvertDurationNsecs(30*time.Second), false),
+				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(2*time.Minute + 45*time.Second),
 			want: execute.Bounds{
 				Start: execute.Time(3*time.Minute + 30*time.Second),
@@ -177,7 +177,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(2*time.Minute),
-				values.ConvertDurationNsecs(30*time.Second), false),
+				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(30 * time.Second),
 			want: execute.Bounds{
 				Start: execute.Time(-30 * time.Second),
@@ -189,7 +189,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(3*time.Minute+30*time.Second),
-				values.ConvertDurationNsecs(30*time.Second), false),
+				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5*time.Minute + 45*time.Second),
 			want: execute.Bounds{
 				Start: execute.Time(3 * time.Minute),
@@ -201,11 +201,71 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			w: MustWindow(
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(3*time.Minute+30*time.Second),
-				values.ConvertDurationNsecs(30*time.Second), false),
+				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5 * time.Minute),
 			want: execute.Bounds{
 				Start: execute.Time(2 * time.Minute),
 				Stop:  execute.Time(5*time.Minute + 30*time.Second),
+			},
+		},
+		{
+			name: "truncate before offset",
+			w: MustWindow(
+				values.ConvertDurationNsecs(5*time.Second),
+				values.ConvertDurationNsecs(5*time.Second),
+				values.ConvertDurationNsecs(2*time.Second)),
+			t: execute.Time(1 * time.Second),
+			want: execute.Bounds{
+				Start: execute.Time(-3 * time.Second),
+				Stop:  execute.Time(2 * time.Second),
+			},
+		},
+		{
+			name: "truncate after offset",
+			w: MustWindow(
+				values.ConvertDurationNsecs(5*time.Second),
+				values.ConvertDurationNsecs(5*time.Second),
+				values.ConvertDurationNsecs(2*time.Second)),
+			t: execute.Time(3 * time.Second),
+			want: execute.Bounds{
+				Start: execute.Time(2 * time.Second),
+				Stop:  execute.Time(7 * time.Second),
+			},
+		},
+		{
+			name: "truncate before calendar offset",
+			w: MustWindow(
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(2)),
+			t: mustParseTime("1970-02-01T00:00:00Z"),
+			want: execute.Bounds{
+				Start: mustParseTime("1969-10-01T00:00:00Z"),
+				Stop:  mustParseTime("1970-03-01T00:00:00Z"),
+			},
+		},
+		{
+			name: "truncate after calendar offset",
+			w: MustWindow(
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(2)),
+			t: mustParseTime("1970-04-01T00:00:00Z"),
+			want: execute.Bounds{
+				Start: mustParseTime("1970-03-01T00:00:00Z"),
+				Stop:  mustParseTime("1970-08-01T00:00:00Z"),
+			},
+		},
+		{
+			name: "negative calendar offset",
+			w: MustWindow(
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(-2)),
+			t: mustParseTime("1970-02-01T00:00:00Z"),
+			want: execute.Bounds{
+				Start: mustParseTime("1969-11-01T00:00:00Z"),
+				Stop:  mustParseTime("1970-04-01T00:00:00Z"),
 			},
 		},
 	}
@@ -419,7 +479,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 	}
 }
 
-func MustWindow(every, period, offset execute.Duration, months bool) execute.Window {
+func MustWindow(every, period, offset execute.Duration) execute.Window {
 	w, err := execute.NewWindow(every, period, offset)
 	if err != nil {
 		panic(err)
