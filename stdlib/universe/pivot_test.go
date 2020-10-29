@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/gen"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/querytest"
@@ -96,10 +98,11 @@ func TestPivotOperation_Marshaling(t *testing.T) {
 
 func TestPivot_Process(t *testing.T) {
 	testCases := []struct {
-		name string
-		spec *universe.PivotProcedureSpec
-		data []flux.Table
-		want []*executetest.Table
+		name    string
+		spec    *universe.PivotProcedureSpec
+		data    []flux.Table
+		want    []*executetest.Table
+		wantErr error
 	}{
 		{
 			name: "_field flatten case one table",
@@ -740,6 +743,32 @@ func TestPivot_Process(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "missing value column",
+			spec: &universe.PivotProcedureSpec{
+				RowKey:      []string{"_time"},
+				ColumnKey:   []string{"_field"},
+				ValueColumn: "_value",
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					KeyCols: []string{"_measurement"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_new_value", Type: flux.TFloat},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "_field", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0, "m1", "f1"},
+						{execute.Time(1), 2.0, "m1", "f2"},
+						{execute.Time(2), 3.0, "m1", "f1"},
+						{execute.Time(2), 4.0, "m1", "f2"},
+					},
+				},
+			},
+			wantErr: errors.New(codes.Invalid, "specified value column does not exist in table: _value"),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
@@ -748,7 +777,7 @@ func TestPivot_Process(t *testing.T) {
 				t,
 				tc.data,
 				tc.want,
-				nil,
+				tc.wantErr,
 				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
 					return universe.NewPivotTransformation(d, c, tc.spec)
 				},

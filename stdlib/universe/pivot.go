@@ -216,7 +216,7 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	for _, v := range t.spec.RowKey {
 		idx := execute.ColIdx(v, tbl.Cols())
 		if idx < 0 {
-			return errors.Newf(codes.Invalid, "specified column does not exist in table: %v", v)
+			return errors.Newf(codes.Invalid, "specified row key column does not exist in table: %v", v)
 		}
 		rowKeyIndex[v] = idx
 	}
@@ -257,6 +257,10 @@ func (t *pivotTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 			// we need the location of the colKey columns in the original table
 			colKeyIndex[v.Label] = colIDX
 		}
+	}
+
+	if valueColIndex < 0 {
+		return errors.Newf(codes.Invalid, "specified value column does not exist in table: %v", t.spec.ValueColumn)
 	}
 
 	for k, v := range colKeyIndex {
