@@ -528,6 +528,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/unique_test.flux":                                              "170c17cc23b614a806ce2f4ecdce8f2c0d9b0ffd56ebbbff99087e70d8203271",
 	"stdlib/universe/universe.flux":                                                 "126f22fe56861db52d67bc831fc01dd7d94e8d4a1a268401889296d00cfac0ad",
 	"stdlib/universe/universe_truncateTimeColumn_test.flux":                         "616e7c4ec942d52963a01f1231b17d8653312b163bc2b4012acd0d8c42458fb6",
+	"stdlib/universe/window_aggregate_test.flux":                                    "6065ead71f6ba5a72ffaa0ed1808f8297d5be70de2bdeaebf8bbdbbc42534f5f",
 	"stdlib/universe/window_default_start_align_test.flux":                          "54fd2e6bc45814ee60428af3b53666536b92ec508a004d4c87351a7e900961ae",
 	"stdlib/universe/window_generate_empty_test.flux":                               "c929db635e600d668bd3f7cbf18fee4551d6b3e81ce4066059ec2db2d7a5d782",
 	"stdlib/universe/window_group_mean_ungroup_test.flux":                           "6a7c10430c50b4a95c058a30200a0ada43ced4d7fa1c74d2f0c3bd441b35892b",
