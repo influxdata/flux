@@ -794,16 +794,50 @@ x = 1",
 
 #[test]
 fn parens() {
-    // test that parens are preserved when needed and removed if uneccessary
-    assert_format("(1 * 1)", "1 * 1");
+    // test parens are preserved when comments are present
     assert_unchanged("// comment\n(1 * 1)");
     assert_unchanged("(1 * 1\n    // comment\n    )");
-    assert_unchanged("1 + (1 * 1)");
-    assert_format("(1 + (1 * 1))", "1 + (1 * 1)");
-    assert_format("((1 + 1) + 1)", "1 + 1 + 1");
-    assert_format("(1 + (1 + 1))", "1 + (1 + 1)");
     assert_unchanged("() => ({_value: 1})");
     assert_unchanged("() => \n    // comment\n    ({_value: 1})");
+
+    // test parens are maintained according to operator precedence rules
+    assert_format("(2 ^ 2)", "2 ^ 2");
+    assert_unchanged("2 * 3 ^ 2");
+    assert_unchanged("(2 * 3) ^ 2");
+    assert_unchanged("4 / 2 ^ 2");
+    assert_unchanged("(4 / 2) ^ 2");
+    assert_unchanged("4 % 2 ^ 2");
+    assert_unchanged("(4 % 2) ^ 2");
+    assert_unchanged("1 + 2 * 3");
+    assert_unchanged("(1 + 2) * 3");
+    assert_unchanged("1 - 2 * 3");
+    assert_unchanged("(1 - 2) * 3");
+    assert_format("(1 + (2 * 3))", "1 + 2 * 3");
+    assert_format("((1 + 2) + 3)", "1 + 2 + 3");
+    assert_format("(1 + (2 + 3))", "1 + (2 + 3)");
+    assert_unchanged("1 + 2 < 4");
+    assert_format("(1 + 2) < 4", "1 + 2 < 4");
+    assert_format("(1 + 2) <= 4", "1 + 2 <= 4");
+    assert_format("(1 + 2) > 4", "1 + 2 > 4");
+    assert_format("(1 + 2) >= 4", "1 + 2 >= 4");
+    assert_format("((1 == 2) and (exists r.a))", "1 == 2 and exists r.a");
+    assert_format(
+        "((1 == 2) and (not exists r.a))",
+        "1 == 2 and not exists r.a",
+    );
+    assert_format("((1 == 2) and (exists r.a))", "1 == 2 and exists r.a");
+
+    assert_unchanged("a and b or c");
+    assert_format("(a and b) or c", "a and b or c");
+    assert_unchanged("a and (b or c)");
+    assert_unchanged("a and (b or c) or d");
+    assert_unchanged("a and b or c");
+    assert_format("((a) and ((b or c) or d))", "a and (b or c or d)");
+
+    assert_unchanged("(a() |> b()).c");
+    assert_format("(a() |> b()) ^ 3", "a() |> b() ^ 3");
+    assert_format("1 ^ (a() |> b())", "1 ^ a() |> b()");
+    assert_unchanged("(1 ^ a()) |> b()");
 }
 
 #[test]
