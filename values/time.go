@@ -216,6 +216,11 @@ func (d Duration) NanoOnly() bool {
 	return d.Months() == 0 && d.Nanoseconds() != 0
 }
 
+// IsMixed returns true if this duration has a combination of month and nanosecond components.
+func (d Duration) IsMixed() bool {
+	return d.Months() != 0 && d.Nanoseconds() != 0
+}
+
 func (d Duration) Months() int64      { return d.months }
 func (d Duration) Nanoseconds() int64 { return d.nsecs }
 
