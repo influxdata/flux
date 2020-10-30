@@ -13,9 +13,15 @@ import (
 func TestNewWindow(t *testing.T) {
 	var testcases = []struct {
 		name    string
+<<<<<<< HEAD
 		every   values.Duration
 		period  values.Duration
 		offset  values.Duration
+=======
+		every   interval.Duration
+		period  interval.Duration
+		offset  interval.Duration
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 		wantErr bool
 	}{
 		{
@@ -69,11 +75,19 @@ func TestNewWindow(t *testing.T) {
 }
 
 type Bounds struct {
+<<<<<<< HEAD
 	Start values.Time
 	Stop  values.Time
 }
 
 func TestWindow_GetLatestBounds(t *testing.T) {
+=======
+	Start interval.Time
+	Stop  interval.Time
+}
+
+func TestWindow_GetEarliestBounds(t *testing.T) {
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 	var testcases = []struct {
 		name string
 		w    interval.Window
@@ -220,8 +234,13 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(30 * time.Second),
 			want: Bounds{
+<<<<<<< HEAD
 				Start: execute.Time(30 * time.Second),
 				Stop:  execute.Time(2*time.Minute + 30*time.Second),
+=======
+				Start: execute.Time(-30 * time.Second),
+				Stop:  execute.Time(1*time.Minute + 30*time.Second),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 		{
@@ -232,8 +251,13 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5*time.Minute + 45*time.Second),
 			want: Bounds{
+<<<<<<< HEAD
 				Start: execute.Time(5*time.Minute + 30*time.Second),
 				Stop:  execute.Time(9 * time.Minute),
+=======
+				Start: execute.Time(2*time.Minute + 30*time.Second),
+				Stop:  execute.Time(6 * time.Minute),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 		{
@@ -244,6 +268,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5 * time.Minute),
 			want: Bounds{
+<<<<<<< HEAD
 				Start: execute.Time(4*time.Minute + 30*time.Second),
 				Stop:  execute.Time(8 * time.Minute),
 			},
@@ -270,6 +295,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			want: Bounds{
 				Start: execute.Time(5 * time.Minute),
 				Stop:  execute.Time(20 * time.Minute),
+=======
+				Start: execute.Time(2*time.Minute + 30*time.Second),
+				Stop:  execute.Time(6 * time.Minute),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 		{
@@ -333,6 +362,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			},
 		},
 		{
+<<<<<<< HEAD
 			name: "calendar overlapping with negative period on boundary",
 			w: mustWindow(
 				values.ConvertDurationMonths(4),
@@ -357,6 +387,8 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			},
 		},
 		{
+=======
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			name: "mixed period",
 			w: mustWindow(
 				values.ConvertDurationMonths(2),
@@ -394,7 +426,11 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			},
 		},
 		{
+<<<<<<< HEAD
 			name: "calendar mixed negative offset before by days",
+=======
+			name: "mixed negative offset",
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			w: mustWindow(
 				values.ConvertDurationMonths(2),
 				values.ConvertDurationMonths(2),
@@ -402,6 +438,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			),
 			t: mustTime("1970-07-10T00:00:00Z"),
 			want: Bounds{
+<<<<<<< HEAD
 				Start: mustTime("1970-05-31T00:00:00Z"),
 				Stop:  mustTime("1970-07-31T00:00:00Z"),
 			},
@@ -521,6 +558,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			want: Bounds{
 				Start: mustTime("1970-07-31T23:59:59.999999998Z"),
 				Stop:  mustTime("1970-08-31T23:59:59.999999998Z"),
+=======
+				Start: mustTime("1970-05-30T00:00:00Z"),
+				Stop:  mustTime("1970-07-30T00:00:00Z"),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 	}
@@ -528,7 +569,11 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+<<<<<<< HEAD
 			got := tc.w.GetLatestBounds(tc.t)
+=======
+			got := tc.w.GetEarliestBounds(tc.t)
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			if got.Start() != tc.want.Start {
 				t.Errorf("unexpected start boundary: got %s want %s", got.Start(), tc.want.Start)
 			}
@@ -571,9 +616,15 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				Stop:  execute.Time(8 * time.Minute),
 			},
 			want: []Bounds{
+<<<<<<< HEAD
 				{Start: execute.Time(7 * time.Minute), Stop: execute.Time(8 * time.Minute)},
 				{Start: execute.Time(6 * time.Minute), Stop: execute.Time(7 * time.Minute)},
 				{Start: execute.Time(5 * time.Minute), Stop: execute.Time(6 * time.Minute)},
+=======
+				{Start: execute.Time(5 * time.Minute), Stop: execute.Time(6 * time.Minute)},
+				{Start: execute.Time(6 * time.Minute), Stop: execute.Time(7 * time.Minute)},
+				{Start: execute.Time(7 * time.Minute), Stop: execute.Time(8 * time.Minute)},
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 		{
@@ -589,16 +640,26 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 			},
 			want: []Bounds{
 				{
+<<<<<<< HEAD
 					Start: execute.Time(6*time.Minute + 15*time.Second),
 					Stop:  execute.Time(7*time.Minute + 15*time.Second),
+=======
+					Start: execute.Time(4*time.Minute + 15*time.Second),
+					Stop:  execute.Time(5*time.Minute + 15*time.Second),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 				},
 				{
 					Start: execute.Time(5*time.Minute + 15*time.Second),
 					Stop:  execute.Time(6*time.Minute + 15*time.Second),
 				},
 				{
+<<<<<<< HEAD
 					Start: execute.Time(4*time.Minute + 15*time.Second),
 					Stop:  execute.Time(5*time.Minute + 15*time.Second),
+=======
+					Start: execute.Time(6*time.Minute + 15*time.Second),
+					Stop:  execute.Time(7*time.Minute + 15*time.Second),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 				},
 			},
 		},
@@ -628,6 +689,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 			},
 			want: []Bounds{
 				{
+<<<<<<< HEAD
 					Start: execute.Time(4*time.Minute + 30*time.Second),
 					Stop:  execute.Time(5*time.Minute + 30*time.Second),
 				},
@@ -635,6 +697,15 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 					Start: execute.Time(2*time.Minute + 30*time.Second),
 					Stop:  execute.Time(3*time.Minute + 30*time.Second),
 				},
+=======
+					Start: execute.Time(2*time.Minute + 30*time.Second),
+					Stop:  execute.Time(3*time.Minute + 30*time.Second),
+				},
+				{
+					Start: execute.Time(4*time.Minute + 30*time.Second),
+					Stop:  execute.Time(5*time.Minute + 30*time.Second),
+				},
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 		{
@@ -650,20 +721,34 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 			},
 			want: []Bounds{
 				{
+<<<<<<< HEAD
 					Start: execute.Time(11 * time.Minute),
 					Stop:  execute.Time(13*time.Minute + 15*time.Second),
 				},
 				{
 					Start: execute.Time(10 * time.Minute),
 					Stop:  execute.Time(12*time.Minute + 15*time.Second),
+=======
+					Start: execute.Time(8 * time.Minute),
+					Stop:  execute.Time(10*time.Minute + 15*time.Second),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 				},
 				{
 					Start: execute.Time(9 * time.Minute),
 					Stop:  execute.Time(11*time.Minute + 15*time.Second),
 				},
 				{
+<<<<<<< HEAD
 					Start: execute.Time(8 * time.Minute),
 					Stop:  execute.Time(10*time.Minute + 15*time.Second),
+=======
+					Start: execute.Time(10 * time.Minute),
+					Stop:  execute.Time(12*time.Minute + 15*time.Second),
+				},
+				{
+					Start: execute.Time(11 * time.Minute),
+					Stop:  execute.Time(13*time.Minute + 15*time.Second),
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 				},
 			},
 		},
@@ -679,6 +764,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			want: []Bounds{
+<<<<<<< HEAD
 				{Start: mustTime("2019-10-07T00:00:00Z"), Stop: mustTime("2019-10-08T00:00:00Z")},
 				{Start: mustTime("2019-10-06T00:00:00Z"), Stop: mustTime("2019-10-07T00:00:00Z")},
 				{Start: mustTime("2019-10-05T00:00:00Z"), Stop: mustTime("2019-10-06T00:00:00Z")},
@@ -686,6 +772,15 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				{Start: mustTime("2019-10-03T00:00:00Z"), Stop: mustTime("2019-10-04T00:00:00Z")},
 				{Start: mustTime("2019-10-02T00:00:00Z"), Stop: mustTime("2019-10-03T00:00:00Z")},
 				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-10-02T00:00:00Z")},
+=======
+				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-10-02T00:00:00Z")},
+				{Start: mustTime("2019-10-02T00:00:00Z"), Stop: mustTime("2019-10-03T00:00:00Z")},
+				{Start: mustTime("2019-10-03T00:00:00Z"), Stop: mustTime("2019-10-04T00:00:00Z")},
+				{Start: mustTime("2019-10-04T00:00:00Z"), Stop: mustTime("2019-10-05T00:00:00Z")},
+				{Start: mustTime("2019-10-05T00:00:00Z"), Stop: mustTime("2019-10-06T00:00:00Z")},
+				{Start: mustTime("2019-10-06T00:00:00Z"), Stop: mustTime("2019-10-07T00:00:00Z")},
+				{Start: mustTime("2019-10-07T00:00:00Z"), Stop: mustTime("2019-10-08T00:00:00Z")},
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 		{
@@ -700,6 +795,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			want: []Bounds{
+<<<<<<< HEAD
 				{Start: mustTime("2019-12-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
 				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2019-12-01T00:00:00Z")},
 				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-11-01T00:00:00Z")},
@@ -712,6 +808,20 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				{Start: mustTime("2019-03-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
 				{Start: mustTime("2019-02-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
 				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
+=======
+				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
+				{Start: mustTime("2019-02-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
+				{Start: mustTime("2019-03-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
+				{Start: mustTime("2019-04-01T00:00:00Z"), Stop: mustTime("2019-05-01T00:00:00Z")},
+				{Start: mustTime("2019-05-01T00:00:00Z"), Stop: mustTime("2019-06-01T00:00:00Z")},
+				{Start: mustTime("2019-06-01T00:00:00Z"), Stop: mustTime("2019-07-01T00:00:00Z")},
+				{Start: mustTime("2019-07-01T00:00:00Z"), Stop: mustTime("2019-08-01T00:00:00Z")},
+				{Start: mustTime("2019-08-01T00:00:00Z"), Stop: mustTime("2019-09-01T00:00:00Z")},
+				{Start: mustTime("2019-09-01T00:00:00Z"), Stop: mustTime("2019-10-01T00:00:00Z")},
+				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-11-01T00:00:00Z")},
+				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2019-12-01T00:00:00Z")},
+				{Start: mustTime("2019-12-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 		{
@@ -726,6 +836,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			want: []Bounds{
+<<<<<<< HEAD
 				{Start: mustTime("2019-12-01T00:00:00Z"), Stop: mustTime("2020-03-01T00:00:00Z")},
 				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2020-02-01T00:00:00Z")},
 				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
@@ -740,6 +851,22 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
 				{Start: mustTime("2018-12-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
 				{Start: mustTime("2018-11-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
+=======
+				{Start: mustTime("2018-11-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
+				{Start: mustTime("2018-12-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
+				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
+				{Start: mustTime("2019-02-01T00:00:00Z"), Stop: mustTime("2019-05-01T00:00:00Z")},
+				{Start: mustTime("2019-03-01T00:00:00Z"), Stop: mustTime("2019-06-01T00:00:00Z")},
+				{Start: mustTime("2019-04-01T00:00:00Z"), Stop: mustTime("2019-07-01T00:00:00Z")},
+				{Start: mustTime("2019-05-01T00:00:00Z"), Stop: mustTime("2019-08-01T00:00:00Z")},
+				{Start: mustTime("2019-06-01T00:00:00Z"), Stop: mustTime("2019-09-01T00:00:00Z")},
+				{Start: mustTime("2019-07-01T00:00:00Z"), Stop: mustTime("2019-10-01T00:00:00Z")},
+				{Start: mustTime("2019-08-01T00:00:00Z"), Stop: mustTime("2019-11-01T00:00:00Z")},
+				{Start: mustTime("2019-09-01T00:00:00Z"), Stop: mustTime("2019-12-01T00:00:00Z")},
+				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
+				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2020-02-01T00:00:00Z")},
+				{Start: mustTime("2019-12-01T00:00:00Z"), Stop: mustTime("2020-03-01T00:00:00Z")},
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			},
 		},
 	}
@@ -758,7 +885,11 @@ func TestWindow_NextBounds(t *testing.T) {
 	testcases := []struct {
 		name string
 		w    interval.Window
+<<<<<<< HEAD
 		t    values.Time
+=======
+		t    interval.Time
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 		want []Bounds
 	}{
 		{
@@ -779,6 +910,7 @@ func TestWindow_NextBounds(t *testing.T) {
 			},
 		},
 		{
+<<<<<<< HEAD
 			name: "simple negative period",
 			w: mustWindow(
 				values.ConvertDurationNsecs(5*time.Minute),
@@ -816,6 +948,8 @@ func TestWindow_NextBounds(t *testing.T) {
 			},
 		},
 		{
+=======
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			name: "end of month",
 			w: mustWindow(
 				values.ConvertDurationMonths(1),
@@ -824,6 +958,7 @@ func TestWindow_NextBounds(t *testing.T) {
 			),
 			t: mustTime("2020-10-01T00:00:00Z"),
 			want: []Bounds{
+<<<<<<< HEAD
 				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-31T00:00:00Z")},
 				{Start: mustTime("2020-10-31T00:00:00Z"), Stop: mustTime("2020-11-30T00:00:00Z")},
 				{Start: mustTime("2020-11-30T00:00:00Z"), Stop: mustTime("2020-12-31T00:00:00Z")},
@@ -836,10 +971,28 @@ func TestWindow_NextBounds(t *testing.T) {
 				{Start: mustTime("2021-04-30T00:00:00Z"), Stop: mustTime("2021-05-31T00:00:00Z")},
 				{Start: mustTime("2021-05-31T00:00:00Z"), Stop: mustTime("2021-06-30T00:00:00Z")},
 				{Start: mustTime("2021-06-30T00:00:00Z"), Stop: mustTime("2021-07-31T00:00:00Z")},
+=======
+				// These stop times are weird because of the last day of the month oddness
+				// TODO comment stop time oddness and be ok with it
+				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-30T00:00:00Z")},
+				{Start: mustTime("2020-10-31T00:00:00Z"), Stop: mustTime("2020-11-30T00:00:00Z")},
+				{Start: mustTime("2020-11-30T00:00:00Z"), Stop: mustTime("2020-12-30T00:00:00Z")},
+				{Start: mustTime("2020-12-31T00:00:00Z"), Stop: mustTime("2021-01-31T00:00:00Z")},
+				{Start: mustTime("2021-01-31T00:00:00Z"), Stop: mustTime("2021-02-28T00:00:00Z")},
+				{Start: mustTime("2021-02-28T00:00:00Z"), Stop: mustTime("2021-03-28T00:00:00Z")},
+				// This is the case the index gets right.
+				// If we were to simply add a month to 2-28 the next window
+				// would start on 3-28 instead of 3-31.
+				{Start: mustTime("2021-03-31T00:00:00Z"), Stop: mustTime("2021-04-30T00:00:00Z")},
+				{Start: mustTime("2021-04-30T00:00:00Z"), Stop: mustTime("2021-05-30T00:00:00Z")},
+				{Start: mustTime("2021-05-31T00:00:00Z"), Stop: mustTime("2021-06-30T00:00:00Z")},
+				{Start: mustTime("2021-06-30T00:00:00Z"), Stop: mustTime("2021-07-30T00:00:00Z")},
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 				{Start: mustTime("2021-07-31T00:00:00Z"), Stop: mustTime("2021-08-31T00:00:00Z")},
 				{Start: mustTime("2021-08-31T00:00:00Z"), Stop: mustTime("2021-09-30T00:00:00Z")},
 			},
 		},
+<<<<<<< HEAD
 		{
 			name: "end of month far from bounds",
 			w: mustWindow(
@@ -863,11 +1016,17 @@ func TestWindow_NextBounds(t *testing.T) {
 				{Start: mustTime("2122-08-31T00:00:00Z"), Stop: mustTime("2122-09-30T00:00:00Z")},
 			},
 		},
+=======
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 	}
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
+<<<<<<< HEAD
 			b := tc.w.GetLatestBounds(tc.t)
+=======
+			b := tc.w.GetEarliestBounds(tc.t)
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 			got := make([]Bounds, 0, len(tc.want))
 			for range tc.want {
 				got = append(got, Bounds{
@@ -882,6 +1041,7 @@ func TestWindow_NextBounds(t *testing.T) {
 		})
 	}
 }
+<<<<<<< HEAD
 func TestWindow_PrevBounds(t *testing.T) {
 	testcases := []struct {
 		name string
@@ -1007,6 +1167,8 @@ func TestWindow_PrevBounds(t *testing.T) {
 		})
 	}
 }
+=======
+>>>>>>> 7087e407 (feat(interval): adds new interval package for consistent window handling)
 
 func mustWindow(every, period, offset execute.Duration) interval.Window {
 	w, err := interval.NewWindow(every, period, offset)
