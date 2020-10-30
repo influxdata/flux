@@ -546,15 +546,32 @@ impl Formatter {
     }
 
     fn format_array_expression(&mut self, n: &ast::ArrayExpr) {
+        let multiline = n.elements.len() > 4 || n.base.is_multiline();
         self.format_comments(&n.lbrack);
         self.write_rune('[');
-        let sep = ", ";
+        if multiline {
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        }
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
+        };
         for (i, item) in (&n.elements).iter().enumerate() {
             if i != 0 {
-                self.write_string(sep)
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent()
+                }
             }
             self.format_node(&Node::from_expr(&item.expression));
             self.format_comments(&item.comma);
+        }
+        if multiline {
+            self.write_string(sep);
+            self.unindent();
+            self.write_indent();
         }
         self.format_comments(&n.rbrack);
         self.write_rune(']')

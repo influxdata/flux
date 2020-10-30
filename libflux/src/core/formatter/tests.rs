@@ -89,6 +89,13 @@ fn array() {
 
 a[i]"#,
     );
+    assert_unchanged(
+        r#"a = [
+    1,
+    2,
+    3,
+]"#,
+    );
 }
 
 #[test]
@@ -478,11 +485,13 @@ fn comments() {
     assert_unchanged("foo[\"bar\"\n    //comment\n    ]");
 
     assert_unchanged("a = \n    //comment\n    [1, 2, 3]");
-    assert_unchanged("a = [\n    //comment\n    1, 2, 3]");
-    assert_unchanged("a = [1\n    //comment\n    , 2, 3]");
-    assert_unchanged("a = [1, \n    //comment\n    2, 3]");
-    assert_unchanged("a = [1, \n    //comment1\n    2\n    //comment2\n    , 3]");
-    assert_unchanged("a = [1, 2, 3\n    //comment\n    ]");
+    assert_unchanged("a = [\n    //comment\n    1,\n    2,\n    3,\n]");
+    assert_unchanged("a = [\n    1\n        //comment\n        ,\n        2,\n        3,\n    ]");
+    assert_unchanged("a = [\n    1,\n    //comment\n    2,\n    3,\n]");
+    assert_unchanged(
+        "a = [\n    1,\n    //comment1\n    2\n        //comment2\n        ,\n        3,\n    ]",
+    );
+    assert_unchanged("a = [\n    1,\n    2,\n    3,\n//comment\n]");
 
     assert_unchanged("a = b\n    //comment\n    [1]");
     assert_unchanged("a = b[\n    //comment\n    1]");
@@ -739,9 +748,11 @@ right = from(bucket: "test")
     |> drop(
         // spare me the pain
         // this hurts
-        columns: ["_start", "_stop"
-            // what
-            ],
+        columns: [
+            "_start",
+            "_stop",
+        // what
+        ],
     )
     |> filter(
         // just why
