@@ -214,6 +214,7 @@ var sourceHashes = map[string]string{
 	"stdlib/planner/aggregate_window_min_push_test.flux":                            "f05d34d9c09f0e76a8b3f512289823cb2099e56c506774aec789797ccf070e1e",
 	"stdlib/planner/bare_count_eval_test.flux":                                      "daacfcb03684c2709dc80e5e1b7e968dd5e7ab9fe7ec8953b33c1219327c0255",
 	"stdlib/planner/bare_count_push_test.flux":                                      "8e464ed973af80cd4b9015cb507caf7a19cd49f7eafc16c853bd17154b41cf7a",
+	"stdlib/planner/bare_last_test.flux":                                            "b3c77c310823808996aebdb58b6d0dae09bedc96869f47f069fa566f2d1abff9",
 	"stdlib/planner/bare_max_eval_test.flux":                                        "ef087799060eb5a240ff31b0a3b1b0b7e2fba708b4d4cd87f73cfc1cb37c0cd4",
 	"stdlib/planner/bare_max_push_test.flux":                                        "230baa977128aaac139bf2afce6dd34c21b2e9c1790e7c0e8ada7f1914d9abf3",
 	"stdlib/planner/bare_mean_eval_test.flux":                                       "ae1097cadcc53d9f9ab9b274904cc19e4882ea082bd73f52cf608934d9d565ea",
