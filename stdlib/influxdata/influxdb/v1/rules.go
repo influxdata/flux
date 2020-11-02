@@ -22,7 +22,7 @@ func (p DatabasesRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.
 		return node, false, nil
 	}
 
-	return plan.CreatePhysicalNode("databasesRemote", &DatabasesRemoteProcedureSpec{
+	return plan.CreateUniquePhysicalNode(ctx, "databasesRemote", &DatabasesRemoteProcedureSpec{
 		DatabasesProcedureSpec: spec,
 	}), true, nil
 }

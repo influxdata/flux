@@ -37,7 +37,7 @@ func (p FromRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.Node,
 		config.Token = *spec.Token
 	}
 
-	return plan.CreatePhysicalNode("fromRemote", &FromRemoteProcedureSpec{
+	return plan.CreateUniquePhysicalNode(ctx, "fromRemote", &FromRemoteProcedureSpec{
 		Config: config,
 	}), true, nil
 }
@@ -127,7 +127,7 @@ func (p BucketsRemoteRule) Rewrite(ctx context.Context, node plan.Node) (plan.No
 		return node, false, nil
 	}
 
-	return plan.CreatePhysicalNode("bucketsRemote", &BucketsRemoteProcedureSpec{
+	return plan.CreateUniquePhysicalNode(ctx, "bucketsRemote", &BucketsRemoteProcedureSpec{
 		BucketsProcedureSpec: spec,
 	}), true, nil
 }
