@@ -423,6 +423,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/join_agg_test.flux":                                            "8ab6a33469a50645e41deaaa1f87c1e4c4180b5d79dd87b03d6b4b1012f8ade9",
 	"stdlib/universe/join_missing_on_col_test.flux":                                 "98f4ca3999b1379d3a35f836449232e3b664fe312e5485179be57e4cc64e6ef4",
 	"stdlib/universe/join_test.flux":                                                "bdbbc60918fb9b683d9975816a9a9c59e2d7d1436847696b01414d740beffec3",
+	"stdlib/universe/join_two_same_sources_test.flux":                               "0d598a25c72d00ea9b06b9bfbdf8ff790e8b6ffd3aacd267a483438727c0f9c5",
 	"stdlib/universe/join_use_previous_test.flux":                                   "81fcaa31ff9a9a2a06a35a9275daf73cef0434061e8e81cb8317ccae172f7378",
 	"stdlib/universe/kama_test.flux":                                                "c84bfe6689f42f8bba75b9e06a4b1cb8e441615266ad0d12201d9fff27e34994",
 	"stdlib/universe/kama_v2_test.flux":                                             "f9d073089fdfd51c2260167d5e30b05de67ee3e4d91bc5e4261ed1ca722dfbc6",

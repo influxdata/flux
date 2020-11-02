@@ -402,21 +402,25 @@ func (s *QueryProfiler) getTableBuilder(q flux.Query, alloc *memory.Allocator) (
 		stats.TotalAllocated,
 		strings.Join(stats.RuntimeErrors, "\n"),
 	}
-	stats.Metadata.Range(func(key string, value interface{}) bool {
+	for key, values := range stats.Metadata {
 		var ty flux.ColType
-		if intValue, ok := value.(int); ok {
+		if intValue, ok := values[0].(int); ok {
 			ty = flux.TInt
 			colData = append(colData, int64(intValue))
 		} else {
 			ty = flux.TString
-			colData = append(colData, fmt.Sprintf("%v", value))
+			var data string
+			for _, value := range values {
+				valueStr := fmt.Sprintf("%v", value)
+				data += valueStr + "\n"
+			}
+			colData = append(colData, data)
 		}
 		colMeta = append(colMeta, flux.ColMeta{
 			Label: key,
 			Type:  ty,
 		})
-		return true
-	})
+	}
 	for _, col := range colMeta {
 		if _, err := b.AddCol(col); err != nil {
 			return nil, err

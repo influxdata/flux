@@ -18,6 +18,83 @@ import (
 	"github.com/influxdata/flux/values/valuestest"
 )
 
+func TestRuleCreatedNodeUniqueness(t *testing.T) {
+	nextPlanNodeID := 3
+	ctx := context.WithValue(context.Background(), plan.NextPlanNodeIDKey, &nextPlanNodeID)
+	host, token := "localhost", "token"
+	bucketsProcedureSpec := &influxdb.BucketsProcedureSpec{
+		Org:   &influxdb.NameOrID{Name: "influxdata"},
+		Host:  &host,
+		Token: &token,
+	}
+	joinSpec := &universe.MergeJoinProcedureSpec{
+		TableNames: []string{"a", "b"},
+		On:         []string{"_value"},
+	}
+	fromSpec := &influxdb.FromProcedureSpec{
+		Bucket: influxdb.NameOrID{Name: "my-bucket"},
+		Host:   &host,
+	}
+	fromRemoteSpec := &influxdb.FromRemoteProcedureSpec{
+		Config: influxdb.Config{Bucket: influxdb.NameOrID{Name: "my-bucket"}, Host: "localhost"},
+	}
+	joinEdges := [][2]int{{0, 2}, {1, 2}}
+	tcs := []plantest.RuleTestCase{
+		{
+			Name:    "BucketsRemoteJoin",
+			Context: ctx,
+			Rules:   []plan.Rule{influxdb.BucketsRemoteRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("buckets0", bucketsProcedureSpec),
+					plan.CreateLogicalNode("buckets1", bucketsProcedureSpec),
+					plan.CreateLogicalNode("join2", joinSpec),
+				},
+				Edges: joinEdges,
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("bucketsRemote3", &influxdb.BucketsRemoteProcedureSpec{
+						BucketsProcedureSpec: bucketsProcedureSpec,
+					}),
+					plan.CreatePhysicalNode("bucketsRemote4", &influxdb.BucketsRemoteProcedureSpec{
+						BucketsProcedureSpec: bucketsProcedureSpec,
+					}),
+					plan.CreatePhysicalNode("join2", joinSpec),
+				},
+				Edges: joinEdges,
+			},
+		},
+		{
+			Name:    "FromRemoteTableJoin",
+			Context: ctx,
+			Rules:   []plan.Rule{influxdb.FromRemoteRule{}},
+			Before: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreateLogicalNode("from0", fromSpec),
+					plan.CreateLogicalNode("from1", fromSpec),
+					plan.CreateLogicalNode("join2", joinSpec),
+				},
+				Edges: joinEdges,
+			},
+			After: &plantest.PlanSpec{
+				Nodes: []plan.Node{
+					plan.CreatePhysicalNode("fromRemote5", fromRemoteSpec),
+					plan.CreatePhysicalNode("fromRemote6", fromRemoteSpec),
+					plan.CreatePhysicalNode("join2", joinSpec),
+				},
+				Edges: joinEdges,
+			},
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.Name, func(t *testing.T) {
+			plantest.PhysicalRuleTestHelper(t, &tc)
+		})
+	}
+}
+
 func TestFromRemoteRule_WithHost(t *testing.T) {
 	fromSpec := influxdb.FromProcedureSpec{
 		Org:    &influxdb.NameOrID{Name: "influxdata"},

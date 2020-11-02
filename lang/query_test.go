@@ -2,9 +2,11 @@ package lang_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute/executetest"
@@ -165,5 +167,145 @@ csv.from(csv: data) |> map(fn: (r) => r.nonexistent)`
 
 	if q.Err() != nil {
 		t.Fatalf("unexpected error from query execution: %s", q.Err())
+	}
+}
+
+// This test verifies that when a query involves table functions or chain(), the plan nodes
+// the main query generates does not reuse the node IDs that are already used by the table
+// functions or chain()
+func TestPlanNodeUniqueness(t *testing.T) {
+	prelude := `
+import "experimental/array"
+import "experimental"
+
+data = array.from(rows: [{
+_measurement: "command",
+_field: "id",
+_time: 2018-12-19T22:13:30Z,
+_value: 12,
+}, {
+_measurement: "command",
+_field: "id",
+_time: 2018-12-19T22:13:40Z,
+_value: 23,
+}, {
+_measurement: "command",
+_field: "id",
+_time: 2018-12-19T22:13:50Z,
+_value: 34,
+}, {
+_measurement: "command",
+_field: "guild",
+_time: 2018-12-19T22:13:30Z,
+_value: 12,
+}, {
+_measurement: "command",
+_field: "guild",
+_time: 2018-12-19T22:13:40Z,
+_value: 23,
+}, {
+_measurement: "command",
+_field: "guild",
+_time: 2018-12-19T22:13:50Z,
+_value: 34,
+}])
+`
+	tcs := []struct {
+		name   string
+		script string
+		want   string
+	}{
+		{
+			name: "chain",
+			script: `
+id = data
+|> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:14:21Z)
+|> filter(fn: (r) => r["_field"] == "id")
+
+guild = data
+|> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:14:21Z)
+|> filter(fn: (r) => r["_field"] == "guild")
+
+experimental.chain(first: id, second: guild)
+`,
+			want: `[digraph {
+  experimental/array.from0
+  range1
+  filter2
+  // r._field == "id"
+  generated_yield
+
+  experimental/array.from0 -> range1
+  range1 -> filter2
+  filter2 -> generated_yield
+}
+ digraph {
+  experimental/array.from3
+  range4
+  filter5
+  // r._field == "guild"
+  generated_yield
+
+  experimental/array.from3 -> range4
+  range4 -> filter5
+  filter5 -> generated_yield
+}
+]`,
+		},
+		{
+			name: "tableFns",
+			script: `
+ids = data
+|> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:14:21Z)
+|> filter(fn: (r) => r["_field"] == "id")
+|> sort()
+|> tableFind(fn: (key) => true)
+|> getColumn(column: "_field")
+
+id = ids[0]
+
+data
+|> range(start: 2018-12-19T22:13:30Z, stop: 2018-12-19T22:14:21Z)
+|> filter(fn: (r) => r["_field"] == id)
+`,
+			want: `[digraph {
+  experimental/array.from0
+  range1
+  filter2
+  // r._field == "id"
+  sort3
+  generated_yield
+
+  experimental/array.from0 -> range1
+  range1 -> filter2
+  filter2 -> sort3
+  sort3 -> generated_yield
+}
+ digraph {
+  experimental/array.from4
+  range5
+  filter6
+  // r._field == "id"
+  generated_yield
+
+  experimental/array.from4 -> range5
+  range5 -> filter6
+  filter6 -> generated_yield
+}
+]`,
+		},
+	}
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			if q, err := runQuery(prelude + tc.script); err != nil {
+				t.Error(err)
+			} else {
+				got := fmt.Sprintf("%v", q.Statistics().Metadata["flux/query-plan"])
+				if !cmp.Equal(tc.want, got) {
+					t.Errorf("unexpected value -want/+got\n%s", cmp.Diff(tc.want, got))
+				}
+			}
+		})
 	}
 }

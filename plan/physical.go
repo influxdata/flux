@@ -273,6 +273,18 @@ func CreatePhysicalNode(id NodeID, spec PhysicalProcedureSpec) *PhysicalPlanNode
 	}
 }
 
+const NextPlanNodeIDKey = "NextPlanNodeID"
+
+func CreateUniquePhysicalNode(ctx context.Context, prefix string, spec PhysicalProcedureSpec) *PhysicalPlanNode {
+	if value := ctx.Value(NextPlanNodeIDKey); value != nil {
+		nextNodeID := value.(*int)
+		id := NodeID(fmt.Sprintf("%s%d", prefix, *nextNodeID))
+		*nextNodeID++
+		return CreatePhysicalNode(id, spec)
+	}
+	return CreatePhysicalNode(NodeID(prefix), spec)
+}
+
 // PostPhysicalValidator provides an interface that can be implemented by PhysicalProcedureSpecs for any
 // validation checks to be performed post-physical planning.
 type PostPhysicalValidator interface {
