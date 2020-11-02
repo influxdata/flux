@@ -457,6 +457,8 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 	// function calls during the evaluation phase (see `tableFind`).
 	deps := execute.NewExecutionDependencies(alloc, &p.Now, p.Logger)
 	ctx = deps.Inject(ctx)
+	nextPlanNodeID := new(int)
+	ctx = context.WithValue(ctx, plan.NextPlanNodeIDKey, nextPlanNodeID)
 
 	// Evaluation.
 	sp, scope, err := p.getSpec(ctx, alloc)

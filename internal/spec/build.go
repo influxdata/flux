@@ -10,17 +10,18 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/plan"
 	"github.com/opentracing/opentracing-go"
 )
 
 type ider struct {
-	id     int
+	id     *int
 	lookup map[*flux.TableObject]flux.OperationID
 }
 
 func (i *ider) nextID() int {
-	next := i.id
-	i.id++
+	next := *i.id
+	*i.id++
 	return next
 }
 
@@ -44,8 +45,14 @@ func (i *ider) ID(t *flux.TableObject) flux.OperationID {
 }
 
 func FromEvaluation(ctx context.Context, ses []interpreter.SideEffect, now time.Time) (*flux.Spec, error) {
+	var nextNodeID *int
+	if value := ctx.Value(plan.NextPlanNodeIDKey); value != nil {
+		nextNodeID = value.(*int)
+	} else {
+		nextNodeID = new(int)
+	}
 	ider := &ider{
-		id:     0,
+		id:     nextNodeID,
 		lookup: make(map[*flux.TableObject]flux.OperationID),
 	}
 
