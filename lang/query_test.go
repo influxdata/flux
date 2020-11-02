@@ -210,10 +210,10 @@ _time: 2018-12-19T22:13:50Z,
 _value: 34,
 }])
 `
-	tcs := []struct{
-		name string
+	tcs := []struct {
+		name   string
 		script string
-		want string
+		want   string
 	}{
 		{
 			name: "chain",
