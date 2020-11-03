@@ -186,6 +186,7 @@ var sourceHashes = map[string]string{
 	"stdlib/influxdata/influxdb/schema/show_measurements_with_pred_test.flux":       "21047734d7649fcad0e26b17b83a8b8374d9306aef7f7ec97e1d2d1e0687806b",
 	"stdlib/influxdata/influxdb/schema/show_tag_keys_test.flux":                     "d948c2ec3b74ca52f5e72345d2189f03503790ca04d18e6635567daab0aa4b4d",
 	"stdlib/influxdata/influxdb/schema/show_tag_keys_with_pred_test.flux":           "b31dd87e9c600bd32ee6e005613fca34bf36114a011b7853736f6f285958533c",
+	"stdlib/influxdata/influxdb/schema/show_tag_values_empty_test.flux":             "578670b5c71b6157803d8fcccb2dc44ef40345af1d6bc4bbb69562d505c6ceea",
 	"stdlib/influxdata/influxdb/schema/show_tag_values_test.flux":                   "36274bac1ed31502aebcb692fc97d0100315ef9410ad1f88b83e8cd4f4bde4ea",
 	"stdlib/influxdata/influxdb/schema/show_tag_values_with_pred_test.flux":         "fd7f72fdb0210010d6abd8d64fd5155ac90a43e99b2989d0ad8d79607ef18ea5",
 	"stdlib/influxdata/influxdb/secrets/secrets.flux":                               "757d48af577572a25361b27fab833f40278b02c9fbb9ba0e62672596f44ab3cf",
