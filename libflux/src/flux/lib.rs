@@ -240,6 +240,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 ///
 /// This function is unsafe because it dereferences a raw pointer passed as a
 /// parameter
+#[allow(improper_ctypes_definitions)] // CString doesn't have repr(C)
 #[no_mangle]
 pub unsafe extern "C" fn flux_error_str(errh: *const ErrorHandle) -> CString {
     let errh = &*errh;
