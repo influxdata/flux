@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute/executetest"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/runtime"

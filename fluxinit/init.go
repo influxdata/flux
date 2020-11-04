@@ -1,3 +1,6 @@
+// Package fluxinit is used to initialize the flux library for compilation and
+// execution of Flux. The FluxInit function should be called exactly once in a
+// process.
 package fluxinit
 
 import (
@@ -5,14 +8,17 @@ import (
 	_ "github.com/influxdata/flux/stdlib"
 )
 
-// FluxInit() prepares the runtime for compilation and execution of flux. This
-// is a costly step and should only be performed if the intention is to compile
-// and execute flux code.
+// The FluxInit() function prepares the runtime for compilation and execution
+// of Flux. This is a costly step and should only be performed if the intention
+// is to compile and execute flux code.
 //
-// Importing this package and calling FluxInit is equivalent to importing the
-// "builtin" package. It draws in the standard library functions, which
-// register themselves in init() functions, then performs the final steps
-// necessary to prepare for executing flux.
+// This package imports the standard library. These modules register themselves
+// in go init() functions. This package must ensure all required standard
+// library functions are imported.
+//
+// As a convenience, the fluxinit/static package can be imported for use cases
+// where static initialization is okay, such as tests.
+
 func FluxInit() {
 	runtime.FinalizeBuiltIns()
 }

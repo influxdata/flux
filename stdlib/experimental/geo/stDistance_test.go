@@ -5,7 +5,7 @@ import (
 	"math"
 	"testing"
 
-	_ "github.com/influxdata/flux/builtin"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/stdlib/experimental/geo"

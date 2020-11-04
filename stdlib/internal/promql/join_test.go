@@ -8,9 +8,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/stdlib/experimental"
 	"github.com/influxdata/flux/values"

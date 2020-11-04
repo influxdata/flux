@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"

@@ -12,8 +12,8 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin"
 	_ "github.com/influxdata/flux/csv"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/runtime"

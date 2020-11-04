@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/runtime"
 )

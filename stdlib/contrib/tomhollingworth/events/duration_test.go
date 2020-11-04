@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
 	"github.com/influxdata/flux/stdlib/influxdata/influxdb"

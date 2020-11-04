@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	_ "github.com/influxdata/flux/builtin"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/querytest"
 	"github.com/influxdata/flux/stdlib/experimental/geo"
 	"github.com/influxdata/flux/values"

@@ -1,9 +1,9 @@
-package builtin_test
+package static_test
 
 import (
 	"testing"
 
-	_ "github.com/influxdata/flux/builtin"
+	_ "github.com/influxdata/flux/fluxinit/static"
 )
 
 func TestBuiltins(t *testing.T) {
