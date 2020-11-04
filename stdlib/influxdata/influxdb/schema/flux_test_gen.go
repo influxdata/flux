@@ -15628,6 +15628,1776 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Column: 107,
 					Line:   77,
 				},
+				File:   "show_tag_values_empty_test.flux",
+				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,0,\n,result,table,_value\n\"\n\n// Predicate will filter out everything\n// (this is a regression test for a panic that would occur here)\nshow_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()\n\ntest show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   5,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   5,
+							},
+							File:   "show_tag_values_empty_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   5,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   5,
+							},
+							File:   "show_tag_values_empty_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   5,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   5,
+								},
+								File:   "show_tag_values_empty_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   5,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   5,
+									},
+									File:   "show_tag_values_empty_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   5,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   5,
+					},
+					File:   "show_tag_values_empty_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   57,
+					},
+					File:   "show_tag_values_empty_test.flux",
+					Source: "input = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   7,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   7,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   7,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   57,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "\"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   7,
+						},
+					},
+				},
+				Value: "\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   64,
+					},
+					File:   "show_tag_values_empty_test.flux",
+					Source: "output = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,0,\n,result,table,_value\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   59,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   59,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   59,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   64,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "\"\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,0,\n,result,table,_value\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   59,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string\n#group,false,false,false\n#default,_result,0,\n,result,table,_value\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   74,
+					},
+					File:   "show_tag_values_empty_test.flux",
+					Source: "show_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
+					Start: ast.Position{
+						Column: 1,
+						Line:   68,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 19,
+							Line:   68,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "show_tag_values_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   68,
+						},
+					},
+				},
+				Name: "show_tag_values_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   74,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
+						Start: ast.Position{
+							Column: 22,
+							Line:   68,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.PipeExpression{
+									Argument: &ast.PipeExpression{
+										Argument: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 43,
+														Line:   68,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "tables",
+													Start: ast.Position{
+														Column: 37,
+														Line:   68,
+													},
+												},
+											},
+											Name: "tables",
+										},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   69,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)",
+												Start: ast.Position{
+													Column: 37,
+													Line:   68,
+												},
+											},
+										},
+										Call: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   69,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "start: 2018-01-01T00:00:00Z",
+														Start: ast.Position{
+															Column: 14,
+															Line:   69,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 41,
+																Line:   69,
+															},
+															File:   "show_tag_values_empty_test.flux",
+															Source: "start: 2018-01-01T00:00:00Z",
+															Start: ast.Position{
+																Column: 14,
+																Line:   69,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 19,
+																	Line:   69,
+																},
+																File:   "show_tag_values_empty_test.flux",
+																Source: "start",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   69,
+																},
+															},
+														},
+														Name: "start",
+													},
+													Value: &ast.DateTimeLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 41,
+																	Line:   69,
+																},
+																File:   "show_tag_values_empty_test.flux",
+																Source: "2018-01-01T00:00:00Z",
+																Start: ast.Position{
+																	Column: 21,
+																	Line:   69,
+																},
+															},
+														},
+														Value: parser.MustParseTime("2018-01-01T00:00:00Z"),
+													},
+												}},
+												With: nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   69,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "range(start: 2018-01-01T00:00:00Z)",
+													Start: ast.Position{
+														Column: 8,
+														Line:   69,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 13,
+															Line:   69,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "range",
+														Start: ast.Position{
+															Column: 8,
+															Line:   69,
+														},
+													},
+												},
+												Name: "range",
+											},
+										},
+									},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 72,
+												Line:   70,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")",
+											Start: ast.Position{
+												Column: 37,
+												Line:   68,
+											},
+										},
+									},
+									Call: &ast.CallExpression{
+										Arguments: []ast.Expression{&ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 71,
+														Line:   70,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "fn: (r) => r._measurement == \"foo\" and r._field == \"bar\"",
+													Start: ast.Position{
+														Column: 15,
+														Line:   70,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 71,
+															Line:   70,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "fn: (r) => r._measurement == \"foo\" and r._field == \"bar\"",
+														Start: ast.Position{
+															Column: 15,
+															Line:   70,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 17,
+																Line:   70,
+															},
+															File:   "show_tag_values_empty_test.flux",
+															Source: "fn",
+															Start: ast.Position{
+																Column: 15,
+																Line:   70,
+															},
+														},
+													},
+													Name: "fn",
+												},
+												Value: &ast.FunctionExpression{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 71,
+																Line:   70,
+															},
+															File:   "show_tag_values_empty_test.flux",
+															Source: "(r) => r._measurement == \"foo\" and r._field == \"bar\"",
+															Start: ast.Position{
+																Column: 19,
+																Line:   70,
+															},
+														},
+													},
+													Body: &ast.LogicalExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 71,
+																	Line:   70,
+																},
+																File:   "show_tag_values_empty_test.flux",
+																Source: "r._measurement == \"foo\" and r._field == \"bar\"",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   70,
+																},
+															},
+														},
+														Left: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 49,
+																		Line:   70,
+																	},
+																	File:   "show_tag_values_empty_test.flux",
+																	Source: "r._measurement == \"foo\"",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   70,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 40,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_empty_test.flux",
+																		Source: "r._measurement",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   70,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 27,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_empty_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 26,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 40,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_empty_test.flux",
+																			Source: "_measurement",
+																			Start: ast.Position{
+																				Column: 28,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "_measurement",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 49,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_empty_test.flux",
+																		Source: "\"foo\"",
+																		Start: ast.Position{
+																			Column: 44,
+																			Line:   70,
+																		},
+																	},
+																},
+																Value: "foo",
+															},
+														},
+														Operator: 1,
+														Right: &ast.BinaryExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 71,
+																		Line:   70,
+																	},
+																	File:   "show_tag_values_empty_test.flux",
+																	Source: "r._field == \"bar\"",
+																	Start: ast.Position{
+																		Column: 54,
+																		Line:   70,
+																	},
+																},
+															},
+															Left: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 62,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_empty_test.flux",
+																		Source: "r._field",
+																		Start: ast.Position{
+																			Column: 54,
+																			Line:   70,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 55,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_empty_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 54,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 62,
+																				Line:   70,
+																			},
+																			File:   "show_tag_values_empty_test.flux",
+																			Source: "_field",
+																			Start: ast.Position{
+																				Column: 56,
+																				Line:   70,
+																			},
+																		},
+																	},
+																	Name: "_field",
+																},
+															},
+															Operator: 17,
+															Right: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 71,
+																			Line:   70,
+																		},
+																		File:   "show_tag_values_empty_test.flux",
+																		Source: "\"bar\"",
+																		Start: ast.Position{
+																			Column: 66,
+																			Line:   70,
+																		},
+																	},
+																},
+																Value: "bar",
+															},
+														},
+													},
+													Params: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 21,
+																	Line:   70,
+																},
+																File:   "show_tag_values_empty_test.flux",
+																Source: "r",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   70,
+																},
+															},
+														},
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 21,
+																		Line:   70,
+																	},
+																	File:   "show_tag_values_empty_test.flux",
+																	Source: "r",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   70,
+																	},
+																},
+															},
+															Name: "r",
+														},
+														Value: nil,
+													}},
+												},
+											}},
+											With: nil,
+										}},
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 72,
+													Line:   70,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")",
+												Start: ast.Position{
+													Column: 8,
+													Line:   70,
+												},
+											},
+										},
+										Callee: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 14,
+														Line:   70,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "filter",
+													Start: ast.Position{
+														Column: 8,
+														Line:   70,
+													},
+												},
+											},
+											Name: "filter",
+										},
+									},
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   71,
+										},
+										File:   "show_tag_values_empty_test.flux",
+										Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")\n    |> keep(columns: [\"host\"])",
+										Start: ast.Position{
+											Column: 37,
+											Line:   68,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   71,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "columns: [\"host\"]",
+												Start: ast.Position{
+													Column: 13,
+													Line:   71,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   71,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "columns: [\"host\"]",
+													Start: ast.Position{
+														Column: 13,
+														Line:   71,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   71,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "columns",
+														Start: ast.Position{
+															Column: 13,
+															Line:   71,
+														},
+													},
+												},
+												Name: "columns",
+											},
+											Value: &ast.ArrayExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 30,
+															Line:   71,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "[\"host\"]",
+														Start: ast.Position{
+															Column: 22,
+															Line:   71,
+														},
+													},
+												},
+												Elements: []ast.Expression{&ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 29,
+																Line:   71,
+															},
+															File:   "show_tag_values_empty_test.flux",
+															Source: "\"host\"",
+															Start: ast.Position{
+																Column: 23,
+																Line:   71,
+															},
+														},
+													},
+													Value: "host",
+												}},
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   71,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "keep(columns: [\"host\"])",
+											Start: ast.Position{
+												Column: 8,
+												Line:   71,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 12,
+													Line:   71,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "keep",
+												Start: ast.Position{
+													Column: 8,
+													Line:   71,
+												},
+											},
+										},
+										Name: "keep",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   72,
+									},
+									File:   "show_tag_values_empty_test.flux",
+									Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")\n    |> keep(columns: [\"host\"])\n    |> group()",
+									Start: ast.Position{
+										Column: 37,
+										Line:   68,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: nil,
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   72,
+										},
+										File:   "show_tag_values_empty_test.flux",
+										Source: "group()",
+										Start: ast.Position{
+											Column: 8,
+											Line:   72,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   72,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   72,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 32,
+									Line:   73,
+								},
+								File:   "show_tag_values_empty_test.flux",
+								Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")",
+								Start: ast.Position{
+									Column: 37,
+									Line:   68,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 31,
+											Line:   73,
+										},
+										File:   "show_tag_values_empty_test.flux",
+										Source: "column: \"host\"",
+										Start: ast.Position{
+											Column: 17,
+											Line:   73,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 31,
+												Line:   73,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "column: \"host\"",
+											Start: ast.Position{
+												Column: 17,
+												Line:   73,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   73,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "column",
+												Start: ast.Position{
+													Column: 17,
+													Line:   73,
+												},
+											},
+										},
+										Name: "column",
+									},
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 31,
+													Line:   73,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "\"host\"",
+												Start: ast.Position{
+													Column: 25,
+													Line:   73,
+												},
+											},
+										},
+										Value: "host",
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 32,
+										Line:   73,
+									},
+									File:   "show_tag_values_empty_test.flux",
+									Source: "distinct(column: \"host\")",
+									Start: ast.Position{
+										Column: 8,
+										Line:   73,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 16,
+											Line:   73,
+										},
+										File:   "show_tag_values_empty_test.flux",
+										Source: "distinct",
+										Start: ast.Position{
+											Column: 8,
+											Line:   73,
+										},
+									},
+								},
+								Name: "distinct",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   74,
+							},
+							File:   "show_tag_values_empty_test.flux",
+							Source: "tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => r._measurement == \"foo\" and r._field == \"bar\")\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()",
+							Start: ast.Position{
+								Column: 37,
+								Line:   68,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: nil,
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   74,
+								},
+								File:   "show_tag_values_empty_test.flux",
+								Source: "sort()",
+								Start: ast.Position{
+									Column: 8,
+									Line:   74,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   74,
+									},
+									File:   "show_tag_values_empty_test.flux",
+									Source: "sort",
+									Start: ast.Position{
+										Column: 8,
+										Line:   74,
+									},
+								},
+							},
+							Name: "sort",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   68,
+							},
+							File:   "show_tag_values_empty_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 23,
+								Line:   68,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   68,
+								},
+								File:   "show_tag_values_empty_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 23,
+									Line:   68,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 32,
+								Line:   68,
+							},
+							File:   "show_tag_values_empty_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 30,
+								Line:   68,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 107,
+							Line:   77,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   76,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 21,
+								Line:   76,
+							},
+							File:   "show_tag_values_empty_test.flux",
+							Source: "show_tag_values",
+							Start: ast.Position{
+								Column: 6,
+								Line:   76,
+							},
+						},
+					},
+					Name: "show_tag_values",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 107,
+								Line:   77,
+							},
+							File:   "show_tag_values_empty_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+							Start: ast.Position{
+								Column: 24,
+								Line:   76,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 107,
+									Line:   77,
+								},
+								File:   "show_tag_values_empty_test.flux",
+								Source: "({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   77,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 106,
+										Line:   77,
+									},
+									File:   "show_tag_values_empty_test.flux",
+									Source: "{input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   77,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   77,
+										},
+										File:   "show_tag_values_empty_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   77,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   77,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   77,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 34,
+													Line:   77,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   77,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 34,
+														Line:   77,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   77,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   77,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   77,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 39,
+															Line:   77,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   77,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   77,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   77,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   77,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   77,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   77,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   77,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   77,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   77,
+										},
+										File:   "show_tag_values_empty_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 47,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   77,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 47,
+												Line:   77,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 80,
+													Line:   77,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 69,
+													Line:   77,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 80,
+														Line:   77,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 69,
+														Line:   77,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 72,
+															Line:   77,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 69,
+															Line:   77,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 80,
+															Line:   77,
+														},
+														File:   "show_tag_values_empty_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 74,
+															Line:   77,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 81,
+												Line:   77,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 53,
+												Line:   77,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   77,
+												},
+												File:   "show_tag_values_empty_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 53,
+													Line:   77,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 60,
+														Line:   77,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 53,
+														Line:   77,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   77,
+													},
+													File:   "show_tag_values_empty_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 61,
+														Line:   77,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 105,
+											Line:   77,
+										},
+										File:   "show_tag_values_empty_test.flux",
+										Source: "fn: show_tag_values_fn",
+										Start: ast.Position{
+											Column: 83,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 85,
+												Line:   77,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 83,
+												Line:   77,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 105,
+												Line:   77,
+											},
+											File:   "show_tag_values_empty_test.flux",
+											Source: "show_tag_values_fn",
+											Start: ast.Position{
+												Column: 87,
+												Line:   77,
+											},
+										},
+									},
+									Name: "show_tag_values_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 107,
+						Line:   77,
+					},
+					File:   "show_tag_values_empty_test.flux",
+					Source: "test show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   76,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "show_tag_values_empty_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "show_tag_values_empty_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 20,
+						Line:   1,
+					},
+					File:   "show_tag_values_empty_test.flux",
+					Source: "package schema_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 20,
+							Line:   1,
+						},
+						File:   "show_tag_values_empty_test.flux",
+						Source: "schema_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "schema_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 107,
+					Line:   77,
+				},
 				File:   "show_tag_values_test.flux",
 				Source: "package schema_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#group,false,false,false,false,true,true,true,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,long,string,string,string,string,string,string,string\n#default,_result,,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,mode,path\n,,0,2020-10-21T20:48:30Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:40Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,0,2020-10-21T20:48:50Z,4881964326,inodes_free,disk,disk1s5,apfs,euterpe.local,ro,/\n,,1,2020-10-21T20:48:30Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:40Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,1,2020-10-21T20:48:50Z,4294963701,inodes_free,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,2,2020-10-21T20:48:30Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:40Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,2,2020-10-21T20:48:50Z,488514,inodes_used,disk,disk1s5,apfs,euterpe.local,ro,/\n,,3,2020-10-21T20:48:30Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:40Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n,,3,2020-10-21T20:48:50Z,3578,inodes_used,disk,disk2s1,hfs,euterpe.local,ro,/Volumes/IntelliJ IDEA CE\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,4,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,euterpe.local\n,,4,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,euterpe.local\n,,5,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,euterpe.local\n,,5,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,euterpe.local\n\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,6,2020-10-21T20:48:30Z,69.30000000167638,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:40Z,67.36736736724372,usage_idle,cpu,cpu0,mnemosyne.local\n,,6,2020-10-21T20:48:50Z,69.23076923005354,usage_idle,cpu,cpu0,mnemosyne.local\n,,7,2020-10-21T20:48:30Z,96.10000000102445,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:40Z,95.70000000055181,usage_idle,cpu,cpu1,mnemosyne.local\n,,7,2020-10-21T20:48:50Z,95.89999999860534,usage_idle,cpu,cpu1,mnemosyne.local\n\n#group,false,false,true,true,false,false,true,true,true\n#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,string\n#default,_result,,,,,,,,\n,result,table,_field,_measurement,_time,_value,cpu,host,region\n,,8,usage_user,cpu,2020-10-21T20:48:30Z,19.30000000007567,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:40Z,20.020020020038682,cpu0,euterpe.local,north\n,,8,usage_user,cpu,2020-10-21T20:48:50Z,18.581418581407107,cpu0,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:30Z,2.3000000000138243,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north\n,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north\n\"\n\noutput = \"\n#datatype,string,long,string\n#group,false,false,false\n#default,0,,\n,result,table,_value\n,,0,euterpe.local\n,,0,mnemosyne.local\n\"\n\nshow_tag_values_fn = (tables=<-) => tables\n    |> range(start: 2018-01-01T00:00:00Z)\n    |> filter(fn: (r) => true)\n    |> keep(columns: [\"host\"])\n    |> group()\n    |> distinct(column: \"host\")\n    |> sort()\n\ntest show_tag_values = () =>\n    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_values_fn})",
 				Start: ast.Position{
