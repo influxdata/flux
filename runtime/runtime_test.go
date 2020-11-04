@@ -6,8 +6,8 @@ import (
 	"os"
 	"testing"
 
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/parser"
 	"github.com/influxdata/flux/runtime"

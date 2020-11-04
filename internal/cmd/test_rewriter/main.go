@@ -8,9 +8,9 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/memory"

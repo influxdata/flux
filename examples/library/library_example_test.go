@@ -1,7 +1,7 @@
 package library_test
 
 import (
-	_ "github.com/influxdata/flux/builtin"
+	_ "github.com/influxdata/flux/fluxinit/static"
 )
 
 // TODO (faith): https://github.com/influxdata/flux/issues/2476; this is not a test function,

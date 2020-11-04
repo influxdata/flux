@@ -18,7 +18,7 @@ import (
 	"github.com/influxdata/flux/stdlib/socket"
 	"github.com/influxdata/flux/stdlib/universe"
 
-	_ "github.com/influxdata/flux/builtin" // We need to import the builtins for the tests to work.
+	_ "github.com/influxdata/flux/fluxinit/static" // We need to init flux for the tests to work.
 )
 
 func TestFromSocket_NewQuery(t *testing.T) {

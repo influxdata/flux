@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	_ "github.com/influxdata/flux/builtin"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/interpreter/interptest"
