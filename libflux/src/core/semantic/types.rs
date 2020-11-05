@@ -170,23 +170,41 @@ pub enum Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut fresh = Fresher::from(0);
         match self {
-            Error::CannotUnify { exp, act } => write!(f, "expected {} but found {}", exp, act),
-            Error::CannotConstrain { exp, act } => write!(f, "{} is not {}", act, exp),
+            Error::CannotUnify { exp, act } => write!(
+                f,
+                "expected {} but found {}",
+                exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+            ),
+            Error::CannotConstrain { exp, act } => write!(
+                f,
+                "{} is not {}",
+                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                exp,
+            ),
             Error::OccursCheck(tv, ty) => {
                 write!(f, "recursive types not supported {} != {}", tv, ty)
             }
             Error::MissingLabel(a) => write!(f, "record is missing label {}", a),
             Error::ExtraLabel(a) => write!(f, "found unexpected label {}", a),
-            Error::CannotUnifyLabel { lab, exp, act } => {
-                write!(f, "expected {} but found {} for label {}", exp, act, lab)
-            }
+            Error::CannotUnifyLabel { lab, exp, act } => write!(
+                f,
+                "expected {} but found {} for label {}",
+                exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                lab
+            ),
             Error::MissingArgument(x) => write!(f, "missing required argument {}", x),
             Error::ExtraArgument(x) => write!(f, "found unexpected argument {}", x),
             Error::CannotUnifyArgument(x, e) => write!(f, "{} (argument {})", e, x),
-            Error::CannotUnifyReturn { exp, act } => {
-                write!(f, "expected {} but found {} for return type", exp, act)
-            }
+            Error::CannotUnifyReturn { exp, act } => write!(
+                f,
+                "expected {} but found {} for return type",
+                exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
+                act.clone().fresh(&mut fresh, &mut TvarMap::new())
+            ),
             Error::MissingPipeArgument => write!(f, "missing pipe argument"),
             Error::MultiplePipeArguments { exp, act } => {
                 write!(f, "expected pipe argument {} but found {}", exp, act)
@@ -505,7 +523,19 @@ pub type SubstitutionMap = SemanticMap<Tvar, MonoType>;
 
 impl fmt::Display for Tvar {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "t{}", self.0)
+        match self.0 {
+            0 => write!(f, "A"),
+            1 => write!(f, "B"),
+            2 => write!(f, "C"),
+            3 => write!(f, "D"),
+            4 => write!(f, "E"),
+            5 => write!(f, "F"),
+            6 => write!(f, "G"),
+            7 => write!(f, "H"),
+            8 => write!(f, "I"),
+            9 => write!(f, "J"),
+            _ => write!(f, "t{}", self.0),
+        }
     }
 }
 
@@ -1356,7 +1386,7 @@ mod tests {
     #[test]
     fn display_type_row() {
         assert_eq!(
-            "{a:int | b:string | t0}",
+            "{a:int | b:string | A}",
             Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1525,7 +1555,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [t0] (x:t0) -> t0",
+            "forall [A] (x:A) -> A",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: TvarKinds::new(),
@@ -1541,7 +1571,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [t0, t1] (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
+            "forall [A, B] (x:A, y:B) -> {x:A | y:B | {}}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: TvarKinds::new(),
@@ -1570,7 +1600,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [t0] where t0:Addable (a:t0, b:t0) -> t0",
+            "forall [A] where A:Addable (a:A, b:A) -> A",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
@@ -1587,7 +1617,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [t0, t1] where t0:Addable, t1:Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
+            "forall [A, B] where A:Addable, B:Divisible (x:A, y:B) -> {x:A | y:B | {}}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {
@@ -1619,7 +1649,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [t0, t1] where t0:Comparable + Equatable, t1:Addable + Divisible (x:t0, y:t1) -> {x:t0 | y:t1 | {}}",
+            "forall [A, B] where A:Comparable + Equatable, B:Addable + Divisible (x:A, y:B) -> {x:A | y:B | {}}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {
