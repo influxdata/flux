@@ -13,9 +13,9 @@ import (
 func TestNewWindow(t *testing.T) {
 	var testcases = []struct {
 		name    string
-		every   values.Duration
-		period  values.Duration
-		offset  values.Duration
+		every   interval.Duration
+		period  interval.Duration
+		offset  interval.Duration
 		wantErr bool
 	}{
 		{
@@ -69,8 +69,8 @@ func TestNewWindow(t *testing.T) {
 }
 
 type Bounds struct {
-	Start values.Time
-	Stop  values.Time
+	Start interval.Time
+	Stop  interval.Time
 }
 
 func TestWindow_GetEarliestBounds(t *testing.T) {
@@ -593,7 +593,7 @@ func TestWindow_NextBounds(t *testing.T) {
 	testcases := []struct {
 		name string
 		w    interval.Window
-		t    values.Time
+		t    interval.Time
 		want []Bounds
 	}{
 		{
