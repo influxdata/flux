@@ -1,5 +1,6 @@
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
+use std::fmt::Write;
 
 use std::{
     cmp,
@@ -29,21 +30,14 @@ macro_rules! semantic_map {
 
 impl fmt::Display for PolyType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let vars = &self
-            .vars
-            .iter()
-            .map(|x| x.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
         if self.cons.is_empty() {
-            write!(f, "forall [{}] {}", vars, self.expr)
+            self.expr.fmt(f)
         } else {
             write!(
                 f,
-                "forall [{}] where {} {}",
-                vars,
+                "{} where {}",
+                self.expr,
                 PolyType::display_constraints(&self.cons),
-                self.expr
             )
         }
     }
@@ -109,7 +103,7 @@ impl PolyType {
             // deterministic display output
             .collect::<BTreeMap<_, _>>()
             .iter()
-            .map(|(&&tv, &kinds)| format!("{}:{}", tv, PolyType::display_kinds(kinds)))
+            .map(|(&&tv, &kinds)| format!("{}: {}", tv, PolyType::display_kinds(kinds)))
             .collect::<Vec<_>>()
             .join(", ")
     }
@@ -688,7 +682,16 @@ pub enum Record {
 impl fmt::Display for Record {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("{")?;
-        self.format(f)?;
+        let mut s = String::new();
+        let tvar = self.format(&mut s)?;
+        if let Some(tv) = tvar {
+            write!(f, "{} with ", tv)?;
+        }
+        if s.len() > 2 {
+            // remove trailing ', ' delimiter
+            s.truncate(s.len() - 2);
+        }
+        f.write_str(s.as_str())?;
         f.write_str("}")
     }
 }
@@ -913,13 +916,16 @@ impl Record {
         }
     }
 
-    fn format(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn format(&self, f: &mut String) -> Result<Option<Tvar>, fmt::Error> {
         match self {
-            Record::Empty => f.write_str("{}"),
+            Record::Empty => Ok(None),
             Record::Extension { head, tail } => match tail {
-                MonoType::Var(_) => write!(f, "{} | {}", head, tail),
+                MonoType::Var(tv) => {
+                    write!(f, "{}, ", head)?;
+                    Ok(Some(*tv))
+                }
                 MonoType::Record(obj) => {
-                    write!(f, "{} | ", head)?;
+                    write!(f, "{}, ", head)?;
                     obj.format(f)
                 }
                 _ => Err(fmt::Error),
@@ -1034,7 +1040,7 @@ impl fmt::Display for Function {
 
         write!(
             f,
-            "({}) -> {}",
+            "({}) => {}",
             pipe.iter()
                 .chain(required.iter().chain(optional.iter()))
                 .map(|x| x.to_string())
@@ -1132,10 +1138,10 @@ impl Function {
     ///
     /// For pipe arguments, it becomes quite tricky. Take these statements:
     ///
-    /// 1. f = (a=<-, b) -> {...}
+    /// 1. f = (a=<-, b) => {...}
     /// 2. 0 |> f(b: 1)
     /// 3. f(a: 0, b: 1)
-    /// 4. f = (d=<-, b, c=0) -> {...}
+    /// 4. f = (d=<-, b, c=0) => {...}
     ///
     /// 2 and 3 are two equivalent ways of invoking 1, and they should both unify.
     /// `a` is the named pipe argument in 1. In 2, the pipe argument is unnamed.
@@ -1384,9 +1390,9 @@ mod tests {
         );
     }
     #[test]
-    fn display_type_row() {
+    fn display_type_record() {
         assert_eq!(
-            "{a:int | b:string | A}",
+            "{A with a:int, b:string}",
             Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1403,7 +1409,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "{a:int | b:string | {}}",
+            "{a:int, b:string}",
             Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1423,7 +1429,7 @@ mod tests {
     #[test]
     fn display_type_function() {
         assert_eq!(
-            "() -> int",
+            "() => int",
             Function {
                 req: MonoTypeMap::new(),
                 opt: MonoTypeMap::new(),
@@ -1433,7 +1439,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int) -> int",
+            "(<-:int) => int",
             Function {
                 req: MonoTypeMap::new(),
                 opt: MonoTypeMap::new(),
@@ -1446,7 +1452,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-a:int) -> int",
+            "(<-a:int) => int",
             Function {
                 req: MonoTypeMap::new(),
                 opt: MonoTypeMap::new(),
@@ -1459,7 +1465,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int, a:int, b:int) -> int",
+            "(<-:int, a:int, b:int) => int",
             Function {
                 req: semantic_map! {
                     String::from("a") => MonoType::Int,
@@ -1475,7 +1481,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int, ?a:int, ?b:int) -> int",
+            "(<-:int, ?a:int, ?b:int) => int",
             Function {
                 req: MonoTypeMap::new(),
                 opt: semantic_map! {
@@ -1491,7 +1497,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-:int, a:int, b:int, ?c:int, ?d:int) -> int",
+            "(<-:int, a:int, b:int, ?c:int, ?d:int) => int",
             Function {
                 req: semantic_map! {
                     String::from("a") => MonoType::Int,
@@ -1510,7 +1516,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(a:int, ?b:bool) -> int",
+            "(a:int, ?b:bool) => int",
             Function {
                 req: semantic_map! {
                     String::from("a") => MonoType::Int,
@@ -1524,7 +1530,7 @@ mod tests {
             .to_string()
         );
         assert_eq!(
-            "(<-a:int, b:int, c:int, ?d:bool) -> int",
+            "(<-a:int, b:int, c:int, ?d:bool) => int",
             Function {
                 req: semantic_map! {
                     String::from("b") => MonoType::Int,
@@ -1546,7 +1552,7 @@ mod tests {
     #[test]
     fn display_polytype() {
         assert_eq!(
-            "forall [] int",
+            "int",
             PolyType {
                 vars: Vec::new(),
                 cons: TvarKinds::new(),
@@ -1555,7 +1561,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [A] (x:A) -> A",
+            "(x:A) => A",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: TvarKinds::new(),
@@ -1571,7 +1577,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [A, B] (x:A, y:B) -> {x:A | y:B | {}}",
+            "(x:A, y:B) => {x:A, y:B}",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: TvarKinds::new(),
@@ -1600,7 +1606,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [A] where A:Addable (a:A, b:A) -> A",
+            "(a:A, b:A) => A where A: Addable",
             PolyType {
                 vars: vec![Tvar(0)],
                 cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
@@ -1617,7 +1623,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [A, B] where A:Addable, B:Divisible (x:A, y:B) -> {x:A | y:B | {}}",
+            "(x:A, y:B) => {x:A, y:B} where A: Addable, B: Divisible",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {
@@ -1649,7 +1655,7 @@ mod tests {
             .to_string(),
         );
         assert_eq!(
-            "forall [A, B] where A:Comparable + Equatable, B:Addable + Divisible (x:A, y:B) -> {x:A | y:B | {}}",
+            "(x:A, y:B) => {x:A, y:B} where A: Comparable + Equatable, B: Addable + Divisible",
             PolyType {
                 vars: vec![Tvar(0), Tvar(1)],
                 cons: semantic_map! {
@@ -1685,7 +1691,7 @@ mod tests {
     #[test]
     fn compare_records() {
         assert_eq!(
-            // {a:int | b:string | A}
+            // {A with a:int, b:string}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1699,7 +1705,7 @@ mod tests {
                     tail: MonoType::Var(Tvar(0)),
                 })),
             })),
-            // {b:string | a:int | A}
+            // {A with b:string, a:int}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("b"),
@@ -1715,7 +1721,7 @@ mod tests {
             })),
         );
         assert_eq!(
-            // {a:int | b:string | b:int | c:float | A}
+            // {A with a:int, b:string, b:int, c:float}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1741,7 +1747,7 @@ mod tests {
                     })),
                 })),
             })),
-            // {c:float | b:string | b:int | a:int | A}
+            // {A with c:float, b:string, b:int, a:int}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("c"),
@@ -1769,7 +1775,7 @@ mod tests {
             })),
         );
         assert_ne!(
-            // {a:int | b:string | b:int | c:float | A}
+            // {A with a:int, b:string, b:int, c:float}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1795,7 +1801,7 @@ mod tests {
                     })),
                 })),
             })),
-            // {a:int | b:int | b:string | c:float | A}
+            // {A with a:int, b:int, b:string, c:float}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1823,7 +1829,7 @@ mod tests {
             })),
         );
         assert_ne!(
-            // {a:int | b:string | {}}
+            // {a:int, b:string}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1837,7 +1843,7 @@ mod tests {
                     tail: MonoType::Record(Box::new(Record::Empty)),
                 })),
             })),
-            // {b:int | a:int | {}}
+            // {b:int, a:int}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("b"),
@@ -1853,7 +1859,7 @@ mod tests {
             })),
         );
         assert_ne!(
-            // {a:int | {}}
+            // {a:int}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1861,7 +1867,7 @@ mod tests {
                 },
                 tail: MonoType::Record(Box::new(Record::Empty)),
             })),
-            // {a:int | A}
+            // {A with a:int}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1871,7 +1877,7 @@ mod tests {
             })),
         );
         assert_ne!(
-            // {a:int | A}
+            // {A with a:int}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
@@ -1879,7 +1885,7 @@ mod tests {
                 },
                 tail: MonoType::Var(Tvar(0)),
             })),
-            // {a:int | B}
+            // {B with a:int}
             MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: String::from("a"),
