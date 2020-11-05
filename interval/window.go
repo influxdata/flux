@@ -12,13 +12,13 @@ const epoch = values.Time(0)
 
 // Window is a description of an infinte set of boundaries in time.
 type Window struct {
-	// The ith window start is expressed via this equation:
-	//   window_start_i = start + every * i
-	//   window_stop_i = start + every * i + period
-	every       values.Duration
-	period      values.Duration
-	start       values.Time
-	startMonths int64
+	// The ith window is expressed via this equation:
+	//   window_stop_i = zero + every * i
+	//   window_start_i = zero + every * i - period
+	every      values.Duration
+	period     values.Duration
+	zero       values.Time
+	zeroMonths int64
 }
 
 // NewWindow creates a window which can be used to determine the boundaries for a given point.
@@ -27,12 +27,13 @@ type Window struct {
 // Each window's length is the start boundary plus the period.
 // Every must not be a mix of months and nanoseconds in order to preserve constant time bounds lookup.
 func NewWindow(every, period, offset values.Duration) (Window, error) {
-	start := epoch.Add(offset)
+	zero := epoch.Add(offset)
 	w := Window{
-		every:       every,
-		period:      period,
-		start:       start,
-		startMonths: monthsSince(start),
+		every: every,
+		// treat period as the time before the stop time
+		period:     period.Mul(-1),
+		zero:       zero,
+		zeroMonths: monthsSince(zero),
 	}
 	if err := w.isValid(); err != nil {
 		return Window{}, err
@@ -81,12 +82,12 @@ func (w Window) GetEarliestBounds(t values.Time) Bounds {
 	}
 	// Now do a direct search for the earliest bounds
 	var start, stop values.Time
-	if w.period.IsNegative() {
-		stop = w.start.Add(w.every.Mul(index + 1))
+	if w.period.IsPositive() {
+		stop = w.zero.Add(w.every.Mul(index + 1))
 		start = stop.Add(w.period)
 	} else {
-		start = w.start.Add(w.every.Mul(index))
-		stop = start.Add(w.period)
+		stop = w.zero.Add(w.every.Mul(index))
+		start = stop.Add(w.period)
 	}
 	b := Bounds{
 		start: start,
@@ -127,9 +128,9 @@ func (w Window) GetOverlappingBounds(start, stop values.Time) []Bounds {
 
 // NextBounds returns the next boundary in sequence from the given boundary.
 func (w Window) NextBounds(b Bounds) Bounds {
-	start := w.start.Add(w.every.Mul(b.index + 1))
-	stop := start.Add(w.period)
-	if w.period.IsNegative() {
+	stop := w.zero.Add(w.every.Mul(b.index + 1))
+	start := stop.Add(w.period)
+	if w.period.IsPositive() {
 		start, stop = stop, start
 	}
 	return Bounds{
@@ -141,9 +142,9 @@ func (w Window) NextBounds(b Bounds) Bounds {
 
 // PrevBounds returns the previous boundary in sequence from the given boundary.
 func (w Window) PrevBounds(b Bounds) Bounds {
-	start := w.start.Add(w.every.Mul(b.index - 1))
-	stop := start.Add(w.period)
-	if w.period.IsNegative() {
+	stop := w.zero.Add(w.every.Mul(b.index - 1))
+	start := stop.Add(w.period)
+	if w.period.IsPositive() {
 		start, stop = stop, start
 	}
 	return Bounds{
@@ -160,63 +161,76 @@ func (w Window) lastIndex(t values.Time) int {
 	//    For months we operate in the number of months since the epoch
 	//    For nanoseconds we operate in the number of nanoseconds since the epoch
 	if w.every.MonthsOnly() {
-		return lastIndex(w.startMonths, monthsSince(t), w.every.Months())
+		return lastIndex(w.zeroMonths, monthsSince(t), w.every.Months())
 	}
-	return lastIndex(int64(w.start), int64(t), w.every.Nanoseconds())
+	return lastIndex(int64(w.zero), int64(t), w.every.Nanoseconds())
 }
 
-// lastIndex computes the index where start + every * index <= target
-// The start, target and every values can be in any units so long as they are consistent and zero based.
-func lastIndex(start, target, every int64) int {
+// lastIndex computes the index where zero + every * index > target
+// The zero, target and every values can be in any units so long as they are consistent and zero based.
+func lastIndex(zero, target, every int64) int {
 	// Given
-	//   start + every * index ≤ target
+	//   zero + every * index > target
 	// Therefore
-	//   index ≤ (target - start) / every
+	//   index > (target - zero) / every
+	// We want the most negative index where the above is true
 
 	// Example: Postive Index
-	// start = 3 target = 13 every = 5
-	// Number line with window starts marked:
-	//    -2 -1 0 1 2 |3 4 5 6 7 |8 9 10 11 12 |13 14 15 16 17
-	//                0          1             2
-	// We can see that the index we want is 2
-	// (target - start) /every
-	//    = (13 - 3) / 5
-	//    = 10 / 5
+	// zero = 3 target = 14 every = 5
+	// Number line with window stops marked:
+	//    -2 -1 0 1 2 |3 4 5 6 7 |8 9 10 11 12 |13 14 15 16 17|
+	//                0          1             2              3
+	// We can see that the index we want is 3
+	// (target - zero) /every
+	//    = (14 - 3) / 5
+	//    = 11 / 5
 	//    = 2
+	// The we have to adjust by 1 because the delta was positive
+	// and we get 3
+
+	// Example: Postive Index on boundary
+	// zero = 3 target = 8 every = 5
+	// Number line with window stops marked:
+	//   -3 |-2 -1 0 1 2 |3 4 5 6 7 |8 9 10 11 12 |13 14 15
+	//     -1            0          1             2
+	// We can see that the index we want is 2, remember stop is exclusive
+	// (target - zero) /every
+	//    = (8 - 3) / 5
+	//    = 5 / 5
+	//    = 1
+	// The we have to adjust by 1 because the delta was positive
+	// and we get 2
 
 	// Example: Negative Index
-	// start = 3 target = -9 every = 5
-	// Number line with window starts marked:
-	//    |-12 -11 -10 -9 -8 |-7 -6 -5 -4 -3 |-2 -1 0 1 2 |3 4 5 6 7
-	//   -3                 -2              -1            0
-	// We can see that the index we want is -3
-	// (target - start) /every
-	//    = (-9 - 3) / 5
-	//    = -12 / 5
-	//    = -2
-	// The we have to adjust by because the delta was negative
-	// and we get -3
-
-	// Example: Negative Index on boundary
-	// start = 3 target = -7 every = 5
-	// Number line with window starts marked:
+	// zero = 3 target = -9 every = 5
+	// Number line with window stops marked:
 	//    |-12 -11 -10 -9 -8 |-7 -6 -5 -4 -3 |-2 -1 0 1 2 |3 4 5 6 7
 	//   -3                 -2              -1            0
 	// We can see that the index we want is -2
-	// (target - start) /every
+	// (target - zero) /every
+	//    = (-9 - 3) / 5
+	//    = -12 / 5
+	//    = -2
+	// We do not have to adjust by because the delta was negative
+
+	// Example: Negative Index on boundary
+	// zero = 3 target = -7 every = 5
+	// Number line with window stops marked:
+	//    |-12 -11 -10 -9 -8 |-7 -6 -5 -4 -3 |-2 -1 0 1 2 |3 4 5 6 7
+	//   -3                 -2              -1            0
+	// We can see that the index we want is -1
+	// (target - zero) /every
 	//    = (-7 - 3) / 5
 	//    = -10 / 5
 	//    = -2
-	// This time we land right on the boundary, since we are lower inclusive
-	// we do not need to adjust.
+	// We have to adjust by 1 because the delta was negative and we landed on the boundary
+	// and we get -1
 
-	delta := target - start
+	delta := target - zero
 	index := delta / every
 
-	// For targets before the start we need to adjust the index,
-	// but only if we did not land right on the boundary.
-	if delta < 0 && delta%every != 0 {
-		index -= 1
+	if delta > 0 || (delta < 0 && delta%every == 0) {
+		index += 1
 	}
 	return int(index)
 }
@@ -232,3 +246,4 @@ func monthsSince(t values.Time) int64 {
 // Move into values package
 // Add tests for NextBounds and PrevBounds
 // Add tests very far away from the epoch
+// GetLatestBounds instead as a more efficient API

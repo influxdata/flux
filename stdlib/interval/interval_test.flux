@@ -64,7 +64,7 @@ interval.intervals(every: 1d, period: 1d, offset: 11h)(start: 2020-10-30T11:00:0
 ] or die(msg: "per day intervals")
 
 // daily 9-5
-interval.intervals(every: 1d, period: 8h, offset: 9h)(start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z) == [
+interval.intervals(every: 1d, period: 8h, offset: 17h)(start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z) == [
     {start: 2020-10-30T09:00:00Z, stop: 2020-10-30T17:00:00Z},
     {start: 2020-10-31T09:00:00Z, stop: 2020-10-31T17:00:00Z},
     {start: 2020-11-01T09:00:00Z, stop: 2020-11-01T17:00:00Z},
@@ -72,5 +72,3 @@ interval.intervals(every: 1d, period: 8h, offset: 9h)(start: 2020-10-30T00:00:00
     {start: 2020-11-03T09:00:00Z, stop: 2020-11-03T17:00:00Z},
     {start: 2020-11-04T09:00:00Z, stop: 2020-11-04T17:00:00Z},
 ] or die(msg: "per day 9AM-5PM intervals")
-
-localTime = 2020-10-30T10:00:00
