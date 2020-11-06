@@ -94,6 +94,8 @@ func (t Time) Add(d Duration) Time {
 		// based on the number of months.
 		ts := t.Time()
 		year, month, day := ts.Date()
+		// track if we started on the last day of the month
+		wasLastDayOfMonth := findLastDayofMonth(year, month) == day
 		year += int(months / 12)
 		month += time.Month(months % 12)
 		// If the month overflowed or underflowed, adjust the year
@@ -108,12 +110,9 @@ func (t Time) Add(d Duration) Time {
 		}
 
 		// Normalize the day if we are past the end of the month.
-		lastDayOfMonth := lastDayOfMonths[month]
-		if month == time.February && isLeapYear(year) {
-			lastDayOfMonth++
-		}
+		lastDayOfMonth := findLastDayofMonth(year, month)
 
-		if day > lastDayOfMonth {
+		if day > lastDayOfMonth || wasLastDayOfMonth {
 			day = lastDayOfMonth
 		}
 
@@ -510,4 +509,12 @@ var lastDayOfMonths = map[time.Month]int{
 
 func isLeapYear(year int) bool {
 	return year%400 == 0 || (year%4 == 0 && year%100 != 0)
+}
+
+func findLastDayofMonth(year int, month time.Month) int {
+	lastDayOfMonth := lastDayOfMonths[month]
+	if month == time.February && isLeapYear(year) {
+		lastDayOfMonth++
+	}
+	return lastDayOfMonth
 }
