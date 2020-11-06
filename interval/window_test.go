@@ -13,9 +13,9 @@ import (
 func TestNewWindow(t *testing.T) {
 	var testcases = []struct {
 		name    string
-		every   interval.Duration
-		period  interval.Duration
-		offset  interval.Duration
+		every   values.Duration
+		period  values.Duration
+		offset  values.Duration
 		wantErr bool
 	}{
 		{
@@ -69,11 +69,11 @@ func TestNewWindow(t *testing.T) {
 }
 
 type Bounds struct {
-	Start interval.Time
-	Stop  interval.Time
+	Start values.Time
+	Stop  values.Time
 }
 
-func TestWindow_GetEarliestBounds(t *testing.T) {
+func TestWindow_GetLatestBounds(t *testing.T) {
 	var testcases = []struct {
 		name string
 		w    interval.Window
@@ -220,8 +220,8 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(30 * time.Second),
 			want: Bounds{
-				Start: execute.Time(-30 * time.Second),
-				Stop:  execute.Time(1*time.Minute + 30*time.Second),
+				Start: execute.Time(30 * time.Second),
+				Stop:  execute.Time(2*time.Minute + 30*time.Second),
 			},
 		},
 		{
@@ -232,8 +232,8 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5*time.Minute + 45*time.Second),
 			want: Bounds{
-				Start: execute.Time(2*time.Minute + 30*time.Second),
-				Stop:  execute.Time(6 * time.Minute),
+				Start: execute.Time(5*time.Minute + 30*time.Second),
+				Stop:  execute.Time(9 * time.Minute),
 			},
 		},
 		{
@@ -244,8 +244,32 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5 * time.Minute),
 			want: Bounds{
-				Start: execute.Time(2*time.Minute + 30*time.Second),
-				Stop:  execute.Time(6 * time.Minute),
+				Start: execute.Time(4*time.Minute + 30*time.Second),
+				Stop:  execute.Time(8 * time.Minute),
+			},
+		},
+		{
+			name: "overlapping with negative period on boundary",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-15*time.Minute),
+				values.ConvertDurationNsecs(0*time.Second)),
+			t: execute.Time(5 * time.Minute),
+			want: Bounds{
+				Start: execute.Time(5 * time.Minute),
+				Stop:  execute.Time(20 * time.Minute),
+			},
+		},
+		{
+			name: "overlapping with negative period",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-15*time.Minute),
+				values.ConvertDurationNsecs(0*time.Second)),
+			t: execute.Time(6 * time.Minute),
+			want: Bounds{
+				Start: execute.Time(5 * time.Minute),
+				Stop:  execute.Time(20 * time.Minute),
 			},
 		},
 		{
@@ -309,6 +333,30 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			},
 		},
 		{
+			name: "calendar overlapping with negative period on boundary",
+			w: mustWindow(
+				values.ConvertDurationMonths(4),
+				values.ConvertDurationMonths(-10),
+				values.ConvertDurationMonths(0)),
+			t: mustTime("1970-03-01T00:00:00Z"),
+			want: Bounds{
+				Start: mustTime("1970-03-01T00:00:00Z"),
+				Stop:  mustTime("1971-01-01T00:00:00Z"),
+			},
+		},
+		{
+			name: "calendar overlapping with negative period",
+			w: mustWindow(
+				values.ConvertDurationMonths(4),
+				values.ConvertDurationMonths(-10),
+				values.ConvertDurationMonths(0)),
+			t: mustTime("1970-03-01T00:00:00Z"),
+			want: Bounds{
+				Start: mustTime("1970-03-01T00:00:00Z"),
+				Stop:  mustTime("1971-01-01T00:00:00Z"),
+			},
+		},
+		{
 			name: "mixed period",
 			w: mustWindow(
 				values.ConvertDurationMonths(2),
@@ -346,7 +394,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			},
 		},
 		{
-			name: "mixed negative offset",
+			name: "calendar mixed negative offset before by days",
 			w: mustWindow(
 				values.ConvertDurationMonths(2),
 				values.ConvertDurationMonths(2),
@@ -354,8 +402,125 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 			),
 			t: mustTime("1970-07-10T00:00:00Z"),
 			want: Bounds{
-				Start: mustTime("1970-05-30T00:00:00Z"),
-				Stop:  mustTime("1970-07-30T00:00:00Z"),
+				Start: mustTime("1970-05-31T00:00:00Z"),
+				Stop:  mustTime("1970-07-31T00:00:00Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset before by hours",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2*time.Hour),
+			),
+			t: mustTime("1970-07-31T21:00:00Z"),
+			want: Bounds{
+				Start: mustTime("1970-06-30T22:00:00Z"),
+				Stop:  mustTime("1970-07-31T22:00:00Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset after by hours",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2*time.Hour),
+			),
+			t: mustTime("1970-07-31T23:00:00Z"),
+			want: Bounds{
+				Start: mustTime("1970-07-31T22:00:00Z"),
+				Stop:  mustTime("1970-08-31T22:00:00Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset before by minutes",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2*time.Minute),
+			),
+			t: mustTime("1970-07-31T23:57:00Z"),
+			want: Bounds{
+				Start: mustTime("1970-06-30T23:58:00Z"),
+				Stop:  mustTime("1970-07-31T23:58:00Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset after by minutes",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2*time.Minute),
+			),
+			t: mustTime("1970-07-31T23:59:00Z"),
+			want: Bounds{
+				Start: mustTime("1970-07-31T23:58:00Z"),
+				Stop:  mustTime("1970-08-31T23:58:00Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset before by seconds",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2*time.Second),
+			),
+			t: mustTime("1970-07-31T23:59:57Z"),
+			want: Bounds{
+				Start: mustTime("1970-06-30T23:59:58Z"),
+				Stop:  mustTime("1970-07-31T23:59:58Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset after by seconds",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2*time.Second),
+			),
+			t: mustTime("1970-07-31T23:59:59Z"),
+			want: Bounds{
+				Start: mustTime("1970-07-31T23:59:58Z"),
+				Stop:  mustTime("1970-08-31T23:59:58Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset before by nanoseconds",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2),
+			),
+			t: mustTime("1970-07-31T23:59:59.999999997Z"),
+			want: Bounds{
+				Start: mustTime("1970-06-30T23:59:59.999999998Z"),
+				Stop:  mustTime("1970-07-31T23:59:59.999999998Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset after by nanoseconds",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2),
+			),
+			t: mustTime("1970-07-31T23:59:59.999999999Z"),
+			want: Bounds{
+				Start: mustTime("1970-07-31T23:59:59.999999998Z"),
+				Stop:  mustTime("1970-08-31T23:59:59.999999998Z"),
+			},
+		},
+		{
+			name: "calendar mixed negative offset equal to nanoseconds",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-2),
+			),
+			t: mustTime("1970-07-31T23:59:59.999999998Z"),
+			want: Bounds{
+				Start: mustTime("1970-07-31T23:59:59.999999998Z"),
+				Stop:  mustTime("1970-08-31T23:59:59.999999998Z"),
 			},
 		},
 	}
@@ -363,7 +528,7 @@ func TestWindow_GetEarliestBounds(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			got := tc.w.GetEarliestBounds(tc.t)
+			got := tc.w.GetLatestBounds(tc.t)
 			if got.Start() != tc.want.Start {
 				t.Errorf("unexpected start boundary: got %s want %s", got.Start(), tc.want.Start)
 			}
@@ -406,9 +571,9 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				Stop:  execute.Time(8 * time.Minute),
 			},
 			want: []Bounds{
-				{Start: execute.Time(5 * time.Minute), Stop: execute.Time(6 * time.Minute)},
-				{Start: execute.Time(6 * time.Minute), Stop: execute.Time(7 * time.Minute)},
 				{Start: execute.Time(7 * time.Minute), Stop: execute.Time(8 * time.Minute)},
+				{Start: execute.Time(6 * time.Minute), Stop: execute.Time(7 * time.Minute)},
+				{Start: execute.Time(5 * time.Minute), Stop: execute.Time(6 * time.Minute)},
 			},
 		},
 		{
@@ -424,16 +589,16 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 			},
 			want: []Bounds{
 				{
-					Start: execute.Time(4*time.Minute + 15*time.Second),
-					Stop:  execute.Time(5*time.Minute + 15*time.Second),
+					Start: execute.Time(6*time.Minute + 15*time.Second),
+					Stop:  execute.Time(7*time.Minute + 15*time.Second),
 				},
 				{
 					Start: execute.Time(5*time.Minute + 15*time.Second),
 					Stop:  execute.Time(6*time.Minute + 15*time.Second),
 				},
 				{
-					Start: execute.Time(6*time.Minute + 15*time.Second),
-					Stop:  execute.Time(7*time.Minute + 15*time.Second),
+					Start: execute.Time(4*time.Minute + 15*time.Second),
+					Stop:  execute.Time(5*time.Minute + 15*time.Second),
 				},
 			},
 		},
@@ -463,12 +628,12 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 			},
 			want: []Bounds{
 				{
-					Start: execute.Time(2*time.Minute + 30*time.Second),
-					Stop:  execute.Time(3*time.Minute + 30*time.Second),
-				},
-				{
 					Start: execute.Time(4*time.Minute + 30*time.Second),
 					Stop:  execute.Time(5*time.Minute + 30*time.Second),
+				},
+				{
+					Start: execute.Time(2*time.Minute + 30*time.Second),
+					Stop:  execute.Time(3*time.Minute + 30*time.Second),
 				},
 			},
 		},
@@ -485,20 +650,20 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 			},
 			want: []Bounds{
 				{
-					Start: execute.Time(8 * time.Minute),
-					Stop:  execute.Time(10*time.Minute + 15*time.Second),
-				},
-				{
-					Start: execute.Time(9 * time.Minute),
-					Stop:  execute.Time(11*time.Minute + 15*time.Second),
+					Start: execute.Time(11 * time.Minute),
+					Stop:  execute.Time(13*time.Minute + 15*time.Second),
 				},
 				{
 					Start: execute.Time(10 * time.Minute),
 					Stop:  execute.Time(12*time.Minute + 15*time.Second),
 				},
 				{
-					Start: execute.Time(11 * time.Minute),
-					Stop:  execute.Time(13*time.Minute + 15*time.Second),
+					Start: execute.Time(9 * time.Minute),
+					Stop:  execute.Time(11*time.Minute + 15*time.Second),
+				},
+				{
+					Start: execute.Time(8 * time.Minute),
+					Stop:  execute.Time(10*time.Minute + 15*time.Second),
 				},
 			},
 		},
@@ -514,13 +679,13 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			want: []Bounds{
-				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-10-02T00:00:00Z")},
-				{Start: mustTime("2019-10-02T00:00:00Z"), Stop: mustTime("2019-10-03T00:00:00Z")},
-				{Start: mustTime("2019-10-03T00:00:00Z"), Stop: mustTime("2019-10-04T00:00:00Z")},
-				{Start: mustTime("2019-10-04T00:00:00Z"), Stop: mustTime("2019-10-05T00:00:00Z")},
-				{Start: mustTime("2019-10-05T00:00:00Z"), Stop: mustTime("2019-10-06T00:00:00Z")},
-				{Start: mustTime("2019-10-06T00:00:00Z"), Stop: mustTime("2019-10-07T00:00:00Z")},
 				{Start: mustTime("2019-10-07T00:00:00Z"), Stop: mustTime("2019-10-08T00:00:00Z")},
+				{Start: mustTime("2019-10-06T00:00:00Z"), Stop: mustTime("2019-10-07T00:00:00Z")},
+				{Start: mustTime("2019-10-05T00:00:00Z"), Stop: mustTime("2019-10-06T00:00:00Z")},
+				{Start: mustTime("2019-10-04T00:00:00Z"), Stop: mustTime("2019-10-05T00:00:00Z")},
+				{Start: mustTime("2019-10-03T00:00:00Z"), Stop: mustTime("2019-10-04T00:00:00Z")},
+				{Start: mustTime("2019-10-02T00:00:00Z"), Stop: mustTime("2019-10-03T00:00:00Z")},
+				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-10-02T00:00:00Z")},
 			},
 		},
 		{
@@ -535,18 +700,18 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			want: []Bounds{
-				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
-				{Start: mustTime("2019-02-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
-				{Start: mustTime("2019-03-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
-				{Start: mustTime("2019-04-01T00:00:00Z"), Stop: mustTime("2019-05-01T00:00:00Z")},
-				{Start: mustTime("2019-05-01T00:00:00Z"), Stop: mustTime("2019-06-01T00:00:00Z")},
-				{Start: mustTime("2019-06-01T00:00:00Z"), Stop: mustTime("2019-07-01T00:00:00Z")},
-				{Start: mustTime("2019-07-01T00:00:00Z"), Stop: mustTime("2019-08-01T00:00:00Z")},
-				{Start: mustTime("2019-08-01T00:00:00Z"), Stop: mustTime("2019-09-01T00:00:00Z")},
-				{Start: mustTime("2019-09-01T00:00:00Z"), Stop: mustTime("2019-10-01T00:00:00Z")},
-				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-11-01T00:00:00Z")},
-				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2019-12-01T00:00:00Z")},
 				{Start: mustTime("2019-12-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
+				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2019-12-01T00:00:00Z")},
+				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2019-11-01T00:00:00Z")},
+				{Start: mustTime("2019-09-01T00:00:00Z"), Stop: mustTime("2019-10-01T00:00:00Z")},
+				{Start: mustTime("2019-08-01T00:00:00Z"), Stop: mustTime("2019-09-01T00:00:00Z")},
+				{Start: mustTime("2019-07-01T00:00:00Z"), Stop: mustTime("2019-08-01T00:00:00Z")},
+				{Start: mustTime("2019-06-01T00:00:00Z"), Stop: mustTime("2019-07-01T00:00:00Z")},
+				{Start: mustTime("2019-05-01T00:00:00Z"), Stop: mustTime("2019-06-01T00:00:00Z")},
+				{Start: mustTime("2019-04-01T00:00:00Z"), Stop: mustTime("2019-05-01T00:00:00Z")},
+				{Start: mustTime("2019-03-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
+				{Start: mustTime("2019-02-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
+				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
 			},
 		},
 		{
@@ -561,20 +726,20 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			want: []Bounds{
-				{Start: mustTime("2018-11-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
-				{Start: mustTime("2018-12-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
-				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
-				{Start: mustTime("2019-02-01T00:00:00Z"), Stop: mustTime("2019-05-01T00:00:00Z")},
-				{Start: mustTime("2019-03-01T00:00:00Z"), Stop: mustTime("2019-06-01T00:00:00Z")},
-				{Start: mustTime("2019-04-01T00:00:00Z"), Stop: mustTime("2019-07-01T00:00:00Z")},
-				{Start: mustTime("2019-05-01T00:00:00Z"), Stop: mustTime("2019-08-01T00:00:00Z")},
-				{Start: mustTime("2019-06-01T00:00:00Z"), Stop: mustTime("2019-09-01T00:00:00Z")},
-				{Start: mustTime("2019-07-01T00:00:00Z"), Stop: mustTime("2019-10-01T00:00:00Z")},
-				{Start: mustTime("2019-08-01T00:00:00Z"), Stop: mustTime("2019-11-01T00:00:00Z")},
-				{Start: mustTime("2019-09-01T00:00:00Z"), Stop: mustTime("2019-12-01T00:00:00Z")},
-				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
-				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2020-02-01T00:00:00Z")},
 				{Start: mustTime("2019-12-01T00:00:00Z"), Stop: mustTime("2020-03-01T00:00:00Z")},
+				{Start: mustTime("2019-11-01T00:00:00Z"), Stop: mustTime("2020-02-01T00:00:00Z")},
+				{Start: mustTime("2019-10-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
+				{Start: mustTime("2019-09-01T00:00:00Z"), Stop: mustTime("2019-12-01T00:00:00Z")},
+				{Start: mustTime("2019-08-01T00:00:00Z"), Stop: mustTime("2019-11-01T00:00:00Z")},
+				{Start: mustTime("2019-07-01T00:00:00Z"), Stop: mustTime("2019-10-01T00:00:00Z")},
+				{Start: mustTime("2019-06-01T00:00:00Z"), Stop: mustTime("2019-09-01T00:00:00Z")},
+				{Start: mustTime("2019-05-01T00:00:00Z"), Stop: mustTime("2019-08-01T00:00:00Z")},
+				{Start: mustTime("2019-04-01T00:00:00Z"), Stop: mustTime("2019-07-01T00:00:00Z")},
+				{Start: mustTime("2019-03-01T00:00:00Z"), Stop: mustTime("2019-06-01T00:00:00Z")},
+				{Start: mustTime("2019-02-01T00:00:00Z"), Stop: mustTime("2019-05-01T00:00:00Z")},
+				{Start: mustTime("2019-01-01T00:00:00Z"), Stop: mustTime("2019-04-01T00:00:00Z")},
+				{Start: mustTime("2018-12-01T00:00:00Z"), Stop: mustTime("2019-03-01T00:00:00Z")},
+				{Start: mustTime("2018-11-01T00:00:00Z"), Stop: mustTime("2019-02-01T00:00:00Z")},
 			},
 		},
 	}
@@ -593,7 +758,7 @@ func TestWindow_NextBounds(t *testing.T) {
 	testcases := []struct {
 		name string
 		w    interval.Window
-		t    interval.Time
+		t    values.Time
 		want []Bounds
 	}{
 		{
@@ -614,6 +779,43 @@ func TestWindow_NextBounds(t *testing.T) {
 			},
 		},
 		{
+			name: "simple negative period",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-5*time.Minute),
+				values.ConvertDurationNsecs(0),
+			),
+			t: execute.Time(10 * time.Minute),
+			want: []Bounds{
+				{Start: execute.Time(10 * time.Minute), Stop: execute.Time(15 * time.Minute)},
+				{Start: execute.Time(15 * time.Minute), Stop: execute.Time(20 * time.Minute)},
+				{Start: execute.Time(20 * time.Minute), Stop: execute.Time(25 * time.Minute)},
+				{Start: execute.Time(25 * time.Minute), Stop: execute.Time(30 * time.Minute)},
+				{Start: execute.Time(30 * time.Minute), Stop: execute.Time(35 * time.Minute)},
+				{Start: execute.Time(35 * time.Minute), Stop: execute.Time(40 * time.Minute)},
+			},
+		},
+		{
+			name: "beginning of month",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(0),
+			),
+			t: mustTime("2020-10-01T00:00:00Z"),
+			want: []Bounds{
+				{Start: mustTime("2020-10-01T00:00:00Z"), Stop: mustTime("2020-11-01T00:00:00Z")},
+				{Start: mustTime("2020-11-01T00:00:00Z"), Stop: mustTime("2020-12-01T00:00:00Z")},
+				{Start: mustTime("2020-12-01T00:00:00Z"), Stop: mustTime("2021-01-01T00:00:00Z")},
+				{Start: mustTime("2021-01-01T00:00:00Z"), Stop: mustTime("2021-02-01T00:00:00Z")},
+				{Start: mustTime("2021-02-01T00:00:00Z"), Stop: mustTime("2021-03-01T00:00:00Z")},
+				{Start: mustTime("2021-03-01T00:00:00Z"), Stop: mustTime("2021-04-01T00:00:00Z")},
+				{Start: mustTime("2021-04-01T00:00:00Z"), Stop: mustTime("2021-05-01T00:00:00Z")},
+				{Start: mustTime("2021-05-01T00:00:00Z"), Stop: mustTime("2021-06-01T00:00:00Z")},
+				{Start: mustTime("2021-06-01T00:00:00Z"), Stop: mustTime("2021-07-01T00:00:00Z")},
+			},
+		},
+		{
 			name: "end of month",
 			w: mustWindow(
 				values.ConvertDurationMonths(1),
@@ -622,21 +824,19 @@ func TestWindow_NextBounds(t *testing.T) {
 			),
 			t: mustTime("2020-10-01T00:00:00Z"),
 			want: []Bounds{
-				// These stop times are weird because of the last day of the month oddness
-				// TODO comment stop time oddness and be ok with it
-				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-30T00:00:00Z")},
+				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-31T00:00:00Z")},
 				{Start: mustTime("2020-10-31T00:00:00Z"), Stop: mustTime("2020-11-30T00:00:00Z")},
-				{Start: mustTime("2020-11-30T00:00:00Z"), Stop: mustTime("2020-12-30T00:00:00Z")},
+				{Start: mustTime("2020-11-30T00:00:00Z"), Stop: mustTime("2020-12-31T00:00:00Z")},
 				{Start: mustTime("2020-12-31T00:00:00Z"), Stop: mustTime("2021-01-31T00:00:00Z")},
 				{Start: mustTime("2021-01-31T00:00:00Z"), Stop: mustTime("2021-02-28T00:00:00Z")},
-				{Start: mustTime("2021-02-28T00:00:00Z"), Stop: mustTime("2021-03-28T00:00:00Z")},
+				{Start: mustTime("2021-02-28T00:00:00Z"), Stop: mustTime("2021-03-31T00:00:00Z")},
 				// This is the case the index gets right.
 				// If we were to simply add a month to 2-28 the next window
 				// would start on 3-28 instead of 3-31.
 				{Start: mustTime("2021-03-31T00:00:00Z"), Stop: mustTime("2021-04-30T00:00:00Z")},
-				{Start: mustTime("2021-04-30T00:00:00Z"), Stop: mustTime("2021-05-30T00:00:00Z")},
+				{Start: mustTime("2021-04-30T00:00:00Z"), Stop: mustTime("2021-05-31T00:00:00Z")},
 				{Start: mustTime("2021-05-31T00:00:00Z"), Stop: mustTime("2021-06-30T00:00:00Z")},
-				{Start: mustTime("2021-06-30T00:00:00Z"), Stop: mustTime("2021-07-30T00:00:00Z")},
+				{Start: mustTime("2021-06-30T00:00:00Z"), Stop: mustTime("2021-07-31T00:00:00Z")},
 				{Start: mustTime("2021-07-31T00:00:00Z"), Stop: mustTime("2021-08-31T00:00:00Z")},
 				{Start: mustTime("2021-08-31T00:00:00Z"), Stop: mustTime("2021-09-30T00:00:00Z")},
 			},
@@ -645,7 +845,7 @@ func TestWindow_NextBounds(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			b := tc.w.GetEarliestBounds(tc.t)
+			b := tc.w.GetLatestBounds(tc.t)
 			got := make([]Bounds, 0, len(tc.want))
 			for range tc.want {
 				got = append(got, Bounds{
@@ -653,6 +853,109 @@ func TestWindow_NextBounds(t *testing.T) {
 					Stop:  b.Stop(),
 				})
 				b = tc.w.NextBounds(b)
+			}
+			if !cmp.Equal(tc.want, got) {
+				t.Errorf("got unexpected bounds; -want/+got:\n%v\n", cmp.Diff(tc.want, got))
+			}
+		})
+	}
+}
+func TestWindow_PrevBounds(t *testing.T) {
+	testcases := []struct {
+		name string
+		w    interval.Window
+		t    values.Time
+		want []Bounds
+	}{
+		{
+			name: "simple",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(0),
+			),
+			t: execute.Time(36 * time.Minute),
+			want: []Bounds{
+				{Start: execute.Time(35 * time.Minute), Stop: execute.Time(40 * time.Minute)},
+				{Start: execute.Time(30 * time.Minute), Stop: execute.Time(35 * time.Minute)},
+				{Start: execute.Time(25 * time.Minute), Stop: execute.Time(30 * time.Minute)},
+				{Start: execute.Time(20 * time.Minute), Stop: execute.Time(25 * time.Minute)},
+				{Start: execute.Time(15 * time.Minute), Stop: execute.Time(20 * time.Minute)},
+				{Start: execute.Time(10 * time.Minute), Stop: execute.Time(15 * time.Minute)},
+			},
+		},
+		{
+			name: "simple negative period",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-5*time.Minute),
+				values.ConvertDurationNsecs(0),
+			),
+			t: execute.Time(36 * time.Minute),
+			want: []Bounds{
+				{Start: execute.Time(35 * time.Minute), Stop: execute.Time(40 * time.Minute)},
+				{Start: execute.Time(30 * time.Minute), Stop: execute.Time(35 * time.Minute)},
+				{Start: execute.Time(25 * time.Minute), Stop: execute.Time(30 * time.Minute)},
+				{Start: execute.Time(20 * time.Minute), Stop: execute.Time(25 * time.Minute)},
+				{Start: execute.Time(15 * time.Minute), Stop: execute.Time(20 * time.Minute)},
+				{Start: execute.Time(10 * time.Minute), Stop: execute.Time(15 * time.Minute)},
+			},
+		},
+		{
+			name: "beginning of month",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(0),
+			),
+			t: mustTime("2020-10-01T00:00:00Z"),
+			want: []Bounds{
+				{Start: mustTime("2020-10-01T00:00:00Z"), Stop: mustTime("2020-11-01T00:00:00Z")},
+				{Start: mustTime("2020-09-01T00:00:00Z"), Stop: mustTime("2020-10-01T00:00:00Z")},
+				{Start: mustTime("2020-08-01T00:00:00Z"), Stop: mustTime("2020-09-01T00:00:00Z")},
+				{Start: mustTime("2020-07-01T00:00:00Z"), Stop: mustTime("2020-08-01T00:00:00Z")},
+				{Start: mustTime("2020-06-01T00:00:00Z"), Stop: mustTime("2020-07-01T00:00:00Z")},
+				{Start: mustTime("2020-05-01T00:00:00Z"), Stop: mustTime("2020-06-01T00:00:00Z")},
+				{Start: mustTime("2020-04-01T00:00:00Z"), Stop: mustTime("2020-05-01T00:00:00Z")},
+				{Start: mustTime("2020-03-01T00:00:00Z"), Stop: mustTime("2020-04-01T00:00:00Z")},
+				{Start: mustTime("2020-02-01T00:00:00Z"), Stop: mustTime("2020-03-01T00:00:00Z")},
+				{Start: mustTime("2020-01-01T00:00:00Z"), Stop: mustTime("2020-02-01T00:00:00Z")},
+				{Start: mustTime("2019-12-01T00:00:00Z"), Stop: mustTime("2020-01-01T00:00:00Z")},
+			},
+		},
+		{
+			name: "end of month",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-24*time.Hour),
+			),
+			t: mustTime("2020-10-01T00:00:00Z"),
+			want: []Bounds{
+				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-31T00:00:00Z")},
+				{Start: mustTime("2020-08-31T00:00:00Z"), Stop: mustTime("2020-09-30T00:00:00Z")},
+				{Start: mustTime("2020-07-31T00:00:00Z"), Stop: mustTime("2020-08-31T00:00:00Z")},
+				{Start: mustTime("2020-06-30T00:00:00Z"), Stop: mustTime("2020-07-31T00:00:00Z")},
+				{Start: mustTime("2020-05-31T00:00:00Z"), Stop: mustTime("2020-06-30T00:00:00Z")},
+				{Start: mustTime("2020-04-30T00:00:00Z"), Stop: mustTime("2020-05-31T00:00:00Z")},
+				{Start: mustTime("2020-03-31T00:00:00Z"), Stop: mustTime("2020-04-30T00:00:00Z")},
+				{Start: mustTime("2020-02-29T00:00:00Z"), Stop: mustTime("2020-03-31T00:00:00Z")},
+				{Start: mustTime("2020-01-31T00:00:00Z"), Stop: mustTime("2020-02-29T00:00:00Z")},
+				{Start: mustTime("2019-12-31T00:00:00Z"), Stop: mustTime("2020-01-31T00:00:00Z")},
+			},
+		},
+	}
+	for _, tc := range testcases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			b := tc.w.GetLatestBounds(tc.t)
+			got := make([]Bounds, 0, len(tc.want))
+			for range tc.want {
+				got = append(got, Bounds{
+					Start: b.Start(),
+					Stop:  b.Stop(),
+				})
+				b = tc.w.PrevBounds(b)
 			}
 			if !cmp.Equal(tc.want, got) {
 				t.Errorf("got unexpected bounds; -want/+got:\n%v\n", cmp.Diff(tc.want, got))

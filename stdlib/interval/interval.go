@@ -33,6 +33,9 @@ func init() {
 				return nil, err
 			}
 			w, err := interval.NewWindow(every, period, offset)
+			if err != nil {
+				return nil, err
+			}
 			return values.NewFunction("intervals", rt, func(ctx context.Context, args values.Object) (values.Value, error) {
 				start, err := getTimeable(ctx, args, "start")
 				if err != nil {
