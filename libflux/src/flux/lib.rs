@@ -680,7 +680,7 @@ mod tests {
         );
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut ty);
-        assert_eq!(format!("{}", ty), "{a:t0 | b:t0 | e:t1 | f:t1 | g:t1 | t2}");
+        assert_eq!(format!("{}", ty), "{a:A | b:A | e:B | f:B | g:B | C}");
     }
 
     #[test]
@@ -697,7 +697,7 @@ vstr = v.str + "hello"
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
-        assert_eq!(format!("{}", t), "{int:int | sweet:t0 | str:string | t1}");
+        assert_eq!(format!("{}", t), "{int:int | sweet:A | str:string | B}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -761,7 +761,7 @@ p = o.ethan
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
-        assert_eq!(format!("{}", t), "{int:int | ethan:t0 | t1}");
+        assert_eq!(format!("{}", t), "{int:int | ethan:A | B}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -808,7 +808,7 @@ from(bucket: v.bucket)
         v.normalize(&mut ty);
         assert_eq!(
             format!("{}", ty),
-            "{measurement:t0 | timeRangeStart:t1 | timeRangeStop:t2 | bucket:string | t3}"
+            "{measurement:A | timeRangeStart:B | timeRangeStop:C | bucket:string | D}"
         );
     }
 

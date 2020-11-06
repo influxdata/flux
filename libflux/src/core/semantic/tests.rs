@@ -3392,7 +3392,7 @@ fn test_error_messages() {
             a[1]
         "#,
         // Location points to the identifier a
-        err: "type error @3:13-3:14: expected [t2] but found int",
+        err: "type error @3:13-3:14: expected [A] but found int",
     }
     test_error_msg! {
         src: r#"
@@ -3400,7 +3400,7 @@ fn test_error_messages() {
             a.x
         "#,
         // Location points to the identifier a
-        err: "type error @3:13-3:14: expected {x:t3 | t5} but found [int]",
+        err: "type error @3:13-3:14: expected {x:B | A} but found [int]",
     }
     test_error_msg! {
         src: r#"
