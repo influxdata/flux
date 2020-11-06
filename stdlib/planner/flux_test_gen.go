@@ -17885,6 +17885,1437 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 4,
+					Line:   68,
+				},
+				File:   "group_agg_uneven_keys_test.flux",
+				Source: "package planner_test\n\nimport \"testing\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninput = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,3,2018-05-22T19:53:46Z,system,hostC,load1,1.92\n,,3,2018-05-22T19:53:56Z,system,hostC,load1,1.89\n,,3,2018-05-22T19:54:16Z,system,hostC,load1,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,other,_field,_value\n,,2,2018-05-22T19:53:26Z,system,hostC,o1,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,o1,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,o1,load5,1.91\n\"\n\noutput = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_start,_stop,host,_field,_value\n,,0,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostA,load1,1.91\n,,1,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostB,load3,1.98\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,false,false,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,host,other,_field,_value\n,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,o1,load5,1.95\n\"\n\ngroup_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:00:00Z)\n    |> group(columns:[\"_start\", \"_stop\",\"host\"])\n    |> max()\n    |> drop(columns: [\"_measurement\", \"_time\"])\n\ntest group_max_pushdown = () =>\n\t({\n\t\tinput: testing.loadStorage(csv: input),\n\t\twant: testing.loadMem(csv: output),\n\t\tfn: group_max_fn\n\t})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   4,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   8,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   8,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   8,
+							},
+							File:   "group_agg_uneven_keys_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   8,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   8,
+							},
+							File:   "group_agg_uneven_keys_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   8,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   8,
+								},
+								File:   "group_agg_uneven_keys_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   8,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   8,
+									},
+									File:   "group_agg_uneven_keys_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   8,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   8,
+					},
+					File:   "group_agg_uneven_keys_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   40,
+					},
+					File:   "group_agg_uneven_keys_test.flux",
+					Source: "input = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,3,2018-05-22T19:53:46Z,system,hostC,load1,1.92\n,,3,2018-05-22T19:53:56Z,system,hostC,load1,1.89\n,,3,2018-05-22T19:54:16Z,system,hostC,load1,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,other,_field,_value\n,,2,2018-05-22T19:53:26Z,system,hostC,o1,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,o1,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,o1,load5,1.91\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   10,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "input",
+						Start: ast.Position{
+							Column: 1,
+							Line:   10,
+						},
+					},
+				},
+				Name: "input",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   40,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,3,2018-05-22T19:53:46Z,system,hostC,load1,1.92\n,,3,2018-05-22T19:53:56Z,system,hostC,load1,1.89\n,,3,2018-05-22T19:54:16Z,system,hostC,load1,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,other,_field,_value\n,,2,2018-05-22T19:53:26Z,system,hostC,o1,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,o1,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,o1,load5,1.91\n\"",
+						Start: ast.Position{
+							Column: 9,
+							Line:   10,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,host,_field,_value\n,,0,2018-05-22T19:53:26Z,system,hostA,load1,1.83\n,,0,2018-05-22T19:53:36Z,system,hostA,load1,1.72\n,,0,2018-05-22T19:53:37Z,system,hostA,load1,1.77\n,,0,2018-05-22T19:53:56Z,system,hostA,load1,1.63\n,,0,2018-05-22T19:54:06Z,system,hostA,load1,1.91\n,,0,2018-05-22T19:54:16Z,system,hostA,load1,1.84\n\n,,1,2018-05-22T19:53:26Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:53:36Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:46Z,system,hostB,load3,1.97\n,,1,2018-05-22T19:53:56Z,system,hostB,load3,1.96\n,,1,2018-05-22T19:54:06Z,system,hostB,load3,1.98\n,,1,2018-05-22T19:54:16Z,system,hostB,load3,1.97\n\n,,3,2018-05-22T19:53:46Z,system,hostC,load1,1.92\n,,3,2018-05-22T19:53:56Z,system,hostC,load1,1.89\n,,3,2018-05-22T19:54:16Z,system,hostC,load1,1.93\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,string,double\n#group,false,false,false,true,true,true,true,false\n#default,_result,,,,,,,\n,result,table,_time,_measurement,host,other,_field,_value\n,,2,2018-05-22T19:53:26Z,system,hostC,o1,load5,1.95\n,,2,2018-05-22T19:53:36Z,system,hostC,o1,load5,1.92\n,,2,2018-05-22T19:53:41Z,system,hostC,o1,load5,1.91\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   55,
+					},
+					File:   "group_agg_uneven_keys_test.flux",
+					Source: "output = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_start,_stop,host,_field,_value\n,,0,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostA,load1,1.91\n,,1,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostB,load3,1.98\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,false,false,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,host,other,_field,_value\n,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,o1,load5,1.95\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   42,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   42,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "output",
+						Start: ast.Position{
+							Column: 1,
+							Line:   42,
+						},
+					},
+				},
+				Name: "output",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   55,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_start,_stop,host,_field,_value\n,,0,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostA,load1,1.91\n,,1,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostB,load3,1.98\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,false,false,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,host,other,_field,_value\n,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,o1,load5,1.95\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   42,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double\n#group,false,false,true,true,true,false,false\n#default,_result,,,,,,\n,result,table,_start,_stop,host,_field,_value\n,,0,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostA,load1,1.91\n,,1,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostB,load3,1.98\n\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double\n#group,false,false,true,true,true,false,false,false\n#default,_result,,,,,,,\n,result,table,_start,_stop,host,other,_field,_value\n,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,o1,load5,1.95\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 48,
+						Line:   61,
+					},
+					File:   "group_agg_uneven_keys_test.flux",
+					Source: "group_max_fn = (tables=<-) => tables\n    |> range(start: 2018-05-22T19:00:00Z)\n    |> group(columns:[\"_start\", \"_stop\",\"host\"])\n    |> max()\n    |> drop(columns: [\"_measurement\", \"_time\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   57,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   57,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "group_max_fn",
+						Start: ast.Position{
+							Column: 1,
+							Line:   57,
+						},
+					},
+				},
+				Name: "group_max_fn",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 48,
+							Line:   61,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "(tables=<-) => tables\n    |> range(start: 2018-05-22T19:00:00Z)\n    |> group(columns:[\"_start\", \"_stop\",\"host\"])\n    |> max()\n    |> drop(columns: [\"_measurement\", \"_time\"])",
+						Start: ast.Position{
+							Column: 16,
+							Line:   57,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   57,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "tables",
+											Start: ast.Position{
+												Column: 31,
+												Line:   57,
+											},
+										},
+									},
+									Name: "tables",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   58,
+										},
+										File:   "group_agg_uneven_keys_test.flux",
+										Source: "tables\n    |> range(start: 2018-05-22T19:00:00Z)",
+										Start: ast.Position{
+											Column: 31,
+											Line:   57,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   58,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "start: 2018-05-22T19:00:00Z",
+												Start: ast.Position{
+													Column: 14,
+													Line:   58,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   58,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "start: 2018-05-22T19:00:00Z",
+													Start: ast.Position{
+														Column: 14,
+														Line:   58,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 19,
+															Line:   58,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 14,
+															Line:   58,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   58,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "2018-05-22T19:00:00Z",
+														Start: ast.Position{
+															Column: 21,
+															Line:   58,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2018-05-22T19:00:00Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   58,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "range(start: 2018-05-22T19:00:00Z)",
+											Start: ast.Position{
+												Column: 8,
+												Line:   58,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   58,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 8,
+													Line:   58,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 49,
+										Line:   59,
+									},
+									File:   "group_agg_uneven_keys_test.flux",
+									Source: "tables\n    |> range(start: 2018-05-22T19:00:00Z)\n    |> group(columns:[\"_start\", \"_stop\",\"host\"])",
+									Start: ast.Position{
+										Column: 31,
+										Line:   57,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 48,
+												Line:   59,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "columns:[\"_start\", \"_stop\",\"host\"]",
+											Start: ast.Position{
+												Column: 14,
+												Line:   59,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 48,
+													Line:   59,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "columns:[\"_start\", \"_stop\",\"host\"]",
+												Start: ast.Position{
+													Column: 14,
+													Line:   59,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   59,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 14,
+														Line:   59,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 48,
+														Line:   59,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "[\"_start\", \"_stop\",\"host\"]",
+													Start: ast.Position{
+														Column: 22,
+														Line:   59,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 31,
+															Line:   59,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "\"_start\"",
+														Start: ast.Position{
+															Column: 23,
+															Line:   59,
+														},
+													},
+												},
+												Value: "_start",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 40,
+															Line:   59,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "\"_stop\"",
+														Start: ast.Position{
+															Column: 33,
+															Line:   59,
+														},
+													},
+												},
+												Value: "_stop",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 47,
+															Line:   59,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "\"host\"",
+														Start: ast.Position{
+															Column: 41,
+															Line:   59,
+														},
+													},
+												},
+												Value: "host",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 49,
+											Line:   59,
+										},
+										File:   "group_agg_uneven_keys_test.flux",
+										Source: "group(columns:[\"_start\", \"_stop\",\"host\"])",
+										Start: ast.Position{
+											Column: 8,
+											Line:   59,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   59,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "group",
+											Start: ast.Position{
+												Column: 8,
+												Line:   59,
+											},
+										},
+									},
+									Name: "group",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 13,
+									Line:   60,
+								},
+								File:   "group_agg_uneven_keys_test.flux",
+								Source: "tables\n    |> range(start: 2018-05-22T19:00:00Z)\n    |> group(columns:[\"_start\", \"_stop\",\"host\"])\n    |> max()",
+								Start: ast.Position{
+									Column: 31,
+									Line:   57,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: nil,
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 13,
+										Line:   60,
+									},
+									File:   "group_agg_uneven_keys_test.flux",
+									Source: "max()",
+									Start: ast.Position{
+										Column: 8,
+										Line:   60,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 11,
+											Line:   60,
+										},
+										File:   "group_agg_uneven_keys_test.flux",
+										Source: "max",
+										Start: ast.Position{
+											Column: 8,
+											Line:   60,
+										},
+									},
+								},
+								Name: "max",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 48,
+								Line:   61,
+							},
+							File:   "group_agg_uneven_keys_test.flux",
+							Source: "tables\n    |> range(start: 2018-05-22T19:00:00Z)\n    |> group(columns:[\"_start\", \"_stop\",\"host\"])\n    |> max()\n    |> drop(columns: [\"_measurement\", \"_time\"])",
+							Start: ast.Position{
+								Column: 31,
+								Line:   57,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 47,
+										Line:   61,
+									},
+									File:   "group_agg_uneven_keys_test.flux",
+									Source: "columns: [\"_measurement\", \"_time\"]",
+									Start: ast.Position{
+										Column: 13,
+										Line:   61,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 47,
+											Line:   61,
+										},
+										File:   "group_agg_uneven_keys_test.flux",
+										Source: "columns: [\"_measurement\", \"_time\"]",
+										Start: ast.Position{
+											Column: 13,
+											Line:   61,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   61,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 13,
+												Line:   61,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 47,
+												Line:   61,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "[\"_measurement\", \"_time\"]",
+											Start: ast.Position{
+												Column: 22,
+												Line:   61,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   61,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "\"_measurement\"",
+												Start: ast.Position{
+													Column: 23,
+													Line:   61,
+												},
+											},
+										},
+										Value: "_measurement",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 46,
+													Line:   61,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "\"_time\"",
+												Start: ast.Position{
+													Column: 39,
+													Line:   61,
+												},
+											},
+										},
+										Value: "_time",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 48,
+									Line:   61,
+								},
+								File:   "group_agg_uneven_keys_test.flux",
+								Source: "drop(columns: [\"_measurement\", \"_time\"])",
+								Start: ast.Position{
+									Column: 8,
+									Line:   61,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 12,
+										Line:   61,
+									},
+									File:   "group_agg_uneven_keys_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 8,
+										Line:   61,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   57,
+							},
+							File:   "group_agg_uneven_keys_test.flux",
+							Source: "tables=<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   57,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 23,
+									Line:   57,
+								},
+								File:   "group_agg_uneven_keys_test.flux",
+								Source: "tables",
+								Start: ast.Position{
+									Column: 17,
+									Line:   57,
+								},
+							},
+						},
+						Name: "tables",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 26,
+								Line:   57,
+							},
+							File:   "group_agg_uneven_keys_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 24,
+								Line:   57,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 4,
+							Line:   68,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "group_max_pushdown = () =>\n\t({\n\t\tinput: testing.loadStorage(csv: input),\n\t\twant: testing.loadMem(csv: output),\n\t\tfn: group_max_fn\n\t})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   63,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   63,
+							},
+							File:   "group_agg_uneven_keys_test.flux",
+							Source: "group_max_pushdown",
+							Start: ast.Position{
+								Column: 6,
+								Line:   63,
+							},
+						},
+					},
+					Name: "group_max_pushdown",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 4,
+								Line:   68,
+							},
+							File:   "group_agg_uneven_keys_test.flux",
+							Source: "() =>\n\t({\n\t\tinput: testing.loadStorage(csv: input),\n\t\twant: testing.loadMem(csv: output),\n\t\tfn: group_max_fn\n\t})",
+							Start: ast.Position{
+								Column: 27,
+								Line:   63,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 4,
+									Line:   68,
+								},
+								File:   "group_agg_uneven_keys_test.flux",
+								Source: "({\n\t\tinput: testing.loadStorage(csv: input),\n\t\twant: testing.loadMem(csv: output),\n\t\tfn: group_max_fn\n\t})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   64,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 3,
+										Line:   68,
+									},
+									File:   "group_agg_uneven_keys_test.flux",
+									Source: "{\n\t\tinput: testing.loadStorage(csv: input),\n\t\twant: testing.loadMem(csv: output),\n\t\tfn: group_max_fn\n\t}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   64,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 41,
+											Line:   65,
+										},
+										File:   "group_agg_uneven_keys_test.flux",
+										Source: "input: testing.loadStorage(csv: input)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   65,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 3,
+												Line:   65,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 40,
+													Line:   65,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "csv: input",
+												Start: ast.Position{
+													Column: 30,
+													Line:   65,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 40,
+														Line:   65,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "csv: input",
+													Start: ast.Position{
+														Column: 30,
+														Line:   65,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 33,
+															Line:   65,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 30,
+															Line:   65,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 40,
+															Line:   65,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "input",
+														Start: ast.Position{
+															Column: 35,
+															Line:   65,
+														},
+													},
+												},
+												Name: "input",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   65,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "testing.loadStorage(csv: input)",
+											Start: ast.Position{
+												Column: 10,
+												Line:   65,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   65,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 10,
+													Line:   65,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   65,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 10,
+														Line:   65,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   65,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 18,
+														Line:   65,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 37,
+											Line:   66,
+										},
+										File:   "group_agg_uneven_keys_test.flux",
+										Source: "want: testing.loadMem(csv: output)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   66,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   66,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 3,
+												Line:   66,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 36,
+													Line:   66,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "csv: output",
+												Start: ast.Position{
+													Column: 25,
+													Line:   66,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 36,
+														Line:   66,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "csv: output",
+													Start: ast.Position{
+														Column: 25,
+														Line:   66,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 28,
+															Line:   66,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 25,
+															Line:   66,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 36,
+															Line:   66,
+														},
+														File:   "group_agg_uneven_keys_test.flux",
+														Source: "output",
+														Start: ast.Position{
+															Column: 30,
+															Line:   66,
+														},
+													},
+												},
+												Name: "output",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   66,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "testing.loadMem(csv: output)",
+											Start: ast.Position{
+												Column: 9,
+												Line:   66,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   66,
+												},
+												File:   "group_agg_uneven_keys_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 9,
+													Line:   66,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   66,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 9,
+														Line:   66,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   66,
+													},
+													File:   "group_agg_uneven_keys_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 17,
+														Line:   66,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   67,
+										},
+										File:   "group_agg_uneven_keys_test.flux",
+										Source: "fn: group_max_fn",
+										Start: ast.Position{
+											Column: 3,
+											Line:   67,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 5,
+												Line:   67,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 3,
+												Line:   67,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   67,
+											},
+											File:   "group_agg_uneven_keys_test.flux",
+											Source: "group_max_fn",
+											Start: ast.Position{
+												Column: 7,
+												Line:   67,
+											},
+										},
+									},
+									Name: "group_max_fn",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 4,
+						Line:   68,
+					},
+					File:   "group_agg_uneven_keys_test.flux",
+					Source: "test group_max_pushdown = () =>\n\t({\n\t\tinput: testing.loadStorage(csv: input),\n\t\twant: testing.loadMem(csv: output),\n\t\tfn: group_max_fn\n\t})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   63,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   6,
+					},
+					File:   "group_agg_uneven_keys_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   6,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "group_agg_uneven_keys_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 21,
+						Line:   4,
+					},
+					File:   "group_agg_uneven_keys_test.flux",
+					Source: "package planner_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 21,
+							Line:   4,
+						},
+						File:   "group_agg_uneven_keys_test.flux",
+						Source: "planner_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   4,
+						},
+					},
+				},
+				Name: "planner_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 4,
 					Line:   58,
 				},
 				File:   "group_count_eval_test.flux",

@@ -227,6 +227,7 @@ var sourceHashes = map[string]string{
 	"stdlib/planner/bare_min_push_test.flux":                                        "85ad8822162b94ffcf7cecaeb142036a1df96630b05c514ede116b280d4fad4d",
 	"stdlib/planner/bare_sum_eval_test.flux":                                        "57a6ab2bc9cf1660127709326a9362ff89830e2288eb99756e81d9f8c67f1548",
 	"stdlib/planner/bare_sum_push_test.flux":                                        "2b7d7b048202f54f2ac624b30a069924e2bafda2b8ff0605c29b80aab8aae660",
+	"stdlib/planner/group_agg_uneven_keys_test.flux":                                "1c9e8cf246a3f46b44ad6b97a9de939c6de57903efd941b38050c71cc429d671",
 	"stdlib/planner/group_count_eval_test.flux":                                     "a55d1190988bd071aa6916f5185c5ec50e7f8e0ee1afd2d6df248dc2258be54f",
 	"stdlib/planner/group_count_push_test.flux":                                     "dfc47c5a9c631ec861e95222299c1239cbe8dfd97fbf580bd4c65f53677e47f5",
 	"stdlib/planner/group_max_eval_test.flux":                                       "b7dff5c8876b112b1906f874199b07be6dfda197d5d9641228810d6174617f39",
