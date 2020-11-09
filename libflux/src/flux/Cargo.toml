@@ -30,7 +30,10 @@ flatbuffers = "0.6.0"
 name = "builtins"
 harness = false
 
-
 [[bench]]
 name = "basic"
+harness = false
+
+[[bench]]
+name = "formatter"
 harness = false

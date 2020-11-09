@@ -6,12 +6,12 @@ use std::str;
 use pretty_assertions::assert_eq;
 
 fn assert_unchanged(script: &str) {
-    let output = format(script.to_string()).unwrap();
+    let output = format(script).unwrap();
     assert_eq!(script, output);
 }
 
 fn assert_format(script: &str, expected: &str) {
-    let output = format(script.to_string()).unwrap();
+    let output = format(script).unwrap();
     assert_eq!(expected, output);
 }
 
