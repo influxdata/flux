@@ -12,11 +12,11 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                            "b0745b5aa727c26b41acf768f7def2b918720f1057c608631710da556a5ac7ac",
+	"libflux/Cargo.lock":                                                            "b9a7471c00f354c49718eca3343f7c7d63aaa2b7b77215b00656674da8edcce8",
 	"libflux/Cargo.toml":                                                            "9ef291bc6fcfbdcd7a71946dd306fa2599d17c20be2ca15d59d93cec0a564f77",
 	"libflux/include/influxdata/flux.h":                                             "e9b0ee484d49c06eaab221f7a753ebb5e29a533c83fca6123b84ee77502a780b",
 	"libflux/scanner.c":                                                             "dfdd3c93cd9015d893c47179c6aed56d81c8159bbe947fd16498cb21b29f5c5a",
-	"libflux/src/core/Cargo.toml":                                                   "4f3093731281c0ef02151230f1bd83eb1a1f9b1a1cff0fc88ebe6b5b1fe2b6d7",
+	"libflux/src/core/Cargo.toml":                                                   "1f3f2ed71995824435c4f0baea412e2db29c063a4c6e1c954a523787dcc27066",
 	"libflux/src/core/ast/check/mod.rs":                                             "59de9596b266fd254785a81c1e1dbbd2ed18a2b66bafc9a4c9e51dba72cb8422",
 	"libflux/src/core/ast/check/tests.rs":                                           "9ca9abb71c9c2aa20b75b3aa1220304c5c04f5a59d8adc74c604659d940866ea",
 	"libflux/src/core/ast/flatbuffers/ast_generated.rs":                             "50236dfa9b6d57cc24f6d967ffe93db9a618c67dc93cef9dbc9f7df9c43cbac0",
@@ -28,8 +28,8 @@ var sourceHashes = map[string]string{
 	"libflux/src/core/ast/walk/mod.rs":                                              "855701066e8d11a620855d2db986ce3df27555a91e2fcaf7a0cd3b12aa4cc4f0",
 	"libflux/src/core/ast/walk/tests.rs":                                            "f7b2d7dd5643bb795a86c04b6979b136b0de46b52b213caff094aed6d204a05d",
 	"libflux/src/core/build.rs":                                                     "7e8c3626b9034dc4a31c2b748b2a174260949d852455299d071a0fd128c18a5a",
-	"libflux/src/core/formatter/mod.rs":                                             "8ef3b393cb9bbf918f1e29a3bc642771cb9decb724213816fe8f302468a6adc7",
-	"libflux/src/core/formatter/tests.rs":                                           "521b13be7ea64d1cfbddf852542bcbe8b6a751205a237ee6500aa74853ac1c6e",
+	"libflux/src/core/formatter/mod.rs":                                             "84850874eeede529971ee52f79f4a920da83bcda8f6d8f57ef1b09747ab1813d",
+	"libflux/src/core/formatter/tests.rs":                                           "8ca7eaa9e8d6b5f504553736eba5628fcec67890ad9dd107ca5677ad2ac78d43",
 	"libflux/src/core/lib.rs":                                                       "ee7c9cfd10e82f1127ac988a28c2f78dfe031c6cd37d236401e2997b22bcdab5",
 	"libflux/src/core/parser/mod.rs":                                                "8109f5152bf181ae22ff8da59a2d65c431d5b34efecb2a32fa2241d8c0707011",
 	"libflux/src/core/parser/strconv.rs":                                            "748c82f6efc2eafaafb872db5b4185ce29aafa8f03ba02c4b84f4a9614e832d2",

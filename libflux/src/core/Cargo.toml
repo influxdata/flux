@@ -26,6 +26,7 @@ maplit = "1.0.2"
 flatbuffers = "0.6.1"
 derivative = "2.1.1"
 walkdir = "2.2.9"
+tabwriter = "1.2.1"
 
 [dev-dependencies]
 colored = "1.8"
