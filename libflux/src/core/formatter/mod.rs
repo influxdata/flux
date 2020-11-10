@@ -22,8 +22,8 @@ pub fn convert_to_string(file: &File) -> Result<String, String> {
     formatter.output()
 }
 
-pub fn format(contents: String) -> Result<String, String> {
-    let file = parse_string("", contents.as_str());
+pub fn format(contents: &str) -> Result<String, String> {
+    let file = parse_string("", contents);
     convert_to_string(&file)
 }
 
