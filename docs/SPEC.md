@@ -520,6 +520,12 @@ If type inference determines all the properties on a record it is said to be bou
 Not all keys may be known on the type of a record in which case the record is said to be unbounded.
 An unbounded record may contain any property in addition to the properties it is known to contain.
 
+##### Dictionary types
+
+A _dictionary type_ is a collection that associates keys to values.
+Keys must be comparable and of the same type.
+Values must also be of the same type.
+
 ##### Function types
 
 A _function type_ represents a set of all functions with the same argument and result types.
@@ -761,6 +767,7 @@ Literals construct a value.
             | pipe_receive_lit
             | RecordLiteral
             | ArrayLiteral
+            | DictLiteral
             | FunctionLiteral .
 
 ##### Record literals
@@ -787,6 +794,25 @@ Array literals construct a value with the array type.
 
     ArrayLiteral   = "[" ExpressionList "]" .
     ExpressionList = [ Expression { "," Expression } ] .
+
+##### Dictionary literals
+
+Dictionary literals construct a value with the dict type.
+
+    DictLiteral     = EmptyDict | "[" AssociativeList "]" .
+    EmptyDict       = "[" ":" "]" .
+    AssociativeList = Association { "," AssociativeList } .
+    Association     = Expression ":" Expression .
+
+The keys can be arbitrary expressions.
+The type system will enforce that all keys are of the same type.
+
+Examples:
+
+    a = "a"
+    b = [:] // empty dictionary
+    c = [a: 1, "b": 2] // dictionary mapping string values to integers
+    d = [a: 1, 2: 3] // type error: cannot mix string and integer keys
 
 ##### Function literals
 
