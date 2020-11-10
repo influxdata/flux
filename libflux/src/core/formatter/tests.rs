@@ -65,7 +65,7 @@ fn funcs() {
 }
 
 #[test]
-fn object() {
+fn record() {
     assert_unchanged("{a: 1, b: {c: 11, d: 12}}");
     assert_unchanged("{foo with a: 1, b: {c: 11, d: 12}}"); // with
     assert_unchanged("{a, b, c}"); // implicit key object literal
@@ -74,6 +74,46 @@ fn object() {
     assert_unchanged("{\n    a: 1,\n    b: 2,\n    c: 3,\n    d: 4,\n}"); // multiline object based on property count
     assert_unchanged("{\n    a: 1,\n    b: 2,\n}"); // multiline object based on initial conditions
     assert_unchanged("{x with\n    a: 1,\n    b: 2,\n}"); // multiline object using "with"
+    assert_format(
+        "[
+    {a: 1, b: 2},
+    {a: 111, b: 2},
+    {a: 1, b: 222},
+    {a: 1, b: -892},
+]",
+        "[
+    {a:   1, b:    2},
+    {a: 111, b:    2},
+    {a:   1, b:  222},
+    {a:   1, b: -892},
+]",
+    );
+    assert_format(
+        "[
+    {
+        a: 1,
+        b: 2,
+    },
+    {
+        a: 111,
+        b: 2,
+    },
+    {
+        a: 1,
+        b: 222,
+    },
+    {
+        a: 1,
+        b: -892,
+    },
+]",
+        "[
+    {a:   1, b:    2},
+    {a: 111, b:    2},
+    {a:   1, b:  222},
+    {a:   1, b: -892},
+]",
+    );
 }
 
 #[test]
