@@ -49,7 +49,7 @@ To build and test the software, the following developer dependencies are require
 
 * Go 1.12 or higher
 * Rust
-* Ragel 6.10 (only if making changes to the scanner)
+* Ragel 7 (only if making changes to the scanner)
 
 Flux follows the standard Go project structure
 
