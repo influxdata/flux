@@ -129,6 +129,7 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             Some(MonoType::Fun(Box::new(opt?)))
         }
         fb::MonoType::Record => fb::Record::init_from_table(table).into(),
+        fb::MonoType::Dict => unimplemented!(),
         fb::MonoType::NONE => None,
     }
 }

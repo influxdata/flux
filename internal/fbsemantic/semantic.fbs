@@ -19,6 +19,7 @@ union MonoType {
   Arr,
   Record,
   Fun,
+  Dict,
 }
 
 table MonoTypeHolder {
@@ -63,6 +64,11 @@ table Record {
 table Fun {
   args:[Argument] /*(required)*/;
   retn:MonoType   /*(required)*/;
+}
+
+table Dict {
+  k:MonoType /*(required)*/;
+  v:MonoType /*(required)*/;
 }
 
 table Argument {
