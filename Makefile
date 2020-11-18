@@ -31,7 +31,6 @@ STDLIB_SOURCES = $(shell find . -name '*.flux')
 GENERATED_TARGETS = \
 	ast/internal/fbast/ast_generated.go \
 	ast/asttest/cmpopts.go \
-	internal/scanner/scanner.gen.go \
 	stdlib/packages.go \
 	internal/fbsemantic/semantic_generated.go \
 	internal/fbsemantic/semantic_generated.go \
@@ -64,11 +63,6 @@ ast/asttest/cmpopts.go: ast/ast.go ast/asttest/gen.go $$(call go_deps,./internal
 
 stdlib/packages.go: $(STDLIB_SOURCES) libflux-go internal/fbsemantic/semantic_generated.go
 	$(GO_GENERATE) ./stdlib
-
-internal/scanner/unicode.rl: internal/scanner/unicode2ragel.rb
-	cd internal/scanner && ruby unicode2ragel.rb -e utf8 -o unicode.rl
-internal/scanner/scanner.gen.go: internal/scanner/gen.go internal/scanner/scanner.rl internal/scanner/unicode.rl
-	$(GO_GENERATE) ./internal/scanner
 
 libflux: $(LIBFLUX_GENERATED_TARGETS)
 	cd libflux && $(CARGO) build $(CARGO_ARGS)
