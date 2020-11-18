@@ -616,6 +616,11 @@ Int, Uint, and Float types are Divisible.
 
 Int, Uint, and Float types are Numeric.
 
+##### Numeric Default Int Constraint
+
+Integer literals are polymorphic and can be interpreted as Int, Uint, or Float types.
+This constraint is used to infer the type of integer literals based on the context of the program.
+
 ##### Comparable Constraint
 
 Comparable types are those the binary comparison operators `<`, `<=`, `>`, or `>=` accept.

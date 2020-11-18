@@ -70,7 +70,7 @@ my_value
 			s:    `1.0`,
 		},
 		{
-			name: "integer literal",
+			name: "polynumeric literal",
 			s:    `5`,
 		},
 		{

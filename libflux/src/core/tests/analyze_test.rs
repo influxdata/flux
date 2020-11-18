@@ -55,9 +55,10 @@ f(a: s)
                         loc: ast::BaseNode::default().location,
                         name: "n".to_string(),
                     },
-                    Expression::Integer(IntegerLit {
+                    Expression::PolyNumeric(PolyNumericLit {
                         loc: ast::BaseNode::default().location,
                         value: 1,
+                        typ: MonoType::Var(Tvar(0)),
                     }),
                     ast::BaseNode::default().location,
                 ))),

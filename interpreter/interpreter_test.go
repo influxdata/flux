@@ -53,14 +53,14 @@ func TestEval(t *testing.T) {
 		{
 			name: "string interpolation missing field",
 			query: `
-				r = makeRecord(o: {a: "foo", b: 42})
+				r = o: {a: "foo", b: 42}
 				"r._value = ${r._value}"`,
 			wantErr: any,
 		},
 		{
 			name: "string interpolation field has wrong type",
 			query: `
-				r = makeRecord(o: {a: "foo", b: 42})
+				r = o: {a: "foo", b: 42}
 				"r._value = ${r.b}"`,
 			wantErr: any,
 		},
@@ -287,7 +287,7 @@ func TestEval(t *testing.T) {
 			name: "array index expression out of bounds high",
 			query: `
 				a = [1, 2, 3]
-				i = 3 
+				i = 3
 				x = a[i]
 			`,
 			wantErr: any,
@@ -439,31 +439,31 @@ func TestEval_Operator_Precedence(t *testing.T) {
 		want values.Value
 	}{
 		{
-			src:  "2.0 * 3.0 ^ 2.0",
+			src:  "2 * 3 ^ 2",
 			want: values.NewFloat(18.0),
 		},
 		{
-			src:  "(2.0 * 3.0) ^ 2.0",
+			src:  "(2 * 3) ^ 2",
 			want: values.NewFloat(36.0),
 		},
 		{
-			src:  "4.0 / 2.0 ^ 2.0",
+			src:  "4 / 2 ^ 2",
 			want: values.NewFloat(1.0),
 		},
 		{
-			src:  "(4.0 / 2.0) ^ 2.0",
+			src:  "(4 / 2) ^ 2",
 			want: values.NewFloat(4.0),
 		},
 		{
-			src:  "2.0 % 4.0 ^ 2.0",
+			src:  "2 % 4 ^ 2",
 			want: values.NewFloat(2.0),
 		},
 		{
-			src:  "(2.0 % 4.0) ^ 2.0",
+			src:  "(2 % 4) ^ 2",
 			want: values.NewFloat(4.0),
 		},
 		{
-			src:  "1.0 + 2.0 * 3.0",
+			src:  "1 + 2 * 3.0",
 			want: values.NewFloat(7.0),
 		},
 		{
@@ -503,35 +503,35 @@ func TestEval_Operator_Precedence(t *testing.T) {
 			want: values.NewFloat(6.0),
 		},
 		{
-			src:  "1.0 + 2.0 < 4.0",
+			src:  "1 + 2 < 4",
 			want: values.NewBool(true),
 		},
 		{
-			src:  "(1.0 + 2.0) < 4.0",
+			src:  "(1 + 2) < 4",
 			want: values.NewBool(true),
 		},
 		{
-			src:  "1.0 + 2.0 <= 4.0",
+			src:  "1 + 2 <= 4",
 			want: values.NewBool(true),
 		},
 		{
-			src:  "(1.0 + 2.0) <= 4.0",
+			src:  "(1 + 2) <= 4",
 			want: values.NewBool(true),
 		},
 		{
-			src:  "1.0 + 2.0 > 4.0",
+			src:  "1 + 2 > 4",
 			want: values.NewBool(false),
 		},
 		{
-			src:  "(1.0 + 2.0) > 4.0",
+			src:  "(1 + 2) > 4",
 			want: values.NewBool(false),
 		},
 		{
-			src:  "1.0 + 2.0 >= 4.0",
+			src:  "1 + 2 >= 4",
 			want: values.NewBool(false),
 		},
 		{
-			src:  "(1.0 + 2.0) >= 4.0",
+			src:  "(1 + 2) >= 4",
 			want: values.NewBool(false),
 		},
 		{
@@ -666,9 +666,9 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(2),
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.BinaryExpression{
-									Left:     &semantic.IntegerLiteral{Value: 1},
+									Left:     &semantic.PolyNumericLiteral{Value: 1},
 									Operator: ast.AdditionOperator,
-									Right:    &semantic.IntegerLiteral{Value: 1},
+									Right:    &semantic.PolyNumericLiteral{Value: 1},
 								},
 							},
 						},
@@ -686,9 +686,9 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(2),
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.BinaryExpression{
-									Left:     &semantic.IntegerLiteral{Value: 1},
+									Left:     &semantic.PolyNumericLiteral{Value: 1},
 									Operator: ast.AdditionOperator,
-									Right:    &semantic.IntegerLiteral{Value: 1},
+									Right:    &semantic.PolyNumericLiteral{Value: 1},
 								},
 							},
 						},
@@ -709,7 +709,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 									Property: "yield",
 								},
 								Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
-								Pipe:      &semantic.IntegerLiteral{Value: 0},
+								Pipe:      &semantic.PolyNumericLiteral{Value: 0},
 							},
 						},
 						{

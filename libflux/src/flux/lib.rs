@@ -430,7 +430,8 @@ impl SemanticAnalyzer {
             }
         }
         self.env = env;
-        Ok(inject_pkg_types(sem_pkg, &sub))
+        let pkg = inject_pkg_types(sem_pkg, &sub);
+        Ok(pkg)
     }
 }
 
@@ -490,7 +491,8 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
     let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
-    Ok(inject_pkg_types(sem_pkg, &sub))
+    let pkg = inject_pkg_types(sem_pkg, &sub);
+    Ok(pkg)
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given
@@ -697,7 +699,7 @@ vstr = v.str + "hello"
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
-        assert_eq!(format!("{}", t), "{B with int:int, sweet:A, str:string}");
+        assert_eq!(format!("{}", t), "{C with int:A, sweet:B, str:string}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -706,7 +708,9 @@ vstr = v.str + "hello"
     "type": "Extension",
     "head": {
       "k": "int",
-      "v": "Int"
+      "v": {
+        "Var": 0
+      }
     },
     "tail": {
       "Record": {
@@ -714,7 +718,7 @@ vstr = v.str + "hello"
         "head": {
           "k": "sweet",
           "v": {
-            "Var": 0
+            "Var": 1
           }
         },
         "tail": {
@@ -725,7 +729,7 @@ vstr = v.str + "hello"
               "v": "String"
             },
             "tail": {
-              "Var": 1
+              "Var": 2
             }
           }
         }
@@ -744,9 +748,12 @@ vint = v + 2
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(t, MonoType::Int);
+        assert_eq!(t, MonoType::Var(Tvar(8291)));
 
-        assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
+        assert_eq!(
+            serde_json::to_string_pretty(&t).unwrap(),
+            "{\n  \"Var\": 8291\n}"
+        );
     }
 
     #[test]
@@ -761,7 +768,7 @@ p = o.ethan
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
-        assert_eq!(format!("{}", t), "{B with int:int, ethan:A}");
+        assert_eq!(format!("{}", t), "{C with int:A, ethan:B}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -770,7 +777,9 @@ p = o.ethan
     "type": "Extension",
     "head": {
       "k": "int",
-      "v": "Int"
+      "v": {
+        "Var": 0
+      }
     },
     "tail": {
       "Record": {
@@ -778,11 +787,11 @@ p = o.ethan
         "head": {
           "k": "ethan",
           "v": {
-            "Var": 0
+            "Var": 1
           }
         },
         "tail": {
-          "Var": 1
+          "Var": 2
         }
       }
     }

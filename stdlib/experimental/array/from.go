@@ -135,9 +135,17 @@ func buildTable(rows values.Array, mem *memory.Allocator) (flux.Table, error) {
 		if err != nil {
 			return nil, err
 		}
-		ctyp := flux.ColumnType(pt)
-		if ctyp == flux.TInvalid {
+
+		switch pt.Nature() {
+		case semantic.Duration, semantic.Regexp, semantic.Array, semantic.Object, semantic.Function:
 			return nil, errors.Newf(codes.Invalid, "cannot represent the type %v as column data", pt)
+		}
+
+		ctyp := flux.ColumnType(pt)
+		// With the current implementation of the interpreter, type variables are given the type semantic.Invalid instead of semantic.Int given their polymorphic property.
+		// Any type variable at this stage of the interpreter must be a polymorphic numeric literal that hasn't already been type inferred and thus we can cast semantic.Invalid types to Ints.
+		if ctyp == flux.TInvalid {
+			ctyp = flux.TInt
 		}
 		cols = append(cols, flux.ColMeta{
 			Label: rp.Name(),

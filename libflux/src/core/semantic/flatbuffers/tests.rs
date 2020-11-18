@@ -356,10 +356,10 @@ fn compare_exprs(
     let fb_tbl = unwrap_or_fail("expr", fb_tbl)?;
     match (semantic_expr, fb_expr_ty) {
         (
-            semantic::nodes::Expression::Integer(semantic_int),
-            fbsemantic::Expression::IntegerLiteral,
+            semantic::nodes::Expression::PolyNumeric(semantic_int),
+            fbsemantic::Expression::PolyNumericLiteral,
         ) => {
-            let fb_int = fbsemantic::IntegerLiteral::init_from_table(*fb_tbl);
+            let fb_int = fbsemantic::PolyNumericLiteral::init_from_table(*fb_tbl);
             compare_loc(&semantic_expr.loc(), &fb_int.loc())?;
             match semantic_int.value == fb_int.value() {
                 true => Ok(()),

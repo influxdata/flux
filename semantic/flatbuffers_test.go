@@ -844,7 +844,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name:    "native variable assignment",
 			fluxSrc: `x = 42`,
 			types: map[string]string{
-				"x": "forall [] int",
+				"x": "forall [t0] where t0: NumericDefaultInt t0",
 			},
 		},
 		{
@@ -863,8 +863,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 x = [1, 2, 3]
                 y = x[2]`,
 			types: map[string]string{
-				"x": "forall [] [int]",
-				"y": "forall [] int",
+				"x": "forall [t0] where t0: NumericDefaultInt [t0]",
+				"y": "forall [t0] where t0: NumericDefaultInt t0",
 			},
 		},
 		{
@@ -890,8 +890,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                     return z
                 }`,
 			types: map[string]string{
-				"f": "forall [] (x: int) -> int",
-				"z": "forall [] int",
+				"f": "forall [t0] where t0: Addable, t0: NumericDefaultInt (x: t0) -> t0",
+				"z": "forall [] t0",
 			},
 		},
 		{
@@ -919,14 +919,14 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name:    "default args",
 			fluxSrc: `f = (x=1, y) => x + y`,
 			types: map[string]string{
-				"f": "forall [] (?x: int, y: int) -> int",
+				"f": "forall [t0] where t0: Addable, t0: NumericDefaultInt (?x: t0, y: t0) -> t0",
 			},
 		},
 		{
 			name:    "two default args",
 			fluxSrc: `f = (x=1, y=10, z) => x + y + z`,
 			types: map[string]string{
-				"f": "forall [] (?x: int, ?y: int, z: int) -> int",
+				"f": "forall [t0] where t0: Addable, t0: NumericDefaultInt (?x: t0, ?y: t0, z: t0) -> t0",
 			},
 		},
 		{
@@ -949,7 +949,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 rem = "foo" =~ /foo/
                 renm = "food" !~ /foog/`,
 			types: map[string]string{
-				"x":    "forall [] int",
+				"x":    "forall [t0] where t0: Addable, t0: Subtractable, t0: Divisible, t0: NumericDefaultInt t0",
 				"lt":   "forall [] bool",
 				"lte":  "forall [] bool",
 				"gt":   "forall [] bool",
@@ -966,8 +966,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 f = (x) => x + 1
                 y = f(x: 10)`,
 			types: map[string]string{
-				"f": "forall [] (x: int) -> int",
-				"y": "forall [] int",
+				"f": "forall [t0] where t0: Addable, t0: NumericDefaultInt (x: t0) -> t0",
+				"y": "forall [t0] where t0: Addable, t0: NumericDefaultInt t0",
 			},
 		},
 		{
@@ -977,7 +977,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 y = f(x: 10, y: 30)`,
 			types: map[string]string{
 				"f": "forall [t0] where t0: Addable (x: t0, y: t0) -> t0",
-				"y": "forall [] int",
+				"y": "forall [t0] where t0: Addable, t0: NumericDefaultInt t0",
 			},
 		},
 		{
@@ -987,7 +987,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 y = 30 |> f(x: 10)`,
 			types: map[string]string{
 				"f": "forall [t0] where t0: Addable (x: t0, <-y: t0) -> t0",
-				"y": "forall [] int",
+				"y": "forall [t0] where t0: Addable, t0: NumericDefaultInt t0",
 			},
 		},
 		{
@@ -1004,8 +1004,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 x = 34
                 y = x`,
 			types: map[string]string{
-				"x": "forall [] int",
-				"y": "forall [] int",
+				"x": "forall [t0] where t0: NumericDefaultInt t0",
+				"y": "forall [t0] where t0: NumericDefaultInt t0",
 			},
 		},
 		{
@@ -1041,8 +1041,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 f = (r) => ({r with val: 32})
                 o = f(r: {val: "thirty-two"})`,
 			types: map[string]string{
-				"f": "forall [t0] (r: t0) -> {val: int | t0}",
-				"o": "forall [] {val: int | val: string}",
+				"f": "forall [t0, t1] where t1: NumericDefaultInt (r: t0) -> {val: t1 | t0}",
+				"o": "forall [t0] where t0: NumericDefaultInt {val: t0 | val: string}",
 			},
 		},
 		{
@@ -1052,8 +1052,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 y = +1
                 b = not false`,
 			types: map[string]string{
-				"x": "forall [] int",
-				"y": "forall [] int",
+				"x": "forall [t0] where t0: Negatable, t0: NumericDefaultInt t0",
+				"y": "forall [t0] where t0: Negatable, t0: NumericDefaultInt t0",
 				"b": "forall [] bool",
 			},
 		},

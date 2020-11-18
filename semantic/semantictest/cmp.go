@@ -51,6 +51,7 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreUnexported(semantic.DateTimeLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.DurationLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.IntegerLiteral{}),
+	cmpopts.IgnoreUnexported(semantic.PolyNumericLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.FloatLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.RegexpLiteral{}),
 	cmpopts.IgnoreUnexported(semantic.StringLiteral{}),
@@ -91,6 +92,7 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreFields(semantic.DateTimeLiteral{}, "Loc"),
 	cmpopts.IgnoreFields(semantic.DurationLiteral{}, "Loc"),
 	cmpopts.IgnoreFields(semantic.IntegerLiteral{}, "Loc"),
+	cmpopts.IgnoreFields(semantic.PolyNumericLiteral{}, "Loc"),
 	cmpopts.IgnoreFields(semantic.FloatLiteral{}, "Loc"),
 	cmpopts.IgnoreFields(semantic.RegexpLiteral{}, "Loc"),
 	cmpopts.IgnoreFields(semantic.StringLiteral{}, "Loc"),
@@ -98,6 +100,8 @@ var CmpOptions = []cmp.Option{
 	cmpopts.IgnoreFields(semantic.StringExpression{}, "Loc"),
 	cmpopts.IgnoreFields(semantic.TextPart{}, "Loc"),
 	cmpopts.IgnoreFields(semantic.InterpolatedPart{}, "Loc"),
+
+	cmpopts.IgnoreFields(semantic.PolyNumericLiteral{}, "Typ"),
 }
 
 func TransformValue(v values.Value) map[string]interface{} {

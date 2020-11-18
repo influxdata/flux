@@ -552,11 +552,11 @@ func TestLogicalPlanner(t *testing.T) {
 												Left: &semantic.BinaryExpression{
 													Operator: ast.LessThanOperator,
 													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-													Right:    &semantic.IntegerLiteral{Value: 100}},
+													Right:    &semantic.PolyNumericLiteral{Value: 100}},
 												Right: &semantic.BinaryExpression{
 													Operator: ast.NotEqualOperator,
 													Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-													Right:    &semantic.IntegerLiteral{}}},
+													Right:    &semantic.PolyNumericLiteral{}}},
 										},
 									},
 								},
@@ -575,7 +575,7 @@ func TestLogicalPlanner(t *testing.T) {
 											Value: &semantic.BinaryExpression{
 												Operator: ast.MultiplicationOperator,
 												Left:     &semantic.MemberExpression{Object: &semantic.IdentifierExpression{Name: "r"}, Property: "_value"},
-												Right:    &semantic.IntegerLiteral{Value: 10}}}}},
+												Right:    &semantic.PolyNumericLiteral{Value: 10}}}}},
 									},
 								}}}}}),
 					plan.CreateLogicalNode("yield4", &universe.YieldProcedureSpec{Name: "result"}),

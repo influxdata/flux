@@ -18,7 +18,6 @@ pub struct PolyType {
     pub cons: TvarKinds,
     pub expr: MonoType,
 }
-
 pub type PolyTypeMap = SemanticMap<String, PolyType>;
 pub type PolyTypeMapMap = SemanticMap<String, SemanticMap<String, PolyType>>;
 
@@ -220,6 +219,7 @@ pub enum Kind {
     Record,
     Negatable,
     Timeable,
+    NumericDefaultInt,
 }
 
 impl fmt::Display for Kind {
@@ -229,6 +229,7 @@ impl fmt::Display for Kind {
             Kind::Subtractable => f.write_str("Subtractable"),
             Kind::Divisible => f.write_str("Divisible"),
             Kind::Numeric => f.write_str("Numeric"),
+            Kind::NumericDefaultInt => f.write_str("NumericDefaultInt"),
             Kind::Comparable => f.write_str("Comparable"),
             Kind::Equatable => f.write_str("Equatable"),
             Kind::Nullable => f.write_str("Nullable"),
@@ -399,6 +400,7 @@ impl MonoType {
                 | Kind::Subtractable
                 | Kind::Divisible
                 | Kind::Numeric
+                | Kind::NumericDefaultInt
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
@@ -413,6 +415,7 @@ impl MonoType {
                 | Kind::Subtractable
                 | Kind::Divisible
                 | Kind::Numeric
+                | Kind::NumericDefaultInt
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
@@ -427,6 +430,7 @@ impl MonoType {
                 | Kind::Subtractable
                 | Kind::Divisible
                 | Kind::Numeric
+                | Kind::NumericDefaultInt
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
@@ -1325,6 +1329,12 @@ mod tests {
     fn display_kind_numeric() {
         assert!(Kind::Numeric.to_string() == "Numeric");
     }
+
+    #[test]
+    fn display_kind_numeric_default_int() {
+        assert!(Kind::NumericDefaultInt.to_string() == "NumericDefaultInt");
+    }
+
     #[test]
     fn display_kind_comparable() {
         assert!(Kind::Comparable.to_string() == "Comparable");
