@@ -25,10 +25,11 @@ pub mod fbsemantic {
         Arr = 3,
         Record = 4,
         Fun = 5,
+        Dict = 6,
     }
 
     const ENUM_MIN_MONO_TYPE: u8 = 0;
-    const ENUM_MAX_MONO_TYPE: u8 = 5;
+    const ENUM_MAX_MONO_TYPE: u8 = 6;
 
     impl<'a> flatbuffers::Follow<'a> for MonoType {
         type Inner = Self;
@@ -62,18 +63,19 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_MONO_TYPE: [MonoType; 6] = [
+    const ENUM_VALUES_MONO_TYPE: [MonoType; 7] = [
         MonoType::NONE,
         MonoType::Basic,
         MonoType::Var,
         MonoType::Arr,
         MonoType::Record,
         MonoType::Fun,
+        MonoType::Dict,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_MONO_TYPE: [&'static str; 6] =
-        ["NONE", "Basic", "Var", "Arr", "Record", "Fun"];
+    const ENUM_NAMES_MONO_TYPE: [&'static str; 7] =
+        ["NONE", "Basic", "Var", "Arr", "Record", "Fun", "Dict"];
 
     pub fn enum_name_mono_type(e: MonoType) -> &'static str {
         let index = e as u8;
@@ -1082,6 +1084,16 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct MonoTypeHolderArgs {
@@ -1375,6 +1387,16 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_dict(&self) -> Option<Dict<'a>> {
+            if self.t_type() == MonoType::Dict {
+                self.t().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct ArrArgs {
@@ -1635,6 +1657,16 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn retn_as_dict(&self) -> Option<Dict<'a>> {
+            if self.retn_type() == MonoType::Dict {
+                self.retn().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct FunArgs<'a> {
@@ -1691,6 +1723,250 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn finish(self) -> flatbuffers::WIPOffset<Fun<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    pub enum DictOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct Dict<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Dict<'a> {
+        type Inner = Dict<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> Dict<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Dict { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args DictArgs,
+        ) -> flatbuffers::WIPOffset<Dict<'bldr>> {
+            let mut builder = DictBuilder::new(_fbb);
+            if let Some(x) = args.v {
+                builder.add_v(x);
+            }
+            if let Some(x) = args.k {
+                builder.add_k(x);
+            }
+            builder.add_v_type(args.v_type);
+            builder.add_k_type(args.k_type);
+            builder.finish()
+        }
+
+        pub const VT_K_TYPE: flatbuffers::VOffsetT = 4;
+        pub const VT_K: flatbuffers::VOffsetT = 6;
+        pub const VT_V_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_V: flatbuffers::VOffsetT = 10;
+
+        #[inline]
+        pub fn k_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(Dict::VT_K_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn k(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Dict::VT_K, None)
+        }
+        #[inline]
+        pub fn v_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(Dict::VT_V_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn v(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(Dict::VT_V, None)
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_basic(&self) -> Option<Basic<'a>> {
+            if self.k_type() == MonoType::Basic {
+                self.k().map(|u| Basic::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_var(&self) -> Option<Var<'a>> {
+            if self.k_type() == MonoType::Var {
+                self.k().map(|u| Var::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_arr(&self) -> Option<Arr<'a>> {
+            if self.k_type() == MonoType::Arr {
+                self.k().map(|u| Arr::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_record(&self) -> Option<Record<'a>> {
+            if self.k_type() == MonoType::Record {
+                self.k().map(|u| Record::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_fun(&self) -> Option<Fun<'a>> {
+            if self.k_type() == MonoType::Fun {
+                self.k().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn k_as_dict(&self) -> Option<Dict<'a>> {
+            if self.k_type() == MonoType::Dict {
+                self.k().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn v_as_basic(&self) -> Option<Basic<'a>> {
+            if self.v_type() == MonoType::Basic {
+                self.v().map(|u| Basic::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn v_as_var(&self) -> Option<Var<'a>> {
+            if self.v_type() == MonoType::Var {
+                self.v().map(|u| Var::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn v_as_arr(&self) -> Option<Arr<'a>> {
+            if self.v_type() == MonoType::Arr {
+                self.v().map(|u| Arr::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn v_as_record(&self) -> Option<Record<'a>> {
+            if self.v_type() == MonoType::Record {
+                self.v().map(|u| Record::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn v_as_fun(&self) -> Option<Fun<'a>> {
+            if self.v_type() == MonoType::Fun {
+                self.v().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn v_as_dict(&self) -> Option<Dict<'a>> {
+            if self.v_type() == MonoType::Dict {
+                self.v().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub struct DictArgs {
+        pub k_type: MonoType,
+        pub k: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub v_type: MonoType,
+        pub v: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for DictArgs {
+        #[inline]
+        fn default() -> Self {
+            DictArgs {
+                k_type: MonoType::NONE,
+                k: None,
+                v_type: MonoType::NONE,
+                v: None,
+            }
+        }
+    }
+    pub struct DictBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> DictBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_k_type(&mut self, k_type: MonoType) {
+            self.fbb_
+                .push_slot::<MonoType>(Dict::VT_K_TYPE, k_type, MonoType::NONE);
+        }
+        #[inline]
+        pub fn add_k(&mut self, k: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Dict::VT_K, k);
+        }
+        #[inline]
+        pub fn add_v_type(&mut self, v_type: MonoType) {
+            self.fbb_
+                .push_slot::<MonoType>(Dict::VT_V_TYPE, v_type, MonoType::NONE);
+        }
+        #[inline]
+        pub fn add_v(&mut self, v: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Dict::VT_V, v);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DictBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            DictBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Dict<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
@@ -1815,6 +2091,16 @@ pub mod fbsemantic {
         pub fn t_as_fun(&self) -> Option<Fun<'a>> {
             if self.t_type() == MonoType::Fun {
                 self.t().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn t_as_dict(&self) -> Option<Dict<'a>> {
+            if self.t_type() == MonoType::Dict {
+                self.t().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }
@@ -1987,6 +2273,16 @@ pub mod fbsemantic {
         pub fn v_as_fun(&self) -> Option<Fun<'a>> {
             if self.v_type() == MonoType::Fun {
                 self.v().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn v_as_dict(&self) -> Option<Dict<'a>> {
+            if self.v_type() == MonoType::Dict {
+                self.v().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }
@@ -2164,6 +2460,16 @@ pub mod fbsemantic {
         pub fn expr_as_fun(&self) -> Option<Fun<'a>> {
             if self.expr_type() == MonoType::Fun {
                 self.expr().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn expr_as_dict(&self) -> Option<Dict<'a>> {
+            if self.expr_type() == MonoType::Dict {
+                self.expr().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }
@@ -5891,6 +6197,16 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct ArrayExpressionArgs<'a> {
@@ -6097,6 +6413,16 @@ pub mod fbsemantic {
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
                 self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }
@@ -7236,6 +7562,16 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct BinaryExpressionArgs<'a> {
@@ -7908,6 +8244,16 @@ pub mod fbsemantic {
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
                 self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }
@@ -9803,6 +10149,16 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct MemberExpressionArgs<'a> {
@@ -10448,6 +10804,16 @@ pub mod fbsemantic {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct IndexExpressionArgs<'a> {
@@ -10672,6 +11038,16 @@ pub mod fbsemantic {
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
                 self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }
@@ -11113,6 +11489,16 @@ pub mod fbsemantic {
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
                 self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }
@@ -11658,6 +12044,16 @@ pub mod fbsemantic {
         pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
             if self.typ_type() == MonoType::Fun {
                 self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
             } else {
                 None
             }

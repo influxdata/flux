@@ -15,6 +15,7 @@ const (
 	MonoTypeArr    MonoType = 3
 	MonoTypeRecord MonoType = 4
 	MonoTypeFun    MonoType = 5
+	MonoTypeDict   MonoType = 6
 )
 
 var EnumNamesMonoType = map[MonoType]string{
@@ -24,6 +25,7 @@ var EnumNamesMonoType = map[MonoType]string{
 	MonoTypeArr:    "Arr",
 	MonoTypeRecord: "Record",
 	MonoTypeFun:    "Fun",
+	MonoTypeDict:   "Dict",
 }
 
 type Type = byte
@@ -717,6 +719,87 @@ func FunAddRetn(builder *flatbuffers.Builder, retn flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(retn), 0)
 }
 func FunEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type Dict struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsDict(buf []byte, offset flatbuffers.UOffsetT) *Dict {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &Dict{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *Dict) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *Dict) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *Dict) KType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Dict) MutateKType(n byte) bool {
+	return rcv._tab.MutateByteSlot(4, n)
+}
+
+func (rcv *Dict) K(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func (rcv *Dict) VType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *Dict) MutateVType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *Dict) V(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func DictStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func DictAddKType(builder *flatbuffers.Builder, kType byte) {
+	builder.PrependByteSlot(0, kType, 0)
+}
+func DictAddK(builder *flatbuffers.Builder, k flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(k), 0)
+}
+func DictAddVType(builder *flatbuffers.Builder, vType byte) {
+	builder.PrependByteSlot(2, vType, 0)
+}
+func DictAddV(builder *flatbuffers.Builder, v flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(v), 0)
+}
+func DictEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 
