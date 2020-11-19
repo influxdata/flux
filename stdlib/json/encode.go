@@ -64,7 +64,7 @@ func convertValue(v values.Value) (interface{}, error) {
 		var rangeErr error
 		arr.Range(func(i int, v values.Value) {
 			if rangeErr != nil {
-				return //short circuit if we already hit an error
+				return // short circuit if we already hit an error
 			}
 			val, err := convertValue(v)
 			if err != nil {
@@ -83,7 +83,7 @@ func convertValue(v values.Value) (interface{}, error) {
 		var rangeErr error
 		obj.Range(func(k string, v values.Value) {
 			if rangeErr != nil {
-				return //short circuit if we already hit an error
+				return // short circuit if we already hit an error
 			}
 			val, err := convertValue(v)
 			if err != nil {
@@ -98,6 +98,30 @@ func convertValue(v values.Value) (interface{}, error) {
 		return o, nil
 	case semantic.Function:
 		return nil, errors.New(codes.Invalid, "cannot encode a function value")
+	case semantic.Dictionary:
+		dict := v.Dict()
+		d := make(map[interface{}]interface{}, dict.Len())
+		var rangeErr error
+		dict.Range(func(k, v values.Value) {
+			if rangeErr != nil {
+				return // short circuit if we already hit an error
+			}
+			key, err := convertValue(k)
+			if err != nil {
+				rangeErr = err
+				return
+			}
+			val, err := convertValue(v)
+			if err != nil {
+				rangeErr = err
+				return
+			}
+			d[key] = val
+		})
+		if rangeErr != nil {
+			return nil, rangeErr
+		}
+		return d, nil
 	default:
 		return nil, errors.Newf(codes.Unknown, "unknown nature %v", n)
 	}

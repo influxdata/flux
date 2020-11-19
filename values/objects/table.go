@@ -140,6 +140,10 @@ func (t *Table) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Object, semantic.Function))
 }
 
+func (t *Table) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Object, semantic.Dictionary))
+}
+
 // Table returns a copy of the Table that can be called
 // with Do. Either Do or Done must be called on the
 // returned Table.

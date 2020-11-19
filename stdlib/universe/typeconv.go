@@ -88,6 +88,9 @@ func (c *stringConv) Object() values.Object {
 func (c *stringConv) Function() values.Function {
 	return c
 }
+func (c *stringConv) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Float, semantic.Dictionary))
+}
 func (c *stringConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*stringConv)
 	return ok && (c == f)
@@ -183,6 +186,9 @@ func (c *intConv) Object() values.Object {
 func (c *intConv) Function() values.Function {
 	return c
 }
+func (c *intConv) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Float, semantic.Dictionary))
+}
 func (c *intConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*intConv)
 	return ok && (c == f)
@@ -272,6 +278,9 @@ func (c *uintConv) Object() values.Object {
 }
 func (c *uintConv) Function() values.Function {
 	return c
+}
+func (c *uintConv) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Float, semantic.Dictionary))
 }
 func (c *uintConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*uintConv)
@@ -363,6 +372,9 @@ func (c *floatConv) Object() values.Object {
 func (c *floatConv) Function() values.Function {
 	return c
 }
+func (c *floatConv) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Float, semantic.Dictionary))
+}
 func (c *floatConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*floatConv)
 	return ok && (c == f)
@@ -448,6 +460,9 @@ func (c *boolConv) Object() values.Object {
 }
 func (c *boolConv) Function() values.Function {
 	return c
+}
+func (c *boolConv) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Float, semantic.Dictionary))
 }
 func (c *boolConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*boolConv)
@@ -555,6 +570,9 @@ func (c *timeConv) Object() values.Object {
 func (c *timeConv) Function() values.Function {
 	return c
 }
+func (c *timeConv) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Float, semantic.Dictionary))
+}
 func (c *timeConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*timeConv)
 	return ok && (c == f)
@@ -634,6 +652,9 @@ func (c *durationConv) Object() values.Object {
 }
 func (c *durationConv) Function() values.Function {
 	return c
+}
+func (c *durationConv) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Float, semantic.Dictionary))
 }
 func (c *durationConv) Equal(rhs values.Value) bool {
 	f, ok := rhs.(*durationConv)

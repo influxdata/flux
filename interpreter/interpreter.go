@@ -789,6 +789,9 @@ func (f function) Object() values.Object {
 func (f function) Function() values.Function {
 	return f
 }
+func (f function) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Dictionary))
+}
 func (f function) Equal(rhs values.Value) bool {
 	if f.Type() != rhs.Type() {
 		return false
@@ -1241,6 +1244,8 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 			return nil, false, err
 		}
 		return node, true, nil
+	case semantic.Dictionary:
+		return nil, false, errors.New(codes.Unimplemented, "cannot resolve dictionary value")
 	default:
 		return nil, false, errors.Newf(codes.Internal, "cannot resolve value of type %v", k)
 	}

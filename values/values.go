@@ -31,6 +31,7 @@ type Value interface {
 	Array() Array
 	Object() Object
 	Function() Function
+	Dict() Dictionary
 	Equal(Value) bool
 }
 
@@ -97,6 +98,10 @@ func (v value) Function() Function {
 	CheckKind(v.t.Nature(), semantic.Function)
 	return v.v.(Function)
 }
+func (v value) Dict() Dictionary {
+	CheckKind(v.t.Nature(), semantic.Dictionary)
+	return v.v.(Dictionary)
+}
 func (v value) Equal(r Value) bool {
 	if v.Type().Nature() != r.Type().Nature() {
 		return false
@@ -131,6 +136,8 @@ func (v value) Equal(r Value) bool {
 		return v.Array().Equal(r.Array())
 	case semantic.Function:
 		return v.Function().Equal(r.Function())
+	case semantic.Dictionary:
+		return v.Dict().Equal(r.Dict())
 	default:
 		return false
 	}
@@ -148,7 +155,7 @@ var (
 	Null = null{}
 )
 
-// Extract the primitive value from the Value interface.
+// Unwrap will extract the primitive value from the Value interface.
 func Unwrap(v Value) interface{} {
 	if v.IsNull() {
 		return nil
@@ -188,6 +195,14 @@ func Unwrap(v Value) interface{} {
 			o[k] = val
 		})
 		return o
+	case semantic.Dictionary:
+		dict := v.Dict()
+		d := make(map[interface{}]interface{}, dict.Len())
+		dict.Range(func(key, value Value) {
+			k := Unwrap(key)
+			d[k] = Unwrap(value)
+		})
+		return d
 	case semantic.Function:
 		// there is no primitive value for a Function object, just return itself.
 		return v
@@ -294,7 +309,7 @@ func CheckKind(got, exp semantic.Nature) {
 	}
 }
 
-// isTimeable checks if value v is Timeable
+// IsTimeable checks if value v is Timeable.
 func IsTimeable(v Value) bool {
 	return v.Type().Nature() == semantic.Time || v.Type().Nature() == semantic.Duration
 }
@@ -315,4 +330,5 @@ func (n null) Regexp() *regexp.Regexp  { panic(UnexpectedKind(semantic.Invalid, 
 func (n null) Array() Array            { panic(UnexpectedKind(semantic.Invalid, semantic.Array)) }
 func (n null) Object() Object          { panic(UnexpectedKind(semantic.Invalid, semantic.Object)) }
 func (n null) Function() Function      { panic(UnexpectedKind(semantic.Invalid, semantic.Function)) }
+func (n null) Dict() Dictionary        { panic(UnexpectedKind(semantic.Invalid, semantic.Dictionary)) }
 func (n null) Equal(Value) bool        { return false }
