@@ -1,9 +1,9 @@
 
-#line 1 "libflux/src/core/scanner/scanner.rl"
+#line 1 "libflux/core/src/scanner/scanner.rl"
 #include "scanner.h"
 
 
-#line 145 "libflux/src/core/scanner/scanner.rl"
+#line 145 "libflux/core/src/scanner/scanner.rl"
 
 
 
@@ -1275,7 +1275,7 @@ static const int flux_en_main = 234;
 static const int flux_en_string_expr = 305;
 
 
-#line 148 "libflux/src/core/scanner/scanner.rl"
+#line 148 "libflux/core/src/scanner/scanner.rl"
 
 int scan(
     int mode,
@@ -1321,7 +1321,7 @@ int scan(
 	act = 0;
 	}
 
-#line 186 "libflux/src/core/scanner/scanner.rl"
+#line 186 "libflux/core/src/scanner/scanner.rl"
     
 #line 1327 "libflux/scanner.c"
 	{
@@ -1411,7 +1411,7 @@ _eof_trans:
 		switch ( *_acts++ )
 		{
 	case 0:
-#line 10 "libflux/src/core/scanner/scanner.rl"
+#line 10 "libflux/core/src/scanner/scanner.rl"
 	{
         // We do this for every newline we find.
         // This allows us to return correct line/column for each token
@@ -1425,19 +1425,19 @@ _eof_trans:
 	{te = p+1;}
 	break;
 	case 5:
-#line 66 "libflux/src/core/scanner/scanner.rl"
+#line 66 "libflux/core/src/scanner/scanner.rl"
 	{act = 1;}
 	break;
 	case 6:
-#line 74 "libflux/src/core/scanner/scanner.rl"
+#line 74 "libflux/core/src/scanner/scanner.rl"
 	{act = 4;}
 	break;
 	case 7:
-#line 66 "libflux/src/core/scanner/scanner.rl"
+#line 66 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = REGEX; {p++; goto _out; } }}
 	break;
 	case 8:
-#line 18 "libflux/src/core/scanner/scanner.rl"
+#line 18 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{
         // We do this for each newline we find in the whitespace between tokens,
         // so we can record the location of the first byte of a token.
@@ -1446,23 +1446,23 @@ _eof_trans:
     }}
 	break;
 	case 9:
-#line 74 "libflux/src/core/scanner/scanner.rl"
+#line 74 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ p--; {cs = 234;goto _again;} }}
 	break;
 	case 10:
-#line 66 "libflux/src/core/scanner/scanner.rl"
+#line 66 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = REGEX; {p++; goto _out; } }}
 	break;
 	case 11:
-#line 69 "libflux/src/core/scanner/scanner.rl"
+#line 69 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;}
 	break;
 	case 12:
-#line 74 "libflux/src/core/scanner/scanner.rl"
+#line 74 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ p--; {cs = 234;goto _again;} }}
 	break;
 	case 13:
-#line 74 "libflux/src/core/scanner/scanner.rl"
+#line 74 "libflux/core/src/scanner/scanner.rl"
 	{{p = ((te))-1;}{ p--; {cs = 234;goto _again;} }}
 	break;
 	case 14:
@@ -1478,191 +1478,191 @@ _eof_trans:
 	}
 	break;
 	case 15:
-#line 81 "libflux/src/core/scanner/scanner.rl"
+#line 81 "libflux/core/src/scanner/scanner.rl"
 	{act = 6;}
 	break;
 	case 16:
-#line 82 "libflux/src/core/scanner/scanner.rl"
+#line 82 "libflux/core/src/scanner/scanner.rl"
 	{act = 7;}
 	break;
 	case 17:
-#line 83 "libflux/src/core/scanner/scanner.rl"
+#line 83 "libflux/core/src/scanner/scanner.rl"
 	{act = 8;}
 	break;
 	case 18:
-#line 84 "libflux/src/core/scanner/scanner.rl"
+#line 84 "libflux/core/src/scanner/scanner.rl"
 	{act = 9;}
 	break;
 	case 19:
-#line 85 "libflux/src/core/scanner/scanner.rl"
+#line 85 "libflux/core/src/scanner/scanner.rl"
 	{act = 10;}
 	break;
 	case 20:
-#line 86 "libflux/src/core/scanner/scanner.rl"
+#line 86 "libflux/core/src/scanner/scanner.rl"
 	{act = 11;}
 	break;
 	case 21:
-#line 87 "libflux/src/core/scanner/scanner.rl"
+#line 87 "libflux/core/src/scanner/scanner.rl"
 	{act = 12;}
 	break;
 	case 22:
-#line 88 "libflux/src/core/scanner/scanner.rl"
+#line 88 "libflux/core/src/scanner/scanner.rl"
 	{act = 13;}
 	break;
 	case 23:
-#line 89 "libflux/src/core/scanner/scanner.rl"
+#line 89 "libflux/core/src/scanner/scanner.rl"
 	{act = 14;}
 	break;
 	case 24:
-#line 90 "libflux/src/core/scanner/scanner.rl"
+#line 90 "libflux/core/src/scanner/scanner.rl"
 	{act = 15;}
 	break;
 	case 25:
-#line 91 "libflux/src/core/scanner/scanner.rl"
+#line 91 "libflux/core/src/scanner/scanner.rl"
 	{act = 16;}
 	break;
 	case 26:
-#line 92 "libflux/src/core/scanner/scanner.rl"
+#line 92 "libflux/core/src/scanner/scanner.rl"
 	{act = 17;}
 	break;
 	case 27:
-#line 93 "libflux/src/core/scanner/scanner.rl"
+#line 93 "libflux/core/src/scanner/scanner.rl"
 	{act = 18;}
 	break;
 	case 28:
-#line 94 "libflux/src/core/scanner/scanner.rl"
+#line 94 "libflux/core/src/scanner/scanner.rl"
 	{act = 19;}
 	break;
 	case 29:
-#line 95 "libflux/src/core/scanner/scanner.rl"
+#line 95 "libflux/core/src/scanner/scanner.rl"
 	{act = 20;}
 	break;
 	case 30:
-#line 97 "libflux/src/core/scanner/scanner.rl"
+#line 97 "libflux/core/src/scanner/scanner.rl"
 	{act = 21;}
 	break;
 	case 31:
-#line 98 "libflux/src/core/scanner/scanner.rl"
+#line 98 "libflux/core/src/scanner/scanner.rl"
 	{act = 22;}
 	break;
 	case 32:
-#line 99 "libflux/src/core/scanner/scanner.rl"
+#line 99 "libflux/core/src/scanner/scanner.rl"
 	{act = 23;}
 	break;
 	case 33:
-#line 100 "libflux/src/core/scanner/scanner.rl"
+#line 100 "libflux/core/src/scanner/scanner.rl"
 	{act = 24;}
 	break;
 	case 34:
-#line 130 "libflux/src/core/scanner/scanner.rl"
+#line 130 "libflux/core/src/scanner/scanner.rl"
 	{act = 53;}
 	break;
 	case 35:
-#line 79 "libflux/src/core/scanner/scanner.rl"
+#line 79 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = COMMENT; {p++; goto _out; } }}
 	break;
 	case 36:
-#line 101 "libflux/src/core/scanner/scanner.rl"
+#line 101 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = TIME; {p++; goto _out; } }}
 	break;
 	case 37:
-#line 102 "libflux/src/core/scanner/scanner.rl"
+#line 102 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = STRING; {p++; goto _out; } }}
 	break;
 	case 38:
-#line 104 "libflux/src/core/scanner/scanner.rl"
+#line 104 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = ADD; {p++; goto _out; } }}
 	break;
 	case 39:
-#line 105 "libflux/src/core/scanner/scanner.rl"
+#line 105 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = SUB; {p++; goto _out; } }}
 	break;
 	case 40:
-#line 106 "libflux/src/core/scanner/scanner.rl"
+#line 106 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = MUL; {p++; goto _out; } }}
 	break;
 	case 41:
-#line 108 "libflux/src/core/scanner/scanner.rl"
+#line 108 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = MOD; {p++; goto _out; } }}
 	break;
 	case 42:
-#line 109 "libflux/src/core/scanner/scanner.rl"
+#line 109 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = POW; {p++; goto _out; } }}
 	break;
 	case 43:
-#line 110 "libflux/src/core/scanner/scanner.rl"
+#line 110 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = EQ; {p++; goto _out; } }}
 	break;
 	case 44:
-#line 113 "libflux/src/core/scanner/scanner.rl"
+#line 113 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = LTE; {p++; goto _out; } }}
 	break;
 	case 45:
-#line 114 "libflux/src/core/scanner/scanner.rl"
+#line 114 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = GTE; {p++; goto _out; } }}
 	break;
 	case 46:
-#line 115 "libflux/src/core/scanner/scanner.rl"
+#line 115 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = NEQ; {p++; goto _out; } }}
 	break;
 	case 47:
-#line 116 "libflux/src/core/scanner/scanner.rl"
+#line 116 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = REGEXEQ; {p++; goto _out; } }}
 	break;
 	case 48:
-#line 117 "libflux/src/core/scanner/scanner.rl"
+#line 117 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = REGEXNEQ; {p++; goto _out; } }}
 	break;
 	case 49:
-#line 119 "libflux/src/core/scanner/scanner.rl"
+#line 119 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = ARROW; {p++; goto _out; } }}
 	break;
 	case 50:
-#line 120 "libflux/src/core/scanner/scanner.rl"
+#line 120 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = PIPE_RECEIVE; {p++; goto _out; } }}
 	break;
 	case 51:
-#line 121 "libflux/src/core/scanner/scanner.rl"
+#line 121 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = LPAREN; {p++; goto _out; } }}
 	break;
 	case 52:
-#line 122 "libflux/src/core/scanner/scanner.rl"
+#line 122 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = RPAREN; {p++; goto _out; } }}
 	break;
 	case 53:
-#line 123 "libflux/src/core/scanner/scanner.rl"
+#line 123 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = LBRACK; {p++; goto _out; } }}
 	break;
 	case 54:
-#line 124 "libflux/src/core/scanner/scanner.rl"
+#line 124 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = RBRACK; {p++; goto _out; } }}
 	break;
 	case 55:
-#line 125 "libflux/src/core/scanner/scanner.rl"
+#line 125 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = LBRACE; {p++; goto _out; } }}
 	break;
 	case 56:
-#line 126 "libflux/src/core/scanner/scanner.rl"
+#line 126 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = RBRACE; {p++; goto _out; } }}
 	break;
 	case 57:
-#line 127 "libflux/src/core/scanner/scanner.rl"
+#line 127 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = COLON; {p++; goto _out; } }}
 	break;
 	case 58:
-#line 128 "libflux/src/core/scanner/scanner.rl"
+#line 128 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = PIPE_FORWARD; {p++; goto _out; } }}
 	break;
 	case 59:
-#line 129 "libflux/src/core/scanner/scanner.rl"
+#line 129 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = COMMA; {p++; goto _out; } }}
 	break;
 	case 60:
-#line 132 "libflux/src/core/scanner/scanner.rl"
+#line 132 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = QUESTION_MARK; {p++; goto _out; } }}
 	break;
 	case 61:
-#line 18 "libflux/src/core/scanner/scanner.rl"
+#line 18 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{
         // We do this for each newline we find in the whitespace between tokens,
         // so we can record the location of the first byte of a token.
@@ -1671,63 +1671,63 @@ _eof_trans:
     }}
 	break;
 	case 62:
-#line 79 "libflux/src/core/scanner/scanner.rl"
+#line 79 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = COMMENT; {p++; goto _out; } }}
 	break;
 	case 63:
-#line 97 "libflux/src/core/scanner/scanner.rl"
+#line 97 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = IDENT; {p++; goto _out; } }}
 	break;
 	case 64:
-#line 98 "libflux/src/core/scanner/scanner.rl"
+#line 98 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = INT; {p++; goto _out; } }}
 	break;
 	case 65:
-#line 100 "libflux/src/core/scanner/scanner.rl"
+#line 100 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = DURATION; {p++; goto _out; } }}
 	break;
 	case 66:
-#line 101 "libflux/src/core/scanner/scanner.rl"
+#line 101 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = TIME; {p++; goto _out; } }}
 	break;
 	case 67:
-#line 107 "libflux/src/core/scanner/scanner.rl"
+#line 107 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = DIV; {p++; goto _out; } }}
 	break;
 	case 68:
-#line 111 "libflux/src/core/scanner/scanner.rl"
+#line 111 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = LT; {p++; goto _out; } }}
 	break;
 	case 69:
-#line 112 "libflux/src/core/scanner/scanner.rl"
+#line 112 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = GT; {p++; goto _out; } }}
 	break;
 	case 70:
-#line 118 "libflux/src/core/scanner/scanner.rl"
+#line 118 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = ASSIGN; {p++; goto _out; } }}
 	break;
 	case 71:
-#line 131 "libflux/src/core/scanner/scanner.rl"
+#line 131 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = QUOTE; {p++; goto _out; } }}
 	break;
 	case 72:
-#line 134 "libflux/src/core/scanner/scanner.rl"
+#line 134 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;}
 	break;
 	case 73:
-#line 98 "libflux/src/core/scanner/scanner.rl"
+#line 98 "libflux/core/src/scanner/scanner.rl"
 	{{p = ((te))-1;}{ tok = INT; {p++; goto _out; } }}
 	break;
 	case 74:
-#line 100 "libflux/src/core/scanner/scanner.rl"
+#line 100 "libflux/core/src/scanner/scanner.rl"
 	{{p = ((te))-1;}{ tok = DURATION; {p++; goto _out; } }}
 	break;
 	case 75:
-#line 101 "libflux/src/core/scanner/scanner.rl"
+#line 101 "libflux/core/src/scanner/scanner.rl"
 	{{p = ((te))-1;}{ tok = TIME; {p++; goto _out; } }}
 	break;
 	case 76:
-#line 131 "libflux/src/core/scanner/scanner.rl"
+#line 131 "libflux/core/src/scanner/scanner.rl"
 	{{p = ((te))-1;}{ tok = QUOTE; {p++; goto _out; } }}
 	break;
 	case 77:
@@ -1800,23 +1800,23 @@ _eof_trans:
 	}
 	break;
 	case 78:
-#line 143 "libflux/src/core/scanner/scanner.rl"
+#line 143 "libflux/core/src/scanner/scanner.rl"
 	{act = 60;}
 	break;
 	case 79:
-#line 141 "libflux/src/core/scanner/scanner.rl"
+#line 141 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = STRINGEXPR; {p++; goto _out; } }}
 	break;
 	case 80:
-#line 142 "libflux/src/core/scanner/scanner.rl"
+#line 142 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = QUOTE; {p++; goto _out; } }}
 	break;
 	case 81:
-#line 143 "libflux/src/core/scanner/scanner.rl"
+#line 143 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = TEXT; {p++; goto _out; } }}
 	break;
 	case 82:
-#line 143 "libflux/src/core/scanner/scanner.rl"
+#line 143 "libflux/core/src/scanner/scanner.rl"
 	{{p = ((te))-1;}{ tok = TEXT; {p++; goto _out; } }}
 	break;
 	case 83:
@@ -1868,7 +1868,7 @@ _again:
 	_out: {}
 	}
 
-#line 187 "libflux/src/core/scanner/scanner.rl"
+#line 187 "libflux/core/src/scanner/scanner.rl"
 
     // Update output args.
     *token = tok;

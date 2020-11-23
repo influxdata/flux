@@ -38,21 +38,21 @@ GENERATED_TARGETS = \
 	$(LIBFLUX_GENERATED_TARGETS)
 
 LIBFLUX_GENERATED_TARGETS = \
-	libflux/src/core/ast/flatbuffers/ast_generated.rs \
-	libflux/src/core/semantic/flatbuffers/semantic_generated.rs \
+	libflux/core/src/ast/flatbuffers/ast_generated.rs \
+	libflux/core/src/semantic/flatbuffers/semantic_generated.rs \
 	libflux/scanner.c
 
 generate: $(GENERATED_TARGETS)
 
 ast/internal/fbast/ast_generated.go: ast/ast.fbs
 	$(GO_GENERATE) ./ast
-libflux/src/core/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	flatc --rust -o libflux/src/core/ast/flatbuffers ast/ast.fbs && rustfmt $@
+libflux/core/src/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
+	flatc --rust -o libflux/core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 internal/fbsemantic/semantic_generated.go: internal/fbsemantic/semantic.fbs
 	$(GO_GENERATE) ./internal/fbsemantic
-libflux/src/core/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
-	flatc --rust -o libflux/src/core/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
+libflux/core/src/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
+	flatc --rust -o libflux/core/src/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
 libflux/go/libflux/buildinfo.gen.go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
@@ -124,8 +124,8 @@ vet: libflux-go
 bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
-libflux/scanner.c: libflux/src/core/scanner/scanner.rl
-	ragel -C -o libflux/scanner.c libflux/src/core/scanner/scanner.rl
+libflux/scanner.c: libflux/core/src/scanner/scanner.rl
+	ragel -C -o libflux/scanner.c libflux/core/src/scanner/scanner.rl
 
 # This target generates a file that forces the go libflux wrapper
 # to recompile which forces pkg-config to run again.
@@ -133,16 +133,16 @@ libflux-go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
 libflux-wasm:
-	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
+	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build --scope influxdata --dev
 
 clean-wasm:
-	rm -rf libflux/src/flux/pkg
+	rm -rf libflux/flux/pkg
 
 build-wasm:
-	cd libflux/src/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata
+	cd libflux/flux && CC=clang AR=llvm-ar wasm-pack build -t nodejs --scope influxdata
 
 publish-wasm: clean-wasm build-wasm
-	cd libflux/src/flux/pkg && npm publish --access public
+	cd libflux/flux/pkg && npm publish --access public
 
 test-valgrind: libflux
 	cd libflux/c && $(MAKE) test-valgrind

@@ -17,7 +17,7 @@ fn main() {
     let bindings = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
-        .header("scanner/scanner.h")
+        .header("src/scanner/scanner.h")
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
@@ -28,11 +28,11 @@ fn main() {
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Couldn't write bindings!");
 
-    copy("../../scanner.c", out_path.join("scanner.c")).expect("Could not copy scanner.c");
+    copy("../scanner.c", out_path.join("scanner.c")).expect("Could not copy scanner.c");
 
     // Compile generated scanner
     cc::Build::new()
-        .include("scanner")
+        .include("src/scanner")
         .file(out_path.join("scanner.c"))
         .compile("scanner");
 }

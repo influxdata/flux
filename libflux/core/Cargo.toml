@@ -6,7 +6,6 @@ edition = "2018"
 
 [lib]
 name = "core"
-path = "lib.rs"
 crate-type = ["rlib"]
 
 [features]

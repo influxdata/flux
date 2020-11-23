@@ -6,7 +6,6 @@ edition = "2018"
 
 [lib]
 name = "flux"
-path = "lib.rs"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
 [dependencies]

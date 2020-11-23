@@ -7,7 +7,7 @@ use criterion::Criterion;
 use flux::parser::Parser;
 
 fn strings_replaceAll(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/replaceAll_test.flux");
+    let flux = include_str!("../../../stdlib/strings/replaceAll_test.flux");
     c.bench_function("stdlib/strings/replaceAll_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -17,7 +17,7 @@ fn strings_replaceAll(c: &mut Criterion) {
 }
 
 fn strings_title(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/title_test.flux");
+    let flux = include_str!("../../../stdlib/strings/title_test.flux");
     c.bench_function("stdlib/strings/title_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -27,7 +27,7 @@ fn strings_title(c: &mut Criterion) {
 }
 
 fn strings_trim(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/trim_test.flux");
+    let flux = include_str!("../../../stdlib/strings/trim_test.flux");
     c.bench_function("stdlib/strings/trim_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -37,7 +37,7 @@ fn strings_trim(c: &mut Criterion) {
 }
 
 fn strings_toUpper(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/toUpper_test.flux");
+    let flux = include_str!("../../../stdlib/strings/toUpper_test.flux");
     c.bench_function("stdlib/strings/toUpper_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -47,7 +47,7 @@ fn strings_toUpper(c: &mut Criterion) {
 }
 
 fn strings_substring(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/substring_test.flux");
+    let flux = include_str!("../../../stdlib/strings/substring_test.flux");
     c.bench_function("stdlib/strings/substring_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -57,7 +57,7 @@ fn strings_substring(c: &mut Criterion) {
 }
 
 fn strings_toLower(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/toLower_test.flux");
+    let flux = include_str!("../../../stdlib/strings/toLower_test.flux");
     c.bench_function("stdlib/strings/toLower_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -67,7 +67,7 @@ fn strings_toLower(c: &mut Criterion) {
 }
 
 fn strings_replace(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/replace_test.flux");
+    let flux = include_str!("../../../stdlib/strings/replace_test.flux");
     c.bench_function("stdlib/strings/replace_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -77,7 +77,7 @@ fn strings_replace(c: &mut Criterion) {
 }
 
 fn strings_length(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/length_test.flux");
+    let flux = include_str!("../../../stdlib/strings/length_test.flux");
     c.bench_function("stdlib/strings/length_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
@@ -87,7 +87,7 @@ fn strings_length(c: &mut Criterion) {
 }
 
 fn strings_subset(c: &mut Criterion) {
-    let flux = include_str!("../../../../stdlib/strings/subset_test.flux");
+    let flux = include_str!("../../../stdlib/strings/subset_test.flux");
     c.bench_function("stdlib/strings/subset_test.flux", |b| {
         b.iter(|| {
             let mut parser = Parser::new(flux);
