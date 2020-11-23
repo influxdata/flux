@@ -43,6 +43,7 @@ pub enum NodeMut<'a> {
     OptionStmt(&'a mut OptionStmt),
     ReturnStmt(&'a mut ReturnStmt),
     TestStmt(&'a mut TestStmt),
+    TestCaseStmt(&'a mut TestCaseStmt),
     BuiltinStmt(&'a mut BuiltinStmt),
 
     // StringExprPart.
@@ -87,6 +88,7 @@ impl<'a> fmt::Display for NodeMut<'a> {
             NodeMut::OptionStmt(_) => write!(f, "OptionStmt"),
             NodeMut::ReturnStmt(_) => write!(f, "ReturnStmt"),
             NodeMut::TestStmt(_) => write!(f, "TestStmt"),
+            NodeMut::TestCaseStmt(_) => write!(f, "TestCaseStmt"),
             NodeMut::BuiltinStmt(_) => write!(f, "BuiltinStmt"),
             NodeMut::Block(n) => match n {
                 Block::Variable(_, _) => write!(f, "Block::Variable"),
@@ -134,6 +136,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::OptionStmt(n) => &n.loc,
             NodeMut::ReturnStmt(n) => &n.loc,
             NodeMut::TestStmt(n) => &n.loc,
+            NodeMut::TestCaseStmt(n) => &n.loc,
             NodeMut::BuiltinStmt(n) => &n.loc,
             NodeMut::Block(n) => n.loc(),
             NodeMut::Property(n) => &n.loc,
@@ -206,6 +209,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::OptionStmt(ref mut n) => n.loc = loc,
             NodeMut::ReturnStmt(ref mut n) => n.loc = loc,
             NodeMut::TestStmt(ref mut n) => n.loc = loc,
+            NodeMut::TestCaseStmt(ref mut n) => n.loc = loc,
             NodeMut::BuiltinStmt(ref mut n) => n.loc = loc,
             NodeMut::Block(_) => (),
             NodeMut::Property(ref mut n) => n.loc = loc,
@@ -250,6 +254,7 @@ impl<'a> NodeMut<'a> {
             Statement::Option(ref mut s) => NodeMut::OptionStmt(s),
             Statement::Return(ref mut s) => NodeMut::ReturnStmt(s),
             Statement::Test(ref mut s) => NodeMut::TestStmt(s),
+            Statement::TestCase(ref mut s) => NodeMut::TestCaseStmt(s),
             Statement::Builtin(ref mut s) => NodeMut::BuiltinStmt(s),
         }
     }
@@ -431,6 +436,10 @@ where
             }
             NodeMut::TestStmt(ref mut n) => {
                 walk_mut(v, &mut NodeMut::VariableAssgn(&mut n.assignment));
+            }
+            NodeMut::TestCaseStmt(ref mut n) => {
+                walk_mut(v, &mut NodeMut::Identifier(&mut n.id));
+                walk_mut(v, &mut NodeMut::Block(&mut n.block));
             }
             NodeMut::BuiltinStmt(ref mut n) => {
                 walk_mut(v, &mut NodeMut::Identifier(&mut n.id));

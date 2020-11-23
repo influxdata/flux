@@ -111,6 +111,7 @@ union Statement {
   OptionStatement,
   BuiltinStatement,
   TestStatement,
+  TestCaseStatement,
   ExpressionStatement,
   NativeVariableAssignment,
   MemberAssignment,
@@ -200,6 +201,11 @@ table BuiltinStatement {
 }
 
 table TestStatement {
+  loc:SourceLocation;
+  assignment:NativeVariableAssignment;
+}
+
+table TestCaseStatement {
   loc:SourceLocation;
   assignment:NativeVariableAssignment;
 }

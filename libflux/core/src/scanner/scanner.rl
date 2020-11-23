@@ -88,6 +88,7 @@
         "return" => { tok = RETURN; fbreak; };
         "option" => { tok = OPTION; fbreak; };
         "builtin" => { tok = BUILTIN; fbreak; };
+        "testcase" => { tok = TESTCASE; fbreak; };
         "test" => { tok = TEST; fbreak; };
         "if" => { tok = IF; fbreak; };
         "then" => { tok = THEN; fbreak; };

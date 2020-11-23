@@ -209,6 +209,8 @@ pub enum Statement {
     Bad(Box<BadStmt>),
     #[serde(rename = "TestStatement")]
     Test(Box<TestStmt>),
+    #[serde(rename = "TestCaseStatement")]
+    TestCase(Box<TestCaseStmt>),
     #[serde(rename = "BuiltinStatement")]
     Builtin(Box<BuiltinStmt>),
 }
@@ -223,6 +225,7 @@ impl Statement {
             Statement::Return(wrapped) => &wrapped.base,
             Statement::Bad(wrapped) => &wrapped.base,
             Statement::Test(wrapped) => &wrapped.base,
+            Statement::TestCase(wrapped) => &wrapped.base,
             Statement::Builtin(wrapped) => &wrapped.base,
         }
     }
@@ -236,6 +239,7 @@ impl Statement {
             Statement::Return(_) => 3,
             Statement::Bad(_) => 4,
             Statement::Test(_) => 5,
+            Statement::TestCase(_) => 7,
             Statement::Builtin(_) => 6,
         }
     }
@@ -850,6 +854,19 @@ pub struct TestStmt {
     #[serde(flatten)]
     pub base: BaseNode,
     pub assignment: VariableAssgn,
+}
+
+// TestCaseStmt declares a Flux test case
+// XXX: rockstar (17 Nov 2020) - This should replace the TestStmt above, once
+// it has been extended enough to cover the existing use cases.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct TestCaseStmt {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub id: Identifier,
+    pub block: Block,
 }
 
 // VariableAssgn represents the declaration of a variable

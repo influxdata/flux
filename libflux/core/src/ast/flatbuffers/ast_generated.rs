@@ -161,10 +161,11 @@ pub mod fbast {
         OptionStatement = 6,
         BuiltinStatement = 7,
         TestStatement = 8,
+        TestCaseStatement = 9,
     }
 
     const ENUM_MIN_STATEMENT: u8 = 0;
-    const ENUM_MAX_STATEMENT: u8 = 8;
+    const ENUM_MAX_STATEMENT: u8 = 9;
 
     impl<'a> flatbuffers::Follow<'a> for Statement {
         type Inner = Self;
@@ -198,7 +199,7 @@ pub mod fbast {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_STATEMENT: [Statement; 9] = [
+    const ENUM_VALUES_STATEMENT: [Statement; 10] = [
         Statement::NONE,
         Statement::BadStatement,
         Statement::VariableAssignment,
@@ -208,10 +209,11 @@ pub mod fbast {
         Statement::OptionStatement,
         Statement::BuiltinStatement,
         Statement::TestStatement,
+        Statement::TestCaseStatement,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_STATEMENT: [&'static str; 9] = [
+    const ENUM_NAMES_STATEMENT: [&'static str; 10] = [
         "NONE",
         "BadStatement",
         "VariableAssignment",
@@ -221,6 +223,7 @@ pub mod fbast {
         "OptionStatement",
         "BuiltinStatement",
         "TestStatement",
+        "TestCaseStatement",
     ];
 
     pub fn enum_name_statement(e: Statement) -> &'static str {
@@ -3528,6 +3531,17 @@ pub mod fbast {
                 None
             }
         }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn statement_as_test_case_statement(&self) -> Option<TestCaseStatement<'a>> {
+            if self.statement_type() == Statement::TestCaseStatement {
+                self.statement()
+                    .map(|u| TestCaseStatement::init_from_table(u))
+            } else {
+                None
+            }
+        }
     }
 
     pub struct WrappedStatementArgs {
@@ -5616,6 +5630,158 @@ pub mod fbast {
         }
         #[inline]
         pub fn finish(self) -> flatbuffers::WIPOffset<TestStatement<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    pub enum TestCaseStatementOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct TestCaseStatement<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for TestCaseStatement<'a> {
+        type Inner = TestCaseStatement<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> TestCaseStatement<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            TestCaseStatement { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args TestCaseStatementArgs<'args>,
+        ) -> flatbuffers::WIPOffset<TestCaseStatement<'bldr>> {
+            let mut builder = TestCaseStatementBuilder::new(_fbb);
+            if let Some(x) = args.assignment {
+                builder.add_assignment(x);
+            }
+            if let Some(x) = args.base_node {
+                builder.add_base_node(x);
+            }
+            builder.add_assignment_type(args.assignment_type);
+            builder.finish()
+        }
+
+        pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
+        pub const VT_ASSIGNMENT_TYPE: flatbuffers::VOffsetT = 6;
+        pub const VT_ASSIGNMENT: flatbuffers::VOffsetT = 8;
+
+        #[inline]
+        pub fn base_node(&self) -> Option<BaseNode<'a>> {
+            self._tab.get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(
+                TestCaseStatement::VT_BASE_NODE,
+                None,
+            )
+        }
+        #[inline]
+        pub fn assignment_type(&self) -> Assignment {
+            self._tab
+                .get::<Assignment>(
+                    TestCaseStatement::VT_ASSIGNMENT_TYPE,
+                    Some(Assignment::NONE),
+                )
+                .unwrap()
+        }
+        #[inline]
+        pub fn assignment(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
+                    TestCaseStatement::VT_ASSIGNMENT,
+                    None,
+                )
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn assignment_as_member_assignment(&self) -> Option<MemberAssignment<'a>> {
+            if self.assignment_type() == Assignment::MemberAssignment {
+                self.assignment()
+                    .map(|u| MemberAssignment::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn assignment_as_variable_assignment(&self) -> Option<VariableAssignment<'a>> {
+            if self.assignment_type() == Assignment::VariableAssignment {
+                self.assignment()
+                    .map(|u| VariableAssignment::init_from_table(u))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub struct TestCaseStatementArgs<'a> {
+        pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
+        pub assignment_type: Assignment,
+        pub assignment: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for TestCaseStatementArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            TestCaseStatementArgs {
+                base_node: None,
+                assignment_type: Assignment::NONE,
+                assignment: None,
+            }
+        }
+    }
+    pub struct TestCaseStatementBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> TestCaseStatementBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_base_node(&mut self, base_node: flatbuffers::WIPOffset<BaseNode<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(
+                    TestCaseStatement::VT_BASE_NODE,
+                    base_node,
+                );
+        }
+        #[inline]
+        pub fn add_assignment_type(&mut self, assignment_type: Assignment) {
+            self.fbb_.push_slot::<Assignment>(
+                TestCaseStatement::VT_ASSIGNMENT_TYPE,
+                assignment_type,
+                Assignment::NONE,
+            );
+        }
+        #[inline]
+        pub fn add_assignment(
+            &mut self,
+            assignment: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
+        ) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
+                TestCaseStatement::VT_ASSIGNMENT,
+                assignment,
+            );
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> TestCaseStatementBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            TestCaseStatementBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<TestCaseStatement<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }

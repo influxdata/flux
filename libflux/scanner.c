@@ -3,7 +3,7 @@
 #include "scanner.h"
 
 
-#line 145 "libflux/core/src/scanner/scanner.rl"
+#line 146 "libflux/core/src/scanner/scanner.rl"
 
 
 
@@ -12,29 +12,29 @@ static const char _flux_actions[] = {
 	0, 1, 0, 1, 1, 1, 3, 1, 
 	4, 1, 7, 1, 9, 1, 10, 1, 
 	11, 1, 12, 1, 13, 1, 14, 1, 
-	36, 1, 37, 1, 38, 1, 39, 1, 
-	40, 1, 41, 1, 42, 1, 43, 1, 
-	44, 1, 45, 1, 46, 1, 47, 1, 
-	48, 1, 49, 1, 50, 1, 51, 1, 
-	52, 1, 53, 1, 54, 1, 55, 1, 
-	56, 1, 57, 1, 58, 1, 59, 1, 
-	60, 1, 62, 1, 63, 1, 64, 1, 
-	65, 1, 66, 1, 67, 1, 68, 1, 
-	69, 1, 70, 1, 71, 1, 72, 1, 
-	73, 1, 74, 1, 75, 1, 76, 1, 
-	77, 1, 79, 1, 80, 1, 81, 1, 
-	82, 1, 83, 2, 0, 8, 2, 0, 
-	35, 2, 0, 61, 2, 1, 2, 2, 
-	4, 5, 2, 4, 6, 2, 4, 15, 
-	2, 4, 16, 2, 4, 17, 2, 4, 
-	18, 2, 4, 19, 2, 4, 20, 2, 
-	4, 21, 2, 4, 22, 2, 4, 23, 
-	2, 4, 24, 2, 4, 25, 2, 4, 
-	26, 2, 4, 27, 2, 4, 28, 2, 
-	4, 29, 2, 4, 30, 2, 4, 31, 
-	2, 4, 32, 2, 4, 33, 2, 4, 
-	34, 2, 4, 78, 3, 4, 0, 78
-	
+	37, 1, 38, 1, 39, 1, 40, 1, 
+	41, 1, 42, 1, 43, 1, 44, 1, 
+	45, 1, 46, 1, 47, 1, 48, 1, 
+	49, 1, 50, 1, 51, 1, 52, 1, 
+	53, 1, 54, 1, 55, 1, 56, 1, 
+	57, 1, 58, 1, 59, 1, 60, 1, 
+	61, 1, 63, 1, 64, 1, 65, 1, 
+	66, 1, 67, 1, 68, 1, 69, 1, 
+	70, 1, 71, 1, 72, 1, 73, 1, 
+	74, 1, 75, 1, 76, 1, 77, 1, 
+	78, 1, 79, 1, 81, 1, 82, 1, 
+	83, 1, 84, 1, 85, 2, 0, 8, 
+	2, 0, 36, 2, 0, 62, 2, 1, 
+	2, 2, 4, 5, 2, 4, 6, 2, 
+	4, 15, 2, 4, 16, 2, 4, 17, 
+	2, 4, 18, 2, 4, 19, 2, 4, 
+	20, 2, 4, 21, 2, 4, 22, 2, 
+	4, 23, 2, 4, 24, 2, 4, 25, 
+	2, 4, 26, 2, 4, 27, 2, 4, 
+	28, 2, 4, 29, 2, 4, 30, 2, 
+	4, 31, 2, 4, 32, 2, 4, 33, 
+	2, 4, 34, 2, 4, 35, 2, 4, 
+	80, 3, 4, 0, 80
 };
 
 static const short _flux_key_offsets[] = {
@@ -75,8 +75,8 @@ static const short _flux_key_offsets[] = {
 	2218, 2262, 2308, 2352, 2396, 2440, 2484, 2528, 
 	2572, 2617, 2661, 2705, 2749, 2793, 2837, 2881, 
 	2925, 2969, 3013, 3057, 3101, 3145, 3189, 3233, 
-	3277, 3322, 3366, 3410, 3454, 3498, 3503, 3507, 
-	3510, 3513, 3517
+	3277, 3322, 3366, 3410, 3454, 3498, 3542, 3586, 
+	3630, 3674, 3679, 3683, 3686, 3689, 3693
 };
 
 static const unsigned char _flux_trans_keys[] = {
@@ -506,6 +506,28 @@ static const unsigned char _flux_trans_keys[] = {
 	220u, 221u, 222u, 223u, 224u, 225u, 226u, 227u, 
 	228u, 233u, 234u, 237u, 239u, 240u, 48u, 57u, 
 	65u, 90u, 97u, 122u, 196u, 202u, 208u, 218u, 
+	229u, 236u, 95u, 99u, 194u, 195u, 198u, 199u, 
+	203u, 205u, 206u, 207u, 210u, 212u, 213u, 214u, 
+	215u, 216u, 217u, 219u, 220u, 221u, 222u, 223u, 
+	224u, 225u, 226u, 227u, 228u, 233u, 234u, 237u, 
+	239u, 240u, 48u, 57u, 65u, 90u, 97u, 122u, 
+	196u, 202u, 208u, 218u, 229u, 236u, 95u, 97u, 
+	194u, 195u, 198u, 199u, 203u, 205u, 206u, 207u, 
+	210u, 212u, 213u, 214u, 215u, 216u, 217u, 219u, 
+	220u, 221u, 222u, 223u, 224u, 225u, 226u, 227u, 
+	228u, 233u, 234u, 237u, 239u, 240u, 48u, 57u, 
+	65u, 90u, 98u, 122u, 196u, 202u, 208u, 218u, 
+	229u, 236u, 95u, 115u, 194u, 195u, 198u, 199u, 
+	203u, 205u, 206u, 207u, 210u, 212u, 213u, 214u, 
+	215u, 216u, 217u, 219u, 220u, 221u, 222u, 223u, 
+	224u, 225u, 226u, 227u, 228u, 233u, 234u, 237u, 
+	239u, 240u, 48u, 57u, 65u, 90u, 97u, 122u, 
+	196u, 202u, 208u, 218u, 229u, 236u, 95u, 101u, 
+	194u, 195u, 198u, 199u, 203u, 205u, 206u, 207u, 
+	210u, 212u, 213u, 214u, 215u, 216u, 217u, 219u, 
+	220u, 221u, 222u, 223u, 224u, 225u, 226u, 227u, 
+	228u, 233u, 234u, 237u, 239u, 240u, 48u, 57u, 
+	65u, 90u, 97u, 122u, 196u, 202u, 208u, 218u, 
 	229u, 236u, 95u, 101u, 194u, 195u, 198u, 199u, 
 	203u, 205u, 206u, 207u, 210u, 212u, 213u, 214u, 
 	215u, 216u, 217u, 219u, 220u, 221u, 222u, 223u, 
@@ -561,8 +583,8 @@ static const char _flux_single_lengths[] = {
 	32, 34, 32, 32, 32, 32, 32, 32, 
 	33, 32, 32, 32, 32, 32, 32, 32, 
 	32, 32, 32, 32, 32, 32, 32, 32, 
-	33, 32, 32, 32, 32, 3, 2, 3, 
-	3, 4, 4
+	33, 32, 32, 32, 32, 32, 32, 32, 
+	32, 3, 2, 3, 3, 4, 4
 };
 
 static const char _flux_range_lengths[] = {
@@ -603,8 +625,8 @@ static const char _flux_range_lengths[] = {
 	6, 6, 6, 6, 6, 6, 6, 6, 
 	6, 6, 6, 6, 6, 6, 6, 6, 
 	6, 6, 6, 6, 6, 6, 6, 6, 
-	6, 6, 6, 6, 6, 1, 1, 0, 
-	0, 0, 0
+	6, 6, 6, 6, 6, 6, 6, 6, 
+	6, 1, 1, 0, 0, 0, 0
 };
 
 static const short _flux_index_offsets[] = {
@@ -645,8 +667,8 @@ static const short _flux_index_offsets[] = {
 	1926, 1965, 2006, 2045, 2084, 2123, 2162, 2201, 
 	2240, 2280, 2319, 2358, 2397, 2436, 2475, 2514, 
 	2553, 2592, 2631, 2670, 2709, 2748, 2787, 2826, 
-	2865, 2905, 2944, 2983, 3022, 3061, 3066, 3070, 
-	3074, 3078, 3083
+	2865, 2905, 2944, 2983, 3022, 3061, 3100, 3139, 
+	3178, 3217, 3222, 3226, 3230, 3234, 3239
 };
 
 static const short _flux_indicies[] = {
@@ -1023,20 +1045,39 @@ static const short _flux_indicies[] = {
 	271, 272, 273, 274, 156, 275, 276, 277, 
 	278, 279, 280, 281, 282, 283, 284, 285, 
 	44, 44, 44, 88, 88, 172, 313, 44, 
-	364, 259, 260, 109, 76, 261, 262, 263, 
+	365, 259, 260, 109, 76, 261, 262, 263, 
 	264, 265, 266, 267, 268, 269, 270, 271, 
 	272, 273, 274, 156, 275, 276, 277, 278, 
 	279, 280, 281, 282, 283, 284, 285, 44, 
-	44, 44, 88, 88, 172, 313, 44, 365, 
+	44, 44, 88, 88, 172, 364, 44, 366, 
 	259, 260, 109, 76, 261, 262, 263, 264, 
 	265, 266, 267, 268, 269, 270, 271, 272, 
 	273, 274, 156, 275, 276, 277, 278, 279, 
 	280, 281, 282, 283, 284, 285, 44, 44, 
-	44, 88, 88, 172, 313, 368, 367, 369, 
-	367, 366, 367, 367, 367, 370, 206, 371, 
-	372, 205, 206, 207, 208, 205, 218, 374, 
-	375, 376, 217, 218, 377, 378, 376, 217, 
-	0
+	44, 88, 88, 172, 313, 44, 367, 259, 
+	260, 109, 76, 261, 262, 263, 264, 265, 
+	266, 267, 268, 269, 270, 271, 272, 273, 
+	274, 156, 275, 276, 277, 278, 279, 280, 
+	281, 282, 283, 284, 285, 44, 44, 44, 
+	88, 88, 172, 313, 44, 368, 259, 260, 
+	109, 76, 261, 262, 263, 264, 265, 266, 
+	267, 268, 269, 270, 271, 272, 273, 274, 
+	156, 275, 276, 277, 278, 279, 280, 281, 
+	282, 283, 284, 285, 44, 44, 44, 88, 
+	88, 172, 313, 44, 369, 259, 260, 109, 
+	76, 261, 262, 263, 264, 265, 266, 267, 
+	268, 269, 270, 271, 272, 273, 274, 156, 
+	275, 276, 277, 278, 279, 280, 281, 282, 
+	283, 284, 285, 44, 44, 44, 88, 88, 
+	172, 313, 44, 370, 259, 260, 109, 76, 
+	261, 262, 263, 264, 265, 266, 267, 268, 
+	269, 270, 271, 272, 273, 274, 156, 275, 
+	276, 277, 278, 279, 280, 281, 282, 283, 
+	284, 285, 44, 44, 44, 88, 88, 172, 
+	313, 373, 372, 374, 372, 371, 372, 372, 
+	372, 375, 206, 376, 377, 205, 206, 207, 
+	208, 205, 218, 379, 380, 381, 217, 218, 
+	382, 383, 381, 217, 0
 };
 
 static const short _flux_trans_targs[] = {
@@ -1065,9 +1106,9 @@ static const short _flux_trans_targs[] = {
 	187, 188, 189, 190, 191, 192, 193, 194, 
 	195, 196, 197, 198, 199, 201, 202, 204, 
 	205, 206, 207, 208, 209, 210, 211, 212, 
-	213, 214, 217, 234, 301, 220, 220, 301, 
-	221, 304, 301, 223, 225, 224, 226, 227, 
-	305, 306, 306, 305, 230, 231, 232, 305, 
+	213, 214, 217, 234, 305, 220, 220, 305, 
+	221, 308, 305, 223, 225, 224, 226, 227, 
+	309, 310, 310, 309, 230, 231, 232, 309, 
 	235, 234, 1, 236, 234, 234, 234, 234, 
 	234, 234, 234, 237, 238, 240, 246, 234, 
 	251, 252, 253, 234, 234, 234, 234, 255, 
@@ -1085,18 +1126,18 @@ static const short _flux_trans_targs[] = {
 	254, 275, 276, 277, 254, 279, 254, 281, 
 	254, 282, 283, 284, 254, 286, 287, 288, 
 	289, 290, 254, 292, 293, 294, 295, 254, 
-	297, 299, 298, 254, 300, 254, 301, 302, 
-	301, 303, 301, 301, 222, 301, 305, 233, 
-	229, 305, 228
+	297, 303, 298, 299, 234, 300, 301, 302, 
+	254, 304, 254, 305, 306, 305, 307, 305, 
+	305, 222, 305, 309, 233, 229, 309, 228
 };
 
 static const unsigned char _flux_trans_actions[] = {
-	43, 0, 47, 101, 0, 1, 25, 0, 
-	0, 0, 0, 0, 95, 184, 0, 0, 
-	0, 0, 0, 0, 0, 0, 7, 99, 
+	43, 0, 47, 103, 0, 1, 25, 0, 
+	0, 0, 0, 0, 97, 189, 0, 0, 
+	0, 0, 0, 0, 0, 0, 7, 101, 
 	0, 0, 0, 0, 0, 0, 0, 7, 
-	0, 0, 0, 0, 23, 97, 187, 187, 
-	0, 0, 0, 103, 178, 0, 0, 0, 
+	0, 0, 0, 0, 23, 99, 192, 192, 
+	0, 0, 0, 105, 183, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -1117,28 +1158,28 @@ static const unsigned char _flux_trans_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 67, 21, 0, 1, 9, 
-	0, 127, 19, 0, 0, 0, 0, 0, 
-	111, 193, 196, 113, 0, 0, 0, 105, 
-	0, 121, 0, 7, 33, 53, 55, 31, 
-	27, 69, 29, 190, 0, 181, 181, 65, 
-	0, 0, 0, 71, 57, 59, 35, 178, 
-	178, 178, 178, 178, 178, 178, 178, 178, 
+	0, 129, 19, 0, 0, 0, 0, 0, 
+	113, 198, 201, 115, 0, 0, 0, 107, 
+	0, 123, 0, 7, 33, 53, 55, 31, 
+	27, 69, 29, 195, 0, 186, 186, 65, 
+	0, 0, 0, 71, 57, 59, 35, 183, 
+	183, 183, 183, 183, 183, 183, 183, 183, 
 	61, 0, 63, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 0, 93, 91, 
-	83, 0, 73, 118, 77, 0, 81, 0, 
-	0, 7, 79, 0, 181, 181, 181, 181, 
-	85, 51, 39, 89, 37, 49, 45, 87, 
-	41, 75, 178, 133, 178, 178, 178, 178, 
-	178, 160, 178, 178, 178, 178, 172, 178, 
-	178, 142, 178, 178, 178, 175, 166, 178, 
-	145, 178, 178, 178, 148, 178, 139, 178, 
-	136, 178, 178, 178, 157, 178, 178, 178, 
-	178, 178, 151, 178, 178, 178, 178, 154, 
-	178, 178, 178, 163, 178, 169, 11, 0, 
-	115, 130, 15, 17, 0, 13, 107, 0, 
-	0, 109, 0
+	0, 0, 0, 0, 0, 0, 95, 93, 
+	85, 0, 73, 120, 79, 0, 83, 0, 
+	0, 7, 81, 0, 186, 186, 186, 186, 
+	87, 51, 39, 91, 37, 49, 45, 89, 
+	41, 77, 183, 135, 183, 183, 183, 183, 
+	183, 162, 183, 183, 183, 183, 177, 183, 
+	183, 144, 183, 183, 183, 180, 171, 183, 
+	147, 183, 183, 183, 150, 183, 141, 183, 
+	138, 183, 183, 183, 159, 183, 183, 183, 
+	183, 183, 153, 183, 183, 183, 183, 156, 
+	183, 183, 183, 168, 75, 183, 183, 183, 
+	165, 183, 174, 11, 0, 117, 132, 15, 
+	17, 0, 13, 109, 0, 0, 111, 0
 };
 
 static const unsigned char _flux_to_state_actions[] = {
@@ -1171,7 +1212,7 @@ static const unsigned char _flux_to_state_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 124, 0, 0, 0, 0, 0, 
+	0, 0, 126, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
@@ -1179,8 +1220,8 @@ static const unsigned char _flux_to_state_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 3, 0, 0, 
-	0, 124, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 3, 0, 0, 0, 126, 0
 };
 
 static const unsigned char _flux_from_state_actions[] = {
@@ -1221,8 +1262,8 @@ static const unsigned char _flux_from_state_actions[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
 	0, 0, 0, 0, 0, 0, 0, 0, 
-	0, 0, 0, 0, 0, 5, 0, 0, 
-	0, 5, 0
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	0, 5, 0, 0, 0, 5, 0
 };
 
 static const short _flux_eof_trans[] = {
@@ -1263,19 +1304,19 @@ static const short _flux_eof_trans[] = {
 	314, 314, 314, 314, 314, 314, 314, 314, 
 	314, 314, 314, 314, 314, 314, 314, 314, 
 	314, 314, 314, 314, 314, 314, 314, 314, 
-	314, 314, 314, 314, 314, 0, 371, 372, 
-	374, 0, 378
+	314, 314, 314, 365, 314, 314, 314, 314, 
+	314, 0, 376, 377, 379, 0, 383
 };
 
 static const int flux_start = 234;
 static const int flux_error = 0;
 
-static const int flux_en_main_with_regex = 301;
+static const int flux_en_main_with_regex = 305;
 static const int flux_en_main = 234;
-static const int flux_en_string_expr = 305;
+static const int flux_en_string_expr = 309;
 
 
-#line 148 "libflux/core/src/scanner/scanner.rl"
+#line 149 "libflux/core/src/scanner/scanner.rl"
 
 int scan(
     int mode,
@@ -1314,16 +1355,16 @@ int scan(
     unsigned int cur_line_token_start = *cur_line;
 
     
-#line 1318 "libflux/scanner.c"
+#line 1359 "libflux/scanner.c"
 	{
 	ts = 0;
 	te = 0;
 	act = 0;
 	}
 
-#line 186 "libflux/core/src/scanner/scanner.rl"
+#line 187 "libflux/core/src/scanner/scanner.rl"
     
-#line 1327 "libflux/scanner.c"
+#line 1368 "libflux/scanner.c"
 	{
 	int _klen;
 	unsigned int _trans;
@@ -1344,7 +1385,7 @@ _resume:
 #line 1 "NONE"
 	{ts = p;}
 	break;
-#line 1348 "libflux/scanner.c"
+#line 1389 "libflux/scanner.c"
 		}
 	}
 
@@ -1538,7 +1579,7 @@ _eof_trans:
 	{act = 20;}
 	break;
 	case 30:
-#line 97 "libflux/core/src/scanner/scanner.rl"
+#line 96 "libflux/core/src/scanner/scanner.rl"
 	{act = 21;}
 	break;
 	case 31:
@@ -1554,114 +1595,118 @@ _eof_trans:
 	{act = 24;}
 	break;
 	case 34:
-#line 130 "libflux/core/src/scanner/scanner.rl"
-	{act = 53;}
+#line 101 "libflux/core/src/scanner/scanner.rl"
+	{act = 25;}
 	break;
 	case 35:
+#line 131 "libflux/core/src/scanner/scanner.rl"
+	{act = 54;}
+	break;
+	case 36:
 #line 79 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{ tok = COMMENT; {p++; goto _out; } }}
 	break;
-	case 36:
-#line 101 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = TIME; {p++; goto _out; } }}
-	break;
 	case 37:
 #line 102 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = STRING; {p++; goto _out; } }}
+	{te = p+1;{ tok = TIME; {p++; goto _out; } }}
 	break;
 	case 38:
-#line 104 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = ADD; {p++; goto _out; } }}
+#line 103 "libflux/core/src/scanner/scanner.rl"
+	{te = p+1;{ tok = STRING; {p++; goto _out; } }}
 	break;
 	case 39:
 #line 105 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = SUB; {p++; goto _out; } }}
+	{te = p+1;{ tok = ADD; {p++; goto _out; } }}
 	break;
 	case 40:
 #line 106 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = MUL; {p++; goto _out; } }}
+	{te = p+1;{ tok = SUB; {p++; goto _out; } }}
 	break;
 	case 41:
-#line 108 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = MOD; {p++; goto _out; } }}
+#line 107 "libflux/core/src/scanner/scanner.rl"
+	{te = p+1;{ tok = MUL; {p++; goto _out; } }}
 	break;
 	case 42:
 #line 109 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = POW; {p++; goto _out; } }}
+	{te = p+1;{ tok = MOD; {p++; goto _out; } }}
 	break;
 	case 43:
 #line 110 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = EQ; {p++; goto _out; } }}
+	{te = p+1;{ tok = POW; {p++; goto _out; } }}
 	break;
 	case 44:
-#line 113 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = LTE; {p++; goto _out; } }}
+#line 111 "libflux/core/src/scanner/scanner.rl"
+	{te = p+1;{ tok = EQ; {p++; goto _out; } }}
 	break;
 	case 45:
 #line 114 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = GTE; {p++; goto _out; } }}
+	{te = p+1;{ tok = LTE; {p++; goto _out; } }}
 	break;
 	case 46:
 #line 115 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = NEQ; {p++; goto _out; } }}
+	{te = p+1;{ tok = GTE; {p++; goto _out; } }}
 	break;
 	case 47:
 #line 116 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = REGEXEQ; {p++; goto _out; } }}
+	{te = p+1;{ tok = NEQ; {p++; goto _out; } }}
 	break;
 	case 48:
 #line 117 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = REGEXNEQ; {p++; goto _out; } }}
+	{te = p+1;{ tok = REGEXEQ; {p++; goto _out; } }}
 	break;
 	case 49:
-#line 119 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = ARROW; {p++; goto _out; } }}
+#line 118 "libflux/core/src/scanner/scanner.rl"
+	{te = p+1;{ tok = REGEXNEQ; {p++; goto _out; } }}
 	break;
 	case 50:
 #line 120 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = PIPE_RECEIVE; {p++; goto _out; } }}
+	{te = p+1;{ tok = ARROW; {p++; goto _out; } }}
 	break;
 	case 51:
 #line 121 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = LPAREN; {p++; goto _out; } }}
+	{te = p+1;{ tok = PIPE_RECEIVE; {p++; goto _out; } }}
 	break;
 	case 52:
 #line 122 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = RPAREN; {p++; goto _out; } }}
+	{te = p+1;{ tok = LPAREN; {p++; goto _out; } }}
 	break;
 	case 53:
 #line 123 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = LBRACK; {p++; goto _out; } }}
+	{te = p+1;{ tok = RPAREN; {p++; goto _out; } }}
 	break;
 	case 54:
 #line 124 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = RBRACK; {p++; goto _out; } }}
+	{te = p+1;{ tok = LBRACK; {p++; goto _out; } }}
 	break;
 	case 55:
 #line 125 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = LBRACE; {p++; goto _out; } }}
+	{te = p+1;{ tok = RBRACK; {p++; goto _out; } }}
 	break;
 	case 56:
 #line 126 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = RBRACE; {p++; goto _out; } }}
+	{te = p+1;{ tok = LBRACE; {p++; goto _out; } }}
 	break;
 	case 57:
 #line 127 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = COLON; {p++; goto _out; } }}
+	{te = p+1;{ tok = RBRACE; {p++; goto _out; } }}
 	break;
 	case 58:
 #line 128 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = PIPE_FORWARD; {p++; goto _out; } }}
+	{te = p+1;{ tok = COLON; {p++; goto _out; } }}
 	break;
 	case 59:
 #line 129 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = COMMA; {p++; goto _out; } }}
+	{te = p+1;{ tok = PIPE_FORWARD; {p++; goto _out; } }}
 	break;
 	case 60:
-#line 132 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = QUESTION_MARK; {p++; goto _out; } }}
+#line 130 "libflux/core/src/scanner/scanner.rl"
+	{te = p+1;{ tok = COMMA; {p++; goto _out; } }}
 	break;
 	case 61:
+#line 133 "libflux/core/src/scanner/scanner.rl"
+	{te = p+1;{ tok = QUESTION_MARK; {p++; goto _out; } }}
+	break;
+	case 62:
 #line 18 "libflux/core/src/scanner/scanner.rl"
 	{te = p+1;{
         // We do this for each newline we find in the whitespace between tokens,
@@ -1670,67 +1715,71 @@ _eof_trans:
         cur_line_token_start = *cur_line;
     }}
 	break;
-	case 62:
+	case 63:
 #line 79 "libflux/core/src/scanner/scanner.rl"
 	{te = p;p--;{ tok = COMMENT; {p++; goto _out; } }}
 	break;
-	case 63:
-#line 97 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = IDENT; {p++; goto _out; } }}
-	break;
 	case 64:
-#line 98 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = INT; {p++; goto _out; } }}
+#line 92 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = TEST; {p++; goto _out; } }}
 	break;
 	case 65:
-#line 100 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = DURATION; {p++; goto _out; } }}
+#line 98 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = IDENT; {p++; goto _out; } }}
 	break;
 	case 66:
-#line 101 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = TIME; {p++; goto _out; } }}
+#line 99 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = INT; {p++; goto _out; } }}
 	break;
 	case 67:
-#line 107 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = DIV; {p++; goto _out; } }}
+#line 101 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = DURATION; {p++; goto _out; } }}
 	break;
 	case 68:
-#line 111 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = LT; {p++; goto _out; } }}
+#line 102 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = TIME; {p++; goto _out; } }}
 	break;
 	case 69:
-#line 112 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = GT; {p++; goto _out; } }}
+#line 108 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = DIV; {p++; goto _out; } }}
 	break;
 	case 70:
-#line 118 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = ASSIGN; {p++; goto _out; } }}
+#line 112 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = LT; {p++; goto _out; } }}
 	break;
 	case 71:
-#line 131 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = QUOTE; {p++; goto _out; } }}
+#line 113 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = GT; {p++; goto _out; } }}
 	break;
 	case 72:
-#line 134 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;}
+#line 119 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = ASSIGN; {p++; goto _out; } }}
 	break;
 	case 73:
-#line 98 "libflux/core/src/scanner/scanner.rl"
-	{{p = ((te))-1;}{ tok = INT; {p++; goto _out; } }}
+#line 132 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = QUOTE; {p++; goto _out; } }}
 	break;
 	case 74:
-#line 100 "libflux/core/src/scanner/scanner.rl"
-	{{p = ((te))-1;}{ tok = DURATION; {p++; goto _out; } }}
+#line 135 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;}
 	break;
 	case 75:
-#line 101 "libflux/core/src/scanner/scanner.rl"
-	{{p = ((te))-1;}{ tok = TIME; {p++; goto _out; } }}
+#line 99 "libflux/core/src/scanner/scanner.rl"
+	{{p = ((te))-1;}{ tok = INT; {p++; goto _out; } }}
 	break;
 	case 76:
-#line 131 "libflux/core/src/scanner/scanner.rl"
-	{{p = ((te))-1;}{ tok = QUOTE; {p++; goto _out; } }}
+#line 101 "libflux/core/src/scanner/scanner.rl"
+	{{p = ((te))-1;}{ tok = DURATION; {p++; goto _out; } }}
 	break;
 	case 77:
+#line 102 "libflux/core/src/scanner/scanner.rl"
+	{{p = ((te))-1;}{ tok = TIME; {p++; goto _out; } }}
+	break;
+	case 78:
+#line 132 "libflux/core/src/scanner/scanner.rl"
+	{{p = ((te))-1;}{ tok = QUOTE; {p++; goto _out; } }}
+	break;
+	case 79:
 #line 1 "NONE"
 	{	switch( act ) {
 	case 0:
@@ -1767,71 +1816,74 @@ _eof_trans:
 	{{p = ((te))-1;} tok = BUILTIN; {p++; goto _out; } }
 	break;
 	case 16:
-	{{p = ((te))-1;} tok = TEST; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = TESTCASE; {p++; goto _out; } }
 	break;
 	case 17:
-	{{p = ((te))-1;} tok = IF; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = TEST; {p++; goto _out; } }
 	break;
 	case 18:
-	{{p = ((te))-1;} tok = THEN; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = IF; {p++; goto _out; } }
 	break;
 	case 19:
-	{{p = ((te))-1;} tok = ELSE; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = THEN; {p++; goto _out; } }
 	break;
 	case 20:
-	{{p = ((te))-1;} tok = EXISTS; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = ELSE; {p++; goto _out; } }
 	break;
 	case 21:
-	{{p = ((te))-1;} tok = IDENT; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = EXISTS; {p++; goto _out; } }
 	break;
 	case 22:
-	{{p = ((te))-1;} tok = INT; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = IDENT; {p++; goto _out; } }
 	break;
 	case 23:
-	{{p = ((te))-1;} tok = FLOAT; {p++; goto _out; } }
+	{{p = ((te))-1;} tok = INT; {p++; goto _out; } }
 	break;
 	case 24:
+	{{p = ((te))-1;} tok = FLOAT; {p++; goto _out; } }
+	break;
+	case 25:
 	{{p = ((te))-1;} tok = DURATION; {p++; goto _out; } }
 	break;
-	case 53:
+	case 54:
 	{{p = ((te))-1;} tok = DOT; {p++; goto _out; } }
 	break;
 	}
 	}
 	break;
-	case 78:
-#line 143 "libflux/core/src/scanner/scanner.rl"
-	{act = 60;}
-	break;
-	case 79:
-#line 141 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = STRINGEXPR; {p++; goto _out; } }}
-	break;
 	case 80:
-#line 142 "libflux/core/src/scanner/scanner.rl"
-	{te = p+1;{ tok = QUOTE; {p++; goto _out; } }}
+#line 144 "libflux/core/src/scanner/scanner.rl"
+	{act = 61;}
 	break;
 	case 81:
-#line 143 "libflux/core/src/scanner/scanner.rl"
-	{te = p;p--;{ tok = TEXT; {p++; goto _out; } }}
+#line 142 "libflux/core/src/scanner/scanner.rl"
+	{te = p+1;{ tok = STRINGEXPR; {p++; goto _out; } }}
 	break;
 	case 82:
 #line 143 "libflux/core/src/scanner/scanner.rl"
-	{{p = ((te))-1;}{ tok = TEXT; {p++; goto _out; } }}
+	{te = p+1;{ tok = QUOTE; {p++; goto _out; } }}
 	break;
 	case 83:
+#line 144 "libflux/core/src/scanner/scanner.rl"
+	{te = p;p--;{ tok = TEXT; {p++; goto _out; } }}
+	break;
+	case 84:
+#line 144 "libflux/core/src/scanner/scanner.rl"
+	{{p = ((te))-1;}{ tok = TEXT; {p++; goto _out; } }}
+	break;
+	case 85:
 #line 1 "NONE"
 	{	switch( act ) {
 	case 0:
 	{{cs = 0;goto _again;}}
 	break;
-	case 60:
+	case 61:
 	{{p = ((te))-1;} tok = TEXT; {p++; goto _out; } }
 	break;
 	}
 	}
 	break;
-#line 1835 "libflux/scanner.c"
+#line 1887 "libflux/scanner.c"
 		}
 	}
 
@@ -1848,7 +1900,7 @@ _again:
 #line 1 "NONE"
 	{act = 0;}
 	break;
-#line 1852 "libflux/scanner.c"
+#line 1904 "libflux/scanner.c"
 		}
 	}
 
@@ -1868,7 +1920,7 @@ _again:
 	_out: {}
 	}
 
-#line 187 "libflux/core/src/scanner/scanner.rl"
+#line 188 "libflux/core/src/scanner/scanner.rl"
 
     // Update output args.
     *token = tok;

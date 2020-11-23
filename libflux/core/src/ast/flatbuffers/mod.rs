@@ -642,6 +642,19 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                 v.stmts
                     .push((ts.as_union_value(), fbast::Statement::TestStatement));
             }
+            walk::Node::TestCaseStmt(_) => {
+                let (assignment, assignment_type) = v.pop_assignment_stmt();
+                let ts = fbast::TestCaseStatement::create(
+                    &mut v.builder,
+                    &fbast::TestCaseStatementArgs {
+                        base_node,
+                        assignment_type,
+                        assignment,
+                    },
+                );
+                v.stmts
+                    .push((ts.as_union_value(), fbast::Statement::TestCaseStatement));
+            }
             walk::Node::BuiltinStmt(_) => {
                 let id = v.pop_expr_with_kind(fbast::Expression::Identifier);
                 let bs = fbast::BuiltinStatement::create(
