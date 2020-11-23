@@ -31,6 +31,7 @@ require (
 	github.com/influxdata/pkg-config v0.2.5
 	github.com/influxdata/promql/v2 v2.12.0
 	github.com/influxdata/tdigest v0.0.0-20181121200506-bf2b5ad3c0a9
+	github.com/kevinburke/go-bindata v3.22.0+incompatible
 	github.com/lib/pq v1.0.0
 	github.com/mattn/go-colorable v0.0.9 // indirect
 	github.com/mattn/go-isatty v0.0.4 // indirect
