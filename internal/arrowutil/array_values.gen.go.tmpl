@@ -51,6 +51,7 @@ func (v {{.Name}}ArrayValue) Regexp() *regexp.Regexp { panic(values.UnexpectedKi
 func (v {{.Name}}ArrayValue) Array() values.Array { return v }
 func (v {{.Name}}ArrayValue) Object() values.Object { panic(values.UnexpectedKind(semantic.Array, semantic.Object)) }
 func (v {{.Name}}ArrayValue) Function() values.Function { panic(values.UnexpectedKind(semantic.Array, semantic.Function)) }
+func (v {{.Name}}ArrayValue) Dict() values.Dictionary { panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary)) }
 
 func (v {{.Name}}ArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {

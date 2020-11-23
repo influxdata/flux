@@ -175,6 +175,9 @@ func (t *TableObject) Equal(rhs values.Value) bool {
 func (t *TableObject) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
+func (t *TableObject) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
 
 func (t *TableObject) Get(i int) values.Value {
 	panic("cannot index into stream")
@@ -279,6 +282,9 @@ func (f *function) Object() values.Object {
 }
 func (f *function) Function() values.Function {
 	return f
+}
+func (f *function) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Dictionary))
 }
 func (f *function) Equal(rhs values.Value) bool {
 	if f.Type() != rhs.Type() {

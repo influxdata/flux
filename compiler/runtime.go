@@ -663,6 +663,9 @@ func (f *functionValue) Object() values.Object {
 func (f *functionValue) Function() values.Function {
 	return f
 }
+func (f *functionValue) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Function, semantic.Dictionary))
+}
 func (f *functionValue) Equal(rhs values.Value) bool {
 	if f.Type() != rhs.Type() {
 		return false

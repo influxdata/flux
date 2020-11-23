@@ -302,6 +302,10 @@ func (b linearBins) Function() values.Function {
 	return b
 }
 
+func (b linearBins) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Dictionary, semantic.Function))
+}
+
 func (b linearBins) Equal(rhs values.Value) bool {
 	if b.Type() != rhs.Type() {
 		return false
@@ -422,6 +426,10 @@ func (b logarithmicBins) Object() values.Object {
 
 func (b logarithmicBins) Function() values.Function {
 	return b
+}
+
+func (b logarithmicBins) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Dictionary, semantic.Function))
 }
 
 func (b logarithmicBins) Equal(rhs values.Value) bool {

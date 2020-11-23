@@ -131,6 +131,9 @@ func (a *array) Object() Object {
 func (a *array) Function() Function {
 	panic(UnexpectedKind(semantic.Array, semantic.Function))
 }
+func (a *array) Dict() Dictionary {
+	panic(UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
 func (a *array) Equal(rhs Value) bool {
 	if !a.Type().Equal(rhs.Type()) {
 		return false

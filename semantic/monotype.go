@@ -39,6 +39,8 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 		tbler = new(fbsemantic.Record)
 	case fbsemantic.MonoTypeFun:
 		tbler = new(fbsemantic.Fun)
+	case fbsemantic.MonoTypeDict:
+		tbler = new(fbsemantic.Dict)
 	default:
 		return MonoType{}, errors.Newf(codes.Internal, "unknown type (%v)", t)
 	}
@@ -78,6 +80,8 @@ func (mt MonoType) Nature() Nature {
 		return Object
 	case fbsemantic.MonoTypeFun:
 		return Function
+	case fbsemantic.MonoTypeDict:
+		return Dictionary
 	case fbsemantic.MonoTypeNONE,
 		fbsemantic.MonoTypeVar:
 		fallthrough
@@ -96,6 +100,7 @@ const (
 	Arr     = Kind(fbsemantic.MonoTypeArr)
 	Record  = Kind(fbsemantic.MonoTypeRecord)
 	Fun     = Kind(fbsemantic.MonoTypeFun)
+	Dict    = Kind(fbsemantic.MonoTypeDict)
 )
 
 // Kind returns what kind of monotype the receiver is.
@@ -341,6 +346,40 @@ func (mt MonoType) Extends() (MonoType, bool, error) {
 	return monoTypeFromVar(v), true, nil
 }
 
+func getDict(tbl fbTabler) (*fbsemantic.Dict, error) {
+	dict, ok := tbl.(*fbsemantic.Dict)
+	if !ok {
+		return nil, errors.New(codes.Internal, "MonoType is not a dictionary")
+	}
+	return dict, nil
+}
+
+// KeyType returns the type for the key in a Dictionary.
+func (mt MonoType) KeyType() (MonoType, error) {
+	dict, err := getDict(mt.tbl)
+	if err != nil {
+		return MonoType{}, err
+	}
+	var tbl flatbuffers.Table
+	if !dict.K(&tbl) {
+		return MonoType{}, errors.New(codes.Internal, "missing dictionary key type")
+	}
+	return NewMonoType(tbl, dict.KType())
+}
+
+// ValueType returns the type for the value in a Dictionary.
+func (mt MonoType) ValueType() (MonoType, error) {
+	dict, err := getDict(mt.tbl)
+	if err != nil {
+		return MonoType{}, err
+	}
+	var tbl flatbuffers.Table
+	if !dict.V(&tbl) {
+		return MonoType{}, errors.New(codes.Internal, "missing dictionary value type")
+	}
+	return NewMonoType(tbl, dict.VType())
+}
+
 // Argument represents a function argument.
 type Argument struct {
 	*fbsemantic.Argument
@@ -562,6 +601,16 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 		}
 		sb.WriteString(rt.string(m))
 		return sb.String()
+	case Dict:
+		kt, err := mt.KeyType()
+		if err != nil {
+			return "<" + err.Error() + ">"
+		}
+		vt, err := mt.ValueType()
+		if err != nil {
+			return "<" + err.Error() + ">"
+		}
+		return "[" + kt.string(m) + ": " + vt.string(m) + "]"
 	default:
 		return "<" + fmt.Sprintf("unknown monotype (%v)", tk) + ">"
 	}
@@ -653,6 +702,23 @@ func ExtendObjectType(properties []PropertyType, extends *uint64) MonoType {
 	return mt
 }
 
+// NewDictType will construct a new Dict MonoType
+// where the key element for the dict is keyType and
+// the value element for the dict is valueType.
+func NewDictType(keyType, valueType MonoType) MonoType {
+	builder := flatbuffers.NewBuilder(32)
+	offset := buildDictType(builder, keyType, valueType)
+	builder.Finish(offset)
+
+	buf := builder.FinishedBytes()
+	arr := fbsemantic.GetRootAsDict(buf, 0)
+	mt, err := NewMonoType(arr.Table(), fbsemantic.MonoTypeDict)
+	if err != nil {
+		panic(err)
+	}
+	return mt
+}
+
 // copyMonoType will reconstruct the type contained within the
 // MonoType for the new builder. When building a new buffer,
 // flatbuffers cannot reference data in another buffer and the
@@ -720,6 +786,13 @@ func copyMonoType(builder *flatbuffers.Builder, t MonoType) flatbuffers.UOffsetT
 		}
 		retn := monoTypeFromFunc(fun.Retn, fun.RetnType())
 		return buildFunctionType(builder, retn, args)
+	case fbsemantic.MonoTypeDict:
+		var dict fbsemantic.Dict
+		dict.Init(table.Bytes, table.Pos)
+
+		key := monoTypeFromFunc(dict.K, dict.KType())
+		value := monoTypeFromFunc(dict.V, dict.VType())
+		return buildDictType(builder, key, value)
 	default:
 		panic(fmt.Sprintf("unknown monotype (%v)", t.mt))
 	}
@@ -828,6 +901,19 @@ func buildObjectType(builder *flatbuffers.Builder, properties []PropertyType, ex
 		fbsemantic.RecordAddExtends(builder, extendsOffset)
 	}
 	return fbsemantic.RecordEnd(builder)
+}
+
+// buildDictType will construct a dict type in the builder
+// and return the offset for the type.
+func buildDictType(builder *flatbuffers.Builder, keyType, valueType MonoType) flatbuffers.UOffsetT {
+	koffset := copyMonoType(builder, keyType)
+	voffset := copyMonoType(builder, valueType)
+	fbsemantic.DictStart(builder)
+	fbsemantic.DictAddKType(builder, keyType.mt)
+	fbsemantic.DictAddK(builder, koffset)
+	fbsemantic.DictAddVType(builder, valueType.mt)
+	fbsemantic.DictAddV(builder, voffset)
+	return fbsemantic.DictEnd(builder)
 }
 
 func updateTVarMap(counter *uint64, m map[uint64]uint64, tv uint64) {

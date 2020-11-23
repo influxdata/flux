@@ -172,6 +172,15 @@ func TransformValue(v values.Value) map[string]interface{} {
 		return map[string]interface{}{
 			"type": v.Type().String(),
 		}
+	case semantic.Dictionary:
+		elements := make(map[interface{}]interface{})
+		v.Dict().Range(func(key, value values.Value) {
+			elements[TransformValue(key)] = TransformValue(value)
+		})
+		return map[string]interface{}{
+			"type":     semantic.Dictionary.String(),
+			"elements": elements,
+		}
 	default:
 		panic(fmt.Errorf("unexpected value type %v", v.Type()))
 	}

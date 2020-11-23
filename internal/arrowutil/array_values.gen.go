@@ -80,6 +80,9 @@ func (v Int64ArrayValue) Object() values.Object {
 func (v Int64ArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
+func (v Int64ArrayValue) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
 
 func (v Int64ArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
@@ -160,6 +163,9 @@ func (v Uint64ArrayValue) Object() values.Object {
 }
 func (v Uint64ArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
+}
+func (v Uint64ArrayValue) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
 
 func (v Uint64ArrayValue) Equal(other values.Value) bool {
@@ -246,6 +252,9 @@ func (v Float64ArrayValue) Object() values.Object {
 func (v Float64ArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
+func (v Float64ArrayValue) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
 
 func (v Float64ArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
@@ -331,6 +340,9 @@ func (v BooleanArrayValue) Object() values.Object {
 func (v BooleanArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
 }
+func (v BooleanArrayValue) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
+}
 
 func (v BooleanArrayValue) Equal(other values.Value) bool {
 	if other.Type().Nature() != semantic.Array {
@@ -413,6 +425,9 @@ func (v StringArrayValue) Object() values.Object {
 }
 func (v StringArrayValue) Function() values.Function {
 	panic(values.UnexpectedKind(semantic.Array, semantic.Function))
+}
+func (v StringArrayValue) Dict() values.Dictionary {
+	panic(values.UnexpectedKind(semantic.Array, semantic.Dictionary))
 }
 
 func (v StringArrayValue) Equal(other values.Value) bool {
