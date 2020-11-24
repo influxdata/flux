@@ -1051,7 +1051,7 @@ impl Formatter {
             f.push_str(&frac_nano);
 
             if v.timezone().local_minus_utc() == 0 {
-                f.push_str("Z")
+                f.push('Z')
             } else {
                 f.push_str(&v.format("%:z").to_string());
             }
