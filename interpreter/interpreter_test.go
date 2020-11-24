@@ -71,6 +71,14 @@ func TestEval(t *testing.T) {
 				values.NewFloat(6.0),
 			},
 		},
+    {
+      name:  "call polymorphic instantiation",
+      query:`
+        1 + 0.5`,
+      want: []values.Value{
+          values.NewFloat(1.5),
+        },
+      },
 		{
 			name:    "call function with fail",
 			query:   "fail()",
@@ -167,7 +175,7 @@ func TestEval(t *testing.T) {
 		{
 			name: "return map from func",
 			query: `
-            toMap = (a,b) => ({
+            toMap = (a,b) => ({ 
                 a: a,
                 b: b,
             })
@@ -716,7 +724,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(1),
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.CallExpression{
-									Callee:    &semantic.IdentifierExpression{Name: "foo"},
+									Callee:    &semantic.IdentifierExpression{Name: "foo-int"},
 									Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								},
 							},

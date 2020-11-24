@@ -220,6 +220,7 @@ pub enum Kind {
     Record,
     Negatable,
     Timeable,
+    NumericDefaultInt,
 }
 
 impl fmt::Display for Kind {
@@ -235,6 +236,7 @@ impl fmt::Display for Kind {
             Kind::Record => f.write_str("Record"),
             Kind::Negatable => f.write_str("Negatable"),
             Kind::Timeable => f.write_str("Timeable"),
+            Kind::NumericDefaultInt => f.write_str("NumericDefaultInt"),
         }
     }
 }
@@ -399,6 +401,7 @@ impl MonoType {
                 | Kind::Subtractable
                 | Kind::Divisible
                 | Kind::Numeric
+                | Kind::NumericDefaultInt
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
@@ -413,6 +416,7 @@ impl MonoType {
                 | Kind::Subtractable
                 | Kind::Divisible
                 | Kind::Numeric
+                | Kind::NumericDefaultInt
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
@@ -427,6 +431,7 @@ impl MonoType {
                 | Kind::Subtractable
                 | Kind::Divisible
                 | Kind::Numeric
+                | Kind::NumericDefaultInt
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
@@ -1324,6 +1329,10 @@ mod tests {
     #[test]
     fn display_kind_numeric() {
         assert!(Kind::Numeric.to_string() == "Numeric");
+    }
+    #[test]
+    fn display_kind_numeric_default_int() {
+        assert!(Kind::NumericDefaultInt.to_string() == "NumericDefaultInt");
     }
     #[test]
     fn display_kind_comparable() {

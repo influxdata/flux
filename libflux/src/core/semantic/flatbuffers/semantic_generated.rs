@@ -167,10 +167,11 @@ pub mod fbsemantic {
         Record = 7,
         Negatable = 8,
         Timeable = 9,
+        NumericDefaultInt = 10,
     }
 
     const ENUM_MIN_KIND: u8 = 0;
-    const ENUM_MAX_KIND: u8 = 9;
+    const ENUM_MAX_KIND: u8 = 10;
 
     impl<'a> flatbuffers::Follow<'a> for Kind {
         type Inner = Self;
@@ -204,7 +205,7 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_KIND: [Kind; 10] = [
+    const ENUM_VALUES_KIND: [Kind; 11] = [
         Kind::Addable,
         Kind::Subtractable,
         Kind::Divisible,
@@ -215,10 +216,11 @@ pub mod fbsemantic {
         Kind::Record,
         Kind::Negatable,
         Kind::Timeable,
+        Kind::NumericDefaultInt,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_KIND: [&'static str; 10] = [
+    const ENUM_NAMES_KIND: [&'static str; 11] = [
         "Addable",
         "Subtractable",
         "Divisible",
@@ -229,6 +231,7 @@ pub mod fbsemantic {
         "Record",
         "Negatable",
         "Timeable",
+        "NumericDefaultInt",
     ];
 
     pub fn enum_name_kind(e: Kind) -> &'static str {
@@ -396,13 +399,14 @@ pub mod fbsemantic {
         DurationLiteral = 15,
         FloatLiteral = 16,
         IntegerLiteral = 17,
-        StringLiteral = 18,
-        RegexpLiteral = 19,
-        UnsignedIntegerLiteral = 20,
+        PolyNumericLiteral = 18,
+        StringLiteral = 19,
+        RegexpLiteral = 20,
+        UnsignedIntegerLiteral = 21,
     }
 
     const ENUM_MIN_EXPRESSION: u8 = 0;
-    const ENUM_MAX_EXPRESSION: u8 = 20;
+    const ENUM_MAX_EXPRESSION: u8 = 21;
 
     impl<'a> flatbuffers::Follow<'a> for Expression {
         type Inner = Self;
@@ -436,7 +440,7 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_EXPRESSION: [Expression; 21] = [
+    const ENUM_VALUES_EXPRESSION: [Expression; 22] = [
         Expression::NONE,
         Expression::StringExpression,
         Expression::ArrayExpression,
@@ -455,13 +459,14 @@ pub mod fbsemantic {
         Expression::DurationLiteral,
         Expression::FloatLiteral,
         Expression::IntegerLiteral,
+        Expression::PolyNumericLiteral,
         Expression::StringLiteral,
         Expression::RegexpLiteral,
         Expression::UnsignedIntegerLiteral,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_EXPRESSION: [&'static str; 21] = [
+    const ENUM_NAMES_EXPRESSION: [&'static str; 22] = [
         "NONE",
         "StringExpression",
         "ArrayExpression",
@@ -480,6 +485,7 @@ pub mod fbsemantic {
         "DurationLiteral",
         "FloatLiteral",
         "IntegerLiteral",
+        "PolyNumericLiteral",
         "StringLiteral",
         "RegexpLiteral",
         "UnsignedIntegerLiteral",
@@ -3787,6 +3793,17 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn expression_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.expression_type() == Expression::PolyNumericLiteral {
+                self.expression()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn expression_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.expression_type() == Expression::StringLiteral {
                 self.expression().map(|u| StringLiteral::init_from_table(u))
@@ -4117,6 +4134,17 @@ pub mod fbsemantic {
         pub fn argument_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.argument_type() == Expression::IntegerLiteral {
                 self.argument().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn argument_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.argument_type() == Expression::PolyNumericLiteral {
+                self.argument()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -4474,6 +4502,16 @@ pub mod fbsemantic {
         pub fn init__as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.init__type() == Expression::IntegerLiteral {
                 self.init_().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn init__as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.init__type() == Expression::PolyNumericLiteral {
+                self.init_().map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -4841,6 +4879,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn init__as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.init__type() == Expression::PolyNumericLiteral {
+                self.init_().map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn init__as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.init__type() == Expression::StringLiteral {
                 self.init_().map(|u| StringLiteral::init_from_table(u))
@@ -5175,6 +5223,17 @@ pub mod fbsemantic {
             if self.expression_type() == Expression::IntegerLiteral {
                 self.expression()
                     .map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn expression_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.expression_type() == Expression::PolyNumericLiteral {
+                self.expression()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -5649,6 +5708,19 @@ pub mod fbsemantic {
             if self.interpolated_expression_type() == Expression::IntegerLiteral {
                 self.interpolated_expression()
                     .map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn interpolated_expression_as_poly_numeric_literal(
+            &self,
+        ) -> Option<PolyNumericLiteral<'a>> {
+            if self.interpolated_expression_type() == Expression::PolyNumericLiteral {
+                self.interpolated_expression()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -6448,6 +6520,17 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn default_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.default_type() == Expression::PolyNumericLiteral {
+                self.default()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn default_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.default_type() == Expression::StringLiteral {
                 self.default().map(|u| StringLiteral::init_from_table(u))
@@ -6955,6 +7038,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn left_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.left_type() == Expression::PolyNumericLiteral {
+                self.left().map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn left_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.left_type() == Expression::StringLiteral {
                 self.left().map(|u| StringLiteral::init_from_table(u))
@@ -7151,6 +7244,16 @@ pub mod fbsemantic {
         pub fn right_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.right_type() == Expression::IntegerLiteral {
                 self.right().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn right_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.right_type() == Expression::PolyNumericLiteral {
+                self.right().map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -7631,6 +7734,17 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn callee_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.callee_type() == Expression::PolyNumericLiteral {
+                self.callee()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn callee_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.callee_type() == Expression::StringLiteral {
                 self.callee().map(|u| StringLiteral::init_from_table(u))
@@ -7827,6 +7941,16 @@ pub mod fbsemantic {
         pub fn pipe_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.pipe_type() == Expression::IntegerLiteral {
                 self.pipe().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn pipe_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.pipe_type() == Expression::PolyNumericLiteral {
+                self.pipe().map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -8305,6 +8429,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn test_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.test_type() == Expression::PolyNumericLiteral {
+                self.test().map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn test_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.test_type() == Expression::StringLiteral {
                 self.test().map(|u| StringLiteral::init_from_table(u))
@@ -8512,6 +8646,17 @@ pub mod fbsemantic {
         pub fn alternate_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.alternate_type() == Expression::IntegerLiteral {
                 self.alternate().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn alternate_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.alternate_type() == Expression::PolyNumericLiteral {
+                self.alternate()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -8729,6 +8874,17 @@ pub mod fbsemantic {
             if self.consequent_type() == Expression::IntegerLiteral {
                 self.consequent()
                     .map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn consequent_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.consequent_type() == Expression::PolyNumericLiteral {
+                self.consequent()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -9139,6 +9295,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn left_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.left_type() == Expression::PolyNumericLiteral {
+                self.left().map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn left_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.left_type() == Expression::StringLiteral {
                 self.left().map(|u| StringLiteral::init_from_table(u))
@@ -9335,6 +9501,16 @@ pub mod fbsemantic {
         pub fn right_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.right_type() == Expression::IntegerLiteral {
                 self.right().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn right_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.right_type() == Expression::PolyNumericLiteral {
+                self.right().map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -9718,6 +9894,17 @@ pub mod fbsemantic {
         pub fn object_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.object_type() == Expression::IntegerLiteral {
                 self.object().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn object_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.object_type() == Expression::PolyNumericLiteral {
+                self.object()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -10167,6 +10354,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn array_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.array_type() == Expression::PolyNumericLiteral {
+                self.array().map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn array_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.array_type() == Expression::StringLiteral {
                 self.array().map(|u| StringLiteral::init_from_table(u))
@@ -10363,6 +10560,16 @@ pub mod fbsemantic {
         pub fn index_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.index_type() == Expression::IntegerLiteral {
                 self.index().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn index_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.index_type() == Expression::PolyNumericLiteral {
+                self.index().map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -11039,6 +11246,17 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn argument_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.argument_type() == Expression::PolyNumericLiteral {
+                self.argument()
+                    .map(|u| PolyNumericLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn argument_as_string_literal(&self) -> Option<StringLiteral<'a>> {
             if self.argument_type() == Expression::StringLiteral {
                 self.argument().map(|u| StringLiteral::init_from_table(u))
@@ -11443,6 +11661,16 @@ pub mod fbsemantic {
         pub fn value_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
             if self.value_type() == Expression::IntegerLiteral {
                 self.value().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn value_as_poly_numeric_literal(&self) -> Option<PolyNumericLiteral<'a>> {
+            if self.value_type() == Expression::PolyNumericLiteral {
+                self.value().map(|u| PolyNumericLiteral::init_from_table(u))
             } else {
                 None
             }
@@ -12346,6 +12574,194 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn finish(self) -> flatbuffers::WIPOffset<DurationLiteral<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    pub enum PolyNumericLiteralOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct PolyNumericLiteral<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for PolyNumericLiteral<'a> {
+        type Inner = PolyNumericLiteral<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> PolyNumericLiteral<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            PolyNumericLiteral { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args PolyNumericLiteralArgs<'args>,
+        ) -> flatbuffers::WIPOffset<PolyNumericLiteral<'bldr>> {
+            let mut builder = PolyNumericLiteralBuilder::new(_fbb);
+            builder.add_value(args.value);
+            if let Some(x) = args.typ {
+                builder.add_typ(x);
+            }
+            if let Some(x) = args.loc {
+                builder.add_loc(x);
+            }
+            builder.add_typ_type(args.typ_type);
+            builder.finish()
+        }
+
+        pub const VT_LOC: flatbuffers::VOffsetT = 4;
+        pub const VT_VALUE: flatbuffers::VOffsetT = 6;
+        pub const VT_TYP_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_TYP: flatbuffers::VOffsetT = 10;
+
+        #[inline]
+        pub fn loc(&self) -> Option<SourceLocation<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                    PolyNumericLiteral::VT_LOC,
+                    None,
+                )
+        }
+        #[inline]
+        pub fn value(&self) -> i64 {
+            self._tab
+                .get::<i64>(PolyNumericLiteral::VT_VALUE, Some(0))
+                .unwrap()
+        }
+        #[inline]
+        pub fn typ_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(PolyNumericLiteral::VT_TYP_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn typ(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
+                    PolyNumericLiteral::VT_TYP,
+                    None,
+                )
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
+            if self.typ_type() == MonoType::Basic {
+                self.typ().map(|u| Basic::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_var(&self) -> Option<Var<'a>> {
+            if self.typ_type() == MonoType::Var {
+                self.typ().map(|u| Var::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
+            if self.typ_type() == MonoType::Arr {
+                self.typ().map(|u| Arr::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
+            if self.typ_type() == MonoType::Fun {
+                self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub struct PolyNumericLiteralArgs<'a> {
+        pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
+        pub value: i64,
+        pub typ_type: MonoType,
+        pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for PolyNumericLiteralArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            PolyNumericLiteralArgs {
+                loc: None,
+                value: 0,
+                typ_type: MonoType::NONE,
+                typ: None,
+            }
+        }
+    }
+    pub struct PolyNumericLiteralBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> PolyNumericLiteralBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(
+                    PolyNumericLiteral::VT_LOC,
+                    loc,
+                );
+        }
+        #[inline]
+        pub fn add_value(&mut self, value: i64) {
+            self.fbb_
+                .push_slot::<i64>(PolyNumericLiteral::VT_VALUE, value, 0);
+        }
+        #[inline]
+        pub fn add_typ_type(&mut self, typ_type: MonoType) {
+            self.fbb_.push_slot::<MonoType>(
+                PolyNumericLiteral::VT_TYP_TYPE,
+                typ_type,
+                MonoType::NONE,
+            );
+        }
+        #[inline]
+        pub fn add_typ(&mut self, typ: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(PolyNumericLiteral::VT_TYP, typ);
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> PolyNumericLiteralBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            PolyNumericLiteralBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<PolyNumericLiteral<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }

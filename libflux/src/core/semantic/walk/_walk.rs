@@ -30,6 +30,7 @@ pub enum Node<'a> {
     ConditionalExpr(&'a ConditionalExpr),
     StringExpr(&'a StringExpr),
     IntegerLit(&'a IntegerLit),
+    PolyNumericLit(&'a PolyNumericLit),
     FloatLit(&'a FloatLit),
     StringLit(&'a StringLit),
     DurationLit(&'a DurationLit),
@@ -76,6 +77,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::ConditionalExpr(_) => write!(f, "ConditionalExpr"),
             Node::StringExpr(_) => write!(f, "StringExpr"),
             Node::IntegerLit(_) => write!(f, "IntegerLit"),
+            Node::PolyNumericLit(_) => write!(f, "PolyNumericLit"),
             Node::FloatLit(_) => write!(f, "FloatLit"),
             Node::StringLit(_) => write!(f, "StringLit"),
             Node::DurationLit(_) => write!(f, "DurationLit"),
@@ -124,6 +126,7 @@ impl<'a> Node<'a> {
             Node::ConditionalExpr(n) => &n.loc,
             Node::StringExpr(n) => &n.loc,
             Node::IntegerLit(n) => &n.loc,
+            Node::PolyNumericLit(n) => &n.loc,
             Node::FloatLit(n) => &n.loc,
             Node::StringLit(n) => &n.loc,
             Node::DurationLit(n) => &n.loc,
@@ -161,6 +164,7 @@ impl<'a> Node<'a> {
             }
             Node::StringExpr(n) => Some(Expression::StringExpr(Box::new((*n).clone())).type_of()),
             Node::IntegerLit(n) => Some(Expression::Integer((*n).clone()).type_of()),
+            Node::PolyNumericLit(n) => Some(Expression::PolyNumeric((*n).clone()).type_of()),
             Node::FloatLit(n) => Some(Expression::Float((*n).clone()).type_of()),
             Node::StringLit(n) => Some(Expression::StringLit((*n).clone()).type_of()),
             Node::DurationLit(n) => Some(Expression::Duration((*n).clone()).type_of()),
@@ -190,6 +194,7 @@ impl<'a> Node<'a> {
             Expression::Conditional(ref e) => Node::ConditionalExpr(e),
             Expression::StringExpr(ref e) => Node::StringExpr(e),
             Expression::Integer(ref e) => Node::IntegerLit(e),
+            Expression::PolyNumeric(ref e) => Node::PolyNumericLit(e),
             Expression::Float(ref e) => Node::FloatLit(e),
             Expression::StringLit(ref e) => Node::StringLit(e),
             Expression::Duration(ref e) => Node::DurationLit(e),
@@ -406,6 +411,7 @@ where
                 }
             }
             Node::IntegerLit(_) => {}
+            Node::PolyNumericLit(_) => {}
             Node::FloatLit(_) => {}
             Node::StringLit(_) => {}
             Node::DurationLit(_) => {}
@@ -518,9 +524,9 @@ mod tests {
                     "File",
                     "ExprStmt",
                     "ArrayExpr",
-                    "IntegerLit",
-                    "IntegerLit",
-                    "IntegerLit",
+                    "PolyNumericLit",
+                    "PolyNumericLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -534,7 +540,7 @@ mod tests {
                     "FunctionExpr",
                     "Block::Return",
                     "ReturnStmt",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -554,13 +560,13 @@ mod tests {
                     "Block::Variable",
                     "VariableAssgn",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                     "Block::Variable",
                     "VariableAssgn",
                     "Identifier",
                     "BinaryExpr",
-                    "IntegerLit",
-                    "IntegerLit",
+                    "PolyNumericLit",
+                    "PolyNumericLit",
                     "Block::Expr",
                     "ExprStmt",
                     "BinaryExpr",
@@ -582,7 +588,7 @@ mod tests {
                     "FunctionExpr",
                     "FunctionParameter",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                     "Block::Return",
                     "ReturnStmt",
                     "IdentifierExpr",
@@ -612,7 +618,7 @@ mod tests {
                     "ObjectExpr",
                     "Property",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                     "Property",
                     "Identifier",
                     "IdentifierExpr",
@@ -683,7 +689,7 @@ mod tests {
                     "IdentifierExpr",
                     "Property",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -729,8 +735,8 @@ mod tests {
             )
         }
         #[test]
-        fn test_integer_lit() {
-            test_walk("1", vec!["File", "ExprStmt", "IntegerLit"])
+        fn test_polynumeric_lit() {
+            test_walk("1", vec!["File", "ExprStmt", "PolyNumericLit"])
         }
         #[test]
         fn test_float_lit() {
@@ -797,7 +803,7 @@ mod tests {
                     "FunctionExpr",
                     "Block::Return",
                     "ReturnStmt",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }
@@ -810,7 +816,7 @@ mod tests {
                     "TestStmt",
                     "VariableAssgn",
                     "Identifier",
-                    "IntegerLit",
+                    "PolyNumericLit",
                 ],
             )
         }

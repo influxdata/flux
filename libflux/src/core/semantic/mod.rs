@@ -30,6 +30,7 @@ use crate::semantic::fresh::Fresher;
 // Once we merge libstd and flux this can be made private again.
 pub use crate::semantic::import::Importer;
 use std::fmt;
+use std::collections::HashSet;
 
 #[derive(Debug)]
 pub struct Error {
@@ -78,5 +79,7 @@ pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
     let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
     // TODO(affo): add a stdlib Importer.
     let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, Environment::empty(false), &mut f, &None)?;
-    Ok(nodes::inject_pkg_types(sem_pkg, &sub))
+    let poly_pkg = nodes::inject_pkg_types(sem_pkg, &sub);
+    let mut poly_set = HashSet::new();
+    Ok(nodes::inject_polymorphic_types(poly_pkg, &mut poly_set))
 }

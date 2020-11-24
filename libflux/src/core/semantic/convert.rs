@@ -260,6 +260,7 @@ pub fn convert_polytype(
                         "Negatable" => kinds.push(types::Kind::Negatable),
                         "Timeable" => kinds.push(types::Kind::Timeable),
                         "Record" => kinds.push(types::Kind::Record),
+                        "NumericDefaultInt" => kinds.push(types::Kind::NumericDefaultInt),
                         _ => {
                             return Err(format!("Constraint not found {} ", &k.name.as_str()));
                         }
@@ -331,7 +332,7 @@ fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Ex
         ast::Expression::StringLit(lit) => Ok(Expression::StringLit(convert_string_literal(lit, fresher)?)),
         ast::Expression::Boolean(lit) => Ok(Expression::Boolean(convert_boolean_literal(lit, fresher)?)),
         ast::Expression::Float(lit) => Ok(Expression::Float(convert_float_literal(lit, fresher)?)),
-        ast::Expression::Integer(lit) => Ok(Expression::Integer(convert_integer_literal(lit, fresher)?)),
+        ast::Expression::Integer(lit) => Ok(Expression::PolyNumeric(convert_integer_literal(lit, fresher)?)),
         ast::Expression::Uint(lit) => Ok(Expression::Uint(convert_unsigned_integer_literal(lit, fresher)?)),
         ast::Expression::Regexp(lit) => Ok(Expression::Regexp(convert_regexp_literal(lit, fresher)?)),
         ast::Expression::Duration(lit) => Ok(Expression::Duration(convert_duration_literal(lit, fresher)?)),
@@ -666,10 +667,11 @@ fn convert_float_literal(lit: ast::FloatLit, _: &mut Fresher) -> Result<FloatLit
     })
 }
 
-fn convert_integer_literal(lit: ast::IntegerLit, _: &mut Fresher) -> Result<IntegerLit> {
-    Ok(IntegerLit {
+fn convert_integer_literal(lit: ast::IntegerLit, fresher: &mut Fresher) -> Result<PolyNumericLit> {
+    Ok(PolyNumericLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(fresher.fresh()),
     })
 }
 
@@ -992,9 +994,10 @@ mod tests {
                                 loc: b.location.clone(),
                                 name: "a".to_string(),
                             },
-                            value: Expression::Integer(IntegerLit {
+                            value: Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 10,
+                                typ: MonoType::Var(Tvar(0)),
                             }),
                         }],
                     })),
@@ -1062,9 +1065,10 @@ mod tests {
                                 loc: b.location.clone(),
                                 name: "a".to_string(),
                             },
-                            value: Expression::Integer(IntegerLit {
+                            value: Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 10,
+                                typ: MonoType::Var(Tvar(0)),
                             }),
                         }],
                     })),
@@ -1148,9 +1152,10 @@ mod tests {
                                     loc: b.location.clone(),
                                     name: "a".to_string(),
                                 },
-                                value: Expression::Integer(IntegerLit {
+                                value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 10,
+                                    typ: MonoType::Var(Tvar(0)),
                                 }),
                             },
                             Property {
@@ -1159,9 +1164,10 @@ mod tests {
                                     loc: b.location.clone(),
                                     name: "b".to_string(),
                                 },
-                                value: Expression::Integer(IntegerLit {
+                                value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 11,
+                                    typ: MonoType::Var(Tvar(0)),
                                 }),
                             },
                         ],
@@ -1449,9 +1455,10 @@ mod tests {
                                         loc: b.location.clone(),
                                         name: "retry".to_string(),
                                     },
-                                    value: Expression::Integer(IntegerLit {
+                                    value: Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 5,
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                             ],
@@ -1725,9 +1732,10 @@ mod tests {
                                         loc: b.location.clone(),
                                         name: "a".to_string(),
                                     },
-                                    value: Expression::Integer(IntegerLit {
+                                    value: Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 2,
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                                 Property {
@@ -1736,9 +1744,10 @@ mod tests {
                                         loc: b.location.clone(),
                                         name: "b".to_string(),
                                     },
-                                    value: Expression::Integer(IntegerLit {
+                                    value: Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 3,
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                             ],
@@ -1897,9 +1906,10 @@ mod tests {
                                         loc: b.location.clone(),
                                         name: "a".to_string(),
                                     },
-                                    default: Some(Expression::Integer(IntegerLit {
+                                    default: Some(Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 0,
+                                        typ: MonoType::Var(Tvar(0)),
                                     })),
                                 },
                                 FunctionParameter {
@@ -1909,9 +1919,10 @@ mod tests {
                                         loc: b.location.clone(),
                                         name: "b".to_string(),
                                     },
-                                    default: Some(Expression::Integer(IntegerLit {
+                                    default: Some(Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 0,
+                                        typ: MonoType::Var(Tvar(0)),
                                     })),
                                 },
                                 FunctionParameter {
@@ -1972,9 +1983,10 @@ mod tests {
                                     loc: b.location.clone(),
                                     name: "c".to_string(),
                                 },
-                                value: Expression::Integer(IntegerLit {
+                                value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 42,
+                                    typ: MonoType::Var(Tvar(0)),
                                 }),
                             }],
                         })),
@@ -2309,9 +2321,10 @@ mod tests {
                         expression: Expression::Call(Box::new(CallExpr {
                             loc: b.location.clone(),
                             typ: type_info(),
-                            pipe: Some(Expression::Integer(IntegerLit {
+                            pipe: Some(Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 3,
+                                typ: MonoType::Var(Tvar(0)),
                             })),
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
@@ -2324,9 +2337,10 @@ mod tests {
                                     loc: b.location.clone(),
                                     name: "a".to_string(),
                                 },
-                                value: Expression::Integer(IntegerLit {
+                                value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 2,
+                                    typ: MonoType::Var(Tvar(0)),
                                 }),
                             }],
                         })),
@@ -2397,9 +2411,10 @@ mod tests {
                 loc: b.location.clone(),
                 name: "a".to_string(),
             },
-            default: Some(Expression::Integer(IntegerLit {
+            default: Some(Expression::PolyNumeric(PolyNumericLit {
                 loc: b.location.clone(),
                 value: 0,
+                typ: MonoType::Var(Tvar(0)),
             })),
         };
         let default1 = FunctionParameter {
@@ -2409,9 +2424,10 @@ mod tests {
                 loc: b.location.clone(),
                 name: "b".to_string(),
             },
-            default: Some(Expression::Integer(IntegerLit {
+            default: Some(Expression::PolyNumeric(PolyNumericLit {
                 loc: b.location.clone(),
                 value: 1,
+                typ: MonoType::Var(Tvar(0)),
             })),
         };
         let default2 = FunctionParameter {
@@ -2421,9 +2437,10 @@ mod tests {
                 loc: b.location.clone(),
                 name: "c".to_string(),
             },
-            default: Some(Expression::Integer(IntegerLit {
+            default: Some(Expression::PolyNumeric(PolyNumericLit {
                 loc: b.location.clone(),
                 value: 2,
+                typ: MonoType::Var(Tvar(0)),
             })),
         };
         let no_default = FunctionParameter {
@@ -2517,9 +2534,10 @@ mod tests {
                             typ: type_info(),
                             name: "a".to_string(),
                         }),
-                        index: Expression::Integer(IntegerLit {
+                        index: Expression::PolyNumeric(PolyNumericLit {
                             loc: b.location.clone(),
                             value: 3,
+                            typ: MonoType::Var(Tvar(0)),
                         }),
                     })),
                 })],
@@ -2590,14 +2608,16 @@ mod tests {
                                 typ: type_info(),
                                 name: "a".to_string(),
                             }),
-                            index: Expression::Integer(IntegerLit {
+                            index: Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 3,
+                                typ: MonoType::Var(Tvar(0)),
                             }),
                         })),
-                        index: Expression::Integer(IntegerLit {
+                        index: Expression::PolyNumeric(PolyNumericLit {
                             loc: b.location.clone(),
                             value: 5,
+                            typ: MonoType::Var(Tvar(0)),
                         }),
                     })),
                 })],
@@ -2668,9 +2688,10 @@ mod tests {
                             }),
                             arguments: Vec::new(),
                         })),
-                        index: Expression::Integer(IntegerLit {
+                        index: Expression::PolyNumeric(PolyNumericLit {
                             loc: b.location.clone(),
                             value: 3,
+                            typ: MonoType::Var(Tvar(0)),
                         }),
                     })),
                 })],

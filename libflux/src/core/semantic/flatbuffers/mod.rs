@@ -61,6 +61,23 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 v.expr_stack
                     .push((int.as_union_value(), fbsemantic::Expression::IntegerLiteral))
             }
+			walk::Node::PolyNumericLit(int) => {
+                let int_typ = int.typ.clone();
+                let (typ, typ_type) = types::build_type(&mut v.builder, int_typ);
+                let int = fbsemantic::PolyNumericLiteral::create(
+                    &mut v.builder,
+                    &fbsemantic::PolyNumericLiteralArgs {
+                        loc,
+                        value: int.value,
+                        typ: Some(typ),
+                        typ_type,
+                    },
+                );
+                v.expr_stack.push((
+                    int.as_union_value(),
+                    fbsemantic::Expression::PolyNumericLiteral,
+                ))
+            }
             walk::Node::UintLit(uint) => {
                 let uint = fbsemantic::UnsignedIntegerLiteral::create(
                     &mut v.builder,

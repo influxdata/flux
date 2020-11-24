@@ -53,7 +53,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: "n".to_string(),
+                        name: "n-int".to_string(),
                     },
                     Expression::Integer(IntegerLit {
                         loc: ast::BaseNode::default().location,
@@ -61,6 +61,18 @@ f(a: s)
                     }),
                     ast::BaseNode::default().location,
                 ))),
+                Statement::Variable(Box::new(VariableAssgn::new(
+                    Identifier {
+                        loc: ast::BaseNode::default().location,
+                        name: "n-float".to_string(),
+                    },
+                    Expression::Float(FloatLit {
+                        loc: ast::BaseNode::default().location,
+                        value: 1.0,
+                    }),
+                    ast::BaseNode::default().location,
+                ))),
+
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
@@ -93,16 +105,16 @@ f(a: s)
                             loc: ast::BaseNode::default().location,
                             argument: Expression::Binary(Box::new(BinaryExpr {
                                 loc: ast::BaseNode::default().location,
-                                typ: MonoType::Var(Tvar(4)),
+                                typ: MonoType::Var(Tvar(3)),
                                 operator: ast::Operator::AdditionOperator,
                                 left: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
-                                    typ: MonoType::Var(Tvar(4)),
+                                    typ: MonoType::Var(Tvar(3)),
                                     name: "a".to_string(),
                                 }),
                                 right: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
-                                    typ: MonoType::Var(Tvar(4)),
+                                    typ: MonoType::Var(Tvar(3)),
                                     name: "a".to_string(),
                                 }),
                             })),
@@ -114,7 +126,7 @@ f(a: s)
                     loc: ast::BaseNode::default().location,
                     expression: Expression::Call(Box::new(CallExpr {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::Int,
+                        typ: MonoType::Var(Tvar(8)),
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,
@@ -129,8 +141,8 @@ f(a: s)
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
-                                typ: MonoType::Int,
-                                name: "n".to_string(),
+                                typ: MonoType::Var(Tvar(8)),
+                                name: "n-int".to_string(),
                             }),
                         }],
                     })),

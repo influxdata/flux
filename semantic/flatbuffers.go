@@ -256,6 +256,14 @@ func fromExpressionTableOptional(getTable getTableFn, exprType fbsemantic.Expres
 			return nil, err
 		}
 		return e, nil
+	case fbsemantic.ExpressionPolyNumericLiteral:
+		fbExpr := new(fbsemantic.IntegerLiteral)
+		fbExpr.Init(tbl.Bytes, tbl.Pos)
+		e := &IntegerLiteral{}
+		if err := e.FromBuf(fbExpr); err != nil {
+			return nil, err
+		}
+		return e, nil
 	case fbsemantic.ExpressionStringLiteral:
 		fbExpr := new(fbsemantic.StringLiteral)
 		fbExpr.Init(tbl.Bytes, tbl.Pos)

@@ -440,7 +440,7 @@ fn literals() {
         "#,
         exp: map![
             "a" => "string",
-            "b" => "int",
+            "b" => "A where A: NumericDefaultInt",
             "c" => "float",
             "d" => "duration",
             "e" => "time",
@@ -561,7 +561,7 @@ fn array_lit() {
     test_infer! {
         src: "a = [1, 2, 3]",
         exp: map![
-            "a" => "[int]",
+            "a" => "[A] where A: NumericDefaultInt",
         ],
     }
     test_infer! {
@@ -617,11 +617,14 @@ fn array_lit() {
     test_infer! {
         src: "a = [{a:0, b:0.0}, {a:1, b:1.1}]",
         exp: map![
-            "a" => "[{a: int , b: float}]",
+            "a" => "[{a: A , b: float}] where A: NumericDefaultInt",
         ],
     }
-    test_infer_err! {
+    test_infer! {
         src: "a = [1, 1.1]",
+        exp: map! [
+            "a" => "[float]",
+        ],
     }
 }
 #[test]
@@ -2710,7 +2713,7 @@ fn call_expr() {
             f(x: (w=<-) => w)
         "#,
         exp: map![
-            "f" => "(x:(<-:int) => C) => C",
+            "f" => "(x:(<-:A) => C) => C where A: NumericDefaultInt",
         ]
     }
     // pipe args have different names
@@ -2737,8 +2740,8 @@ fn call_expr() {
             g = () => f(arg: (x) => 5 + x)
         "#,
         exp: map![
-            "f" => "(?arg:(<-x:int) => int) => int",
-            "g" => "() => int",
+            "f" => "(?arg:(<-x:A) => A) => A where A: NumericDefaultInt",
+            "g" => "() => A where A: NumericDefaultInt, A: Addable",
         ]
     }
 }
@@ -2762,16 +2765,64 @@ fn polymorphic_instantiation() {
         exp: map![
             "f" => "(x: A) => A",
 
-            "a" => "int",
+            "a" => "A where A: NumericDefaultInt",
             "b" => "float",
             "c" => "string",
             "d" => "duration",
             "e" => "time",
             "g" => "regexp",
-            "h" => "[int]",
+            "h" => "[A] where A: NumericDefaultInt",
             "i" => "[A]",
-            "j" => "{a: int , b: float}",
+            "j" => "{a: A , b: float} where A: NumericDefaultInt",
         ],
+    }
+}
+#[test]
+fn polymorphic_numeric_literals() {
+    test_infer! {
+        src: r#"
+            a = 1
+            b = 1.1
+            c = a + b
+        "#,
+        exp: map![
+            "a" => "A where A: NumericDefaultInt",
+            "b" => "float",
+            "c" => "float",
+        ],
+    }
+    test_infer! {
+        src: r#"
+            f = (x) => x + 1.1
+            a = f(x: 100)
+        "#,
+        exp: map![
+            "f" => "(x: float) => float",
+            "a" => "float",
+        ],
+    }
+    test_infer! {
+        src: r#"
+            f = (x, y) => x + y
+            z = 1
+            a = f(x: z, y: 1)
+            b = f(x: z, y: 0.5)
+        "#,
+        exp: map![
+            "f" => "(x: A, y: A) => A where A: Addable",
+            "z" => "A where A: NumericDefaultInt",
+            "a" => "A where A: NumericDefaultInt, A: Addable",
+            "b" => "float"
+
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            f = (x,y) => x + y
+            a = 1
+            b = "hello world"
+            c = f(a, b)
+        "#,
     }
 }
 #[test]
@@ -2782,8 +2833,8 @@ fn constrain_tvars() {
             a = f(x: 100)
         "#,
         exp: map![
-            "f" => "(x: int) => int",
-            "a" => "int",
+            "f" => "(x: A) => A where A: NumericDefaultInt, A: Addable",
+            "a" => "A where A: NumericDefaultInt, A: Addable",
         ],
     }
     test_infer_err! {
@@ -2820,7 +2871,7 @@ fn constrained_generics_addable() {
         "#,
         exp: map![
             "f" => "(a: A, b: A) => A where A: Addable ",
-            "a" => "int",
+            "a" => "A where A: NumericDefaultInt, A: Addable",
             "b" => "float",
             "c" => "string",
         ],
@@ -2828,7 +2879,7 @@ fn constrained_generics_addable() {
     test_infer_err! {
         src: r#"
             f = (a, b) => a + b
-            f(a: 100, b: 0.1)
+            f(a: 100, b: "0.1")
         "#,
     }
     test_infer_err! {
@@ -2878,7 +2929,7 @@ fn constrained_generics_subtractable() {
         "#,
         exp: map![
             "f" => "(a: A, b: A) => A where A: Subtractable ",
-            "a" => "int",
+            "a" => "A where A: NumericDefaultInt, A: Subtractable",
             "b" => "float",
         ],
     }
@@ -2929,7 +2980,7 @@ fn constrained_generics_divisible() {
         "#,
         exp: map![
             "f" => "(a: A, b: A) => A where A: Divisible ",
-            "a" => "int",
+            "a" => "A where A:NumericDefaultInt, A: Divisible",
             "b" => "float",
         ],
     }
@@ -3170,16 +3221,16 @@ fn function_instantiation_and_generalization() {
             c = f(x: (b) => ({b: b}))
         "#,
         exp: map![
-            "r" => "int",
-            "x" => "int",
-            "s" => "{list: [int]}",
-            "y" => "[int]",
-            "t" => "{list: [int]}",
-            "z" => "[int]",
-            "f" => "(x: (b: [int]) => A) => A",
-            "a" => "[int]",
-            "b" => "int",
-            "c" => "{b: [int]}",
+            "r" => "A where A: NumericDefaultInt",
+            "x" => "A where A: NumericDefaultInt",
+            "s" => "{list: [A]} where A: NumericDefaultInt",
+            "y" => "[A] where A: NumericDefaultInt",
+            "t" => "{list: [A]} where A: NumericDefaultInt",
+            "z" => "[A] where A: NumericDefaultInt",
+            "f" => "(x: (b: [A]) => B) => B where A: NumericDefaultInt",
+            "a" => "[A] where A: NumericDefaultInt",
+            "b" => "A where A: NumericDefaultInt",
+            "c" => "{b: [A]} where A: NumericDefaultInt",
         ],
     }
     test_infer_err! {
@@ -3214,9 +3265,9 @@ fn function_default_arguments_1() {
             y = f(a: x, b: f(a:x))
         "#,
         exp: map![
-            "f" => "(a: int, ?b: int) => int",
-            "x" => "int",
-            "y" => "int",
+            "f" => "(a: A, ?b: A) => A where A: NumericDefaultInt, A: Addable",
+            "x" => "A where A: NumericDefaultInt, A: Addable",
+            "y" => "A where A: NumericDefaultInt, A: Addable",
         ],
     }
 }
@@ -3231,11 +3282,11 @@ fn function_default_arguments_2() {
             z = f(a: 3.3, b: 3)
         "#,
         exp: map![
-            "f" => "(a: float, b: int, ?c: float, ?d: int) => {r: float , s: int}",
-            "w" => "{r: float , s: int}",
-            "x" => "{r: float , s: int}",
-            "y" => "{r: float , s: int}",
-            "z" => "{r: float , s: int}",
+            "f" => "(a: float, b: A, ?c: float, ?d: A) => {r: float , s: A} where A: NumericDefaultInt, A: Addable",
+            "w" => "{r: float , s: A} where A: NumericDefaultInt, A: Addable",
+            "x" => "{r: float , s: A} where A: NumericDefaultInt, A: Addable",
+            "y" => "{r: float , s: A} where A: NumericDefaultInt, A: Addable",
+            "z" => "{r: float , s: A} where A: NumericDefaultInt, A: Addable",
         ],
     }
 }
@@ -3250,7 +3301,7 @@ fn function_pipe_identity() {
         exp: map![
             "f" => "(<-a: A) => A",
             "x" => "float",
-            "y" => "int",
+            "y" => "A where A: NumericDefaultInt",
         ],
     }
 }
@@ -3266,9 +3317,9 @@ fn function_default_arguments_and_pipes() {
         "#,
         exp: map![
             "f" => "(<-t: B, f: (<-: B, a: A) => C, g: A) => C",
-            "x" => "(a: int, ?b: int, <-m: int) => int",
+            "x" => "(a: A, ?b: A, <-m: A) => A where A : NumericDefaultInt, A: Addable",
             "z" => "(a: {B with m: A}, ?b: float, ?c: float, <-m: float) => {r: A , s: float}",
-            "y" => "int",
+            "y" => "A where A: NumericDefaultInt, A: Addable",
             "v" => "{s: float, r: string}",
         ],
     }
@@ -3324,7 +3375,7 @@ fn test_error_messages() {
             1 + "1"
         "#,
         // Location points to right expression expression
-        err: "type error @2:17-2:20: expected int but found string",
+        err: "type error @2:17-2:20: string is not NumericDefaultInt",
     }
     test_error_msg! {
         src: r#"
@@ -3347,28 +3398,28 @@ fn test_error_messages() {
             "Hey ${bob} it's me ${joe}!"
         "#,
         // Location points to second interpolated expression
-        err: "type error @4:35-4:38: expected string but found int",
+        err: "type error @4:35-4:38: string is not NumericDefaultInt",
     }
     test_error_msg! {
         src: r#"
             if 0 then "a" else "b"
         "#,
         // Location points to if expression
-        err: "type error @2:16-2:17: expected bool but found int",
+        err: "type error @2:16-2:17: bool is not NumericDefaultInt",
     }
     test_error_msg! {
         src: r#"
             if exists 0 then 0 else "b"
         "#,
         // Location points to else expression
-        err: "type error @2:37-2:40: expected int but found string",
+        err: "type error @2:37-2:40: string is not NumericDefaultInt",
     }
     test_error_msg! {
         src: r#"
             [1, "2"]
         "#,
         // Location points to second element of array
-        err: "type error @2:17-2:20: expected int but found string",
+        err: "type error @2:17-2:20: string is not NumericDefaultInt",
     }
     test_error_msg! {
         src: r#"
@@ -3381,10 +3432,10 @@ fn test_error_messages() {
     test_error_msg! {
         src: r#"
             a = [1, 2, 3]
-            a[1] + 1.1
+            a[1] + "1.1"
         "#,
         // Location points to right expression
-        err: "type error @3:20-3:23: expected int but found float",
+        err: "type error @3:20-3:25: string is not NumericDefaultInt",
     }
     test_error_msg! {
         src: r#"
@@ -3392,7 +3443,7 @@ fn test_error_messages() {
             a[1]
         "#,
         // Location points to the identifier a
-        err: "type error @3:13-3:14: expected [A] but found int",
+        err: "type error @3:13-3:14: [A] is not NumericDefaultInt",
     }
     test_error_msg! {
         src: r#"
@@ -3400,7 +3451,7 @@ fn test_error_messages() {
             a.x
         "#,
         // Location points to the identifier a
-        err: "type error @3:13-3:14: expected {A with x:B} but found [int]",
+        err: "type error @3:13-3:14: expected {A with x:B} but found [C]",
     }
     test_error_msg! {
         src: r#"

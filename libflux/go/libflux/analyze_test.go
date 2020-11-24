@@ -26,7 +26,7 @@ func TestAnalyze(t *testing.T) {
 		{
 			name: "failure",
 			flx:  `x = "foo" + 10`,
-			err:  errors.New("type error @1:13-1:15: expected string but found int"),
+			err:  errors.New("type error @1:13-1:15: string is not NumericDefaultInt"),
 		},
 	}
 	for _, tc := range tcs {
@@ -86,12 +86,12 @@ s = {v with tmp: 1}                // construct a new struct with "object with"
 m = s.tmp                          // not belong to "v"
 p = s.timeRangeStop                // transitive reference
 `,
-			ty: "{int: int | num: t0 | self: t1 | str: string | sweet: t2 | timeRangeStop: t3 | t4}",
+			ty: "{int: t0 | num: t1 | self: t2 | str: string | sweet: t3 | timeRangeStop: t4 | t5}",
 		},
 		{
 			name: "failure",
 			flx:  `x = "foo" + 10`,
-			err:  errors.New("type error @1:13-1:15: expected string but found int"),
+			err:  errors.New("type error @1:13-1:15: string is not NumericDefaultInt"),
 		},
 	}
 	for _, tc := range tcs {

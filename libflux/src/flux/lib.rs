@@ -7,7 +7,7 @@ use core::semantic::env::Environment;
 use core::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 use core::semantic::flatbuffers::types::{build_env, build_type};
 use core::semantic::fresh::Fresher;
-use core::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
+use core::semantic::nodes::{infer_pkg_types, inject_pkg_types, inject_polymorphic_types, Package};
 use core::semantic::sub::Substitution;
 
 pub use core::ast;
@@ -22,6 +22,7 @@ use core::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
+use std::collections::HashSet;
 use wasm_bindgen::prelude::*;
 
 pub fn prelude() -> Option<Environment> {
@@ -381,6 +382,7 @@ pub struct SemanticAnalyzer {
     f: Fresher,
     env: Environment,
     imports: Environment,
+    poly_set: HashSet<String>,
 }
 
 fn new_semantic_analyzer() -> Result<SemanticAnalyzer, core::Error> {
@@ -393,7 +395,8 @@ fn new_semantic_analyzer() -> Result<SemanticAnalyzer, core::Error> {
         None => return Err(core::Error::from("missing stdlib imports")),
     };
     let f = fresher();
-    Ok(SemanticAnalyzer { f, env, imports })
+    let poly_set = HashSet::new();
+    Ok(SemanticAnalyzer { f, env, imports, poly_set })
 }
 
 impl SemanticAnalyzer {
@@ -430,7 +433,9 @@ impl SemanticAnalyzer {
             }
         }
         self.env = env;
-        Ok(inject_pkg_types(sem_pkg, &sub))
+        let poly_pkg = inject_pkg_types(sem_pkg, &sub);
+        let pkg = inject_polymorphic_types(poly_pkg, &mut self.poly_set);
+        Ok(pkg)
     }
 }
 
@@ -490,7 +495,9 @@ pub unsafe extern "C" fn flux_analyze_with(
 /// and prelude.
 pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
     let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
-    Ok(inject_pkg_types(sem_pkg, &sub))
+    let poly_pkg = inject_pkg_types(sem_pkg, &sub);
+    let mut poly_set = HashSet::new();
+    Ok(inject_polymorphic_types(poly_pkg, &mut poly_set))
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given
@@ -697,7 +704,7 @@ vstr = v.str + "hello"
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
-        assert_eq!(format!("{}", t), "{B with int:int, sweet:A, str:string}");
+        assert_eq!(format!("{}", t), "{C with int:A, sweet:B, str:string}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -706,7 +713,9 @@ vstr = v.str + "hello"
     "type": "Extension",
     "head": {
       "k": "int",
-      "v": "Int"
+      "v": {
+        "Var": 0
+      }
     },
     "tail": {
       "Record": {
@@ -714,7 +723,7 @@ vstr = v.str + "hello"
         "head": {
           "k": "sweet",
           "v": {
-            "Var": 0
+            "Var": 1
           }
         },
         "tail": {
@@ -725,7 +734,7 @@ vstr = v.str + "hello"
               "v": "String"
             },
             "tail": {
-              "Var": 1
+              "Var": 2
             }
           }
         }
@@ -744,9 +753,9 @@ vint = v + 2
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(t, MonoType::Int);
+        assert_eq!(t, MonoType::Var(Tvar(8291)));
 
-        assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
+        assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "{\n  \"Var\": 8291\n}");
     }
 
     #[test]
@@ -761,7 +770,7 @@ p = o.ethan
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
         v.normalize(&mut t);
-        assert_eq!(format!("{}", t), "{B with int:int, ethan:A}");
+        assert_eq!(format!("{}", t), "{C with int:A, ethan:B}");
 
         assert_eq!(
             serde_json::to_string_pretty(&t).unwrap(),
@@ -770,7 +779,9 @@ p = o.ethan
     "type": "Extension",
     "head": {
       "k": "int",
-      "v": "Int"
+      "v": {
+        "Var": 0
+      }
     },
     "tail": {
       "Record": {
@@ -778,11 +789,11 @@ p = o.ethan
         "head": {
           "k": "ethan",
           "v": {
-            "Var": 0
+            "Var": 1
           }
         },
         "tail": {
-          "Var": 1
+          "Var": 2
         }
       }
     }

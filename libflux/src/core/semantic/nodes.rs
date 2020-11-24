@@ -9,7 +9,6 @@
 
 extern crate chrono;
 extern crate derivative;
-
 use crate::ast;
 use crate::semantic::infer;
 use crate::semantic::types;
@@ -28,7 +27,7 @@ use derivative::Derivative;
 use std::fmt;
 use std::fmt::Debug;
 use std::vec::Vec;
-
+use std::collections::HashSet;
 // Result returned from the various 'infer' methods defined in this
 // module. The result of inferring an expression or statment is an
 // updated type environment and a set of type constraints to be solved.
@@ -80,7 +79,6 @@ impl From<infer::Error> for Error {
         Error::Inference(err)
     }
 }
-
 #[derive(Debug, PartialEq, Clone)]
 pub enum Statement {
     Expr(ExprStmt),
@@ -102,6 +100,16 @@ impl Statement {
             Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(&sub)),
         }
     }
+    fn monomorphize(self, poly_set: &mut HashSet<String>) -> Self {
+        match self {
+            Statement::Expr(stmt) => Statement::Expr(stmt.monomorphize(poly_set)),
+            Statement::Variable(stmt) =>  Statement::Variable(Box::new(stmt.monomorphize(poly_set))),
+            Statement::Option(stmt) => Statement::Option(Box::new(stmt.monomorphize(poly_set))),
+            Statement::Return(stmt) => Statement::Return(stmt.monomorphize(poly_set)),
+            Statement::Test(stmt) => Statement::Test(Box::new(stmt.monomorphize(poly_set))),
+            Statement::Builtin(stmt) => Statement::Builtin(stmt.monomorphize(poly_set)),
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -115,6 +123,12 @@ impl Assignment {
         match self {
             Assignment::Variable(assign) => Assignment::Variable(assign.apply(&sub)),
             Assignment::Member(assign) => Assignment::Member(assign.apply(&sub)),
+        }
+    }
+    fn monomorphize(self, poly_set: &mut HashSet<String>) -> Self {
+        match self {
+            Assignment::Variable(assign) => Assignment::Variable(assign.monomorphize(poly_set)),
+            Assignment::Member(assign) => Assignment::Member(assign.monomorphize(poly_set)),
         }
     }
 }
@@ -135,6 +149,7 @@ pub enum Expression {
     StringExpr(Box<StringExpr>),
 
     Integer(IntegerLit),
+    PolyNumeric(PolyNumericLit),
     Float(FloatLit),
     StringLit(StringLit),
     Duration(DurationLit),
@@ -160,7 +175,8 @@ impl Expression {
             Expression::Conditional(e) => e.alternate.type_of(),
             Expression::StringExpr(_) => MonoType::String,
             Expression::Integer(_) => MonoType::Int,
-            Expression::Float(_) => MonoType::Float,
+            Expression::PolyNumeric(e) => e.typ.clone(),
+			Expression::Float(_) => MonoType::Float,
             Expression::StringLit(_) => MonoType::String,
             Expression::Duration(_) => MonoType::Duration,
             Expression::Uint(_) => MonoType::Uint,
@@ -184,7 +200,8 @@ impl Expression {
             Expression::Conditional(e) => &e.loc,
             Expression::StringExpr(e) => &e.loc,
             Expression::Integer(lit) => &lit.loc,
-            Expression::Float(lit) => &lit.loc,
+            Expression::PolyNumeric(lit) => &lit.loc,
+			Expression::Float(lit) => &lit.loc,
             Expression::StringLit(lit) => &lit.loc,
             Expression::Duration(lit) => &lit.loc,
             Expression::Uint(lit) => &lit.loc,
@@ -208,7 +225,8 @@ impl Expression {
             Expression::Conditional(e) => e.infer(env, f),
             Expression::StringExpr(e) => e.infer(env, f),
             Expression::Integer(lit) => lit.infer(env),
-            Expression::Float(lit) => lit.infer(env),
+            Expression::PolyNumeric(lit) => lit.infer(env),
+			Expression::Float(lit) => lit.infer(env),
             Expression::StringLit(lit) => lit.infer(env),
             Expression::Duration(lit) => lit.infer(env),
             Expression::Uint(lit) => lit.infer(env),
@@ -232,13 +250,94 @@ impl Expression {
             Expression::Conditional(e) => Expression::Conditional(Box::new(e.apply(&sub))),
             Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.apply(&sub))),
             Expression::Integer(lit) => Expression::Integer(lit.apply(&sub)),
-            Expression::Float(lit) => Expression::Float(lit.apply(&sub)),
+            Expression::PolyNumeric(lit) => Expression::PolyNumeric(lit.apply(&sub)),
+			Expression::Float(lit) => Expression::Float(lit.apply(&sub)),
             Expression::StringLit(lit) => Expression::StringLit(lit.apply(&sub)),
             Expression::Duration(lit) => Expression::Duration(lit.apply(&sub)),
             Expression::Uint(lit) => Expression::Uint(lit.apply(&sub)),
             Expression::Boolean(lit) => Expression::Boolean(lit.apply(&sub)),
             Expression::DateTime(lit) => Expression::DateTime(lit.apply(&sub)),
             Expression::Regexp(lit) => Expression::Regexp(lit.apply(&sub)),
+        }
+    }
+    fn monomorphize(self, poly_set: &mut HashSet<String>) -> Self {
+        match self {
+            Expression::Identifier(e) => Expression::Identifier(e.monomorphize(poly_set)),
+            Expression::Array(e) => Expression::Array(Box::new(e.monomorphize(poly_set))),
+            Expression::Function(e) => Expression::Function(Box::new(e.monomorphize(poly_set))),
+            Expression::Logical(e) => Expression::Logical(Box::new(e.monomorphize(poly_set))),
+            Expression::Object(e) => Expression::Object(Box::new(e.monomorphize(poly_set))),
+            Expression::Member(e) => Expression::Member(Box::new(e.monomorphize(poly_set))),
+            Expression::Index(e) => Expression::Index(Box::new(e.monomorphize(poly_set))),
+            Expression::Binary(e) => Expression::Binary(Box::new(e.monomorphize(poly_set))),
+            Expression::Unary(e) => Expression::Unary(Box::new(e.monomorphize(poly_set))),
+            Expression::Call(e) => Expression::Call(Box::new(e.monomorphize(poly_set))),
+            Expression::Conditional(e) => Expression::Conditional(Box::new(e.monomorphize(poly_set))),
+            Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.monomorphize(poly_set))),
+            Expression::Integer(lit) => Expression::Integer(lit.monomorphize(poly_set)),
+            Expression::PolyNumeric(lit) => {
+                    match lit.typ {
+                        MonoType::Float => Expression::Float(lit.monomorphize_float(poly_set)),
+                        _ => Expression::Integer(lit.monomorphize_int(poly_set)),
+                    }
+            },			
+            Expression::Float(lit) => Expression::Float(lit.monomorphize(poly_set)),
+            Expression::StringLit(lit) => Expression::StringLit(lit.monomorphize(poly_set)),
+            Expression::Duration(lit) => Expression::Duration(lit.monomorphize(poly_set)),
+            Expression::Uint(lit) => Expression::Uint(lit.monomorphize(poly_set)),
+            Expression::Boolean(lit) => Expression::Boolean(lit.monomorphize(poly_set)),
+            Expression::DateTime(lit) => Expression::DateTime(lit.monomorphize(poly_set)),
+            Expression::Regexp(lit) => Expression::Regexp(lit.monomorphize(poly_set)),
+        }
+    }
+    fn monomorphize_int(self, poly_set: &mut HashSet<String>) -> Self {
+        match self {
+            Expression::Identifier(e) => Expression::Identifier(e.monomorphize(poly_set)),
+            Expression::Array(e) => Expression::Array(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Function(e) => Expression::Function(Box::new(e.monomorphize(poly_set))),
+            Expression::Logical(e) => Expression::Logical(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Object(e) => Expression::Object(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Member(e) => Expression::Member(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Index(e) => Expression::Index(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Binary(e) => Expression::Binary(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Unary(e) => Expression::Unary(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Call(e) => Expression::Call(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Conditional(e) => Expression::Conditional(Box::new(e.monomorphize_int(poly_set))),
+            Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Integer(lit) => Expression::Integer(lit.monomorphize(poly_set)),
+            Expression::PolyNumeric(lit) => Expression::Integer(lit.monomorphize_int(poly_set)),			
+            Expression::Float(lit) => Expression::Float(lit.monomorphize(poly_set)),
+            Expression::StringLit(lit) => Expression::StringLit(lit.monomorphize(poly_set)),
+            Expression::Duration(lit) => Expression::Duration(lit.monomorphize(poly_set)),
+            Expression::Uint(lit) => Expression::Uint(lit.monomorphize(poly_set)),
+            Expression::Boolean(lit) => Expression::Boolean(lit.monomorphize(poly_set)),
+            Expression::DateTime(lit) => Expression::DateTime(lit.monomorphize(poly_set)),
+            Expression::Regexp(lit) => Expression::Regexp(lit.monomorphize(poly_set)),
+        }
+    }
+    fn monomorphize_float(self, poly_set: &mut HashSet<String>) -> Self {
+        match self {
+            Expression::Identifier(e) => Expression::Identifier(e.monomorphize(poly_set)),
+            Expression::Array(e) => Expression::Array(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Function(e) => Expression::Function(Box::new(e.monomorphize(poly_set))),
+            Expression::Logical(e) => Expression::Logical(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Object(e) => Expression::Object(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Member(e) => Expression::Member(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Index(e) => Expression::Index(Box::new(e.monomorphize_int(poly_set))),
+            Expression::Binary(e) => Expression::Binary(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Unary(e) => Expression::Unary(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Call(e) => Expression::Call(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Conditional(e) => Expression::Conditional(Box::new(e.monomorphize_float(poly_set))),
+            Expression::StringExpr(e) => Expression::StringExpr(Box::new(e.monomorphize_float(poly_set))),
+            Expression::Integer(lit) => Expression::Integer(lit.monomorphize(poly_set)),
+            Expression::PolyNumeric(lit) => Expression::Float(lit.monomorphize_float(poly_set)),			
+            Expression::Float(lit) => Expression::Float(lit.monomorphize(poly_set)),
+            Expression::StringLit(lit) => Expression::StringLit(lit.monomorphize(poly_set)),
+            Expression::Duration(lit) => Expression::Duration(lit.monomorphize(poly_set)),
+            Expression::Uint(lit) => Expression::Uint(lit.monomorphize(poly_set)),
+            Expression::Boolean(lit) => Expression::Boolean(lit.monomorphize(poly_set)),
+            Expression::DateTime(lit) => Expression::DateTime(lit.monomorphize(poly_set)),
+            Expression::Regexp(lit) => Expression::Regexp(lit.monomorphize(poly_set)),
         }
     }
 }
@@ -268,6 +367,10 @@ pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
     pkg.apply(&sub)
 }
 
+pub fn inject_polymorphic_types(pkg: Package, poly_set: &mut HashSet<String>) -> Package {
+    pkg.monomorphize(poly_set)
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Package {
     pub loc: ast::SourceLocation,
@@ -293,6 +396,14 @@ impl Package {
             .files
             .into_iter()
             .map(|file| file.apply(&sub))
+            .collect();
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.files = self
+            .files
+            .into_iter()
+            .map(|file| file.monomorphize(poly_set))
             .collect();
         self
     }
@@ -365,6 +476,42 @@ impl File {
         self.body = self.body.into_iter().map(|stmt| stmt.apply(&sub)).collect();
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        //self.body = self.body.into_iter().map(|stmt| stmt.monomorphize(poly_set)).collect();
+        let mut candidates = vec![];
+        for (i, stmt) in self.body.iter_mut().enumerate() {
+            match stmt {
+                Statement::Variable(assign) => {
+                    for (_, kinds) in assign.cons.iter() {
+                        if kinds.contains(&Kind::NumericDefaultInt) {
+                            poly_set.insert(assign.id.name.clone());
+                            let assign_name: &str = &assign.id.name.clone();
+                            let int_str: &str = "-int";
+                            let float_str: &str = "-float";
+                            let name_int = format!("{}{}", assign_name, int_str);
+                            let name_float = format!("{}{}", assign_name, float_str);
+                            let id_int = Identifier {loc: assign.loc.clone(), name: name_int};
+                            let assign_int = VariableAssgn::new(id_int, assign.init.clone().monomorphize_int(poly_set), assign.loc.clone());
+                            let id_float = Identifier {loc: assign.loc.clone(), name: name_float};
+                            let assign_float = VariableAssgn::new(id_float, assign.init.clone().monomorphize_float(poly_set), assign.loc.clone());
+                            candidates.push((i, assign_int, assign_float));
+                        }
+                    };
+                },
+                _ => (), 
+            }
+        }
+        let mut shift = 0;
+        for (index, assign_int, assign_float) in candidates {
+            self.body.remove(index + shift);
+            self.body.insert(index + shift, Statement::Variable(Box::new(assign_float.clone())));
+            self.body.insert(index + shift, Statement::Variable(Box::new(assign_int.clone())));
+            shift += 1;
+        }
+
+        self.body = self.body.into_iter().map(|stmt| stmt.monomorphize(poly_set)).collect();
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -424,6 +571,10 @@ impl OptionStmt {
         self.assignment = self.assignment.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.assignment = self.assignment.monomorphize(poly_set);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -441,6 +592,10 @@ impl BuiltinStmt {
     fn apply(self, _: &Substitution) -> Self {
         self
     }
+    
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -456,6 +611,10 @@ impl TestStmt {
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.assignment = self.assignment.apply(&sub);
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.assignment = self.assignment.monomorphize(poly_set);
         self
     }
 }
@@ -477,6 +636,11 @@ impl ExprStmt {
         self.expression = self.expression.apply(&sub);
         self
     }
+
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.expression = self.expression.monomorphize(poly_set);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -493,6 +657,10 @@ impl ReturnStmt {
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.argument = self.argument.apply(&sub);
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.argument = self.argument.monomorphize(poly_set);
         self
     }
 }
@@ -557,7 +725,6 @@ impl VariableAssgn {
         // and so it is safe to update these nodes in place.
         self.vars = p.vars.clone();
         self.cons = p.cons.clone();
-
         // Update the type environment
         env.add(String::from(&self.id.name), p);
         Ok((env, constraints))
@@ -566,6 +733,11 @@ impl VariableAssgn {
         self.init = self.init.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.init = self.init.monomorphize(poly_set);
+        self  
+    }
+                                
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -580,6 +752,11 @@ impl MemberAssgn {
     fn apply(mut self, sub: &Substitution) -> Self {
         self.member = self.member.apply(&sub);
         self.init = self.init.apply(&sub);
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.member = self.member.monomorphize(poly_set);
+        self.init = self.init.monomorphize(poly_set);
         self
     }
 }
@@ -617,6 +794,30 @@ impl StringExpr {
             .collect();
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.parts = self
+            .parts
+            .into_iter()
+            .map(|part| part.monomorphize(poly_set))
+            .collect();
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.parts = self
+            .parts
+            .into_iter()
+            .map(|part| part.monomorphize(poly_set))
+            .collect();
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.parts = self
+            .parts
+            .into_iter()
+            .map(|part| part.monomorphize(poly_set))
+            .collect();
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -629,6 +830,12 @@ impl StringExprPart {
     fn apply(self, sub: &Substitution) -> Self {
         match self {
             StringExprPart::Interpolated(part) => StringExprPart::Interpolated(part.apply(&sub)),
+            StringExprPart::Text(_) => self,
+        }
+    }
+    fn monomorphize(self, poly_set: &mut HashSet<String>) -> Self {
+        match self {
+            StringExprPart::Interpolated(part) => StringExprPart::Interpolated(part.monomorphize(poly_set)),
             StringExprPart::Text(_) => self,
         }
     }
@@ -651,6 +858,10 @@ pub struct InterpolatedPart {
 impl InterpolatedPart {
     fn apply(mut self, sub: &Substitution) -> Self {
         self.expression = self.expression.apply(&sub);
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.expression = self.expression.monomorphize(poly_set);
         self
     }
 }
@@ -693,6 +904,30 @@ impl ArrayExpr {
             .elements
             .into_iter()
             .map(|element| element.apply(&sub))
+            .collect();
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.elements = self
+            .elements
+            .into_iter()
+            .map(|element| element.monomorphize(poly_set))
+            .collect();
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.elements = self
+            .elements
+            .into_iter()
+            .map(|element| element.monomorphize_int(poly_set))
+            .collect();
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.elements = self
+            .elements
+            .into_iter()
+            .map(|element| element.monomorphize_float(poly_set))
             .collect();
         self
     }
@@ -811,6 +1046,15 @@ impl FunctionExpr {
         self.body = self.body.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.params = self
+            .params
+            .into_iter()
+            .map(|param| param.monomorphize(poly_set))
+            .collect();
+        self.body = self.body.monomorphize(poly_set);
+        self
+    }
 }
 
 // Block represents a function block and is equivalent to a let-expression
@@ -873,6 +1117,38 @@ impl Block {
             Block::Return(e) => Block::Return(e.apply(&sub)),
         }
     }
+    fn monomorphize(self, poly_set: &mut HashSet<String>) -> Self {
+        match self {
+            Block::Variable(assign, next) => {
+                let mut poly_flag = false;
+                for (_, kinds) in assign.cons.iter() {
+                    if kinds.contains(&Kind::NumericDefaultInt) {
+                        poly_set.insert(assign.id.name.clone());
+                        poly_flag = true;
+                    }
+                };
+                if poly_flag {
+                    let assign_name: &str = &assign.id.name.clone();
+                    let int_str: &str = "-int";
+                    let float_str: &str = "-float";
+
+                    let name_int = format!("{}{}", assign_name, int_str);
+                    let name_float = format!("{}{}", assign_name, float_str);
+
+                    let id_int = Identifier {loc: assign.loc.clone(), name: name_int};
+                    let assign_int = VariableAssgn::new(id_int, assign.init.clone(), assign.loc.clone());
+                    let id_float = Identifier {loc: assign.loc.clone(), name: name_float};
+                    let assign_float = VariableAssgn::new(id_float, assign.init.clone(), assign.loc.clone());
+                    let new_next = Block::Variable(Box::new(assign_float.monomorphize(poly_set)), Box::new(next.monomorphize(poly_set)));
+                    Block::Variable(Box::new(assign_int.monomorphize(poly_set)), Box::new(new_next))
+                } else {
+                    Block::Variable(Box::new(assign.monomorphize(poly_set)), Box::new(next.monomorphize(poly_set)))
+                }
+            }
+            Block::Expr(es, next) => Block::Expr(es.monomorphize(poly_set), Box::new(next.monomorphize(poly_set))),
+            Block::Return(e) => Block::Return(e.monomorphize(poly_set)),
+        }
+    }
 }
 
 // FunctionParameter represents a function parameter.
@@ -890,6 +1166,15 @@ impl FunctionParameter {
         match self.default {
             Some(e) => {
                 self.default = Some(e.apply(&sub));
+                self
+            }
+            None => self,
+        }
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        match self.default {
+            Some(e) => {
+                self.default = Some(e.monomorphize(poly_set));
                 self
             }
             None => self,
@@ -1201,6 +1486,21 @@ impl BinaryExpr {
         self.right = self.right.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.left = self.left.monomorphize(poly_set);
+        self.right = self.right.monomorphize(poly_set);
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.left = self.left.monomorphize_int(poly_set);
+        self.right = self.right.monomorphize_int(poly_set);
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.left = self.left.monomorphize_float(poly_set);
+        self.right = self.right.monomorphize_float(poly_set);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1282,6 +1582,51 @@ impl CallExpr {
             None => self,
         }
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.callee = self.callee.monomorphize(poly_set);
+        self.arguments = self
+            .arguments
+            .into_iter()
+            .map(|arg| arg.monomorphize(poly_set))
+            .collect();
+        match self.pipe {
+            Some(e) => {
+                self.pipe = Some(e.monomorphize(poly_set));
+                self
+            }
+            None => self,
+        }
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.callee = self.callee.monomorphize_int(poly_set);
+        self.arguments = self
+            .arguments
+            .into_iter()
+            .map(|arg| arg.monomorphize(poly_set))
+            .collect();
+        match self.pipe {
+            Some(e) => {
+                self.pipe = Some(e.monomorphize_int(poly_set));
+                self
+            }
+            None => self,
+        }
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.callee = self.callee.monomorphize_float(poly_set);
+        self.arguments = self
+            .arguments
+            .into_iter()
+            .map(|arg| arg.monomorphize(poly_set))
+            .collect();
+        match self.pipe {
+            Some(e) => {
+                self.pipe = Some(e.monomorphize_float(poly_set));
+                self
+            }
+            None => self,
+        }
+    }
 }
 
 #[derive(Derivative)]
@@ -1321,6 +1666,24 @@ impl ConditionalExpr {
         self.alternate = self.alternate.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.test = self.test.monomorphize(poly_set);
+        self.consequent = self.consequent.monomorphize(poly_set);
+        self.alternate = self.alternate.monomorphize(poly_set);
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.test = self.test.monomorphize_int(poly_set);
+        self.consequent = self.consequent.monomorphize_int(poly_set);
+        self.alternate = self.alternate.monomorphize_int(poly_set);
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.test = self.test.monomorphize_float(poly_set);
+        self.consequent = self.consequent.monomorphize_float(poly_set);
+        self.alternate = self.alternate.monomorphize_float(poly_set);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1355,6 +1718,21 @@ impl LogicalExpr {
     fn apply(mut self, sub: &Substitution) -> Self {
         self.left = self.left.apply(&sub);
         self.right = self.right.apply(&sub);
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.left = self.left.monomorphize(poly_set);
+        self.right = self.right.monomorphize(poly_set);
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.left = self.left.monomorphize_int(poly_set);
+        self.right = self.right.monomorphize_int(poly_set);
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.left = self.left.monomorphize_float(poly_set);
+        self.right = self.right.monomorphize_float(poly_set);
         self
     }
 }
@@ -1403,6 +1781,18 @@ impl MemberExpr {
         self.object = self.object.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.object = self.object.monomorphize(poly_set);
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.object = self.object.monomorphize_int(poly_set);
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.object = self.object.monomorphize_float(poly_set);
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1442,6 +1832,21 @@ impl IndexExpr {
         self.index = self.index.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.array = self.array.monomorphize(poly_set);
+        self.index = self.index.monomorphize(poly_set);
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.array = self.array.monomorphize_int(poly_set);
+        self.index = self.index.monomorphize_int(poly_set);
+        self
+    }
+    /*fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.array = self.array.monomorphize_float(poly_set);
+        self.index = self.index.monomorphize_float(poly_set);
+        self
+    }*/
 }
 
 #[derive(Derivative)]
@@ -1501,6 +1906,39 @@ impl ObjectExpr {
             .properties
             .into_iter()
             .map(|prop| prop.apply(&sub))
+            .collect();
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        if let Some(e) = self.with {
+            self.with = Some(e.monomorphize(poly_set));
+        }
+        self.properties = self
+            .properties
+            .into_iter()
+            .map(|prop| prop.monomorphize(poly_set))
+            .collect();
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        if let Some(e) = self.with {
+            self.with = Some(e.monomorphize(poly_set));
+        }
+        self.properties = self
+            .properties
+            .into_iter()
+            .map(|prop| prop.monomorphize(poly_set))
+            .collect();
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        if let Some(e) = self.with {
+            self.with = Some(e.monomorphize(poly_set));
+        }
+        self.properties = self
+            .properties
+            .into_iter()
+            .map(|prop| prop.monomorphize(poly_set))
             .collect();
         self
     }
@@ -1566,6 +2004,18 @@ impl UnaryExpr {
         self.argument = self.argument.apply(&sub);
         self
     }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.argument = self.argument.monomorphize(poly_set);
+        self
+    }
+    fn monomorphize_int(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.argument = self.argument.monomorphize_int(poly_set);
+        self
+    }
+    fn monomorphize_float(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.argument = self.argument.monomorphize_float(poly_set);
+        self
+    }
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1579,6 +2029,10 @@ pub struct Property {
 impl Property {
     fn apply(mut self, sub: &Substitution) -> Self {
         self.value = self.value.apply(&sub);
+        self
+    }
+    fn monomorphize(mut self, poly_set: &mut HashSet<String>) -> Self {
+        self.value = self.value.monomorphize(poly_set);
         self
     }
 }
@@ -1595,6 +2049,7 @@ pub struct IdentifierExpr {
 
 impl IdentifierExpr {
     fn infer(&self, env: Environment, f: &mut Fresher) -> Result {
+
         match env.lookup(&self.name) {
             Some(poly) => {
                 let (t, cons) = infer::instantiate(poly.clone(), f, self.loc.clone());
@@ -1616,6 +2071,23 @@ impl IdentifierExpr {
     fn apply(mut self, sub: &Substitution) -> Self {
         self.typ = self.typ.apply(&sub);
         self
+    }
+    fn monomorphize(self, poly_set: &mut HashSet<String>) -> IdentifierExpr {
+        if poly_set.contains(&self.name.clone()) {
+            let assign_name: &str = &self.name.clone();
+            let int_str: &str = "-int";
+            let float_str: &str = "-float";
+
+            let name_int = format!("{}{}", assign_name, int_str);
+            let name_float = format!("{}{}", assign_name, float_str);
+
+            match self.typ {
+                MonoType::Float => IdentifierExpr {loc: self.loc.clone(), typ: MonoType::Float, name: name_float},
+                _ => IdentifierExpr {loc: self.loc.clone(), typ: MonoType::Int, name: name_int},
+            }
+        } else {
+            self
+        }
     }
 }
 
@@ -1640,6 +2112,9 @@ impl BooleanLit {
     fn apply(self, _: &Substitution) -> Self {
         self
     }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1656,6 +2131,39 @@ impl IntegerLit {
     fn apply(self, _: &Substitution) -> Self {
         self
     }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
+        self
+    }
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+pub struct PolyNumericLit {
+    pub loc: ast::SourceLocation,
+    pub value: i64,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
+}
+
+impl PolyNumericLit {
+    fn infer(&self, env: Environment) -> Result {
+        let cons = Constraints::from(vec![Constraint::Kind {
+            act: self.typ.clone(),
+            exp: Kind::NumericDefaultInt,
+            loc: self.loc.clone(),
+        }]);
+        Ok((env, cons))
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self
+    }
+    fn monomorphize_int(self, _: &mut HashSet<String>) -> IntegerLit {
+        IntegerLit{loc: self.loc, value: self.value}
+    }
+    fn monomorphize_float(self, _: &mut HashSet<String>) -> FloatLit {
+        FloatLit{loc: self.loc, value: self.value as f64}
+    }
 }
 
 #[derive(Derivative)]
@@ -1670,6 +2178,9 @@ impl FloatLit {
         Ok((env, Constraints::empty()))
     }
     fn apply(self, _: &Substitution) -> Self {
+        self
+    }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
         self
     }
 }
@@ -1688,6 +2199,9 @@ impl RegexpLit {
     fn apply(self, _: &Substitution) -> Self {
         self
     }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1702,6 +2216,9 @@ impl StringLit {
         Ok((env, Constraints::empty()))
     }
     fn apply(self, _: &Substitution) -> Self {
+        self
+    }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
         self
     }
 }
@@ -1720,6 +2237,9 @@ impl UintLit {
     fn apply(self, _: &Substitution) -> Self {
         self
     }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
+        self
+    }
 }
 
 #[derive(Derivative)]
@@ -1734,6 +2254,9 @@ impl DateTimeLit {
         Ok((env, Constraints::empty()))
     }
     fn apply(self, _: &Substitution) -> Self {
+        self
+    }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
         self
     }
 }
@@ -1765,6 +2288,9 @@ impl DurationLit {
         Ok((env, Constraints::empty()))
     }
     fn apply(self, _: &Substitution) -> Self {
+        self
+    }
+    fn monomorphize(self, _: &mut HashSet<String>) -> Self {
         self
     }
 }
@@ -2028,9 +2554,10 @@ mod tests {
                         expression: Expression::Call(Box::new(CallExpr {
                             loc: b.location.clone(),
                             typ: MonoType::Var(Tvar(4)),
-                            pipe: Some(Expression::Integer(IntegerLit {
+                            pipe: Some(Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 3,
+                                typ: MonoType::Var(Tvar(9)),
                             })),
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
@@ -2043,9 +2570,10 @@ mod tests {
                                     loc: b.location.clone(),
                                     name: "a".to_string(),
                                 },
-                                value: Expression::Integer(IntegerLit {
+                                value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 2,
+                                    typ: MonoType::Int,
                                 }),
                             }],
                         })),
@@ -2064,7 +2592,9 @@ mod tests {
             Tvar(7) => MonoType::Int,
         }
         .into();
-        let pkg = inject_pkg_types(pkg, &sub);
+        let poly_pkg = inject_pkg_types(pkg, &sub);
+        let mut poly_set = HashSet::new();
+        let pkg = inject_polymorphic_types(poly_pkg, &mut poly_set);
         let mut no_types_checked = 0;
         walk(
             &mut |node: Rc<Node>| {
@@ -2079,3 +2609,5 @@ mod tests {
         assert_eq!(no_types_checked, 8);
     }
 }
+
+
