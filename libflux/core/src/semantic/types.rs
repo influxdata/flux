@@ -267,6 +267,7 @@ pub enum MonoType {
     Bytes,
     Var(Tvar),
     Arr(Box<Array>),
+    Dict(Box<Dictionary>),
     Record(Box<Record>),
     Fun(Box<Function>),
 }
@@ -289,6 +290,7 @@ impl fmt::Display for MonoType {
             MonoType::Bytes => f.write_str("bytes"),
             MonoType::Var(var) => var.fmt(f),
             MonoType::Arr(arr) => arr.fmt(f),
+            MonoType::Dict(dict) => dict.fmt(f),
             MonoType::Record(obj) => obj.fmt(f),
             MonoType::Fun(fun) => fun.fmt(f),
         }
@@ -309,6 +311,7 @@ impl Substitutable for MonoType {
             | MonoType::Bytes => self,
             MonoType::Var(tvr) => sub.apply(tvr),
             MonoType::Arr(arr) => MonoType::Arr(Box::new(arr.apply(sub))),
+            MonoType::Dict(dict) => MonoType::Dict(Box::new(dict.apply(sub))),
             MonoType::Record(obj) => MonoType::Record(Box::new(obj.apply(sub))),
             MonoType::Fun(fun) => MonoType::Fun(Box::new(fun.apply(sub))),
         }
@@ -326,6 +329,7 @@ impl Substitutable for MonoType {
             | MonoType::Bytes => Vec::new(),
             MonoType::Var(tvr) => vec![*tvr],
             MonoType::Arr(arr) => arr.free_vars(),
+            MonoType::Dict(dict) => dict.free_vars(),
             MonoType::Record(obj) => obj.free_vars(),
             MonoType::Fun(fun) => fun.free_vars(),
         }
@@ -346,6 +350,7 @@ impl MaxTvar for MonoType {
             | MonoType::Bytes => Tvar(0),
             MonoType::Var(tvr) => tvr.max_tvar(),
             MonoType::Arr(arr) => arr.max_tvar(),
+            MonoType::Dict(dict) => dict.max_tvar(),
             MonoType::Record(obj) => obj.max_tvar(),
             MonoType::Fun(fun) => fun.max_tvar(),
         }
@@ -379,6 +384,7 @@ impl MonoType {
             (MonoType::Var(tv), t) => tv.unify(t, cons),
             (t, MonoType::Var(tv)) => tv.unify(t, cons),
             (MonoType::Arr(t), MonoType::Arr(s)) => t.unify(*s, cons, f),
+            (MonoType::Dict(t), MonoType::Dict(s)) => t.unify(*s, cons, f),
             (MonoType::Record(t), MonoType::Record(s)) => t.unify(*s, cons, f),
             (MonoType::Fun(t), MonoType::Fun(s)) => t.unify(*s, cons, f),
             (exp, act) => Err(Error::CannotUnify { exp, act }),
@@ -481,6 +487,7 @@ impl MonoType {
                 Ok(Substitution::empty())
             }
             MonoType::Arr(arr) => arr.constrain(with, cons),
+            MonoType::Dict(dict) => dict.constrain(with, cons),
             MonoType::Record(obj) => obj.constrain(with, cons),
             MonoType::Fun(fun) => fun.constrain(with, cons),
         }
@@ -499,6 +506,7 @@ impl MonoType {
             | MonoType::Bytes => false,
             MonoType::Var(tvr) => tv == *tvr,
             MonoType::Arr(arr) => arr.contains(tv),
+            MonoType::Dict(dict) => dict.contains(tv),
             MonoType::Record(row) => row.contains(tv),
             MonoType::Fun(fun) => fun.contains(tv),
         }
@@ -660,6 +668,57 @@ impl Array {
 
     fn contains(&self, tv: Tvar) -> bool {
         self.0.contains(tv)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct Dictionary {
+    pub key: MonoType,
+    pub val: MonoType,
+}
+
+impl fmt::Display for Dictionary {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}:{}]", self.key, self.val)
+    }
+}
+
+impl Substitutable for Dictionary {
+    fn apply(self, sub: &Substitution) -> Self {
+        Dictionary {
+            key: self.key.apply(sub),
+            val: self.val.apply(sub),
+        }
+    }
+    fn free_vars(&self) -> Vec<Tvar> {
+        union(self.key.free_vars(), self.val.free_vars())
+    }
+}
+
+impl MaxTvar for Dictionary {
+    fn max_tvar(&self) -> Tvar {
+        vec![self.key.max_tvar(), self.val.max_tvar()].max_tvar()
+    }
+}
+
+impl Dictionary {
+    fn unify(
+        self,
+        actual: Self,
+        cons: &mut TvarKinds,
+        f: &mut Fresher,
+    ) -> Result<Substitution, Error> {
+        let sub = self.key.unify(actual.key, cons, f)?;
+        apply_then_unify(self.val, actual.val, sub, cons, f)
+    }
+    fn constrain(self, with: Kind, _: &mut TvarKinds) -> Result<Substitution, Error> {
+        Err(Error::CannotConstrain {
+            act: MonoType::Dict(Box::new(self)),
+            exp: with,
+        })
+    }
+    fn contains(&self, tv: Tvar) -> bool {
+        self.key.contains(tv) || self.val.contains(tv)
     }
 }
 
