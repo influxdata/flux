@@ -9,6 +9,7 @@ jobs:
       GOFLAGS: -p=8
       GOPATH: /tmp/go
       GO111MODULE: "on" # must be quoted to force string type instead of boolean type
+      RUSTC_WRAPPER: ""
     steps:
       - checkout
       # Populate GOPATH/pkg.
