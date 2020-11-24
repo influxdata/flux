@@ -10,6 +10,9 @@ jobs:
       GOPATH: /tmp/go
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
       SCCACHE_CACHE_SIZE: 1G
+      # XXX: rockstar (23 Nov 2020) - rust 1.48 has issues with sccache. It can be re-enabled
+      # when this bug is addressed: https://github.com/mozilla/sccache/issues/887
+      RUSTC_WRAPPER: ""
     steps:
       - checkout
       # Populate GOPATH/pkg.
@@ -18,12 +21,13 @@ jobs:
           keys:
             - flux-gomod-{{checksum "go.sum"}}
       # Populate Rust cache
-      - restore_cache:
-          name: Restoring Rust Cache
-          keys:
-            - flux-rust-{{ .Branch }}-{{ .Revision }} # Matches when retrying a single run.
-            - flux-rust-{{ .Branch }}-                # Matches a new commit on an existing branch.
-            - flux-rust-                              # Matches a new branch.
+      # Disable use of sccache for now
+      #- restore_cache:
+      #    name: Restoring Rust Cache
+      #    keys:
+      #      - flux-rust-{{ .Branch }}-{{ .Revision }} # Matches when retrying a single run.
+      #      - flux-rust-{{ .Branch }}-                # Matches a new commit on an existing branch.
+      #      - flux-rust-                              # Matches a new branch.
       # Run tests
       - run: make checkfmt
       - run: make checktidy
@@ -41,12 +45,13 @@ jobs:
           key: flux-gomod-{{checksum "go.sum"}}
           paths:
             - /tmp/go/pkg/mod
-      - save_cache:
-          name: Saving Rust Cache
-          key: flux-rust-{{ .Branch }}-{{ .Revision }}
-          paths:
-            - "~/.cache/sccache"
-          when: always
+      # Disable use of sccache for now
+      #- save_cache:
+      #    name: Saving Rust Cache
+      #    key: flux-rust-{{ .Branch }}-{{ .Revision }}
+      #    paths:
+      #      - "~/.cache/sccache"
+      #    when: always
   test-race:
     docker:
       - image: quay.io/influxdb/flux-build:latest
@@ -55,6 +60,7 @@ jobs:
       GOPATH: /tmp/go
       GOFLAGS: -p=8
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
+      RUSTC_WRAPPER: ""
     steps:
       - checkout
       # Building go with -race does not use the cache
@@ -73,6 +79,7 @@ jobs:
       GOPATH: /tmp/go
       GOFLAGS: -p=1
       GO111MODULE: 'on' # must be quoted to force string type instead of boolean type
+      RUSTC_WRAPPER: ""
     steps:
       - checkout
       - restore_cache:
@@ -85,6 +92,8 @@ jobs:
   test-valgrind:
     docker:
       - image: quay.io/influxdb/flux-build:latest
+    environment:
+      RUSTC_WRAPPER: ""
     steps:
       - checkout
       - run: make test-valgrind
