@@ -13,8 +13,9 @@ const (
 	MonoTypeNamedType    MonoType = 1
 	MonoTypeTvarType     MonoType = 2
 	MonoTypeArrayType    MonoType = 3
-	MonoTypeRecordType   MonoType = 4
-	MonoTypeFunctionType MonoType = 5
+	MonoTypeDictType     MonoType = 4
+	MonoTypeRecordType   MonoType = 5
+	MonoTypeFunctionType MonoType = 6
 )
 
 var EnumNamesMonoType = map[MonoType]string{
@@ -22,6 +23,7 @@ var EnumNamesMonoType = map[MonoType]string{
 	MonoTypeNamedType:    "NamedType",
 	MonoTypeTvarType:     "TvarType",
 	MonoTypeArrayType:    "ArrayType",
+	MonoTypeDictType:     "DictType",
 	MonoTypeRecordType:   "RecordType",
 	MonoTypeFunctionType: "FunctionType",
 }
@@ -441,6 +443,103 @@ func ArrayTypeAddElement(builder *flatbuffers.Builder, element flatbuffers.UOffs
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(element), 0)
 }
 func ArrayTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type DictType struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsDictType(buf []byte, offset flatbuffers.UOffsetT) *DictType {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &DictType{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *DictType) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *DictType) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *DictType) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *DictType) KeyType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *DictType) MutateKeyType(n byte) bool {
+	return rcv._tab.MutateByteSlot(6, n)
+}
+
+func (rcv *DictType) Key(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func (rcv *DictType) ValType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *DictType) MutateValType(n byte) bool {
+	return rcv._tab.MutateByteSlot(10, n)
+}
+
+func (rcv *DictType) Val(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func DictTypeStart(builder *flatbuffers.Builder) {
+	builder.StartObject(5)
+}
+func DictTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func DictTypeAddKeyType(builder *flatbuffers.Builder, keyType byte) {
+	builder.PrependByteSlot(1, keyType, 0)
+}
+func DictTypeAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(key), 0)
+}
+func DictTypeAddValType(builder *flatbuffers.Builder, valType byte) {
+	builder.PrependByteSlot(3, valType, 0)
+}
+func DictTypeAddVal(builder *flatbuffers.Builder, val flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(val), 0)
+}
+func DictTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

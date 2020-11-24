@@ -548,6 +548,31 @@ fn test_json_array() {
     assert_eq!(deserialized, n)
 }
 #[test]
+fn test_json_dict() {
+    let n = MonoType::Dict(Box::new(DictType {
+        base: BaseNode::default(),
+        key: MonoType::Basic(NamedType {
+            base: BaseNode::default(),
+            name: Identifier {
+                base: BaseNode::default(),
+                name: "string".to_string(),
+            },
+        }),
+        val: MonoType::Basic(NamedType {
+            base: BaseNode::default(),
+            name: Identifier {
+                base: BaseNode::default(),
+                name: "int".to_string(),
+            },
+        }),
+    }));
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"DictType","key":{"type":"NamedType","name":{"name":"string"}},"val":{"type":"NamedType","name":{"name":"int"}}}"#,
+    )
+}
+#[test]
 fn test_json_record() {
     let n = MonoType::Record(RecordType {
         base: BaseNode::default(),

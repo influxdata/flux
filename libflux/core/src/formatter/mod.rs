@@ -351,10 +351,11 @@ impl Formatter {
     fn format_monotype(&mut self, n: &ast::MonoType) {
         match n {
             ast::MonoType::Tvar(tv) => self.format_tvar(tv),
-            ast::MonoType::Basic(nt) => self.format_basic_type(&nt),
-            ast::MonoType::Array(arr) => self.format_array_type(&*arr),
-            ast::MonoType::Record(rec) => self.format_record_type(&rec),
-            ast::MonoType::Function(fun) => self.format_function_type(&*fun),
+            ast::MonoType::Basic(nt) => self.format_basic_type(nt),
+            ast::MonoType::Array(arr) => self.format_array_type(arr),
+            ast::MonoType::Dict(dict) => self.format_dict_type(dict),
+            ast::MonoType::Record(rec) => self.format_record_type(rec),
+            ast::MonoType::Function(fun) => self.format_function_type(fun),
         }
     }
     fn format_function_type(&mut self, n: &ast::FunctionType) {
@@ -464,6 +465,13 @@ impl Formatter {
         self.format_identifier(&n.name);
         self.write_string(": ");
         self.format_monotype(&n.monotype);
+    }
+    fn format_dict_type(&mut self, n: &ast::DictType) {
+        self.write_rune('[');
+        self.format_monotype(&n.key);
+        self.write_rune(':');
+        self.format_monotype(&n.val);
+        self.write_rune(']');
     }
     fn format_array_type(&mut self, n: &ast::ArrayType) {
         self.write_rune('[');

@@ -512,6 +512,8 @@ pub enum MonoType {
     Basic(NamedType),
     #[serde(rename = "ArrayType")]
     Array(Box<ArrayType>),
+    #[serde(rename = "DictType")]
+    Dict(Box<DictType>),
     #[serde(rename = "RecordType")]
     Record(RecordType),
     #[serde(rename = "FunctionType")]
@@ -524,6 +526,7 @@ impl MonoType {
             MonoType::Basic(t) => &t.base,
             MonoType::Tvar(t) => &t.base,
             MonoType::Array(t) => &t.base,
+            MonoType::Dict(t) => &t.base,
             MonoType::Record(t) => &t.base,
             MonoType::Function(t) => &t.base,
         }
@@ -555,6 +558,16 @@ pub struct ArrayType {
     #[serde(flatten)]
     pub base: BaseNode,
     pub element: MonoType,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct DictType {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    pub key: MonoType,
+    pub val: MonoType,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -645,6 +658,17 @@ fn get_err_monotype(mt: MonoType) -> String {
                 return e;
             }
             get_err_monotype((*t).element)
+        }
+        MonoType::Dict(t) => {
+            let e = get_err_basenode(t.base);
+            if e != "" {
+                return e;
+            }
+            let e = get_err_monotype(t.key);
+            if e != "" {
+                return e;
+            }
+            get_err_monotype(t.val)
         }
         MonoType::Record(t) => {
             let e = get_err_basenode(t.base);

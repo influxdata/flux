@@ -2346,6 +2346,55 @@ fn test_parse_type_expression_array_string() {
 }
 
 #[test]
+fn test_parse_type_expression_dict() {
+    let mut p = Parser::new(r#"[string:int]"#);
+    let parsed = p.parse_type_expression();
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        TypeExpression {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 13),
+                ..BaseNode::default()
+            },
+            monotype: MonoType::Dict(Box::new(DictType {
+                base: BaseNode {
+                    location: loc.get(1, 1, 1, 13),
+                    ..BaseNode::default()
+                },
+                key: MonoType::Basic(NamedType {
+                    base: BaseNode {
+                        location: loc.get(1, 2, 1, 8),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 2, 1, 8),
+                            ..BaseNode::default()
+                        },
+                        name: "string".to_string(),
+                    }
+                }),
+                val: MonoType::Basic(NamedType {
+                    base: BaseNode {
+                        location: loc.get(1, 9, 1, 12),
+                        ..BaseNode::default()
+                    },
+                    name: Identifier {
+                        base: BaseNode {
+                            location: loc.get(1, 9, 1, 12),
+                            ..BaseNode::default()
+                        },
+                        name: "int".to_string(),
+                    }
+                }),
+            })),
+            constraints: vec![],
+        }
+    )
+}
+
+#[test]
 fn test_parse_record_type_only_properties() {
     let mut p = Parser::new(r#"{a:int, b:uint}"#);
     let parsed = p.parse_record_type();

@@ -454,15 +454,16 @@ fn build_dict<'a>(
     builder: &mut flatbuffers::FlatBufferBuilder<'a>,
     mut dict: Dictionary,
 ) -> flatbuffers::WIPOffset<fb::Dict<'a>> {
-    let (key_offset, key_type) = build_type(builder, dict.key);
-    let (val_offset, val_type) = build_type(builder, dict.val);
+    let (k_offset, k_type) = build_type(builder, dict.key);
+    let (v_offset, v_type) = build_type(builder, dict.val);
+    let (k, v) = (Some(k_offset), Some(v_offset));
     fb::Dict::create(
         builder,
         &fb::DictArgs {
-            k: Some(key_offset),
-            v: Some(val_offset),
-            k_type: key_type,
-            v_type: val_type,
+            k,
+            v,
+            k_type,
+            v_type,
         },
     )
 }
