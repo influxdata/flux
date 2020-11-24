@@ -113,6 +113,9 @@ RUN cargo install wasm-pack sccache
 RUN rustup component add rust-std --target wasm32-unknown-unknown
 
 # Use sccache rustc wrapper for friendly build caching
-ENV RUSTC_WRAPPER=sccache
+# XXX: rockstar (23 Nov 2020) - There is a bug in rustc 1.48 sccache that I _believe_
+# is related to caches from previous versions of rustc. Disable sccache for now.
+# See also: https://github.com/mozilla/sccache/issues/887
+#ENV RUSTC_WRAPPER=sccache
 
 WORKDIR $HOME
