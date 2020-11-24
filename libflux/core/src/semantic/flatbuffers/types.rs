@@ -9,6 +9,7 @@ use crate::semantic::fresh::Fresher;
 #[rustfmt::skip]
 use crate::semantic::types::{
     Array,
+    Dictionary,
     Function,
     Kind,
     MonoType,
@@ -413,6 +414,10 @@ pub fn build_type<'a>(
             let offset = build_arr(builder, *arr);
             (offset.as_union_value(), fb::MonoType::Arr)
         }
+        MonoType::Dict(dict) => {
+            let offset = build_dict(builder, *dict);
+            (offset.as_union_value(), fb::MonoType::Dict)
+        }
         MonoType::Record(record) => {
             let offset = build_record(builder, *record);
             (offset.as_union_value(), fb::MonoType::Record)
@@ -441,6 +446,23 @@ fn build_arr<'a>(
         &fb::ArrArgs {
             t_type: typ,
             t: Some(off),
+        },
+    )
+}
+
+fn build_dict<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    mut dict: Dictionary,
+) -> flatbuffers::WIPOffset<fb::Dict<'a>> {
+    let (key_offset, key_type) = build_type(builder, dict.key);
+    let (val_offset, val_type) = build_type(builder, dict.val);
+    fb::Dict::create(
+        builder,
+        &fb::DictArgs {
+            k: Some(key_offset),
+            v: Some(val_offset),
+            k_type: key_type,
+            v_type: val_type,
         },
     )
 }
