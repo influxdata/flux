@@ -22,7 +22,8 @@ var (
 	// to walk through. This is relative to the current
 	// directory.
 	walkRootPaths = []string{
-		"../../src",
+		"../../core",
+		"../../flux",
 		"../../include",
 		"../../scanner.c",
 		"../../Cargo.toml",

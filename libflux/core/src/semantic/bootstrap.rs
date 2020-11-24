@@ -82,7 +82,7 @@ impl From<&str> for Error {
 pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
     let mut f = Fresher::default();
 
-    let dir = "../../../stdlib";
+    let dir = "../../stdlib";
     let files = file_map(parse_flux_files(dir)?);
     let rerun_if_changed = compute_file_dependencies(dir);
 
@@ -422,7 +422,7 @@ mod tests {
 
     #[test]
     fn prelude_dependencies() {
-        let files = file_map(parse_flux_files("../../../stdlib").unwrap());
+        let files = file_map(parse_flux_files("../../stdlib").unwrap());
 
         let r = PRELUDE.iter().try_fold(
             (Vec::new(), HashSet::new(), HashSet::new()),
