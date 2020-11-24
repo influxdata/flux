@@ -23,12 +23,13 @@ pub mod fbast {
         NamedType = 1,
         TvarType = 2,
         ArrayType = 3,
-        RecordType = 4,
-        FunctionType = 5,
+        DictType = 4,
+        RecordType = 5,
+        FunctionType = 6,
     }
 
     const ENUM_MIN_MONO_TYPE: u8 = 0;
-    const ENUM_MAX_MONO_TYPE: u8 = 5;
+    const ENUM_MAX_MONO_TYPE: u8 = 6;
 
     impl<'a> flatbuffers::Follow<'a> for MonoType {
         type Inner = Self;
@@ -62,21 +63,23 @@ pub mod fbast {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_MONO_TYPE: [MonoType; 6] = [
+    const ENUM_VALUES_MONO_TYPE: [MonoType; 7] = [
         MonoType::NONE,
         MonoType::NamedType,
         MonoType::TvarType,
         MonoType::ArrayType,
+        MonoType::DictType,
         MonoType::RecordType,
         MonoType::FunctionType,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_MONO_TYPE: [&'static str; 6] = [
+    const ENUM_NAMES_MONO_TYPE: [&'static str; 7] = [
         "NONE",
         "NamedType",
         "TvarType",
         "ArrayType",
+        "DictType",
         "RecordType",
         "FunctionType",
     ];
@@ -1125,6 +1128,16 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn element_as_dict_type(&self) -> Option<DictType<'a>> {
+            if self.element_type() == MonoType::DictType {
+                self.element().map(|u| DictType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn element_as_record_type(&self) -> Option<RecordType<'a>> {
             if self.element_type() == MonoType::RecordType {
                 self.element().map(|u| RecordType::init_from_table(u))
@@ -1198,6 +1211,269 @@ pub mod fbast {
         }
         #[inline]
         pub fn finish(self) -> flatbuffers::WIPOffset<ArrayType<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    pub enum DictTypeOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct DictType<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for DictType<'a> {
+        type Inner = DictType<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> DictType<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            DictType { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args DictTypeArgs<'args>,
+        ) -> flatbuffers::WIPOffset<DictType<'bldr>> {
+            let mut builder = DictTypeBuilder::new(_fbb);
+            if let Some(x) = args.val {
+                builder.add_val(x);
+            }
+            if let Some(x) = args.key {
+                builder.add_key(x);
+            }
+            if let Some(x) = args.base_node {
+                builder.add_base_node(x);
+            }
+            builder.add_val_type(args.val_type);
+            builder.add_key_type(args.key_type);
+            builder.finish()
+        }
+
+        pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
+        pub const VT_KEY_TYPE: flatbuffers::VOffsetT = 6;
+        pub const VT_KEY: flatbuffers::VOffsetT = 8;
+        pub const VT_VAL_TYPE: flatbuffers::VOffsetT = 10;
+        pub const VT_VAL: flatbuffers::VOffsetT = 12;
+
+        #[inline]
+        pub fn base_node(&self) -> Option<BaseNode<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<BaseNode<'a>>>(DictType::VT_BASE_NODE, None)
+        }
+        #[inline]
+        pub fn key_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(DictType::VT_KEY_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn key(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(DictType::VT_KEY, None)
+        }
+        #[inline]
+        pub fn val_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(DictType::VT_VAL_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn val(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(DictType::VT_VAL, None)
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_named_type(&self) -> Option<NamedType<'a>> {
+            if self.key_type() == MonoType::NamedType {
+                self.key().map(|u| NamedType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_tvar_type(&self) -> Option<TvarType<'a>> {
+            if self.key_type() == MonoType::TvarType {
+                self.key().map(|u| TvarType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_array_type(&self) -> Option<ArrayType<'a>> {
+            if self.key_type() == MonoType::ArrayType {
+                self.key().map(|u| ArrayType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_dict_type(&self) -> Option<DictType<'a>> {
+            if self.key_type() == MonoType::DictType {
+                self.key().map(|u| DictType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_record_type(&self) -> Option<RecordType<'a>> {
+            if self.key_type() == MonoType::RecordType {
+                self.key().map(|u| RecordType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_function_type(&self) -> Option<FunctionType<'a>> {
+            if self.key_type() == MonoType::FunctionType {
+                self.key().map(|u| FunctionType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_named_type(&self) -> Option<NamedType<'a>> {
+            if self.val_type() == MonoType::NamedType {
+                self.val().map(|u| NamedType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_tvar_type(&self) -> Option<TvarType<'a>> {
+            if self.val_type() == MonoType::TvarType {
+                self.val().map(|u| TvarType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_array_type(&self) -> Option<ArrayType<'a>> {
+            if self.val_type() == MonoType::ArrayType {
+                self.val().map(|u| ArrayType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_dict_type(&self) -> Option<DictType<'a>> {
+            if self.val_type() == MonoType::DictType {
+                self.val().map(|u| DictType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_record_type(&self) -> Option<RecordType<'a>> {
+            if self.val_type() == MonoType::RecordType {
+                self.val().map(|u| RecordType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_function_type(&self) -> Option<FunctionType<'a>> {
+            if self.val_type() == MonoType::FunctionType {
+                self.val().map(|u| FunctionType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub struct DictTypeArgs<'a> {
+        pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
+        pub key_type: MonoType,
+        pub key: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub val_type: MonoType,
+        pub val: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for DictTypeArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            DictTypeArgs {
+                base_node: None,
+                key_type: MonoType::NONE,
+                key: None,
+                val_type: MonoType::NONE,
+                val: None,
+            }
+        }
+    }
+    pub struct DictTypeBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> DictTypeBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_base_node(&mut self, base_node: flatbuffers::WIPOffset<BaseNode<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<BaseNode>>(
+                    DictType::VT_BASE_NODE,
+                    base_node,
+                );
+        }
+        #[inline]
+        pub fn add_key_type(&mut self, key_type: MonoType) {
+            self.fbb_
+                .push_slot::<MonoType>(DictType::VT_KEY_TYPE, key_type, MonoType::NONE);
+        }
+        #[inline]
+        pub fn add_key(&mut self, key: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(DictType::VT_KEY, key);
+        }
+        #[inline]
+        pub fn add_val_type(&mut self, val_type: MonoType) {
+            self.fbb_
+                .push_slot::<MonoType>(DictType::VT_VAL_TYPE, val_type, MonoType::NONE);
+        }
+        #[inline]
+        pub fn add_val(&mut self, val: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(DictType::VT_VAL, val);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DictTypeBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            DictTypeBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<DictType<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }
@@ -1298,6 +1574,16 @@ pub mod fbast {
         pub fn monotype_as_array_type(&self) -> Option<ArrayType<'a>> {
             if self.monotype_type() == MonoType::ArrayType {
                 self.monotype().map(|u| ArrayType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn monotype_as_dict_type(&self) -> Option<DictType<'a>> {
+            if self.monotype_type() == MonoType::DictType {
+                self.monotype().map(|u| DictType::init_from_table(u))
             } else {
                 None
             }
@@ -1633,6 +1919,16 @@ pub mod fbast {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn monotype_as_dict_type(&self) -> Option<DictType<'a>> {
+            if self.monotype_type() == MonoType::DictType {
+                self.monotype().map(|u| DictType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn monotype_as_record_type(&self) -> Option<RecordType<'a>> {
             if self.monotype_type() == MonoType::RecordType {
                 self.monotype().map(|u| RecordType::init_from_table(u))
@@ -1831,6 +2127,16 @@ pub mod fbast {
         pub fn monotype_as_array_type(&self) -> Option<ArrayType<'a>> {
             if self.monotype_type() == MonoType::ArrayType {
                 self.monotype().map(|u| ArrayType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn monotype_as_dict_type(&self) -> Option<DictType<'a>> {
+            if self.monotype_type() == MonoType::DictType {
+                self.monotype().map(|u| DictType::init_from_table(u))
             } else {
                 None
             }
@@ -2170,6 +2476,16 @@ pub mod fbast {
         pub fn monotype_as_array_type(&self) -> Option<ArrayType<'a>> {
             if self.monotype_type() == MonoType::ArrayType {
                 self.monotype().map(|u| ArrayType::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn monotype_as_dict_type(&self) -> Option<DictType<'a>> {
+            if self.monotype_type() == MonoType::DictType {
+                self.monotype().map(|u| DictType::init_from_table(u))
             } else {
                 None
             }

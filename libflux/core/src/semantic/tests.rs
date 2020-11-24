@@ -312,6 +312,29 @@ macro_rules! package {
 }
 
 #[test]
+fn dictionary() {
+    test_infer! {
+        env: map![
+            "fromList" => "(pairs: [{key: K, value: V}]) => [K: V] where K: Comparable",
+            "get" => "(key: K, dict: [K: V], default: V) => V where K: Comparable",
+            "insert" => "(key: K, value: V, dict: [K: V]) => [K: V] where K: Comparable",
+            "remove" => "(key: K, dict: [K: V]) => [K: V] where K: Comparable",
+        ],
+        src: r#"
+            d0 = fromList(pairs: [{key: "a0", value: 0}, {key: "a1", value: 1}])
+            a0 = get(key: "a0", dict: d0, default: -1)
+            d1 = insert(key: "a2", value: 2, dict: d0)
+            d2 = remove(key: "a1", dict: d1)
+        "#,
+        exp: map![
+            "d0" => "[string: int]",
+            "a0" => "int",
+            "d1" => "[string: int]",
+            "d2" => "[string: int]",
+        ],
+    }
+}
+#[test]
 fn instantiation_0() {
     test_infer! {
         env: map![

@@ -4,6 +4,7 @@ union MonoType {
   NamedType,
   TvarType,
   ArrayType,
+  DictType,
   RecordType,
   FunctionType,
 }
@@ -21,6 +22,12 @@ table TvarType {
 table ArrayType {
   base_node:BaseNode;
   element:MonoType;
+}
+
+table DictType {
+  base_node:BaseNode;
+  key:MonoType;
+  val:MonoType;
 }
 
 table PropertyType {

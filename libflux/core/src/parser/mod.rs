@@ -556,10 +556,32 @@ impl Parser {
     }
 
     fn parse_monotype(&mut self) -> MonoType {
-        // Tvar | Basic | Array | Record | Function
+        // Tvar | Basic | Array | Dict | Record | Function
         let t = self.peek();
         match t.tok {
-            TOK_LBRACK => self.parse_array_type(),
+            TOK_LBRACK => {
+                let start = self.open(TOK_LBRACK, TOK_RBRACK);
+                let ty = self.parse_monotype();
+                match self.peek().tok {
+                    TOK_RBRACK => {
+                        let end = self.close(TOK_RBRACK);
+                        MonoType::Array(Box::new(ArrayType {
+                            base: self.base_node_from_tokens(&start, &end),
+                            element: ty,
+                        }))
+                    }
+                    _ => {
+                        self.expect(TOK_COLON);
+                        let val = self.parse_monotype();
+                        let end = self.close(TOK_RBRACK);
+                        MonoType::Dict(Box::new(DictType {
+                            base: self.base_node_from_tokens(&start, &end),
+                            key: ty,
+                            val,
+                        }))
+                    }
+                }
+            }
             TOK_LBRACE => self.parse_record_type(),
             TOK_LPAREN => self.parse_function_type(),
             _ => {
@@ -586,16 +608,6 @@ impl Parser {
             base: id.base.clone(),
             name: id,
         })
-    }
-
-    fn parse_array_type(&mut self) -> MonoType {
-        let start = self.open(TOK_LBRACK, TOK_RBRACK);
-        let mt = self.parse_monotype();
-        let end = self.close(TOK_RBRACK);
-        MonoType::Array(Box::new(ArrayType {
-            base: self.base_node_from_tokens(&start, &end),
-            element: mt,
-        }))
     }
 
     // "(" [Parameters] ")" "=>" MonoType

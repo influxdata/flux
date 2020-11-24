@@ -170,6 +170,11 @@ fn convert_monotype(
             tvars,
             f,
         )?)))),
+        ast::MonoType::Dict(dict) => {
+            let key = convert_monotype(dict.key, tvars, f)?;
+            let val = convert_monotype(dict.val, tvars, f)?;
+            Ok(MonoType::Dict(Box::new(types::Dictionary { key, val })))
+        }
         ast::MonoType::Function(func) => {
             let mut req = MonoTypeMap::new();
             let mut opt = MonoTypeMap::new();

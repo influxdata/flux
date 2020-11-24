@@ -13,6 +13,7 @@ use crate::ast::{
     NamedType,
     TvarType,
     ArrayType,
+    DictType,
     PropertyType,
     RecordType,
     ParameterType,
@@ -128,6 +129,10 @@ fn build_monotype<'a>(
             let offset = build_array_type(builder, *t);
             (offset.as_union_value(), fb::MonoType::ArrayType)
         }
+        MonoType::Dict(t) => {
+            let offset = build_dict_type(builder, *t);
+            (offset.as_union_value(), fb::MonoType::DictType)
+        }
         MonoType::Record(t) => {
             let offset = build_record_type(builder, t);
             (offset.as_union_value(), fb::MonoType::RecordType)
@@ -178,6 +183,26 @@ fn build_array_type<'a>(
             base_node: Some(base_node),
             element: Some(offset),
             element_type: t,
+        },
+    )
+}
+
+fn build_dict_type<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    d: DictType,
+) -> flatbuffers::WIPOffset<fb::DictType<'a>> {
+    let base_node = Some(build_base_node(builder, d.base));
+    let (key_offset, key_type) = build_monotype(builder, d.key);
+    let (val_offset, val_type) = build_monotype(builder, d.val);
+    let (key, val) = (Some(key_offset), Some(val_offset));
+    fb::DictType::create(
+        builder,
+        &fb::DictTypeArgs {
+            base_node,
+            key,
+            val,
+            key_type,
+            val_type,
         },
     )
 }
@@ -336,6 +361,9 @@ mod tests {
             fb::MonoType::ArrayType => {
                 MonoType::Array(Box::new(fb::ArrayType::init_from_table(table).into()))
             }
+            fb::MonoType::DictType => {
+                MonoType::Dict(Box::new(fb::DictType::init_from_table(table).into()))
+            }
             fb::MonoType::RecordType => {
                 MonoType::Record(fb::RecordType::init_from_table(table).into())
             }
@@ -374,6 +402,15 @@ mod tests {
             ArrayType {
                 base: BaseNode::default(),
                 element: monotype_from_table(t.element().unwrap(), t.element_type()),
+            }
+        }
+    }
+    impl From<fb::DictType<'_>> for DictType {
+        fn from(t: fb::DictType) -> DictType {
+            DictType {
+                base: BaseNode::default(),
+                key: monotype_from_table(t.key().unwrap(), t.key_type()),
+                val: monotype_from_table(t.val().unwrap(), t.val_type()),
             }
         }
     }
@@ -544,6 +581,38 @@ mod tests {
                 &mut builder,
                 want.clone(),
                 build_array_type,
+            ))
+            .into()
+        );
+    }
+    #[test]
+    fn test_dict_type() {
+        let want = DictType {
+            base: BaseNode::default(),
+            key: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "string".to_string(),
+                },
+            }),
+            val: MonoType::Basic(NamedType {
+                base: BaseNode::default(),
+                name: Identifier {
+                    base: BaseNode::default(),
+                    name: "int".to_string(),
+                },
+            }),
+        };
+
+        let mut builder = flatbuffers::FlatBufferBuilder::new();
+
+        assert_eq!(
+            want,
+            flatbuffers::get_root::<fb::DictType>(serialize(
+                &mut builder,
+                want.clone(),
+                build_dict_type,
             ))
             .into()
         );

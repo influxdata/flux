@@ -139,6 +139,12 @@ a[i]"#,
 }
 
 #[test]
+fn dict_type() {
+    assert_unchanged("builtin dict : [string:int]");
+    assert_unchanged("builtin dict : [string:string]");
+}
+
+#[test]
 fn conditional() {
     assert_unchanged("if a then b else c");
     assert_unchanged(r#"if not a or b and c then 2 / (3 * 2) else obj.a(par: "foo")"#);
