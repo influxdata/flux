@@ -106,7 +106,7 @@ fn format_token(t: TOK) -> &'static str {
 }
 
 pub struct Parser {
-    s: rust::Scanner,
+    s: Scanner,
     t: Option<Token>,
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
@@ -120,7 +120,7 @@ pub struct Parser {
 impl Parser {
     pub fn new(src: &str) -> Parser {
         let cdata = CString::new(src).expect("CString::new failed");
-        let s = rust::Scanner::new(cdata);
+        let s = Scanner::new(cdata);
         Parser {
             s,
             t: None,
