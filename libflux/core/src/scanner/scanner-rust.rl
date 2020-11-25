@@ -206,7 +206,7 @@ pub type TOK = u32;
 
 %% write data nofinal;
 
-pub fn scan(
+pub fn scan2(
     data: &[u8],
     mode: i32,
     pp: &mut i32,
