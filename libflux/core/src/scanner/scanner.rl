@@ -1,69 +1,9 @@
-
-use std::vec::Vec;
-
-pub const TOK_ILLEGAL: TOK = 0;
-pub const TOK_EOF: TOK = 1;
-pub const TOK_COMMENT: TOK = 2;
-pub const TOK_AND: TOK = 3;
-pub const TOK_OR: TOK = 4;
-pub const TOK_NOT: TOK = 5;
-pub const TOK_EMPTY: TOK = 6;
-pub const TOK_IN: TOK = 7;
-pub const TOK_IMPORT: TOK = 8;
-pub const TOK_PACKAGE: TOK = 9;
-pub const TOK_RETURN: TOK = 10;
-pub const TOK_OPTION: TOK = 11;
-pub const TOK_BUILTIN: TOK = 12;
-pub const TOK_TEST: TOK = 13;
-pub const TOK_IF: TOK = 14;
-pub const TOK_THEN: TOK = 15;
-pub const TOK_ELSE: TOK = 16;
-pub const TOK_IDENT: TOK = 17;
-pub const TOK_INT: TOK = 18;
-pub const TOK_FLOAT: TOK = 19;
-pub const TOK_STRING: TOK = 20;
-pub const TOK_REGEX: TOK = 21;
-pub const TOK_TIME: TOK = 22;
-pub const TOK_DURATION: TOK = 23;
-pub const TOK_ADD: TOK = 24;
-pub const TOK_SUB: TOK = 25;
-pub const TOK_MUL: TOK = 26;
-pub const TOK_DIV: TOK = 27;
-pub const TOK_MOD: TOK = 28;
-pub const TOK_POW: TOK = 29;
-pub const TOK_EQ: TOK = 30;
-pub const TOK_LT: TOK = 31;
-pub const TOK_GT: TOK = 32;
-pub const TOK_LTE: TOK = 33;
-pub const TOK_GTE: TOK = 34;
-pub const TOK_NEQ: TOK = 35;
-pub const TOK_REGEXEQ: TOK = 36;
-pub const TOK_REGEXNEQ: TOK = 37;
-pub const TOK_ASSIGN: TOK = 38;
-pub const TOK_ARROW: TOK = 39;
-pub const TOK_LPAREN: TOK = 40;
-pub const TOK_RPAREN: TOK = 41;
-pub const TOK_LBRACK: TOK = 42;
-pub const TOK_RBRACK: TOK = 43;
-pub const TOK_LBRACE: TOK = 44;
-pub const TOK_RBRACE: TOK = 45;
-pub const TOK_COMMA: TOK = 46;
-pub const TOK_DOT: TOK = 47;
-pub const TOK_COLON: TOK = 48;
-pub const TOK_PIPE_FORWARD: TOK = 49;
-pub const TOK_PIPE_RECEIVE: TOK = 50;
-pub const TOK_EXISTS: TOK = 51;
-pub const TOK_QUOTE: TOK = 52;
-pub const TOK_STRINGEXPR: TOK = 53;
-pub const TOK_TEXT: TOK = 54;
-pub const TOK_QUESTION_MARK: TOK = 55;
-pub type TOK = u32;
-
+#include "scanner.h"
 
 %%{
     machine flux;
 
-    alphtype u8;
+    alphtype unsigned char;
 
     include WChar "unicode.rl";
 
@@ -71,7 +11,7 @@ pub type TOK = u32;
         // We do this for every newline we find.
         // This allows us to return correct line/column for each token
         // back to the caller.
-        *cur_line += 1;
+        (*cur_line)++;
         *last_newline = fpc + 1;
     }
 
@@ -123,7 +63,7 @@ pub type TOK = u32;
     # in the middle of an expression and we are potentially expecting a division operator.
     main_with_regex := |*
         # If we see a regex literal, we accept that and do not go to the other scanner.
-        regex_lit => { tok = TOK_REGEX; fbreak; };
+        regex_lit => { tok = REGEX; fbreak; };
 
         # We have to specify whitespace here so that leading whitespace doesn't cause a state transition.
         whitespace;
@@ -136,61 +76,61 @@ pub type TOK = u32;
 
     # This machine does not contain the regex literal.
     main := |*
-        single_line_comment => { tok = TOK_COMMENT; fbreak; };
+        single_line_comment => { tok = COMMENT; fbreak; };
 
-        "and" => { tok = TOK_AND; fbreak; };
-        "or" => { tok = TOK_OR; fbreak; };
-        "not" => { tok = TOK_NOT; fbreak; };
-        "empty" => { tok = TOK_EMPTY; fbreak; };
-        "in" => { tok = TOK_IN; fbreak; };
-        "import" => { tok = TOK_IMPORT; fbreak; };
-        "package" => { tok = TOK_PACKAGE; fbreak; };
-        "return" => { tok = TOK_RETURN; fbreak; };
-        "option" => { tok = TOK_OPTION; fbreak; };
-        "builtin" => { tok = TOK_BUILTIN; fbreak; };
-        "testcase" => { tok = TOK_TESTCASE; fbreak; };
-        "test" => { tok = TOK_TEST; fbreak; };
-        "if" => { tok = TOK_IF; fbreak; };
-        "then" => { tok = TOK_THEN; fbreak; };
-        "else" => { tok = TOK_ELSE; fbreak; };
-        "exists" => { tok = TOK_EXISTS; fbreak; };
+        "and" => { tok = AND; fbreak; };
+        "or" => { tok = OR; fbreak; };
+        "not" => { tok = NOT; fbreak; };
+        "empty" => { tok = EMPTY; fbreak; };
+        "in" => { tok = IN; fbreak; };
+        "import" => { tok = IMPORT; fbreak; };
+        "package" => { tok = PACKAGE; fbreak; };
+        "return" => { tok = RETURN; fbreak; };
+        "option" => { tok = OPTION; fbreak; };
+        "builtin" => { tok = BUILTIN; fbreak; };
+        "testcase" => { tok = TESTCASE; fbreak; };
+        "test" => { tok = TEST; fbreak; };
+        "if" => { tok = IF; fbreak; };
+        "then" => { tok = THEN; fbreak; };
+        "else" => { tok = ELSE; fbreak; };
+        "exists" => { tok = EXISTS; fbreak; };
 
-        identifier => { tok = TOK_IDENT; fbreak; };
-        int_lit => { tok = TOK_INT; fbreak; };
-        float_lit => { tok = TOK_FLOAT; fbreak; };
-        duration_lit => { tok = TOK_DURATION; fbreak; };
-        date_time_lit => { tok = TOK_TIME; fbreak; };
-        string_lit => { tok = TOK_STRING; fbreak; };
+        identifier => { tok = IDENT; fbreak; };
+        int_lit => { tok = INT; fbreak; };
+        float_lit => { tok = FLOAT; fbreak; };
+        duration_lit => { tok = DURATION; fbreak; };
+        date_time_lit => { tok = TIME; fbreak; };
+        string_lit => { tok = STRING; fbreak; };
 
-        "+" => { tok = TOK_ADD; fbreak; };
-        "-" => { tok = TOK_SUB; fbreak; };
-        "*" => { tok = TOK_MUL; fbreak; };
-        "/" => { tok = TOK_DIV; fbreak; };
-        "%" => { tok = TOK_MOD; fbreak; };
-        "^" => { tok = TOK_POW; fbreak; };
-        "==" => { tok = TOK_EQ; fbreak; };
-        "<" => { tok = TOK_LT; fbreak; };
-        ">" => { tok = TOK_GT; fbreak; };
-        "<=" => { tok = TOK_LTE; fbreak; };
-        ">=" => { tok = TOK_GTE; fbreak; };
-        "!=" => { tok = TOK_NEQ; fbreak; };
-        "=~" => { tok = TOK_REGEXEQ; fbreak; };
-        "!~" => { tok = TOK_REGEXNEQ; fbreak; };
-        "=" => { tok = TOK_ASSIGN; fbreak; };
-        "=>" => { tok = TOK_ARROW; fbreak; };
-        "<-" => { tok = TOK_PIPE_RECEIVE; fbreak; };
-        "(" => { tok = TOK_LPAREN; fbreak; };
-        ")" => { tok = TOK_RPAREN; fbreak; };
-        "[" => { tok = TOK_LBRACK; fbreak; };
-        "]" => { tok = TOK_RBRACK; fbreak; };
-        "{" => { tok = TOK_LBRACE; fbreak; };
-        "}" => { tok = TOK_RBRACE; fbreak; };
-        ":" => { tok = TOK_COLON; fbreak; };
-        "|>" => { tok = TOK_PIPE_FORWARD; fbreak; };
-        "," => { tok = TOK_COMMA; fbreak; };
-        "." => { tok = TOK_DOT; fbreak; };
-        '"' => { tok = TOK_QUOTE; fbreak; };
-        '?' => { tok = TOK_QUESTION_MARK; fbreak; };
+        "+" => { tok = ADD; fbreak; };
+        "-" => { tok = SUB; fbreak; };
+        "*" => { tok = MUL; fbreak; };
+        "/" => { tok = DIV; fbreak; };
+        "%" => { tok = MOD; fbreak; };
+        "^" => { tok = POW; fbreak; };
+        "==" => { tok = EQ; fbreak; };
+        "<" => { tok = LT; fbreak; };
+        ">" => { tok = GT; fbreak; };
+        "<=" => { tok = LTE; fbreak; };
+        ">=" => { tok = GTE; fbreak; };
+        "!=" => { tok = NEQ; fbreak; };
+        "=~" => { tok = REGEXEQ; fbreak; };
+        "!~" => { tok = REGEXNEQ; fbreak; };
+        "=" => { tok = ASSIGN; fbreak; };
+        "=>" => { tok = ARROW; fbreak; };
+        "<-" => { tok = PIPE_RECEIVE; fbreak; };
+        "(" => { tok = LPAREN; fbreak; };
+        ")" => { tok = RPAREN; fbreak; };
+        "[" => { tok = LBRACK; fbreak; };
+        "]" => { tok = RBRACK; fbreak; };
+        "{" => { tok = LBRACE; fbreak; };
+        "}" => { tok = RBRACE; fbreak; };
+        ":" => { tok = COLON; fbreak; };
+        "|>" => { tok = PIPE_FORWARD; fbreak; };
+        "," => { tok = COMMA; fbreak; };
+        "." => { tok = DOT; fbreak; };
+        '"' => { tok = QUOTE; fbreak; };
+        '?' => { tok = QUESTION_MARK; fbreak; };
 
         whitespace;
 
@@ -199,60 +139,61 @@ pub type TOK = u32;
 
     # This is the scanner used when parsing a string expression.
     string_expr := |*
-        "${" => { tok = TOK_STRINGEXPR; fbreak; };
-        '"' => { tok = TOK_QUOTE; fbreak; };
-        (string_lit_char - "\"")+ => { tok = TOK_TEXT; fbreak; };
+        "${" => { tok = STRINGEXPR; fbreak; };
+        '"' => { tok = QUOTE; fbreak; };
+        (string_lit_char - "\"")+ => { tok = TEXT; fbreak; };
     *|;
 }%%
 
 %% write data nofinal;
 
-pub fn scan(
-    data: &[u8],
-    mode: i32,
-    pp: &mut i32,
-    _data: i32,
-    pe: i32,
-    eof: i32,
-    last_newline: &mut i32,
-    cur_line: &mut i32,
-    token: &mut u32,
-    token_start: &mut i32,
-    token_start_line: &mut i32,
-    token_start_col: &mut i32,
-    token_end: &mut i32,
-    token_end_line: &mut i32,
-    token_end_col: &mut i32 ) -> u32
-{
-    let mut cs = flux_start;
-    match mode {
-        0 => { cs = flux_en_main },
-        1 => { cs = flux_en_main_with_regex },
-        2 => { cs = flux_en_string_expr },
-        _ => {},
+int scan(
+    int mode,
+    const unsigned char **pp,
+    const unsigned char *data,
+    const unsigned char *pe,
+    const unsigned char *eof,
+    const unsigned char **last_newline,
+    unsigned int *cur_line,
+    unsigned int *token,
+    unsigned int *token_start,
+    unsigned int *token_start_line,
+    unsigned int *token_start_col,
+    unsigned int *token_end,
+    unsigned int *token_end_line,
+    unsigned int *token_end_col
+) {
+    int cs = flux_start;
+    switch (mode) {
+    case 0:
+        cs = flux_en_main;
+        break;
+    case 1:
+        cs = flux_en_main_with_regex;
+        break;
+    case 2:
+        cs = flux_en_string_expr;
+        break;
     }
-    let mut p: i32 = *pp;
+    const unsigned char *p = *pp;
+    int act;
+    const unsigned char *ts;
+    const unsigned char *te;
+    unsigned int tok = ILLEGAL;
+    const unsigned char *last_newline_before_token = *last_newline;
+    unsigned int cur_line_token_start = *cur_line;
 
-    let mut act: i32 = 0;
-    let mut ts: i32 = 0;
-    let mut te: i32 = 0;
-    let mut tok: TOK = TOK_ILLEGAL;
-
-    let mut last_newline_before_token: i32 = *last_newline;
-    let mut cur_line_token_start: i32 = *cur_line;
-
-    // alskdfj
     %% write init nocs;
     %% write exec;
 
     // Update output args.
     *token = tok;
 
-    *token_start = ts - _data;
+    *token_start = ts - data;
     *token_start_line = cur_line_token_start;
     *token_start_col = ts - last_newline_before_token + 1;
 
-    *token_end = te - _data;
+    *token_end = te - data;
 
     if (*last_newline > te) {
         // te (the token end pointer) will only be less than last_newline
@@ -268,9 +209,5 @@ pub fn scan(
     *token_end_col = te - *last_newline + 1;
 
     *pp = p;
-    if cs == flux_error {
-        return 1
-    } else {
-        return 0;
-    }
+    return cs == flux_error;
 }
