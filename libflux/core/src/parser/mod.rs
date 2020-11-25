@@ -7,7 +7,6 @@ use crate::ast;
 use crate::ast::*;
 use crate::scanner;
 use crate::scanner::*;
-use crate::scanner::mod2::Scanner2;
 
 use wasm_bindgen::prelude::*;
 
@@ -107,7 +106,7 @@ fn format_token(t: TOK) -> &'static str {
 }
 
 pub struct Parser {
-    s: Scanner2,
+    s: rust::Scanner,
     t: Option<Token>,
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
@@ -121,7 +120,7 @@ pub struct Parser {
 impl Parser {
     pub fn new(src: &str) -> Parser {
         let cdata = CString::new(src).expect("CString::new failed");
-        let s = Scanner2::new(cdata);
+        let s = rust::Scanner::new(cdata);
         Parser {
             s,
             t: None,

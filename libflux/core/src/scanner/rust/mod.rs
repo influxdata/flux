@@ -6,10 +6,10 @@ use std::ffi::CString;
 use std::str;
 use std::vec::Vec;
 
-use crate::scanner::scanner;
+mod scanner;
 use crate::scanner::*;
 
-pub struct Scanner2 {
+pub struct Scanner {
     data: Vec<u8>,
     ps: i32,
     p: i32,
@@ -25,13 +25,13 @@ pub struct Scanner2 {
     pub comments: Option<Box<Token>>,
 }
 
-impl Scanner2 {
+impl Scanner {
     // New creates a scanner with the provided input.
-    pub fn new(data: CString) -> Scanner2 {
+    pub fn new(data: CString) -> Scanner {
         let ptr = data.as_ptr();
         let bytes = data.as_bytes();
         let end = bytes.len() as i32;
-        Scanner2 {
+        Scanner {
             data: data.into_bytes(),
             ps: 0,
             p: 0,
