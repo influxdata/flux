@@ -7,6 +7,9 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::str;
 
+pub mod mod2;
+pub mod scanner;
+
 pub struct Scanner {
     data: CString,
     ps: *const CChar,

@@ -1,12 +1,13 @@
 #![allow(missing_docs)]
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-pub mod scanner;
-
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::str;
 use std::vec::Vec;
+
+use crate::scanner::scanner;
+use crate::scanner::*;
 
 pub struct Scanner2 {
     data: Vec<u8>,
@@ -26,11 +27,11 @@ pub struct Scanner2 {
 
 impl Scanner2 {
     // New creates a scanner with the provided input.
-    pub fn new(data: CString) -> Scanner {
+    pub fn new(data: CString) -> Scanner2 {
         let ptr = data.as_ptr();
         let bytes = data.as_bytes();
         let end = bytes.len() as i32;
-        Scanner {
+        Scanner2 {
             data: data.into_bytes(),
             ps: 0,
             p: 0,
@@ -128,7 +129,7 @@ impl Scanner2 {
         let mut token_end_col = 0 as i32;
 
         let error = {
-            scanner::scan(
+            scanner::scan2(
                 &self.data,
                 mode,
                 &mut self.p,
@@ -221,5 +222,3 @@ impl Scanner2 {
     }
 }
 
-#[cfg(test)]
-mod tests;
