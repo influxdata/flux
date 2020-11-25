@@ -129,7 +129,7 @@ impl Scanner {
         let mut token_end_col = 0 as i32;
 
         let error = {
-            scanner::scan2(
+            scanner::scan(
                 &self.data,
                 mode,
                 &mut self.p,

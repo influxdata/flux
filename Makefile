@@ -40,7 +40,8 @@ GENERATED_TARGETS = \
 LIBFLUX_GENERATED_TARGETS = \
 	libflux/core/src/ast/flatbuffers/ast_generated.rs \
 	libflux/core/src/semantic/flatbuffers/semantic_generated.rs \
-	libflux/scanner.c
+	libflux/scanner.c \
+	libflux/core/src/scanner/rust/scanner.rs
 
 generate: $(GENERATED_TARGETS)
 

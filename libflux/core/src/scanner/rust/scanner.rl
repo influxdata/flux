@@ -1,64 +1,7 @@
 
 use std::vec::Vec;
 
-pub const TOK_ILLEGAL: TOK = 0;
-pub const TOK_EOF: TOK = 1;
-pub const TOK_COMMENT: TOK = 2;
-pub const TOK_AND: TOK = 3;
-pub const TOK_OR: TOK = 4;
-pub const TOK_NOT: TOK = 5;
-pub const TOK_EMPTY: TOK = 6;
-pub const TOK_IN: TOK = 7;
-pub const TOK_IMPORT: TOK = 8;
-pub const TOK_PACKAGE: TOK = 9;
-pub const TOK_RETURN: TOK = 10;
-pub const TOK_OPTION: TOK = 11;
-pub const TOK_BUILTIN: TOK = 12;
-pub const TOK_TEST: TOK = 13;
-pub const TOK_IF: TOK = 14;
-pub const TOK_THEN: TOK = 15;
-pub const TOK_ELSE: TOK = 16;
-pub const TOK_IDENT: TOK = 17;
-pub const TOK_INT: TOK = 18;
-pub const TOK_FLOAT: TOK = 19;
-pub const TOK_STRING: TOK = 20;
-pub const TOK_REGEX: TOK = 21;
-pub const TOK_TIME: TOK = 22;
-pub const TOK_DURATION: TOK = 23;
-pub const TOK_ADD: TOK = 24;
-pub const TOK_SUB: TOK = 25;
-pub const TOK_MUL: TOK = 26;
-pub const TOK_DIV: TOK = 27;
-pub const TOK_MOD: TOK = 28;
-pub const TOK_POW: TOK = 29;
-pub const TOK_EQ: TOK = 30;
-pub const TOK_LT: TOK = 31;
-pub const TOK_GT: TOK = 32;
-pub const TOK_LTE: TOK = 33;
-pub const TOK_GTE: TOK = 34;
-pub const TOK_NEQ: TOK = 35;
-pub const TOK_REGEXEQ: TOK = 36;
-pub const TOK_REGEXNEQ: TOK = 37;
-pub const TOK_ASSIGN: TOK = 38;
-pub const TOK_ARROW: TOK = 39;
-pub const TOK_LPAREN: TOK = 40;
-pub const TOK_RPAREN: TOK = 41;
-pub const TOK_LBRACK: TOK = 42;
-pub const TOK_RBRACK: TOK = 43;
-pub const TOK_LBRACE: TOK = 44;
-pub const TOK_RBRACE: TOK = 45;
-pub const TOK_COMMA: TOK = 46;
-pub const TOK_DOT: TOK = 47;
-pub const TOK_COLON: TOK = 48;
-pub const TOK_PIPE_FORWARD: TOK = 49;
-pub const TOK_PIPE_RECEIVE: TOK = 50;
-pub const TOK_EXISTS: TOK = 51;
-pub const TOK_QUOTE: TOK = 52;
-pub const TOK_STRINGEXPR: TOK = 53;
-pub const TOK_TEXT: TOK = 54;
-pub const TOK_QUESTION_MARK: TOK = 55;
-pub type TOK = u32;
-
+use crate::scanner::*;
 
 %%{
     machine flux;
@@ -206,7 +149,7 @@ pub type TOK = u32;
 
 %% write data nofinal;
 
-pub fn scan2(
+pub fn scan(
     data: &[u8],
     mode: i32,
     pp: &mut i32,
