@@ -54,6 +54,7 @@ const (
 	StatementOptionStatement     Statement = 6
 	StatementBuiltinStatement    Statement = 7
 	StatementTestStatement       Statement = 8
+	StatementTestCaseStatement   Statement = 9
 )
 
 var EnumNamesStatement = map[Statement]string{
@@ -66,6 +67,7 @@ var EnumNamesStatement = map[Statement]string{
 	StatementOptionStatement:     "OptionStatement",
 	StatementBuiltinStatement:    "BuiltinStatement",
 	StatementTestStatement:       "TestStatement",
+	StatementTestCaseStatement:   "TestCaseStatement",
 }
 
 type Assignment = byte
@@ -2247,6 +2249,76 @@ func TestStatementAddAssignment(builder *flatbuffers.Builder, assignment flatbuf
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(assignment), 0)
 }
 func TestStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type TestCaseStatement struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsTestCaseStatement(buf []byte, offset flatbuffers.UOffsetT) *TestCaseStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &TestCaseStatement{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *TestCaseStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *TestCaseStatement) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *TestCaseStatement) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *TestCaseStatement) AssignmentType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *TestCaseStatement) MutateAssignmentType(n byte) bool {
+	return rcv._tab.MutateByteSlot(6, n)
+}
+
+func (rcv *TestCaseStatement) Assignment(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func TestCaseStatementStart(builder *flatbuffers.Builder) {
+	builder.StartObject(3)
+}
+func TestCaseStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func TestCaseStatementAddAssignmentType(builder *flatbuffers.Builder, assignmentType byte) {
+	builder.PrependByteSlot(1, assignmentType, 0)
+}
+func TestCaseStatementAddAssignment(builder *flatbuffers.Builder, assignment flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(assignment), 0)
+}
+func TestCaseStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

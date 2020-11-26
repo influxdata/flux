@@ -713,6 +713,31 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     .push((test.as_union_value(), fbsemantic::Statement::TestStatement));
             }
 
+            walk::Node::TestCaseStmt(test) => {
+                let assignment = {
+                    match v.stmts.pop() {
+                        Some((union, fbsemantic::Statement::NativeVariableAssignment)) => {
+                            Some(WIPOffset::new(union.value()))
+                        }
+                        _ => {
+                            v.err = Some(String::from(
+                                "failed to pop assignment statement from stmt vector",
+                            ));
+                            return;
+                        }
+                    }
+                };
+
+                let test = fbsemantic::TestCaseStatement::create(
+                    &mut v.builder,
+                    &fbsemantic::TestCaseStatementArgs { loc, assignment },
+                );
+                v.stmts.push((
+                    test.as_union_value(),
+                    fbsemantic::Statement::TestCaseStatement,
+                ));
+            }
+
             walk::Node::BuiltinStmt(builtin) => {
                 let id = v.pop_ident();
                 let builtin = fbsemantic::BuiltinStatement::create(

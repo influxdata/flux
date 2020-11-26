@@ -14,6 +14,7 @@ The parser directly implements the following grammar.
     Statement                      = OptionAssignment
                                    | BuiltinStatement
                                    | TestStatement
+                                   | TestCaseStatement
                                    | IdentStatement
                                    | ReturnStatement
                                    | ExpressionStatement .
@@ -23,6 +24,7 @@ The parser directly implements the following grammar.
                                    | "." identifier AssignStatement .
     BuiltinStatement               = "builtin" identifier .
     TestStatement                  = "test" identifier AssignStatement .
+    TestCaseStatement              = "testcase" identifier Block
     AssignStatement                = "=" Expression .
     ReturnStatement                = "return" Expression .
     ExpressionStatement            = Expression .

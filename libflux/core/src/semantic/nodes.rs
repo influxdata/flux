@@ -88,6 +88,7 @@ pub enum Statement {
     Option(Box<OptionStmt>),
     Return(ReturnStmt),
     Test(Box<TestStmt>),
+    TestCase(Box<TestCaseStmt>),
     Builtin(BuiltinStmt),
 }
 
@@ -99,6 +100,7 @@ impl Statement {
             Statement::Option(stmt) => Statement::Option(Box::new(stmt.apply(&sub))),
             Statement::Return(stmt) => Statement::Return(stmt.apply(&sub)),
             Statement::Test(stmt) => Statement::Test(Box::new(stmt.apply(&sub))),
+            Statement::TestCase(stmt) => Statement::TestCase(Box::new(stmt.apply(&sub))),
             Statement::Builtin(stmt) => Statement::Builtin(stmt.apply(&sub)),
         }
     }
@@ -352,6 +354,10 @@ impl File {
                             let (env, cons) = stmt.infer(env, f)?;
                             Ok((env, cons + rest))
                         }
+                        Statement::TestCase(stmt) => {
+                            let (env, cons) = stmt.infer(env, f)?;
+                            Ok((env, cons + rest))
+                        }
                         Statement::Return(stmt) => Err(Error::InvalidReturn(stmt.loc.clone())),
                     },
                 )?;
@@ -456,6 +462,23 @@ impl TestStmt {
     }
     fn apply(mut self, sub: &Substitution) -> Self {
         self.assignment = self.assignment.apply(&sub);
+        self
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct TestCaseStmt {
+    pub loc: ast::SourceLocation,
+    pub id: Identifier,
+    pub block: Block,
+}
+
+impl TestCaseStmt {
+    fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        self.block.infer(env, f)
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.block = self.block.apply(&sub);
         self
     }
 }

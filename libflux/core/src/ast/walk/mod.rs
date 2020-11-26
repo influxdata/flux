@@ -48,6 +48,7 @@ pub enum Node<'a> {
     ReturnStmt(&'a ReturnStmt),
     BadStmt(&'a BadStmt),
     TestStmt(&'a TestStmt),
+    TestCaseStmt(&'a TestCaseStmt),
     BuiltinStmt(&'a BuiltinStmt),
 
     // FunctionBlock
@@ -101,6 +102,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::ReturnStmt(_) => write!(f, "ReturnStmt"),
             Node::BadStmt(_) => write!(f, "BadStmt"),
             Node::TestStmt(_) => write!(f, "TestStmt"),
+            Node::TestCaseStmt(_) => write!(f, "TestCaseStmt"),
             Node::BuiltinStmt(_) => write!(f, "BuiltinStmt"),
             Node::Block(_) => write!(f, "Block"),
             Node::Property(_) => write!(f, "Property"),
@@ -147,6 +149,7 @@ impl<'a> Node<'a> {
             Node::ReturnStmt(n) => &n.base,
             Node::BadStmt(n) => &n.base,
             Node::TestStmt(n) => &n.base,
+            Node::TestCaseStmt(n) => &n.base,
             Node::BuiltinStmt(n) => &n.base,
             Node::Block(n) => &n.base,
             Node::Property(n) => &n.base,
@@ -195,6 +198,7 @@ impl<'a> Node<'a> {
             Statement::Return(s) => Node::ReturnStmt(s),
             Statement::Bad(s) => Node::BadStmt(s),
             Statement::Test(s) => Node::TestStmt(s),
+            Statement::TestCase(s) => Node::TestCaseStmt(s),
             Statement::Builtin(s) => Node::BuiltinStmt(s),
         }
     }
@@ -380,6 +384,10 @@ where
             Node::BadStmt(_) => {}
             Node::TestStmt(n) => {
                 walk(&w, Node::VariableAssgn(&n.assignment));
+            }
+            Node::TestCaseStmt(n) => {
+                walk(&w, Node::Identifier(&n.id));
+                walk(&w, Node::Block(&n.block));
             }
             Node::BuiltinStmt(n) => {
                 walk(&w, Node::Identifier(&n.id));

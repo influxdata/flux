@@ -102,6 +102,9 @@ fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
         ast::Statement::Test(s) => Ok(Statement::Test(Box::new(convert_test_statement(
             *s, fresher,
         )?))),
+        ast::Statement::TestCase(s) => Ok(Statement::TestCase(Box::new(
+            convert_testcase_statement(*s, fresher)?,
+        ))),
         ast::Statement::Expr(s) => Ok(Statement::Expr(convert_expression_statement(*s, fresher)?)),
         ast::Statement::Return(s) => Ok(Statement::Return(convert_return_statement(*s, fresher)?)),
         // TODO(affo): we should fix this to include MemberAssignement.
@@ -281,6 +284,17 @@ fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<
     Ok(TestStmt {
         loc: stmt.base.location,
         assignment: convert_variable_assignment(stmt.assignment, fresher)?,
+    })
+}
+
+fn convert_testcase_statement(
+    stmt: ast::TestCaseStmt,
+    fresher: &mut Fresher,
+) -> Result<TestCaseStmt> {
+    Ok(TestCaseStmt {
+        loc: stmt.base.location,
+        id: convert_identifier(stmt.id, fresher)?,
+        block: convert_block(stmt.block, fresher)?,
     })
 }
 

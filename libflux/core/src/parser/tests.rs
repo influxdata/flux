@@ -14176,3 +14176,53 @@ fn parse_string_literal_invalid_string() {
     assert_eq!("".to_string(), result.value);
     assert_eq!(errors, result.base.errors);
 }
+
+#[test]
+fn parse_testcase() {
+    let mut parser = Parser::new(r#"testcase my_test { a = 1 }"#);
+    let parsed = parser.parse_file("".to_string());
+    let loc = Locator::new(&parser.source[..]);
+    let expected = vec![Statement::TestCase(Box::new(TestCaseStmt {
+        base: BaseNode {
+            location: loc.get(1, 1, 1, 27),
+            ..BaseNode::default()
+        },
+        id: Identifier {
+            base: BaseNode {
+                location: loc.get(1, 10, 1, 17),
+                ..BaseNode::default()
+            },
+            name: "my_test".to_string(),
+        },
+        block: Block {
+            base: BaseNode {
+                location: loc.get(1, 18, 1, 27),
+                ..BaseNode::default()
+            },
+            lbrace: None,
+            body: vec![Variable(Box::new(VariableAssgn {
+                base: BaseNode {
+                    location: loc.get(1, 20, 1, 25),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 20, 1, 21),
+                        ..BaseNode::default()
+                    },
+                    name: "a".to_string(),
+                },
+                init: Expression::Integer(IntegerLit {
+                    base: BaseNode {
+                        location: loc.get(1, 24, 1, 25),
+                        ..BaseNode::default()
+                    },
+                    value: 1,
+                }),
+            }))],
+            rbrace: None,
+        },
+    }))];
+
+    assert_eq!(expected, parsed.body);
+}

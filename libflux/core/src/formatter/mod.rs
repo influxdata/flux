@@ -246,6 +246,7 @@ impl Formatter {
             Node::ReturnStmt(m) => self.format_return_statement(m),
             Node::OptionStmt(m) => self.format_option_statement(m),
             Node::TestStmt(m) => self.format_test_statement(m),
+            Node::TestCaseStmt(m) => self.format_testcase_statement(m),
             Node::VariableAssgn(m) => self.format_variable_assignment(m),
             Node::IndexExpr(m) => self.format_index_expression(m),
             Node::MemberAssgn(m) => self.format_member_assignment(m),
@@ -708,6 +709,13 @@ impl Formatter {
         self.format_comments(&n.base.comments);
         self.write_string("test ");
         self.format_node(&Node::VariableAssgn(&n.assignment));
+    }
+
+    fn format_testcase_statement(&mut self, n: &ast::TestCaseStmt) {
+        self.format_comments(&n.base.comments);
+        self.write_string("testcase ");
+        self.format_node(&Node::Identifier(&n.id));
+        self.format_node(&Node::Block(&n.block));
     }
 
     fn format_assignment(&mut self, n: &ast::Assignment) {
@@ -1303,6 +1311,7 @@ fn starts_with_comment(n: Node) -> bool {
         Node::ReturnStmt(n) => n.base.comments.is_some(),
         Node::BadStmt(_) => false,
         Node::TestStmt(n) => n.base.comments.is_some(),
+        Node::TestCaseStmt(n) => n.base.comments.is_some(),
         Node::BuiltinStmt(n) => n.base.comments.is_some(),
         Node::Block(n) => n.lbrace.is_some(),
         Node::Property(_) => false,

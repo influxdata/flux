@@ -58,6 +58,7 @@ fn format_token(t: TOK) -> &'static str {
         TOK_OPTION => "OPTION",
         TOK_BUILTIN => "BUILTIN",
         TOK_TEST => "TEST",
+        TOK_TESTCASE => "TESTCASE",
         TOK_IF => "IF",
         TOK_THEN => "THEN",
         TOK_ELSE => "ELSE",
@@ -469,6 +470,7 @@ impl Parser {
             TOK_OPTION => self.parse_option_assignment(),
             TOK_BUILTIN => self.parse_builtin_statement(),
             TOK_TEST => self.parse_test_statement(),
+            TOK_TESTCASE => self.parse_testcase_statement(),
             TOK_RETURN => self.parse_return_statement(),
             _ => {
                 self.consume();
@@ -810,6 +812,18 @@ impl Parser {
             },
         }))
     }
+
+    fn parse_testcase_statement(&mut self) -> Statement {
+        let t = self.expect(TOK_TESTCASE);
+        let id = self.parse_identifier();
+        let block = self.parse_block();
+        Statement::TestCase(Box::new(TestCaseStmt {
+            base: self.base_node_from_other_end_c(&t, &block.base, &t),
+            id,
+            block,
+        }))
+    }
+
     fn parse_ident_statement(&mut self) -> Statement {
         let id = self.parse_identifier();
         let t = self.peek();

@@ -43,6 +43,7 @@ pub enum Node<'a> {
     OptionStmt(&'a OptionStmt),
     ReturnStmt(&'a ReturnStmt),
     TestStmt(&'a TestStmt),
+    TestCaseStmt(&'a TestCaseStmt),
     BuiltinStmt(&'a BuiltinStmt),
 
     // StringExprPart.
@@ -87,6 +88,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::OptionStmt(_) => write!(f, "OptionStmt"),
             Node::ReturnStmt(_) => write!(f, "ReturnStmt"),
             Node::TestStmt(_) => write!(f, "TestStmt"),
+            Node::TestCaseStmt(_) => write!(f, "TestStmt"),
             Node::BuiltinStmt(_) => write!(f, "BuiltinStmt"),
             Node::Block(n) => match n {
                 Block::Variable(_, _) => write!(f, "Block::Variable"),
@@ -135,6 +137,7 @@ impl<'a> Node<'a> {
             Node::OptionStmt(n) => &n.loc,
             Node::ReturnStmt(n) => &n.loc,
             Node::TestStmt(n) => &n.loc,
+            Node::TestCaseStmt(n) => &n.loc,
             Node::BuiltinStmt(n) => &n.loc,
             Node::Block(n) => n.loc(),
             Node::Property(n) => &n.loc,
@@ -206,6 +209,7 @@ impl<'a> Node<'a> {
             Statement::Option(ref s) => Node::OptionStmt(s),
             Statement::Return(ref s) => Node::ReturnStmt(s),
             Statement::Test(ref s) => Node::TestStmt(s),
+            Statement::TestCase(ref s) => Node::TestCaseStmt(s),
             Statement::Builtin(ref s) => Node::BuiltinStmt(s),
         }
     }
@@ -424,6 +428,10 @@ where
             }
             Node::TestStmt(ref n) => {
                 walk(v, Rc::new(Node::VariableAssgn(&n.assignment)));
+            }
+            Node::TestCaseStmt(ref n) => {
+                walk(v, Rc::new(Node::Identifier(&n.id)));
+                walk(v, Rc::new(Node::Block(&n.block)));
             }
             Node::BuiltinStmt(ref n) => {
                 walk(v, Rc::new(Node::Identifier(&n.id)));

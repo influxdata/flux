@@ -17,6 +17,7 @@ enum TOK {
     OPTION                        = 11,
     BUILTIN                       = 12,
     TEST                          = 13,
+    TESTCASE                      = 56,
     IF                            = 14,
     THEN                          = 15,
     ELSE                          = 16,

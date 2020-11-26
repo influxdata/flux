@@ -82,6 +82,7 @@ union Statement {
   OptionStatement,
   BuiltinStatement,
   TestStatement,
+  TestCaseStatement,
 }
 
 union Assignment {
@@ -208,6 +209,11 @@ table BuiltinStatement {
 }
 
 table TestStatement {
+  base_node:BaseNode;
+  assignment:Assignment;
+}
+
+table TestCaseStatement {
   base_node:BaseNode;
   assignment:Assignment;
 }
