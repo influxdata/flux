@@ -124,6 +124,7 @@ func (*UnsignedIntegerLiteral) node() {}
 func (*NamedType) node()      {}
 func (*TvarType) node()       {}
 func (*ArrayType) node()      {}
+func (*DictType) node()       {}
 func (*RecordType) node()     {}
 func (*FunctionType) node()   {}
 func (*PropertyType) node()   {}
@@ -227,6 +228,7 @@ type MonoType interface {
 func (NamedType) monotype()    {}
 func (TvarType) monotype()     {}
 func (ArrayType) monotype()    {}
+func (DictType) monotype()     {}
 func (RecordType) monotype()   {}
 func (FunctionType) monotype() {}
 
@@ -287,6 +289,28 @@ func (c *ArrayType) Copy() Node {
 	nc.BaseNode = c.BaseNode.Copy()
 
 	nc.ElementType = c.ElementType.Copy().(*ArrayType)
+	return nc
+}
+
+type DictType struct {
+	BaseNode
+	KeyType   MonoType `json:"key"`
+	ValueType MonoType `json:"val"`
+}
+
+func (DictType) Type() string {
+	return "DictType"
+}
+func (c *DictType) Copy() Node {
+	if c == nil {
+		return c
+	}
+	nc := new(DictType)
+	*nc = *c
+	nc.BaseNode = c.BaseNode.Copy()
+
+	nc.KeyType = c.KeyType.Copy().(MonoType)
+	nc.ValueType = c.ValueType.Copy().(MonoType)
 	return nc
 }
 

@@ -1296,6 +1296,7 @@ type Arguments interface {
 	GetFunction(name string) (values.Function, bool, error)
 	GetArray(name string, t semantic.Nature) (values.Array, bool, error)
 	GetObject(name string) (values.Object, bool, error)
+	GetDictionary(name string) (values.Dictionary, bool, error)
 
 	GetRequiredString(name string) (string, error)
 	GetRequiredInt(name string) (int64, error)
@@ -1305,6 +1306,7 @@ type Arguments interface {
 	GetRequiredArray(name string, t semantic.Nature) (values.Array, error)
 	GetRequiredArrayAllowEmpty(name string, t semantic.Nature) (values.Array, error)
 	GetRequiredObject(name string) (values.Object, error)
+	GetRequiredDictionary(name string) (values.Dictionary, error)
 
 	// listUnused returns the list of provided arguments that were not used by the function.
 	listUnused() []string
@@ -1486,6 +1488,21 @@ func (a *arguments) GetRequiredObject(name string) (values.Object, error) {
 		return nil, err
 	}
 	return v.Object(), nil
+}
+
+func (a *arguments) GetDictionary(name string) (values.Dictionary, bool, error) {
+	v, ok, err := a.get(name, semantic.Dictionary, false)
+	if err != nil || !ok {
+		return nil, ok, err
+	}
+	return v.Dict(), ok, nil
+}
+func (a *arguments) GetRequiredDictionary(name string) (values.Dictionary, error) {
+	v, _, err := a.get(name, semantic.Dictionary, true)
+	if err != nil {
+		return nil, err
+	}
+	return v.Dict(), nil
 }
 
 func (a *arguments) get(name string, kind semantic.Nature, required bool) (values.Value, bool, error) {

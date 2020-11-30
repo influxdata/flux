@@ -280,6 +280,19 @@ func apply(sub map[uint64]semantic.MonoType, props []semantic.PropertyType, t se
 			return t
 		}
 		return semantic.NewArrayType(apply(sub, props, element))
+	case semantic.Dict:
+		key, err := t.KeyType()
+		if err != nil {
+			return t
+		}
+		val, err := t.ValueType()
+		if err != nil {
+			return t
+		}
+		return semantic.NewDictType(
+			apply(sub, props, key),
+			apply(sub, props, val),
+		)
 	case semantic.Record:
 		n, err := t.NumProperties()
 		if err != nil {

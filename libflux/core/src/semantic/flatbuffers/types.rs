@@ -130,7 +130,10 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             Some(MonoType::Fun(Box::new(opt?)))
         }
         fb::MonoType::Record => fb::Record::init_from_table(table).into(),
-        fb::MonoType::Dict => unimplemented!(),
+        fb::MonoType::Dict => {
+            let opt: Option<Dictionary> = fb::Dict::init_from_table(table).into();
+            Some(MonoType::Dict(Box::new(opt?)))
+        }
         fb::MonoType::NONE => None,
     }
 }
@@ -160,6 +163,15 @@ impl From<fb::Var<'_>> for Tvar {
 impl From<fb::Arr<'_>> for Option<Array> {
     fn from(t: fb::Arr) -> Option<Array> {
         Some(Array(from_table(t.t()?, t.t_type())?))
+    }
+}
+
+impl From<fb::Dict<'_>> for Option<Dictionary> {
+    fn from(t: fb::Dict) -> Option<Dictionary> {
+        Some(Dictionary {
+            key: from_table(t.k()?, t.k_type())?,
+            val: from_table(t.v()?, t.v_type())?,
+        })
     }
 }
 
