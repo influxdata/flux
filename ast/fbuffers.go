@@ -93,6 +93,13 @@ func (t ArrayType) FromBuf(buf *fbast.ArrayType) *ArrayType {
 	return &t
 }
 
+func (t DictType) FromBuf(buf *fbast.DictType) *DictType {
+	t.BaseNode.FromBuf(buf.BaseNode(nil))
+	t.KeyType = DecodeMonoType(newFBTable(buf.Key, &t.BaseNode), buf.KeyType())
+	t.ValueType = DecodeMonoType(newFBTable(buf.Val, &t.BaseNode), buf.ValType())
+	return &t
+}
+
 func (t RecordType) FromBuf(buf *fbast.RecordType) *RecordType {
 	t.BaseNode.FromBuf(buf.BaseNode(nil))
 	t.Tvar = Identifier{}.FromBuf(buf.Tvar(nil))
@@ -160,6 +167,10 @@ func DecodeMonoType(t *flatbuffers.Table, ty byte) MonoType {
 		b := new(fbast.ArrayType)
 		b.Init(t.Bytes, t.Pos)
 		return ArrayType{}.FromBuf(b)
+	case fbast.MonoTypeDictType:
+		b := new(fbast.DictType)
+		b.Init(t.Bytes, t.Pos)
+		return DictType{}.FromBuf(b)
 	case fbast.MonoTypeRecordType:
 		b := new(fbast.RecordType)
 		b.Init(t.Bytes, t.Pos)
