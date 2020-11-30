@@ -3,8 +3,8 @@ package semantic
 import (
 	"regexp"
 	"time"
-
-	flatbuffers "github.com/google/flatbuffers/go"
+	
+  flatbuffers "github.com/google/flatbuffers/go"
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -249,7 +249,7 @@ func fromExpressionTableOptional(getTable getTableFn, exprType fbsemantic.Expres
 		}
 		return e, nil
 	case fbsemantic.ExpressionIntegerLiteral:
-		fbExpr := new(fbsemantic.IntegerLiteral)
+    fbExpr := new(fbsemantic.IntegerLiteral)
 		fbExpr.Init(tbl.Bytes, tbl.Pos)
 		e := &IntegerLiteral{}
 		if err := e.FromBuf(fbExpr); err != nil {
@@ -257,7 +257,7 @@ func fromExpressionTableOptional(getTable getTableFn, exprType fbsemantic.Expres
 		}
 		return e, nil
 	case fbsemantic.ExpressionPolyNumericLiteral:
-		fbExpr := new(fbsemantic.IntegerLiteral)
+    fbExpr := new(fbsemantic.IntegerLiteral)
 		fbExpr.Init(tbl.Bytes, tbl.Pos)
 		e := &IntegerLiteral{}
 		if err := e.FromBuf(fbExpr); err != nil {

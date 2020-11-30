@@ -91,8 +91,9 @@ func TestMap_NewQuery(t *testing.T) {
 								Fn: executetest.FunctionExpression(t, "(r) => r._value + 2"),
 								Scope: func() values.Scope {
 									scope := valuestest.Scope()
-									scope.Set("x", values.NewInt(2))
-									return scope
+									scope.Set("x_int", values.NewInt(2))
+									scope.Set("x_float", values.NewFloat(2))
+                  return scope
 								}(),
 							},
 						},

@@ -1,5 +1,5 @@
 package semantic_test
-
+/*
 import (
 	"testing"
 
@@ -50,7 +50,7 @@ func TestToAST(t *testing.T) {
 		{
 			name: "identifier",
 			s: `my_value = 2
-my_value
+      my_value
 `,
 		},
 		{
@@ -147,10 +147,9 @@ exists r.b
 			if err != nil {
 				t.Fatalf("unexpected error analyzing generated AST: %s", err)
 			}
-
 			if !cmp.Equal(want, got, semantictest.CmpOptions...) {
 				t.Fatalf("unexpected semantic graph -want/+got:\n%s", cmp.Diff(want, got, semantictest.CmpOptions...))
 			}
 		})
 	}
-}
+}*/

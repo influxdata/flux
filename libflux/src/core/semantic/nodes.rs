@@ -292,7 +292,7 @@ impl Expression {
     }
     fn monomorphize_int(self, poly_set: &mut HashSet<String>) -> Self {
         match self {
-            Expression::Identifier(e) => Expression::Identifier(e.monomorphize(poly_set)),
+            Expression::Identifier(e) => Expression::Identifier(e.monomorphize_int(poly_set)),
             Expression::Array(e) => Expression::Array(Box::new(e.monomorphize_int(poly_set))),
             Expression::Function(e) => Expression::Function(Box::new(e.monomorphize(poly_set))),
             Expression::Logical(e) => Expression::Logical(Box::new(e.monomorphize_int(poly_set))),
@@ -317,7 +317,7 @@ impl Expression {
     }
     fn monomorphize_float(self, poly_set: &mut HashSet<String>) -> Self {
         match self {
-            Expression::Identifier(e) => Expression::Identifier(e.monomorphize(poly_set)),
+            Expression::Identifier(e) => Expression::Identifier(e.monomorphize_float(poly_set)),
             Expression::Array(e) => Expression::Array(Box::new(e.monomorphize_float(poly_set))),
             Expression::Function(e) => Expression::Function(Box::new(e.monomorphize(poly_set))),
             Expression::Logical(e) => Expression::Logical(Box::new(e.monomorphize_float(poly_set))),
@@ -486,8 +486,8 @@ impl File {
                         if kinds.contains(&Kind::NumericDefaultInt) {
                             poly_set.insert(assign.id.name.clone());
                             let assign_name: &str = &assign.id.name.clone();
-                            let int_str: &str = "-int";
-                            let float_str: &str = "-float";
+                            let int_str: &str = "_int";
+                            let float_str: &str = "_float";
                             let name_int = format!("{}{}", assign_name, int_str);
                             let name_float = format!("{}{}", assign_name, float_str);
                             let id_int = Identifier {loc: assign.loc.clone(), name: name_int};
@@ -496,6 +496,28 @@ impl File {
                             let assign_float = VariableAssgn::new(id_float, assign.init.clone().monomorphize_float(poly_set), assign.loc.clone());
                             candidates.push((i, assign_int, assign_float));
                         }
+                    };
+                },
+                Statement::Option(member) => {
+                    match &member.assignment {
+                        Assignment::Variable(assign) => {
+                            for (_, kinds) in assign.cons.iter() {
+                                if kinds.contains(&Kind::NumericDefaultInt) {
+                                    poly_set.insert(assign.id.name.clone());
+                                    let assign_name: &str = &assign.id.name.clone();
+                                    let int_str: &str = "_int";
+                                    let float_str: &str = "_float";
+                                    let name_int = format!("{}{}", assign_name, int_str);
+                                    let name_float = format!("{}{}", assign_name, float_str);
+                                    let id_int = Identifier {loc: assign.loc.clone(), name: name_int};
+                                    let assign_int = VariableAssgn::new(id_int, assign.init.clone().monomorphize_int(poly_set), assign.loc.clone());
+                                    let id_float = Identifier {loc: assign.loc.clone(), name: name_float};
+                                    let assign_float = VariableAssgn::new(id_float, assign.init.clone().monomorphize_float(poly_set), assign.loc.clone());
+                                    candidates.push((i, assign_int, assign_float));
+                                }
+                            };
+                        }
+                        _ => (),
                     };
                 },
                 _ => (), 
@@ -1129,8 +1151,8 @@ impl Block {
                 };
                 if poly_flag {
                     let assign_name: &str = &assign.id.name.clone();
-                    let int_str: &str = "-int";
-                    let float_str: &str = "-float";
+                    let int_str: &str = "_int";
+                    let float_str: &str = "_float";
 
                     let name_int = format!("{}{}", assign_name, int_str);
                     let name_float = format!("{}{}", assign_name, float_str);
@@ -2075,8 +2097,8 @@ impl IdentifierExpr {
     fn monomorphize(self, poly_set: &mut HashSet<String>) -> IdentifierExpr {
         if poly_set.contains(&self.name.clone()) {
             let assign_name: &str = &self.name.clone();
-            let int_str: &str = "-int";
-            let float_str: &str = "-float";
+            let int_str: &str = "_int";
+            let float_str: &str = "_float";
 
             let name_int = format!("{}{}", assign_name, int_str);
             let name_float = format!("{}{}", assign_name, float_str);
@@ -2089,6 +2111,33 @@ impl IdentifierExpr {
             self
         }
     }
+    fn monomorphize_int(self, poly_set: &mut HashSet<String>) -> IdentifierExpr {
+        if poly_set.contains(&self.name.clone()) {
+            let assign_name: &str = &self.name.clone();
+            let int_str: &str = "_int";
+
+            let name_int = format!("{}{}", assign_name, int_str);
+            IdentifierExpr {loc: self.loc.clone(), typ: MonoType::Int, name: name_int}
+        } else {
+            self
+        }
+    }
+
+    fn monomorphize_float(self, poly_set: &mut HashSet<String>) -> IdentifierExpr {
+        if poly_set.contains(&self.name.clone()) {
+            let assign_name: &str = &self.name.clone();
+            let float_str: &str = "_float";
+
+            let name_float = format!("{}{}", assign_name, float_str);
+            IdentifierExpr {loc: self.loc.clone(), typ: MonoType::Float, name: name_float}
+        } else {
+            self
+        }
+    }
+
+
+
+
 }
 
 #[derive(Debug, PartialEq, Clone)]

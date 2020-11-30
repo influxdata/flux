@@ -724,7 +724,7 @@ func TestInterpreter_MultipleEval(t *testing.T) {
 							Value: values.NewInt(1),
 							Node: &semantic.ExpressionStatement{
 								Expression: &semantic.CallExpression{
-									Callee:    &semantic.IdentifierExpression{Name: "foo-int"},
+									Callee:    &semantic.IdentifierExpression{Name: "foo_int"},
 									Arguments: &semantic.ObjectExpression{Properties: []*semantic.Property{}},
 								},
 							},
@@ -793,7 +793,13 @@ func TestResolver(t *testing.T) {
 
 			fn, ok := scope.Lookup("f")
 			if !ok {
-				t.Fatalf("could not lookup function definition")
+        fn, ok = scope.Lookup("f_int")
+        if !ok {
+          fn, ok = scope.Lookup("f_float")
+          if !ok {
+            t.Fatalf("could not lookup function definition")
+          }
+        }
 			}
 
 			resolver, ok := fn.Function().(interpreter.Resolver)

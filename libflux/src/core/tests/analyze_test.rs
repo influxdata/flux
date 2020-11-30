@@ -20,19 +20,19 @@ f(a: s)
     .unwrap();
     let f_type = Function {
         req: core::semantic_map! {
-            "a".to_string() => MonoType::Var(Tvar(4)),
+            "a".to_string() => MonoType::Var(Tvar(3)),
         },
         opt: SemanticMap::new(),
         pipe: None,
-        retn: MonoType::Var(Tvar(4)),
+        retn: MonoType::Var(Tvar(3)),
     };
     let f_call_int_type = Function {
         req: core::semantic_map! {
-            "a".to_string() => MonoType::Int,
+            "a".to_string() => MonoType::Var(Tvar(8)),
         },
         opt: SemanticMap::new(),
         pipe: None,
-        retn: MonoType::Int,
+        retn: MonoType::Var(Tvar(8)),
     };
     let f_call_string_type = Function {
         req: core::semantic_map! {
@@ -53,7 +53,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: "n-int".to_string(),
+                        name: "n_int".to_string(),
                     },
                     Expression::Integer(IntegerLit {
                         loc: ast::BaseNode::default().location,
@@ -64,7 +64,7 @@ f(a: s)
                 Statement::Variable(Box::new(VariableAssgn::new(
                     Identifier {
                         loc: ast::BaseNode::default().location,
-                        name: "n-float".to_string(),
+                        name: "n_float".to_string(),
                     },
                     Expression::Float(FloatLit {
                         loc: ast::BaseNode::default().location,
@@ -141,8 +141,8 @@ f(a: s)
                             },
                             value: Expression::Identifier(IdentifierExpr {
                                 loc: ast::BaseNode::default().location,
-                                typ: MonoType::Var(Tvar(8)),
-                                name: "n-int".to_string(),
+                                typ: MonoType::Int,
+                                name: "n_int".to_string(),
                             }),
                         }],
                     })),

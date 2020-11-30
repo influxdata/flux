@@ -92,6 +92,13 @@ func TestFluxCompiler(t *testing.T) {
 				twentySeven
 				from(bucket: "foo") |> range(start: -5m)`,
 		},
+    {
+			name: "no extern",
+      q: `twentySix = 26
+        twentySeven = twentySix + 1
+				twentySeven
+				from(bucket: "foo") |> range(start: -5m)`,
+		},
 		{
 			name: "extern with error",
 			extern: &ast.File{
@@ -200,7 +207,7 @@ func TestFluxCompiler(t *testing.T) {
 func TestCompilationError(t *testing.T) {
 	program, err := lang.Compile(`illegal query`, runtime.Default, time.Unix(0, 0))
 	if err != nil {
-		// This shouldn't happen, has the script should be evaluated at program Start.
+		// This shouldn't happen, as the script should be evaluated at program Start.
 		t.Fatal(err)
 	}
 

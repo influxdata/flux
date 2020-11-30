@@ -435,6 +435,7 @@ impl SemanticAnalyzer {
         self.env = env;
         let poly_pkg = inject_pkg_types(sem_pkg, &sub);
         let pkg = inject_polymorphic_types(poly_pkg, &mut self.poly_set);
+        //println!("{:#?}", pkg);
         Ok(pkg)
     }
 }
@@ -497,7 +498,8 @@ pub fn analyze(ast_pkg: ast::Package) -> Result<Package, Error> {
     let (sem_pkg, _, sub) = infer_with_env(ast_pkg, fresher(), None)?;
     let poly_pkg = inject_pkg_types(sem_pkg, &sub);
     let mut poly_set = HashSet::new();
-    Ok(inject_polymorphic_types(poly_pkg, &mut poly_set))
+    let pkg = inject_polymorphic_types(poly_pkg, &mut poly_set);
+    Ok(pkg)
 }
 
 /// infer_with_env consumes the given AST package, inject the type bindings from the given

@@ -72,7 +72,7 @@ type SideEffect struct {
 // Eval evaluates the expressions composing a Flux package and returns any side effects that occurred during this evaluation.
 func (itrp *Interpreter) Eval(ctx context.Context, node semantic.Node, scope values.Scope, importer Importer) ([]SideEffect, error) {
 	itrp.sideEffects = itrp.sideEffects[:0]
-	if err := itrp.doRoot(ctx, node, scope, importer); err != nil {
+  if err := itrp.doRoot(ctx, node, scope, importer); err != nil {
 		return nil, err
 	}
 	return itrp.sideEffects, nil
@@ -99,7 +99,7 @@ func (itrp *Interpreter) doPackage(ctx context.Context, pkg *semantic.Package, s
 }
 
 func (itrp *Interpreter) doFile(ctx context.Context, file *semantic.File, scope values.Scope, importer Importer) error {
-	if err := itrp.doPackageClause(file.Package); err != nil {
+  if err := itrp.doPackageClause(file.Package); err != nil {
 		return err
 	}
 	for _, i := range file.Imports {
@@ -326,7 +326,7 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		return itrp.doArray(ctx, e, scope)
 	case *semantic.IdentifierExpression:
 		value, ok := scope.Lookup(e.Name)
-		if !ok {
+    if !ok {
 			return nil, errors.Newf(codes.Invalid, "undefined identifier %q", e.Name)
 		}
 		return value, nil
@@ -391,7 +391,9 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 			return nil, errors.Newf(codes.Invalid, "unsupported operator %q to unary expression", e.Operator)
 		}
 	case *semantic.BinaryExpression:
-		l, err := itrp.doExpression(ctx, e.Left, scope)
+    
+    
+    l, err := itrp.doExpression(ctx, e.Left, scope)
 		if err != nil {
 			return nil, err
 		}
@@ -593,7 +595,7 @@ func (itrp *Interpreter) doLiteral(lit semantic.Literal) (values.Value, error) {
 func functionName(call *semantic.CallExpression) string {
 	switch callee := call.Callee.(type) {
 	case *semantic.IdentifierExpression:
-		return callee.Name
+    return callee.Name
 	case *semantic.MemberExpression:
 		return callee.Property
 	default:

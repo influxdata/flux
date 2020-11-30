@@ -26,7 +26,11 @@ func TestEval(t *testing.T) {
 		}
 		want := map[string]string{
 			"f": "(x: t8290) -> t8290",
-			"y": "42",
+			"f_int": "(x: t8290) -> t8290",
+      "f_float": "(x: t8290) -> t8290",
+      "y": "42",
+      "y_int": "42",
+      "y_float": "42",
 		}
 		scope.LocalRange(func(k string, v values.Value) {
 			wantV, ok := want[k]
