@@ -9,7 +9,7 @@ RUN apt-get update && \
     autoconf automake autotools-dev libtool xutils-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Download, verify, and install ragel
+# Download, verify, and install ragel version 6.
 ENV RAGEL_VERSION=6.10
 RUN curl https://www.colm.net/files/thurston.asc | gpg --import - && \
     curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
@@ -21,7 +21,36 @@ RUN curl https://www.colm.net/files/thurston.asc | gpg --import - && \
     make && \
     make install && \
     cd .. && rm -rf ragel-${RAGEL_VERSION}*
-ENV PATH="/usr/local/bin:${PATH}"
+
+# Download, verify, and install ragel version 7. This version depends on colm,
+# so we get that as well. Alredy have the gpg key above.
+ENV COLM_VERSION=0.14.2
+RUN curl https://www.colm.net/files/colm/colm-${COLM_VERSION}.tar.gz -O && \
+    curl https://www.colm.net/files/colm/colm-${COLM_VERSION}.tar.gz.asc -O && \
+    gpg --verify colm-${COLM_VERSION}.tar.gz.asc colm-${COLM_VERSION}.tar.gz && \
+    tar -xzf colm-${COLM_VERSION}.tar.gz && \
+    cd colm-${COLM_VERSION}/ && \
+    ./configure --prefix=/usr/local/ragel7 --disable-manual && \
+    make && \
+    make install && \
+    cd .. && rm -rf colm-${COLM_VERSION}*
+
+ENV RAGEL7_VERSION=7.0.1
+RUN curl https://www.colm.net/files/ragel/ragel-${RAGEL7_VERSION}.tar.gz -O && \
+    curl https://www.colm.net/files/ragel/ragel-${RAGEL7_VERSION}.tar.gz.asc -O && \
+    gpg --verify ragel-${RAGEL7_VERSION}.tar.gz.asc ragel-${RAGEL7_VERSION}.tar.gz && \
+    tar -xzf ragel-${RAGEL7_VERSION}.tar.gz && \
+    cd ragel-${RAGEL7_VERSION}/ && \
+    ./configure --prefix=/usr/local/ragel7 --with-colm=/usr/local/ragel7 --disable-manual && \
+    make && \
+    make install && \
+    cd .. && rm -rf ragel-${RAGEL7_VERSION}*
+
+# We installed ragel version 7 to a dedicated prefix. We put it on the path
+# after the place where ragel version 6 is located. Version 7 also has the
+# ragel binary, but we only need the ragel-rust binary from version 7.
+ENV PATH="/usr/local/bin:/usr/local/ragel7/bin:${PATH}"
+
 
 # Download, verify, install, and configure openssl (needed for proper Rust install)
 ENV SSL_VERSION=1.0.2q
