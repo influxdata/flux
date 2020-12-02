@@ -6,6 +6,8 @@ use std::ffi::CString;
 use std::str;
 use std::vec::Vec;
 
+#[rustfmt::skip]
+#[allow(clippy::all)]
 mod scanner;
 use crate::scanner::*;
 
@@ -169,14 +171,14 @@ impl Scanner {
                         tok: TOK_ILLEGAL,
                         lit: nc.to_string(),
                         start_offset: token_start as u32,
-                        end_offset: ( token_start + size as i32 ) as u32,
+                        end_offset: (token_start + size as i32) as u32,
                         start_pos: Position {
                             line: token_start_line as u32,
                             column: token_start_col as u32,
                         },
                         end_pos: Position {
                             line: token_start_line as u32,
-                            column: ( token_start_col + size as i32 ) as u32,
+                            column: (token_start_col + size as i32) as u32,
                         },
                         comments: None,
                     }
@@ -192,9 +194,7 @@ impl Scanner {
         } else {
             // No error or EOF, we can process the returned values normally.
             let lit = unsafe {
-                str::from_utf8_unchecked(
-                    &self.data[(token_start as usize)..(token_end as usize)],
-                )
+                str::from_utf8_unchecked(&self.data[(token_start as usize)..(token_end as usize)])
             };
             Token {
                 tok: self.token,
@@ -221,4 +221,3 @@ impl Scanner {
         t
     }
 }
-

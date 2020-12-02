@@ -33,7 +33,7 @@ var sourceHashes = map[string]string{
 	"libflux/core/src/parser/strconv.rs":                                            "748c82f6efc2eafaafb872db5b4185ce29aafa8f03ba02c4b84f4a9614e832d2",
 	"libflux/core/src/parser/tests.rs":                                              "2d74d0d597e40bc91ac5a384e2ae905d7730ee15920837db458cb56c5878b4dd",
 	"libflux/core/src/scanner/mod.rs":                                               "1d921e2c5875036cedbbac29a01fde9eb465c7cfb2582a8868fc91c379cc91d9",
-	"libflux/core/src/scanner/rust/mod.rs":                                          "37277d4f78728e412a717eacea9c7a9d5f78006e14418a81f98ef0564f0d6825",
+	"libflux/core/src/scanner/rust/mod.rs":                                          "6b949670c07871eea3fa950929ae8affb012ab257698c6470531e47fa9e0ed14",
 	"libflux/core/src/scanner/rust/scanner.rl":                                      "ab6b16f9aea311483a97afc8d3da8c120e0f8a64869a9cbca4d4504b7273770e",
 	"libflux/core/src/scanner/rust/scanner.rs":                                      "af092607c740541e14445ebbd3be08d327a228a3eea95ad27030e82b87e351a7",
 	"libflux/core/src/scanner/scanner.h":                                            "d4a4fdd4d17400f6e377e057e738519585b0baab40b1bb8394911fbdaa63ab76",
