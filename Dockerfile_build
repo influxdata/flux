@@ -15,7 +15,7 @@ RUN apt-get update && \
     autoconf automake autotools-dev libtool xutils-dev valgrind && \
     rm -rf /var/lib/apt/lists/*
 
-# Download, verify, and install ragel verison 6.
+# Download, verify, and install ragel version 6.
 ENV RAGEL_VERSION=6.10
 RUN curl https://www.colm.net/files/thurston.asc | gpg --import - && \
     curl https://www.colm.net/files/ragel/ragel-${RAGEL_VERSION}.tar.gz -O && \
@@ -29,7 +29,7 @@ RUN curl https://www.colm.net/files/thurston.asc | gpg --import - && \
     cd .. && rm -rf ragel-${RAGEL_VERSION}*
 
 # Download, verify, and install ragel version 7. This version depends on colm,
-# so we get that as well. Alredy have the gpg key above.
+# so we get that as well. Already have the gpg key above.
 ENV COLM_VERSION=0.14.2
 RUN curl https://www.colm.net/files/colm/colm-${COLM_VERSION}.tar.gz -O && \
     curl https://www.colm.net/files/colm/colm-${COLM_VERSION}.tar.gz.asc -O && \
