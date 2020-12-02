@@ -40,8 +40,7 @@ GENERATED_TARGETS = \
 LIBFLUX_GENERATED_TARGETS = \
 	libflux/core/src/ast/flatbuffers/ast_generated.rs \
 	libflux/core/src/semantic/flatbuffers/semantic_generated.rs \
-	libflux/scanner.c \
-	libflux/core/src/scanner/rust/scanner.rs
+	libflux/scanner.c
 
 generate: $(GENERATED_TARGETS)
 
@@ -125,16 +124,17 @@ vet: libflux-go
 bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
-# This requires ragel 7 master Oct 13, 2020.
+# This requires ragel 7.0.1.
 libflux/core/src/scanner/rust/scanner.rs: libflux/core/src/scanner/rust/scanner.rl
 	ragel-rust -I libflux/core/src/scanner -o $@ $<
+	rm libflux/core/src/scanner/rust/scanner.ri
 
 # If you see the error:
 #    ragel: -C is an invalid argument
 # from this command, it means you have replaced ragel 6 with ragel 7. Instead,
 # install ragel 7 to a unique location and put it on your path *after* ragel 6.
-# This way the ragel 6 binary hides the rage7 binary and rust-ragel from ragel
-# 7 is still available. See Dockerfile_build for an example.
+# This way the ragel 6 binary hides the ragel 7 binary, but ragel-rust from
+# ragel 7 is still available. See Dockerfile_build for an example.
 libflux/scanner.c: libflux/core/src/scanner/scanner.rl
 	ragel -C -o libflux/scanner.c libflux/core/src/scanner/scanner.rl
 
