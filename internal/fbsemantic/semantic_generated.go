@@ -1844,12 +1844,25 @@ func (rcv *TestCaseStatement) Loc(obj *SourceLocation) *SourceLocation {
 	return nil
 }
 
-func (rcv *TestCaseStatement) Assignment(obj *NativeVariableAssignment) *NativeVariableAssignment {
+func (rcv *TestCaseStatement) Id(obj *Identifier) *Identifier {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
-			obj = new(NativeVariableAssignment)
+			obj = new(Identifier)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *TestCaseStatement) Block(obj *Block) *Block {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Block)
 		}
 		obj.Init(rcv._tab.Bytes, x)
 		return obj
@@ -1858,13 +1871,16 @@ func (rcv *TestCaseStatement) Assignment(obj *NativeVariableAssignment) *NativeV
 }
 
 func TestCaseStatementStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(3)
 }
 func TestCaseStatementAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
 }
-func TestCaseStatementAddAssignment(builder *flatbuffers.Builder, assignment flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(assignment), 0)
+func TestCaseStatementAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
+}
+func TestCaseStatementAddBlock(builder *flatbuffers.Builder, block flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(block), 0)
 }
 func TestCaseStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

@@ -293,6 +293,13 @@ func (s TestStatement) FromBuf(buf *fbast.TestStatement) *TestStatement {
 	return &s
 }
 
+func (s TestCaseStatement) FromBuf(buf *fbast.TestCaseStatement) *TestCaseStatement {
+	s.BaseNode.FromBuf(buf.BaseNode(nil))
+	s.ID = Identifier{}.FromBuf(buf.Id(nil))
+	s.Block = Block{}.FromBuf(buf.Block(nil))
+	return &s
+}
+
 func (d VariableAssignment) FromBuf(buf *fbast.VariableAssignment) *VariableAssignment {
 	d.BaseNode.FromBuf(buf.BaseNode(nil))
 	d.ID = Identifier{}.FromBuf(buf.Id(nil))
@@ -605,6 +612,10 @@ func statementFromBuf(t *flatbuffers.Table, stype fbast.Statement) Statement {
 		s := new(fbast.TestStatement)
 		s.Init(t.Bytes, t.Pos)
 		return TestStatement{}.FromBuf(s)
+	case fbast.StatementTestCaseStatement:
+		s := new(fbast.TestCaseStatement)
+		s.Init(t.Bytes, t.Pos)
+		return TestCaseStatement{}.FromBuf(s)
 	default:
 		// Ultimately we want to use bad statement/expression to store errors?
 		return nil

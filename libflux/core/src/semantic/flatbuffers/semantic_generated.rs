@@ -3880,8 +3880,11 @@ pub mod fbsemantic {
             args: &'args TestCaseStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<TestCaseStatement<'bldr>> {
             let mut builder = TestCaseStatementBuilder::new(_fbb);
-            if let Some(x) = args.assignment {
-                builder.add_assignment(x);
+            if let Some(x) = args.block {
+                builder.add_block(x);
+            }
+            if let Some(x) = args.id {
+                builder.add_id(x);
             }
             if let Some(x) = args.loc {
                 builder.add_loc(x);
@@ -3890,7 +3893,8 @@ pub mod fbsemantic {
         }
 
         pub const VT_LOC: flatbuffers::VOffsetT = 4;
-        pub const VT_ASSIGNMENT: flatbuffers::VOffsetT = 6;
+        pub const VT_ID: flatbuffers::VOffsetT = 6;
+        pub const VT_BLOCK: flatbuffers::VOffsetT = 8;
 
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
@@ -3901,25 +3905,29 @@ pub mod fbsemantic {
                 )
         }
         #[inline]
-        pub fn assignment(&self) -> Option<NativeVariableAssignment<'a>> {
+        pub fn id(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<NativeVariableAssignment<'a>>>(
-                    TestCaseStatement::VT_ASSIGNMENT,
-                    None,
-                )
+                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(TestCaseStatement::VT_ID, None)
+        }
+        #[inline]
+        pub fn block(&self) -> Option<Block<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<Block<'a>>>(TestCaseStatement::VT_BLOCK, None)
         }
     }
 
     pub struct TestCaseStatementArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
-        pub assignment: Option<flatbuffers::WIPOffset<NativeVariableAssignment<'a>>>,
+        pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
+        pub block: Option<flatbuffers::WIPOffset<Block<'a>>>,
     }
     impl<'a> Default for TestCaseStatementArgs<'a> {
         #[inline]
         fn default() -> Self {
             TestCaseStatementArgs {
                 loc: None,
-                assignment: None,
+                id: None,
+                block: None,
             }
         }
     }
@@ -3937,15 +3945,19 @@ pub mod fbsemantic {
                 );
         }
         #[inline]
-        pub fn add_assignment(
-            &mut self,
-            assignment: flatbuffers::WIPOffset<NativeVariableAssignment<'b>>,
-        ) {
+        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<Identifier<'b>>) {
             self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<NativeVariableAssignment>>(
-                    TestCaseStatement::VT_ASSIGNMENT,
-                    assignment,
+                .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(
+                    TestCaseStatement::VT_ID,
+                    id,
                 );
+        }
+        #[inline]
+        pub fn add_block(&mut self, block: flatbuffers::WIPOffset<Block<'b>>) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Block>>(
+                TestCaseStatement::VT_BLOCK,
+                block,
+            );
         }
         #[inline]
         pub fn new(

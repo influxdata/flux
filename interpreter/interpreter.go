@@ -163,6 +163,8 @@ func (itrp *Interpreter) doStatement(ctx context.Context, stmt semantic.Statemen
 		return nil, nil
 	case *semantic.TestStatement:
 		return itrp.doTestStatement(ctx, s, scope)
+	case *semantic.TestCaseStatement:
+		return itrp.doTestCaseStatement(ctx, s, scope)
 	case *semantic.NativeVariableAssignment:
 		return itrp.doVariableAssignment(ctx, s, scope)
 	case *semantic.MemberAssignment:
@@ -281,6 +283,10 @@ func (itrp *Interpreter) doOptionStatement(ctx context.Context, s *semantic.Opti
 
 func (itrp *Interpreter) doTestStatement(ctx context.Context, s *semantic.TestStatement, scope values.Scope) (values.Value, error) {
 	return itrp.doAssignment(ctx, s.Assignment, scope)
+}
+
+func (itrp *Interpreter) doTestCaseStatement(ctx context.Context, s *semantic.TestCaseStatement, scope values.Scope) (values.Value, error) {
+	return nil, errors.New(codes.Internal, "unsupported statement type testcase")
 }
 
 func (itrp *Interpreter) doVariableAssignment(ctx context.Context, dec *semantic.NativeVariableAssignment, scope values.Scope) (values.Value, error) {

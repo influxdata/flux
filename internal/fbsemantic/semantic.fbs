@@ -207,7 +207,8 @@ table TestStatement {
 
 table TestCaseStatement {
   loc:SourceLocation;
-  assignment:NativeVariableAssignment;
+  id:Identifier;
+  block:Block;
 }
 
 table ExpressionStatement {

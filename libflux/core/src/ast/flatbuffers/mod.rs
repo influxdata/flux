@@ -642,14 +642,21 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                 v.stmts
                     .push((ts.as_union_value(), fbast::Statement::TestStatement));
             }
-            walk::Node::TestCaseStmt(_) => {
-                let (assignment, assignment_type) = v.pop_assignment_stmt();
+            walk::Node::TestCaseStmt(stmt) => {
+                let id = v.pop_expr_with_kind(fbast::Expression::Identifier);
+
+                let body = {
+                    let stmt_vec = v.create_stmt_vector(stmt.block.body.len());
+                    Some(v.builder.create_vector(&stmt_vec.as_slice()))
+                };
+                let block =
+                    fbast::Block::create(&mut v.builder, &fbast::BlockArgs { base_node, body });
                 let ts = fbast::TestCaseStatement::create(
                     &mut v.builder,
                     &fbast::TestCaseStatementArgs {
                         base_node,
-                        assignment_type,
-                        assignment,
+                        id,
+                        block: Some(block),
                     },
                 );
                 v.stmts

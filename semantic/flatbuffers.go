@@ -64,6 +64,14 @@ func fromWrappedStatement(fb *fbsemantic.WrappedStatement) (Statement, error) {
 			return nil, err
 		}
 		return s, nil
+	case fbsemantic.StatementTestCaseStatement:
+		fbStmt := new(fbsemantic.TestCaseStatement)
+		fbStmt.Init(tbl.Bytes, tbl.Pos)
+		s := &TestCaseStatement{}
+		if err := s.FromBuf(fbStmt); err != nil {
+			return nil, err
+		}
+		return s, nil
 	case fbsemantic.StatementExpressionStatement:
 		fbStmt := new(fbsemantic.ExpressionStatement)
 		fbStmt.Init(tbl.Bytes, tbl.Pos)

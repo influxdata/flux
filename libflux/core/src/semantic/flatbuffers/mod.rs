@@ -714,28 +714,10 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
             }
 
             walk::Node::TestCaseStmt(test) => {
-                let assignment = {
-                    match v.stmts.pop() {
-                        Some((union, fbsemantic::Statement::NativeVariableAssignment)) => {
-                            Some(WIPOffset::new(union.value()))
-                        }
-                        _ => {
-                            v.err = Some(String::from(
-                                "failed to pop assignment statement from stmt vector",
-                            ));
-                            return;
-                        }
-                    }
-                };
-
-                let test = fbsemantic::TestCaseStatement::create(
-                    &mut v.builder,
-                    &fbsemantic::TestCaseStatementArgs { loc, assignment },
-                );
-                v.stmts.push((
-                    test.as_union_value(),
-                    fbsemantic::Statement::TestCaseStatement,
-                ));
+                // TestCase statements should be transformed before the semantic phase. Even without
+                // the explicit panic here, an error would occur because the block has no function
+                // scope.
+                panic!("TestCaseStmt is not supported in semantic analysis.");
             }
 
             walk::Node::BuiltinStmt(builtin) => {

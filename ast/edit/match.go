@@ -348,6 +348,18 @@ func match(pattern, node ast.Node, ms sliceMatchingStrategy) bool {
 			return false
 		}
 		return matchTestStatement(p, n, ms)
+	case *ast.TestCaseStatement:
+		n, ok := node.(*ast.TestCaseStatement)
+		if !ok {
+			return false
+		}
+		if p == nil {
+			return true
+		}
+		if n == nil {
+			return false
+		}
+		return matchTestCaseStatement(p, n, ms)
 	case *ast.VariableAssignment:
 		n, ok := node.(*ast.VariableAssignment)
 		if !ok {
@@ -710,6 +722,10 @@ func matchReturnStatement(p *ast.ReturnStatement, n *ast.ReturnStatement, ms sli
 
 func matchTestStatement(p *ast.TestStatement, n *ast.TestStatement, ms sliceMatchingStrategy) bool {
 	return match(p.Assignment, n.Assignment, ms)
+}
+
+func matchTestCaseStatement(p *ast.TestCaseStatement, n *ast.TestCaseStatement, ms sliceMatchingStrategy) bool {
+	return match(p.ID, n.ID, ms)
 }
 
 func matchVariableAssignment(p *ast.VariableAssignment, n *ast.VariableAssignment, ms sliceMatchingStrategy) bool {

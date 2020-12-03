@@ -5663,19 +5663,21 @@ pub mod fbast {
             args: &'args TestCaseStatementArgs<'args>,
         ) -> flatbuffers::WIPOffset<TestCaseStatement<'bldr>> {
             let mut builder = TestCaseStatementBuilder::new(_fbb);
-            if let Some(x) = args.assignment {
-                builder.add_assignment(x);
+            if let Some(x) = args.block {
+                builder.add_block(x);
+            }
+            if let Some(x) = args.id {
+                builder.add_id(x);
             }
             if let Some(x) = args.base_node {
                 builder.add_base_node(x);
             }
-            builder.add_assignment_type(args.assignment_type);
             builder.finish()
         }
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
-        pub const VT_ASSIGNMENT_TYPE: flatbuffers::VOffsetT = 6;
-        pub const VT_ASSIGNMENT: flatbuffers::VOffsetT = 8;
+        pub const VT_ID: flatbuffers::VOffsetT = 6;
+        pub const VT_BLOCK: flatbuffers::VOffsetT = 8;
 
         #[inline]
         pub fn base_node(&self) -> Option<BaseNode<'a>> {
@@ -5685,57 +5687,29 @@ pub mod fbast {
             )
         }
         #[inline]
-        pub fn assignment_type(&self) -> Assignment {
+        pub fn id(&self) -> Option<Identifier<'a>> {
             self._tab
-                .get::<Assignment>(
-                    TestCaseStatement::VT_ASSIGNMENT_TYPE,
-                    Some(Assignment::NONE),
-                )
-                .unwrap()
+                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(TestCaseStatement::VT_ID, None)
         }
         #[inline]
-        pub fn assignment(&self) -> Option<flatbuffers::Table<'a>> {
+        pub fn block(&self) -> Option<Block<'a>> {
             self._tab
-                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
-                    TestCaseStatement::VT_ASSIGNMENT,
-                    None,
-                )
-        }
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn assignment_as_member_assignment(&self) -> Option<MemberAssignment<'a>> {
-            if self.assignment_type() == Assignment::MemberAssignment {
-                self.assignment()
-                    .map(|u| MemberAssignment::init_from_table(u))
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
-        pub fn assignment_as_variable_assignment(&self) -> Option<VariableAssignment<'a>> {
-            if self.assignment_type() == Assignment::VariableAssignment {
-                self.assignment()
-                    .map(|u| VariableAssignment::init_from_table(u))
-            } else {
-                None
-            }
+                .get::<flatbuffers::ForwardsUOffset<Block<'a>>>(TestCaseStatement::VT_BLOCK, None)
         }
     }
 
     pub struct TestCaseStatementArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
-        pub assignment_type: Assignment,
-        pub assignment: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
+        pub block: Option<flatbuffers::WIPOffset<Block<'a>>>,
     }
     impl<'a> Default for TestCaseStatementArgs<'a> {
         #[inline]
         fn default() -> Self {
             TestCaseStatementArgs {
                 base_node: None,
-                assignment_type: Assignment::NONE,
-                assignment: None,
+                id: None,
+                block: None,
             }
         }
     }
@@ -5753,21 +5727,18 @@ pub mod fbast {
                 );
         }
         #[inline]
-        pub fn add_assignment_type(&mut self, assignment_type: Assignment) {
-            self.fbb_.push_slot::<Assignment>(
-                TestCaseStatement::VT_ASSIGNMENT_TYPE,
-                assignment_type,
-                Assignment::NONE,
-            );
+        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<Identifier<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(
+                    TestCaseStatement::VT_ID,
+                    id,
+                );
         }
         #[inline]
-        pub fn add_assignment(
-            &mut self,
-            assignment: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
-        ) {
-            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
-                TestCaseStatement::VT_ASSIGNMENT,
-                assignment,
+        pub fn add_block(&mut self, block: flatbuffers::WIPOffset<Block<'b>>) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Block>>(
+                TestCaseStatement::VT_BLOCK,
+                block,
             );
         }
         #[inline]
