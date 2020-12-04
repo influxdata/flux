@@ -89,11 +89,10 @@ const (
 	StatementOptionStatement          Statement = 1
 	StatementBuiltinStatement         Statement = 2
 	StatementTestStatement            Statement = 3
-	StatementTestCaseStatement        Statement = 4
-	StatementExpressionStatement      Statement = 5
-	StatementNativeVariableAssignment Statement = 6
-	StatementMemberAssignment         Statement = 7
-	StatementReturnStatement          Statement = 8
+	StatementExpressionStatement      Statement = 4
+	StatementNativeVariableAssignment Statement = 5
+	StatementMemberAssignment         Statement = 6
+	StatementReturnStatement          Statement = 7
 )
 
 var EnumNamesStatement = map[Statement]string{
@@ -101,7 +100,6 @@ var EnumNamesStatement = map[Statement]string{
 	StatementOptionStatement:          "OptionStatement",
 	StatementBuiltinStatement:         "BuiltinStatement",
 	StatementTestStatement:            "TestStatement",
-	StatementTestCaseStatement:        "TestCaseStatement",
 	StatementExpressionStatement:      "ExpressionStatement",
 	StatementNativeVariableAssignment: "NativeVariableAssignment",
 	StatementMemberAssignment:         "MemberAssignment",
@@ -1808,81 +1806,6 @@ func TestStatementAddAssignment(builder *flatbuffers.Builder, assignment flatbuf
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(assignment), 0)
 }
 func TestStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
-	return builder.EndObject()
-}
-
-type TestCaseStatement struct {
-	_tab flatbuffers.Table
-}
-
-func GetRootAsTestCaseStatement(buf []byte, offset flatbuffers.UOffsetT) *TestCaseStatement {
-	n := flatbuffers.GetUOffsetT(buf[offset:])
-	x := &TestCaseStatement{}
-	x.Init(buf, n+offset)
-	return x
-}
-
-func (rcv *TestCaseStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
-	rcv._tab.Bytes = buf
-	rcv._tab.Pos = i
-}
-
-func (rcv *TestCaseStatement) Table() flatbuffers.Table {
-	return rcv._tab
-}
-
-func (rcv *TestCaseStatement) Loc(obj *SourceLocation) *SourceLocation {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
-	if o != 0 {
-		x := rcv._tab.Indirect(o + rcv._tab.Pos)
-		if obj == nil {
-			obj = new(SourceLocation)
-		}
-		obj.Init(rcv._tab.Bytes, x)
-		return obj
-	}
-	return nil
-}
-
-func (rcv *TestCaseStatement) Id(obj *Identifier) *Identifier {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
-	if o != 0 {
-		x := rcv._tab.Indirect(o + rcv._tab.Pos)
-		if obj == nil {
-			obj = new(Identifier)
-		}
-		obj.Init(rcv._tab.Bytes, x)
-		return obj
-	}
-	return nil
-}
-
-func (rcv *TestCaseStatement) Block(obj *Block) *Block {
-	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
-	if o != 0 {
-		x := rcv._tab.Indirect(o + rcv._tab.Pos)
-		if obj == nil {
-			obj = new(Block)
-		}
-		obj.Init(rcv._tab.Bytes, x)
-		return obj
-	}
-	return nil
-}
-
-func TestCaseStatementStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
-}
-func TestCaseStatementAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
-}
-func TestCaseStatementAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
-}
-func TestCaseStatementAddBlock(builder *flatbuffers.Builder, block flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(block), 0)
-}
-func TestCaseStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

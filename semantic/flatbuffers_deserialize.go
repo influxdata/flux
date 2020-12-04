@@ -648,31 +648,6 @@ func (rcv *TestStatement) FromBuf(fb *fbsemantic.TestStatement) error {
 	return nil
 }
 
-func (rcv *TestCaseStatement) FromBuf(fb *fbsemantic.TestCaseStatement) error {
-	var err error
-	if fb == nil {
-		return nil
-	}
-	if fbLoc := fb.Loc(nil); fbLoc != nil {
-		if err = rcv.Loc.FromBuf(fbLoc); err != nil {
-			return errors.Wrap(err, codes.Inherit, "TestCaseStatement.Loc")
-		}
-	}
-	if fbID := fb.Id(nil); fbID != nil {
-		rcv.ID = new(Identifier)
-		if err = rcv.ID.FromBuf(fbID); err != nil {
-			return errors.Wrap(err, codes.Inherit, "TestCaseStatement.ID")
-		}
-	}
-	if fbBlock := fb.Block(nil); fbBlock != nil {
-		rcv.Block = new(Block)
-		if err = rcv.Block.FromBuf(fbBlock); err != nil {
-			return errors.Wrap(err, codes.Inherit, "TestCaseStatement.Block")
-		}
-	}
-	return nil
-}
-
 func (rcv *UnaryExpression) FromBuf(fb *fbsemantic.UnaryExpression) error {
 	var err error
 	if fb == nil {

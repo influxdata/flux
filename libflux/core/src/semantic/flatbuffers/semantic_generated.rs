@@ -246,15 +246,14 @@ pub mod fbsemantic {
         OptionStatement = 1,
         BuiltinStatement = 2,
         TestStatement = 3,
-        TestCaseStatement = 4,
-        ExpressionStatement = 5,
-        NativeVariableAssignment = 6,
-        MemberAssignment = 7,
-        ReturnStatement = 8,
+        ExpressionStatement = 4,
+        NativeVariableAssignment = 5,
+        MemberAssignment = 6,
+        ReturnStatement = 7,
     }
 
     const ENUM_MIN_STATEMENT: u8 = 0;
-    const ENUM_MAX_STATEMENT: u8 = 8;
+    const ENUM_MAX_STATEMENT: u8 = 7;
 
     impl<'a> flatbuffers::Follow<'a> for Statement {
         type Inner = Self;
@@ -288,12 +287,11 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_STATEMENT: [Statement; 9] = [
+    const ENUM_VALUES_STATEMENT: [Statement; 8] = [
         Statement::NONE,
         Statement::OptionStatement,
         Statement::BuiltinStatement,
         Statement::TestStatement,
-        Statement::TestCaseStatement,
         Statement::ExpressionStatement,
         Statement::NativeVariableAssignment,
         Statement::MemberAssignment,
@@ -301,12 +299,11 @@ pub mod fbsemantic {
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_STATEMENT: [&'static str; 9] = [
+    const ENUM_NAMES_STATEMENT: [&'static str; 8] = [
         "NONE",
         "OptionStatement",
         "BuiltinStatement",
         "TestStatement",
-        "TestCaseStatement",
         "ExpressionStatement",
         "NativeVariableAssignment",
         "MemberAssignment",
@@ -3373,17 +3370,6 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
-        pub fn statement_as_test_case_statement(&self) -> Option<TestCaseStatement<'a>> {
-            if self.statement_type() == Statement::TestCaseStatement {
-                self.statement()
-                    .map(|u| TestCaseStatement::init_from_table(u))
-            } else {
-                None
-            }
-        }
-
-        #[inline]
-        #[allow(non_snake_case)]
         pub fn statement_as_expression_statement(&self) -> Option<ExpressionStatement<'a>> {
             if self.statement_type() == Statement::ExpressionStatement {
                 self.statement()
@@ -3847,130 +3833,6 @@ pub mod fbsemantic {
         }
         #[inline]
         pub fn finish(self) -> flatbuffers::WIPOffset<TestStatement<'a>> {
-            let o = self.fbb_.end_table(self.start_);
-            flatbuffers::WIPOffset::new(o.value())
-        }
-    }
-
-    pub enum TestCaseStatementOffset {}
-    #[derive(Copy, Clone, Debug, PartialEq)]
-
-    pub struct TestCaseStatement<'a> {
-        pub _tab: flatbuffers::Table<'a>,
-    }
-
-    impl<'a> flatbuffers::Follow<'a> for TestCaseStatement<'a> {
-        type Inner = TestCaseStatement<'a>;
-        #[inline]
-        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
-            Self {
-                _tab: flatbuffers::Table { buf: buf, loc: loc },
-            }
-        }
-    }
-
-    impl<'a> TestCaseStatement<'a> {
-        #[inline]
-        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
-            TestCaseStatement { _tab: table }
-        }
-        #[allow(unused_mut)]
-        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
-            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
-            args: &'args TestCaseStatementArgs<'args>,
-        ) -> flatbuffers::WIPOffset<TestCaseStatement<'bldr>> {
-            let mut builder = TestCaseStatementBuilder::new(_fbb);
-            if let Some(x) = args.block {
-                builder.add_block(x);
-            }
-            if let Some(x) = args.id {
-                builder.add_id(x);
-            }
-            if let Some(x) = args.loc {
-                builder.add_loc(x);
-            }
-            builder.finish()
-        }
-
-        pub const VT_LOC: flatbuffers::VOffsetT = 4;
-        pub const VT_ID: flatbuffers::VOffsetT = 6;
-        pub const VT_BLOCK: flatbuffers::VOffsetT = 8;
-
-        #[inline]
-        pub fn loc(&self) -> Option<SourceLocation<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
-                    TestCaseStatement::VT_LOC,
-                    None,
-                )
-        }
-        #[inline]
-        pub fn id(&self) -> Option<Identifier<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(TestCaseStatement::VT_ID, None)
-        }
-        #[inline]
-        pub fn block(&self) -> Option<Block<'a>> {
-            self._tab
-                .get::<flatbuffers::ForwardsUOffset<Block<'a>>>(TestCaseStatement::VT_BLOCK, None)
-        }
-    }
-
-    pub struct TestCaseStatementArgs<'a> {
-        pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
-        pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
-        pub block: Option<flatbuffers::WIPOffset<Block<'a>>>,
-    }
-    impl<'a> Default for TestCaseStatementArgs<'a> {
-        #[inline]
-        fn default() -> Self {
-            TestCaseStatementArgs {
-                loc: None,
-                id: None,
-                block: None,
-            }
-        }
-    }
-    pub struct TestCaseStatementBuilder<'a: 'b, 'b> {
-        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
-    }
-    impl<'a: 'b, 'b> TestCaseStatementBuilder<'a, 'b> {
-        #[inline]
-        pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(
-                    TestCaseStatement::VT_LOC,
-                    loc,
-                );
-        }
-        #[inline]
-        pub fn add_id(&mut self, id: flatbuffers::WIPOffset<Identifier<'b>>) {
-            self.fbb_
-                .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(
-                    TestCaseStatement::VT_ID,
-                    id,
-                );
-        }
-        #[inline]
-        pub fn add_block(&mut self, block: flatbuffers::WIPOffset<Block<'b>>) {
-            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<Block>>(
-                TestCaseStatement::VT_BLOCK,
-                block,
-            );
-        }
-        #[inline]
-        pub fn new(
-            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
-        ) -> TestCaseStatementBuilder<'a, 'b> {
-            let start = _fbb.start_table();
-            TestCaseStatementBuilder {
-                fbb_: _fbb,
-                start_: start,
-            }
-        }
-        #[inline]
-        pub fn finish(self) -> flatbuffers::WIPOffset<TestCaseStatement<'a>> {
             let o = self.fbb_.end_table(self.start_);
             flatbuffers::WIPOffset::new(o.value())
         }

@@ -30,7 +30,6 @@ func (*ImportDeclaration) node() {}
 func (*OptionStatement) node()          {}
 func (*BuiltinStatement) node()         {}
 func (*TestStatement) node()            {}
-func (*TestCaseStatement) node()        {}
 func (*ExpressionStatement) node()      {}
 func (*ReturnStatement) node()          {}
 func (*MemberAssignment) node()         {}
@@ -75,7 +74,6 @@ type Statement interface {
 func (*OptionStatement) stmt()          {}
 func (*BuiltinStatement) stmt()         {}
 func (*TestStatement) stmt()            {}
-func (*TestCaseStatement) stmt()        {}
 func (*ExpressionStatement) stmt()      {}
 func (*ReturnStatement) stmt()          {}
 func (*NativeVariableAssignment) stmt() {}
@@ -322,27 +320,6 @@ func (s *TestStatement) Copy() Node {
 	*ns = *s
 
 	ns.Assignment = s.Assignment.Copy().(*NativeVariableAssignment)
-
-	return ns
-}
-
-type TestCaseStatement struct {
-	Loc
-
-	ID    *Identifier
-	Block *Block
-}
-
-func (s *TestCaseStatement) NodeType() string { return "TestCaseStatement" }
-
-func (s *TestCaseStatement) Copy() Node {
-	if s == nil {
-		return s
-	}
-	ns := new(TestCaseStatement)
-
-	ns.ID = s.ID.Copy().(*Identifier)
-	ns.Block = s.Block.Copy().(*Block)
 
 	return ns
 }
