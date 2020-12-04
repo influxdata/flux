@@ -104,7 +104,7 @@ fn convert_statement(stmt: ast::Statement, fresher: &mut Fresher) -> Result<Stat
         )?))),
         ast::Statement::TestCase(_) => {
             Err("TestCase is not supported in semantic analysis".to_string())
-        },
+        }
         ast::Statement::Expr(s) => Ok(Statement::Expr(convert_expression_statement(*s, fresher)?)),
         ast::Statement::Return(s) => Ok(Statement::Return(convert_return_statement(*s, fresher)?)),
         // TODO(affo): we should fix this to include MemberAssignement.
