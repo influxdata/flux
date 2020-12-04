@@ -7,6 +7,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -339,38 +340,29 @@ var substring = values.NewFunction(
 	"substring",
 	runtime.MustLookupBuiltinType("strings", "substring"),
 	func(ctx context.Context, args values.Object) (values.Value, error) {
-		v, vOk := args.Get(stringArgV)
-		a, aOk := args.Get(start)
-		b, bOk := args.Get(end)
-		if !aOk || !bOk || !vOk {
-			return nil, fmt.Errorf("missing argument")
-		}
-
-		if (v.Type().Nature() == semantic.String) && (a.Type().Nature() == semantic.Int) && (b.Type().Nature() == semantic.Int) {
-			vStr := v.Str()
-			aInt := int(a.Int())
-			bInt := int(b.Int())
-			if aInt < 0 || bInt > len(vStr) {
-				return nil, fmt.Errorf("indices out of bounds")
+		return interpreter.DoFunctionCallContext(func(ctx context.Context, args interpreter.Arguments) (values.Value, error) {
+			v, err := args.GetRequiredString(stringArgV)
+			if err != nil {
+				return nil, err
+			}
+			a, err := args.GetRequiredInt(start)
+			if err != nil {
+				return nil, err
+			}
+			b, err := args.GetRequiredInt(end)
+			if err != nil {
+				return nil, err
 			}
 
-			count := 0
-			byteStart := 0
-			byteEnd := 0
-			for i, c := range vStr {
-				if count == aInt {
-					byteStart = i
-				}
-				if count >= bInt-1 {
-					byteEnd = i + len(string(c))
-					break
-				}
-				count++
+			s := []rune(v)
+			if a < 0 {
+				a = 0
 			}
-			return values.NewString(vStr[byteStart:byteEnd]), nil
-		}
-
-		return nil, fmt.Errorf("procedure cannot be executed")
+			if b > int64(len(v)) {
+				b = int64(len(v))
+			}
+			return values.NewString(string(s[a:b])), nil
+		}, ctx, args)
 	}, false,
 )
 

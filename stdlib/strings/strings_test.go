@@ -2,7 +2,6 @@ package strings
 
 import (
 	"context"
-	"errors"
 	"strings"
 	"testing"
 	"unicode"
@@ -1330,7 +1329,6 @@ func TestSubstring(t *testing.T) {
 			start:     0,
 			end:       6,
 			want:      "influx",
-			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "simple substring",
@@ -1338,7 +1336,6 @@ func TestSubstring(t *testing.T) {
 			start:     2,
 			end:       5,
 			want:      "flu",
-			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "chinese",
@@ -1346,7 +1343,6 @@ func TestSubstring(t *testing.T) {
 			start:     2,
 			end:       5,
 			want:      "汉字汉",
-			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "chinese and space",
@@ -1354,31 +1350,34 @@ func TestSubstring(t *testing.T) {
 			start:     4,
 			end:       7,
 			want:      "字  ",
-			expectErr: errors.New("indices out of bounds"),
 		},
 		{
 			name:      "alpha",
 			v:         "ineedmesomeabcsoup",
 			start:     -1,
 			end:       7,
-			want:      "",
-			expectErr: errors.New("indices out of bounds"),
+			want:      "ineedme",
 		},
 		{
 			name:      "beta",
 			v:         "ineedmesomeabcsoup",
 			start:     0,
 			end:       3389,
-			want:      "",
-			expectErr: errors.New("indices out of bounds"),
+			want:      "ineedmesomeabcsoup",
 		},
 		{
 			name:      "alphabet",
 			v:         "ineedmesomeabcsoup",
 			start:     -289,
 			end:       23948,
-			want:      "",
-			expectErr: errors.New("indices out of bounds"),
+			want:      "ineedmesomeabcsoup",
+		},
+		{
+			name: "empty string",
+			v: "influx",
+			start: 0,
+			end: 0,
+			want: "",
 		},
 	}
 	for _, tc := range testCases {
