@@ -2285,25 +2285,30 @@ func (rcv *TestCaseStatement) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *TestCaseStatement) AssignmentType() byte {
+func (rcv *TestCaseStatement) Id(obj *Identifier) *Identifier {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Identifier)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
 	}
-	return 0
+	return nil
 }
 
-func (rcv *TestCaseStatement) MutateAssignmentType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
-}
-
-func (rcv *TestCaseStatement) Assignment(obj *flatbuffers.Table) bool {
+func (rcv *TestCaseStatement) Block(obj *Block) *Block {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		rcv._tab.Union(obj, o)
-		return true
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(Block)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
 	}
-	return false
+	return nil
 }
 
 func TestCaseStatementStart(builder *flatbuffers.Builder) {
@@ -2312,11 +2317,11 @@ func TestCaseStatementStart(builder *flatbuffers.Builder) {
 func TestCaseStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func TestCaseStatementAddAssignmentType(builder *flatbuffers.Builder, assignmentType byte) {
-	builder.PrependByteSlot(1, assignmentType, 0)
+func TestCaseStatementAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
 }
-func TestCaseStatementAddAssignment(builder *flatbuffers.Builder, assignment flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(assignment), 0)
+func TestCaseStatementAddBlock(builder *flatbuffers.Builder, block flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(block), 0)
 }
 func TestCaseStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

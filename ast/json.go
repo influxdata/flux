@@ -255,6 +255,17 @@ func (s *TestStatement) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(raw)
 }
+func (s *TestCaseStatement) MarshalJSON() ([]byte, error) {
+	type Alias TestCaseStatement
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  s.Type(),
+		Alias: (*Alias)(s),
+	}
+	return json.Marshal(raw)
+}
 func (d *VariableAssignment) MarshalJSON() ([]byte, error) {
 	type Alias VariableAssignment
 	raw := struct {
@@ -1493,6 +1504,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(BuiltinStatement)
 	case "TestStatement":
 		node = new(TestStatement)
+	case "TestCaseStatement":
+		node = new(TestCaseStatement)
 	case "ExpressionStatement":
 		node = new(ExpressionStatement)
 	case "ReturnStatement":

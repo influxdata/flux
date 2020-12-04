@@ -88,6 +88,7 @@ func (*ReturnStatement) node()     {}
 func (*OptionStatement) node()     {}
 func (*BuiltinStatement) node()    {}
 func (*TestStatement) node()       {}
+func (*TestCaseStatement) node()   {}
 func (*VariableAssignment) node()  {}
 func (*MemberAssignment) node()    {}
 
@@ -566,6 +567,7 @@ func (*ReturnStatement) stmt()     {}
 func (*OptionStatement) stmt()     {}
 func (*BuiltinStatement) stmt()    {}
 func (*TestStatement) stmt()       {}
+func (*TestCaseStatement) stmt()   {}
 
 type Assignment interface {
 	Statement
@@ -713,6 +715,29 @@ func (s *TestStatement) Copy() Node {
 		ns.Assignment = s.Assignment.Copy().(*VariableAssignment)
 	}
 
+	return ns
+}
+
+// TestCaseStatement declares a Flux test case
+type TestCaseStatement struct {
+	BaseNode
+	ID    *Identifier
+	Block *Block
+}
+
+// Type is the abstract type
+func (*TestCaseStatement) Type() string { return "TestCaseStatement" }
+
+// Copy returns a deep copy of a TestCaseStatement Node
+func (s *TestCaseStatement) Copy() Node {
+	if s == nil {
+		return s
+	}
+	ns := new(TestCaseStatement)
+	ns.BaseNode = s.BaseNode.Copy()
+
+	ns.ID = s.ID.Copy().(*Identifier)
+	ns.Block = s.Block.Copy().(*Block)
 	return ns
 }
 

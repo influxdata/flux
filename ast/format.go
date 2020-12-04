@@ -344,6 +344,12 @@ func (f *formatter) formatTestStatement(n *TestStatement) {
 	f.formatNode(n.Assignment)
 }
 
+func (f *formatter) formatTestCaseStatement(n *TestCaseStatement) {
+	f.writeString("testcase ")
+	f.formatNode(n.ID)
+	f.formatNode(n.Block)
+}
+
 func (f *formatter) formatVariableAssignment(n *VariableAssignment) {
 	f.formatNode(n.ID)
 	f.writeString(" = ")
@@ -701,6 +707,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatOptionStatement(n)
 	case *TestStatement:
 		f.formatTestStatement(n)
+	case *TestCaseStatement:
+		f.formatTestCaseStatement(n)
 	case *ExpressionStatement:
 		f.formatExpressionStatement(n)
 	case *ReturnStatement:
