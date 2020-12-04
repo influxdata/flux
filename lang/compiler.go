@@ -428,7 +428,24 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 
 	s, cctx := opentracing.StartSpanFromContext(ctx, "eval")
 
-	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecOptsConfig{}, flux.SetNowOption(p.Now))
+	// Set the now option to our own default and capture the option itself
+	// to allow us to find it after the run. A user might overwrite the
+	// now parameter with their own thing so we don't want to allow for
+	// that interference. If `option now` is used to overwrite this,
+	// the inner value pointed to by the option will be modified.
+	// TODO(jsternberg): Personal note, I don't like how now interacts with
+	// the runtime and flux code in so many places. We should evaluate how
+	// now is used and see if we can improve how now interacts with the system.
+	var nowOpt values.Value
+	sideEffects, scope, err := p.Runtime.Eval(cctx, ast, &ExecOptsConfig{},
+		flux.SetNowOption(p.Now),
+		func(r flux.Runtime, scope values.Scope) {
+			nowOpt, _ = scope.Lookup(interpreter.NowOption)
+			if _, ok := nowOpt.(*values.Option); !ok {
+				panic("now must be an option")
+			}
+		},
+	)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -436,10 +453,6 @@ func (p *AstProgram) getSpec(ctx context.Context, alloc *memory.Allocator) (*flu
 
 	s, cctx = opentracing.StartSpanFromContext(ctx, "compile")
 	defer s.Finish()
-	nowOpt, ok := scope.Lookup(interpreter.NowOption)
-	if !ok {
-		return nil, nil, fmt.Errorf("%q option not set", interpreter.NowOption)
-	}
 	nowTime, err := nowOpt.Function().Call(ctx, nil)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "error in evaluating AST while starting program")
@@ -466,7 +479,7 @@ func (p *AstProgram) Start(ctx context.Context, alloc *memory.Allocator) (flux.Q
 		return nil, err
 	}
 
-	// Planing.
+	// Planning.
 	s, cctx := opentracing.StartSpanFromContext(ctx, "plan")
 	if p.opts.verbose {
 		log.Println("Query Spec: ", flux.Formatted(sp, flux.FmtJSON))

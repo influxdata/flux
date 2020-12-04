@@ -5,10 +5,12 @@ import (
 	"context"
 	"encoding/json"
 	"math"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/andreyvit/diff"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/ast"
@@ -423,6 +425,60 @@ csv.from(csv: "foo,bar") |> range(start: 2017-10-10T00:00:00Z)
 				t.Error(err)
 			}
 		})
+	}
+}
+
+func TestASTCompiler_ShadowNowVariable(t *testing.T) {
+	now, err := time.Parse(time.RFC3339, "2020-12-04T13:00:00Z")
+	if err != nil {
+		t.Fatal(err)
+	}
+	c := &lang.FluxCompiler{
+		Query: `package main
+import "csv"
+now = 5.0
+csv.from(csv: "
+#datatype,string,long,dateTime:RFC3339,double
+#group,false,false,false,false
+#default,_result,,,
+,result,table,_time,_value
+,,0,2020-12-04T09:00:00Z,2.0
+,,0,2020-12-04T10:00:00Z,8.0
+,,0,2020-12-04T11:00:00Z,${string(v: now)}
+,,0,2020-12-04T12:00:00Z,3.0
+") |> range(start: -2h)
+`,
+		Now: now,
+	}
+	program, err := c.Compile(context.Background(), runtime.Default)
+	if err != nil {
+		t.Fatalf("unexpected compile error: %s", err)
+	}
+
+	mem := &memory.Allocator{}
+	qry, err := program.Start(context.Background(), mem)
+	if err != nil {
+		t.Fatalf("unexpected program error: %s", err)
+	}
+
+	results := flux.NewResultIteratorFromQuery(qry)
+	defer results.Release()
+
+	var gotB strings.Builder
+	enc := fcsv.NewMultiResultEncoder(fcsv.DefaultEncoderConfig())
+	if _, err := enc.Encode(&gotB, results); err != nil {
+		t.Fatalf("unexpected encode error: %s", err)
+	}
+	want, got := toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double
+#group,false,false,true,true,false,false
+#default,_result,,,,,
+,result,table,_start,_stop,_time,_value
+,,0,2020-12-04T11:00:00Z,2020-12-04T13:00:00Z,2020-12-04T11:00:00Z,5
+,,0,2020-12-04T11:00:00Z,2020-12-04T13:00:00Z,2020-12-04T12:00:00Z,3
+
+`), gotB.String()
+	if want != got {
+		t.Fatalf("unexpected output -want/+got:\n%s", diff.LineDiff(want, got))
 	}
 }
 
@@ -1049,4 +1105,10 @@ func flattenTableObjects(to *flux.TableObject, arr []*flux.TableObject) []*flux.
 		arr = flattenTableObjects(parent, arr)
 	}
 	return append(arr, to)
+}
+
+var crlfPattern = regexp.MustCompile(`\r?\n`)
+
+func toCRLF(data string) string {
+	return crlfPattern.ReplaceAllString(data, "\r\n")
 }
