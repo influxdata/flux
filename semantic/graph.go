@@ -340,7 +340,6 @@ func (s *TestCaseStatement) Copy() Node {
 		return s
 	}
 	ns := new(TestCaseStatement)
-	*ns = *s
 
 	ns.ID = s.ID.Copy().(*Identifier)
 	ns.Block = s.Block.Copy().(*Block)

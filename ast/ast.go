@@ -734,7 +734,6 @@ func (s *TestCaseStatement) Copy() Node {
 		return s
 	}
 	ns := new(TestCaseStatement)
-	*ns = *s
 	ns.BaseNode = s.BaseNode.Copy()
 
 	ns.ID = s.ID.Copy().(*Identifier)

@@ -286,7 +286,7 @@ func (itrp *Interpreter) doTestStatement(ctx context.Context, s *semantic.TestSt
 }
 
 func (itrp *Interpreter) doTestCaseStatement(ctx context.Context, s *semantic.TestCaseStatement, scope values.Scope) (values.Value, error) {
-	return nil, errors.New(codes.Internal, "unsupported statement type testcase")
+	return nil, errors.New(codes.Invalid, "unsupported statement type testcase")
 }
 
 func (itrp *Interpreter) doVariableAssignment(ctx context.Context, dec *semantic.NativeVariableAssignment, scope values.Scope) (values.Value, error) {

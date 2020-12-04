@@ -725,7 +725,7 @@ func matchTestStatement(p *ast.TestStatement, n *ast.TestStatement, ms sliceMatc
 }
 
 func matchTestCaseStatement(p *ast.TestCaseStatement, n *ast.TestCaseStatement, ms sliceMatchingStrategy) bool {
-	return match(p.ID, n.ID, ms)
+	return match(p.ID, n.ID, ms) && match(p.Block, n.Block, ms)
 }
 
 func matchVariableAssignment(p *ast.VariableAssignment, n *ast.VariableAssignment, ms sliceMatchingStrategy) bool {
