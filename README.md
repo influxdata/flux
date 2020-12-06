@@ -88,7 +88,7 @@ Here are a few examples of the language to get an idea of the syntax.
     [1,1,2]                  // an array of integers
     {foo: "str", bar: false} // an object with two keys and their values
 
-    // Values can be assigned to identifers
+    // Values can be assigned to identifiers
     x = 5.0
     x + 3.0 // 8.0
 
@@ -98,7 +98,7 @@ Here are a few examples of the language to get an idea of the syntax.
     // Call functions always using keyword arguments
     math.pow(x: 5.0, y: 3.0) // 5^3 = 125
 
-    // Functions are defined by assigning them to identifers
+    // Functions are defined by assigning them to identifiers
     add = (a, b) => a + b
 
     // Call add using keyword arguments
