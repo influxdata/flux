@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                            "b9a7471c00f354c49718eca3343f7c7d63aaa2b7b77215b00656674da8edcce8",
+	"libflux/Cargo.lock":                                                            "0073cf6fe918ed3486a7963bdea14ac11cf8c61e314998458da36cd465ba9735",
 	"libflux/Cargo.toml":                                                            "1da277f517d0a7cade9d7b49e6f4a33558e8a7d6ecb7896c6d0a1acc57a66d6e",
-	"libflux/core/Cargo.toml":                                                       "705b28a666ca74378d70932cc33211ff3f014852b7470f333a04e030c738f9c1",
+	"libflux/core/Cargo.toml":                                                       "5a62e77745d525b7ef718ad83e00ee4be3c29f200daba2d567850dcc82e6457f",
 	"libflux/core/build.rs":                                                         "20e9529f11e5bc8be43dc5e9724f02313713461deb935f418c16a7977d25ace6",
 	"libflux/core/src/ast/check/mod.rs":                                             "59de9596b266fd254785a81c1e1dbbd2ed18a2b66bafc9a4c9e51dba72cb8422",
 	"libflux/core/src/ast/check/tests.rs":                                           "9ca9abb71c9c2aa20b75b3aa1220304c5c04f5a59d8adc74c604659d940866ea",
@@ -32,7 +32,7 @@ var sourceHashes = map[string]string{
 	"libflux/core/src/parser/mod.rs":                                                "030f581f6e37baef43c1486752372993cc8f683cbd4419130d950c0919e94985",
 	"libflux/core/src/parser/strconv.rs":                                            "748c82f6efc2eafaafb872db5b4185ce29aafa8f03ba02c4b84f4a9614e832d2",
 	"libflux/core/src/parser/tests.rs":                                              "2d74d0d597e40bc91ac5a384e2ae905d7730ee15920837db458cb56c5878b4dd",
-	"libflux/core/src/scanner/mod.rs":                                               "1d921e2c5875036cedbbac29a01fde9eb465c7cfb2582a8868fc91c379cc91d9",
+	"libflux/core/src/scanner/mod.rs":                                               "679baf700e1a9518d44b71ce5499895f60d3f0ca0a5b64661d03b2ed10d66f0f",
 	"libflux/core/src/scanner/rust/mod.rs":                                          "6b949670c07871eea3fa950929ae8affb012ab257698c6470531e47fa9e0ed14",
 	"libflux/core/src/scanner/rust/scanner.rl":                                      "ab6b16f9aea311483a97afc8d3da8c120e0f8a64869a9cbca4d4504b7273770e",
 	"libflux/core/src/scanner/rust/scanner.rs":                                      "af092607c740541e14445ebbd3be08d327a228a3eea95ad27030e82b87e351a7",
@@ -62,8 +62,9 @@ var sourceHashes = map[string]string{
 	"libflux/core/src/semantic/walk/test_utils.rs":                                  "317606227b28f607273e4ff6ac431e148f753cc20ea1812fa7b97ecb262b3f90",
 	"libflux/core/src/semantic/walk/walk_mut.rs":                                    "122bf0d274fcfcc2d4771e105783daa2401ec58afc98d4c70a22027b9d5774e2",
 	"libflux/core/tests/analyze_test.rs":                                            "c49d81bdaa2275681990cdf8e18eb13adcbb54895ba0c2c49ab1a727d529a820",
-	"libflux/flux/Cargo.toml":                                                       "8762e88376ab435803d889697d85099638c1159f0f32c2ddf424653c7cc6c03f",
+	"libflux/flux/Cargo.toml":                                                       "fd3d45535fe954b3708996bddbc5c1feb989423498502b9ad547e91c4ddcc295",
 	"libflux/flux/benches/basic.rs":                                                 "f6b1d133a4edaa38b0ab6e2b63de1bbd62a489e39b77c62d0df6fa8e5462da0e",
+	"libflux/flux/benches/benchmarks.rs":                                            "77520f07b1a37ae0088d11b0aecdd0b17cb80568adf24ef4b125c895b51f8801",
 	"libflux/flux/benches/builtins.rs":                                              "625b3de708d49a3cb758f331a01f41805ac59d22bbadfee417922504f2d5797e",
 	"libflux/flux/benches/everything.flux":                                          "8fca377299a33e610fc435098c770ea0974b61150d71b9c5f206ce87c0a57656",
 	"libflux/flux/benches/formatter.rs":                                             "e4838c1428d45205292a9dda1759f804779a4e142db4360ec2a6be1c9ca741b8",
