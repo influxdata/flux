@@ -487,6 +487,7 @@ type memberEvaluator struct {
 	t        semantic.MonoType
 	object   Evaluator
 	property string
+	nullable bool
 }
 
 func (e *memberEvaluator) Type() semantic.MonoType {
@@ -498,7 +499,10 @@ func (e *memberEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, 
 	if err != nil {
 		return nil, err
 	}
-	v, _ := o.Object().Get(e.property)
+	v, ok := o.Object().Get(e.property)
+	if !ok && !e.nullable {
+		return nil, errors.Newf(codes.Invalid, "member %q with type %s is not in the record", e.property, e.t.Nature())
+	}
 	return v, nil
 }
 

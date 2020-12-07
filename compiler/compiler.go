@@ -455,10 +455,12 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		if err != nil {
 			return nil, err
 		}
+		t := apply(subst, nil, n.TypeOf())
 		return &memberEvaluator{
 			t:        apply(subst, nil, n.TypeOf()),
 			object:   object,
 			property: n.Property,
+			nullable: isNullable(t),
 		}, nil
 	case *semantic.IndexExpression:
 		arr, err := compile(n.Array, subst, scope)
@@ -689,4 +691,10 @@ func containsStr(strs []string, str string) bool {
 		}
 	}
 	return false
+}
+
+// isNullable will report if the MonoType is capable of being nullable.
+func isNullable(t semantic.MonoType) bool {
+	n := t.Nature()
+	return n != semantic.Array && n != semantic.Object && n != semantic.Dictionary
 }

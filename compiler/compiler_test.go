@@ -475,6 +475,52 @@ func TestCompileAndEval(t *testing.T) {
 			}),
 			want: values.NewBool(true),
 		},
+		{
+			name: "null array",
+			fn:   `(r) => r.a[0]`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewArrayType(semantic.BasicString)},
+				})},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(nil),
+			}),
+			wantEvalErr: true,
+		},
+		{
+			name: "null record",
+			fn:   `(r) => r.a["b"]`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("a"), Value: semantic.NewObjectType([]semantic.PropertyType{
+						{Key: []byte("b"), Value: semantic.BasicString},
+					})},
+				})},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(nil),
+			}),
+			wantEvalErr: true,
+		},
+		// TODO(jsternberg): We presently have not implemented dictionary support for
+		// runtime functions. There aren't any builtins that use this functionality,
+		// but when we do, this test will need to be uncommented to ensure that
+		// a null dictionary does not sneak in.
+		// {
+		// 	name: "null dict",
+		//	fn: `import "dict"
+		// (r) => dict.get(dict: r.a, key: "b", default: "")`,
+		//	inType: semantic.NewObjectType([]semantic.PropertyType{
+		//		{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+		//			{Key: []byte("a"), Value: semantic.NewDictType(semantic.BasicString, semantic.BasicString)},
+		//		})},
+		//	}),
+		//	input: values.NewObjectWithValues(map[string]values.Value{
+		//		"r": values.NewObjectWithValues(nil),
+		//	}),
+		//	wantEvalErr: true,
+		// },
 	}
 
 	for _, tc := range testCases {
