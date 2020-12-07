@@ -3,6 +3,7 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 pub type CChar = u8;
 
+use crate::fmt;
 use std::collections::HashMap;
 use std::ffi::CString;
 use std::str;

@@ -19,7 +19,7 @@ wasm-bindgen = { version = "0.2.62", features = ["serde-serialize"] }
 
 [dev-dependencies]
 maplit = "1.0.2"
-criterion = "0.3.0"
+criterion = "0.3.3"
 
 [build-dependencies]
 core = { path = "../core" }
@@ -35,4 +35,9 @@ harness = false
 
 [[bench]]
 name = "formatter"
+harness = false
+
+[[bench]]
+name = "bench_scanner"
+path = "benches/benchmarks.rs"
 harness = false
