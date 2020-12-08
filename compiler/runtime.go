@@ -237,6 +237,39 @@ func (e *arrayEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, e
 	return arr, nil
 }
 
+type dictEvaluator struct {
+	elements []struct {
+		Key Evaluator
+		Val Evaluator
+	}
+	t semantic.MonoType
+}
+
+func (e *dictEvaluator) Type() semantic.MonoType {
+	return e.t
+}
+
+func (e *dictEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
+	if len(e.elements) == 0 {
+		return values.NewEmptyDict(e.t), nil
+	}
+	builder := values.NewDictBuilder(e.t)
+	for _, item := range e.elements {
+		key, err := eval(ctx, item.Key, scope)
+		if err != nil {
+			return nil, err
+		}
+		val, err := eval(ctx, item.Val, scope)
+		if err != nil {
+			return nil, err
+		}
+		if err := builder.Insert(key, val); err != nil {
+			return nil, err
+		}
+	}
+	return builder.Dict(), nil
+}
+
 type logicalEvaluator struct {
 	operator    ast.LogicalOperatorKind
 	left, right Evaluator

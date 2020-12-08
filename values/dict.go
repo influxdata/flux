@@ -45,6 +45,84 @@ type Dictionary interface {
 	Len() int
 }
 
+// NewEmptyDict will construct an empty dictionary
+func NewEmptyDict(ty semantic.MonoType) Dictionary {
+	return emptyDict{t: ty}
+}
+
+type emptyDict struct {
+	t semantic.MonoType
+}
+
+func (d emptyDict) Get(key, def Value) Value {
+	return def
+}
+
+func (d emptyDict) Insert(key, val Value) (Dictionary, error) {
+	builder := NewDictBuilder(semantic.NewDictType(key.Type(), val.Type()))
+	if err := builder.Insert(key, val); err != nil {
+		return nil, err
+	}
+	return builder.Dict(), nil
+}
+
+func (d emptyDict) Remove(key Value) Dictionary {
+	return d
+}
+
+func (d emptyDict) Range(f func(key, value Value)) {
+}
+
+func (d emptyDict) Len() int {
+	return 0
+}
+
+func (d emptyDict) Type() semantic.MonoType { return d.t }
+func (d emptyDict) IsNull() bool            { return false }
+func (d emptyDict) Str() string {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.String))
+}
+func (d emptyDict) Bytes() []byte {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Bytes))
+}
+func (d emptyDict) Int() int64 {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Int))
+}
+func (d emptyDict) UInt() uint64 {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.UInt))
+}
+func (d emptyDict) Float() float64 {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Float))
+}
+func (d emptyDict) Bool() bool {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Bool))
+}
+func (d emptyDict) Time() Time {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Time))
+}
+func (d emptyDict) Duration() Duration {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Duration))
+}
+func (d emptyDict) Regexp() *regexp.Regexp {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Regexp))
+}
+func (d emptyDict) Array() Array {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Array))
+}
+func (d emptyDict) Object() Object {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Object))
+}
+func (d emptyDict) Function() Function {
+	panic(UnexpectedKind(semantic.Dictionary, semantic.Function))
+}
+func (d emptyDict) Dict() Dictionary {
+	return d
+}
+
+func (d emptyDict) Equal(v Value) bool {
+	return d.t.Equal(v.Type()) && v.Dict().Len() == 0
+}
+
 type dict struct {
 	t    semantic.MonoType
 	data *immutable.SortedMap

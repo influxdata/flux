@@ -180,6 +180,17 @@ func walk(v Visitor, n Node) {
 				walk(w, e)
 			}
 		}
+	case *DictExpression:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			for _, e := range n.Elements {
+				walk(w, e.Key)
+				walk(w, e.Val)
+			}
+		}
 	case *BinaryExpression:
 		if n == nil {
 			return

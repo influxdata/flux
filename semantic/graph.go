@@ -37,6 +37,7 @@ func (*NativeVariableAssignment) node() {}
 
 func (*StringExpression) node()      {}
 func (*ArrayExpression) node()       {}
+func (*DictExpression) node()        {}
 func (*FunctionExpression) node()    {}
 func (*BinaryExpression) node()      {}
 func (*CallExpression) node()        {}
@@ -95,6 +96,7 @@ type Expression interface {
 
 func (*StringExpression) expression()       {}
 func (*ArrayExpression) expression()        {}
+func (*DictExpression) expression()         {}
 func (*BinaryExpression) expression()       {}
 func (*BooleanLiteral) expression()         {}
 func (*CallExpression) expression()         {}
@@ -517,6 +519,48 @@ func (e *ArrayExpression) Copy() Node {
 	return ne
 }
 func (e *ArrayExpression) TypeOf() MonoType {
+	return e.Type
+}
+
+type DictExpression struct {
+	Loc
+
+	Elements []struct {
+		Key Expression
+		Val Expression
+	}
+
+	Type MonoType
+}
+
+func (*DictExpression) NodeType() string { return "DictExpression" }
+
+func (e *DictExpression) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(DictExpression)
+	*ne = *e
+
+	if len(e.Elements) > 0 {
+		ne.Elements = make([]struct {
+			Key Expression
+			Val Expression
+		}, len(e.Elements))
+		for i, elem := range e.Elements {
+			ne.Elements[i] = struct {
+				Key Expression
+				Val Expression
+			}{
+				Key: elem.Key.Copy().(Expression),
+				Val: elem.Val.Copy().(Expression),
+			}
+		}
+	}
+
+	return ne
+}
+func (e *DictExpression) TypeOf() MonoType {
 	return e.Type
 }
 

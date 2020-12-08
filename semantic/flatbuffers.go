@@ -136,6 +136,14 @@ func fromExpressionTableOptional(getTable getTableFn, exprType fbsemantic.Expres
 			return nil, err
 		}
 		return e, nil
+	case fbsemantic.ExpressionDictExpression:
+		fbExpr := new(fbsemantic.DictExpression)
+		fbExpr.Init(tbl.Bytes, tbl.Pos)
+		e := &DictExpression{}
+		if err := e.FromBuf(fbExpr); err != nil {
+			return nil, err
+		}
+		return e, nil
 	case fbsemantic.ExpressionFunctionExpression:
 		fbExpr := new(fbsemantic.FunctionExpression)
 		fbExpr.Init(tbl.Bytes, tbl.Pos)

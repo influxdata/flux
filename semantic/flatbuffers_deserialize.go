@@ -34,6 +34,40 @@ func (rcv *ArrayExpression) FromBuf(fb *fbsemantic.ArrayExpression) error {
 	return nil
 }
 
+func (rcv *DictExpression) FromBuf(fb *fbsemantic.DictExpression) error {
+	var err error
+	if fb == nil {
+		return nil
+	}
+	if fbLoc := fb.Loc(nil); fbLoc != nil {
+		if err = rcv.Loc.FromBuf(fbLoc); err != nil {
+			return errors.Wrap(err, codes.Inherit, "DictExpression.Loc")
+		}
+	}
+	if fb.ElementsLength() > 0 {
+		rcv.Elements = make([]struct {
+			Key Expression
+			Val Expression
+		}, fb.ElementsLength())
+		for i := 0; i < fb.ElementsLength(); i++ {
+			item := new(fbsemantic.DictItem)
+			if !fb.Elements(item, i) {
+				return errors.New(codes.Internal, "could not deserialize DictExpression.Elements")
+			}
+			if rcv.Elements[i].Key, err = fromExpressionTable(item.Key, item.KeyType()); err != nil {
+				return errors.Wrap(err, codes.Inherit, "DictExpression.Elements")
+			}
+			if rcv.Elements[i].Val, err = fromExpressionTable(item.Val, item.ValType()); err != nil {
+				return errors.Wrap(err, codes.Inherit, "DictExpression.Elements")
+			}
+		}
+	}
+	if rcv.Type, err = getMonoType(fb); err != nil {
+		return errors.Wrap(err, codes.Inherit, "DictExpression.Type")
+	}
+	return nil
+}
+
 func (rcv *BinaryExpression) FromBuf(fb *fbsemantic.BinaryExpression) error {
 	var err error
 	if fb == nil {
