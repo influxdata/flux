@@ -3684,6 +3684,3595 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
+					Line:   39,
+				},
+				File:   "dict_lit_lambda_test.flux",
+				Source: "package dict_test\n\nimport \"testing\"\nimport \"dict\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"\n\nt_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  })\n\ntest _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   14,
+					},
+					File:   "dict_lit_lambda_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   6,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   6,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   14,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   6,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   24,
+					},
+					File:   "dict_lit_lambda_test.flux",
+					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   16,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   16,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   16,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   24,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   16,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 5,
+						Line:   33,
+					},
+					File:   "dict_lit_lambda_test.flux",
+					Source: "t_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  })",
+					Start: ast.Position{
+						Column: 1,
+						Line:   26,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   26,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "t_dict",
+						Start: ast.Position{
+							Column: 1,
+							Line:   26,
+						},
+					},
+				},
+				Name: "t_dict",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   33,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "(table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  })",
+						Start: ast.Position{
+							Column: 10,
+							Line:   26,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   27,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   27,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   28,
+									},
+									File:   "dict_lit_lambda_test.flux",
+									Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   27,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   28,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "start: 2018-05-22T19:53:26Z",
+											Start: ast.Position{
+												Column: 12,
+												Line:   28,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   28,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "start: 2018-05-22T19:53:26Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   28,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   28,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 12,
+														Line:   28,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   28,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "2018-05-22T19:53:26Z",
+													Start: ast.Position{
+														Column: 19,
+														Line:   28,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-05-22T19:53:26Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   28,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "range(start: 2018-05-22T19:53:26Z)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   28,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   28,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 6,
+												Line:   28,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   29,
+								},
+								File:   "dict_lit_lambda_test.flux",
+								Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 3,
+									Line:   27,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   29,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   29,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   29,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "columns: [\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 11,
+												Line:   29,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   29,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 11,
+													Line:   29,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   29,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 20,
+													Line:   29,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   29,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 21,
+														Line:   29,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   29,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 31,
+														Line:   29,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   29,
+									},
+									File:   "dict_lit_lambda_test.flux",
+									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 6,
+										Line:   29,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 10,
+											Line:   29,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 6,
+											Line:   29,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 5,
+								Line:   33,
+							},
+							File:   "dict_lit_lambda_test.flux",
+							Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  })",
+							Start: ast.Position{
+								Column: 3,
+								Line:   27,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 4,
+										Line:   33,
+									},
+									File:   "dict_lit_lambda_test.flux",
+									Source: "fn: (r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  }",
+									Start: ast.Position{
+										Column: 10,
+										Line:   30,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 4,
+											Line:   33,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "fn: (r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  }",
+										Start: ast.Position{
+											Column: 10,
+											Line:   30,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   30,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 10,
+												Line:   30,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.FunctionExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 4,
+												Line:   33,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "(r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  }",
+											Start: ast.Position{
+												Column: 14,
+												Line:   30,
+											},
+										},
+									},
+									Body: &ast.Block{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   33,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "{\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  }",
+												Start: ast.Position{
+													Column: 21,
+													Line:   30,
+												},
+											},
+										},
+										Body: []ast.Statement{&ast.VariableAssignment{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   31,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "codes = [0: \"a\", 1: \"b\"]",
+													Start: ast.Position{
+														Column: 5,
+														Line:   31,
+													},
+												},
+											},
+											ID: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 10,
+															Line:   31,
+														},
+														File:   "dict_lit_lambda_test.flux",
+														Source: "codes",
+														Start: ast.Position{
+															Column: 5,
+															Line:   31,
+														},
+													},
+												},
+												Name: "codes",
+											},
+											Init: &ast.DictExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 29,
+															Line:   31,
+														},
+														File:   "dict_lit_lambda_test.flux",
+														Source: "[0: \"a\", 1: \"b\"]",
+														Start: ast.Position{
+															Column: 13,
+															Line:   31,
+														},
+													},
+												},
+												Elements: []*ast.DictItem{&ast.DictItem{
+													Key: &ast.IntegerLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 15,
+																	Line:   31,
+																},
+																File:   "dict_lit_lambda_test.flux",
+																Source: "0",
+																Start: ast.Position{
+																	Column: 14,
+																	Line:   31,
+																},
+															},
+														},
+														Value: int64(0),
+													},
+													Val: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 20,
+																	Line:   31,
+																},
+																File:   "dict_lit_lambda_test.flux",
+																Source: "\"a\"",
+																Start: ast.Position{
+																	Column: 17,
+																	Line:   31,
+																},
+															},
+														},
+														Value: "a",
+													},
+												}, &ast.DictItem{
+													Key: &ast.IntegerLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 23,
+																	Line:   31,
+																},
+																File:   "dict_lit_lambda_test.flux",
+																Source: "1",
+																Start: ast.Position{
+																	Column: 22,
+																	Line:   31,
+																},
+															},
+														},
+														Value: int64(1),
+													},
+													Val: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 28,
+																	Line:   31,
+																},
+																File:   "dict_lit_lambda_test.flux",
+																Source: "\"b\"",
+																Start: ast.Position{
+																	Column: 25,
+																	Line:   31,
+																},
+															},
+														},
+														Value: "b",
+													},
+												}},
+											},
+										}, &ast.ReturnStatement{
+											Argument: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 77,
+															Line:   32,
+														},
+														File:   "dict_lit_lambda_test.flux",
+														Source: "{r with code: dict.get(dict: codes, key: r._value, default: \"c\")}",
+														Start: ast.Position{
+															Column: 12,
+															Line:   32,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 76,
+																Line:   32,
+															},
+															File:   "dict_lit_lambda_test.flux",
+															Source: "code: dict.get(dict: codes, key: r._value, default: \"c\")",
+															Start: ast.Position{
+																Column: 20,
+																Line:   32,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 24,
+																	Line:   32,
+																},
+																File:   "dict_lit_lambda_test.flux",
+																Source: "code",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   32,
+																},
+															},
+														},
+														Name: "code",
+													},
+													Value: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 75,
+																		Line:   32,
+																	},
+																	File:   "dict_lit_lambda_test.flux",
+																	Source: "dict: codes, key: r._value, default: \"c\"",
+																	Start: ast.Position{
+																		Column: 35,
+																		Line:   32,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 46,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_lambda_test.flux",
+																		Source: "dict: codes",
+																		Start: ast.Position{
+																			Column: 35,
+																			Line:   32,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 39,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_lambda_test.flux",
+																			Source: "dict",
+																			Start: ast.Position{
+																				Column: 35,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Name: "dict",
+																},
+																Value: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 46,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_lambda_test.flux",
+																			Source: "codes",
+																			Start: ast.Position{
+																				Column: 41,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Name: "codes",
+																},
+															}, &ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 61,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_lambda_test.flux",
+																		Source: "key: r._value",
+																		Start: ast.Position{
+																			Column: 48,
+																			Line:   32,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 51,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_lambda_test.flux",
+																			Source: "key",
+																			Start: ast.Position{
+																				Column: 48,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Name: "key",
+																},
+																Value: &ast.MemberExpression{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 61,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_lambda_test.flux",
+																			Source: "r._value",
+																			Start: ast.Position{
+																				Column: 53,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Object: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 54,
+																					Line:   32,
+																				},
+																				File:   "dict_lit_lambda_test.flux",
+																				Source: "r",
+																				Start: ast.Position{
+																					Column: 53,
+																					Line:   32,
+																				},
+																			},
+																		},
+																		Name: "r",
+																	},
+																	Property: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Errors: nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 61,
+																					Line:   32,
+																				},
+																				File:   "dict_lit_lambda_test.flux",
+																				Source: "_value",
+																				Start: ast.Position{
+																					Column: 55,
+																					Line:   32,
+																				},
+																			},
+																		},
+																		Name: "_value",
+																	},
+																},
+															}, &ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 75,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_lambda_test.flux",
+																		Source: "default: \"c\"",
+																		Start: ast.Position{
+																			Column: 63,
+																			Line:   32,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 70,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_lambda_test.flux",
+																			Source: "default",
+																			Start: ast.Position{
+																				Column: 63,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Name: "default",
+																},
+																Value: &ast.StringLiteral{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 75,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_lambda_test.flux",
+																			Source: "\"c\"",
+																			Start: ast.Position{
+																				Column: 72,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Value: "c",
+																},
+															}},
+															With: nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 76,
+																	Line:   32,
+																},
+																File:   "dict_lit_lambda_test.flux",
+																Source: "dict.get(dict: codes, key: r._value, default: \"c\")",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   32,
+																},
+															},
+														},
+														Callee: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 34,
+																		Line:   32,
+																	},
+																	File:   "dict_lit_lambda_test.flux",
+																	Source: "dict.get",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   32,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 30,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_lambda_test.flux",
+																		Source: "dict",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   32,
+																		},
+																	},
+																},
+																Name: "dict",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 34,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_lambda_test.flux",
+																		Source: "get",
+																		Start: ast.Position{
+																			Column: 31,
+																			Line:   32,
+																		},
+																	},
+																},
+																Name: "get",
+															},
+														},
+													},
+												}},
+												With: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 14,
+																Line:   32,
+															},
+															File:   "dict_lit_lambda_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 13,
+																Line:   32,
+															},
+														},
+													},
+													Name: "r",
+												},
+											},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 77,
+														Line:   32,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}",
+													Start: ast.Position{
+														Column: 5,
+														Line:   32,
+													},
+												},
+											},
+										}},
+									},
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   30,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "r",
+												Start: ast.Position{
+													Column: 15,
+													Line:   30,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   30,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 15,
+														Line:   30,
+													},
+												},
+											},
+											Name: "r",
+										},
+										Value: nil,
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 5,
+									Line:   33,
+								},
+								File:   "dict_lit_lambda_test.flux",
+								Source: "map(fn: (r) => {\n    codes = [0: \"a\", 1: \"b\"]\n    return {r with code: dict.get(dict: codes, key: r._value, default: \"c\")}\n  })",
+								Start: ast.Position{
+									Column: 6,
+									Line:   30,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 9,
+										Line:   30,
+									},
+									File:   "dict_lit_lambda_test.flux",
+									Source: "map",
+									Start: ast.Position{
+										Column: 6,
+										Line:   30,
+									},
+								},
+							},
+							Name: "map",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   26,
+							},
+							File:   "dict_lit_lambda_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 11,
+								Line:   26,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   26,
+								},
+								File:   "dict_lit_lambda_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 11,
+									Line:   26,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   26,
+							},
+							File:   "dict_lit_lambda_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   26,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 3,
+							Line:   39,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "_dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   35,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   35,
+							},
+							File:   "dict_lit_lambda_test.flux",
+							Source: "_dict",
+							Start: ast.Position{
+								Column: 6,
+								Line:   35,
+							},
+						},
+					},
+					Name: "_dict",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 3,
+								Line:   39,
+							},
+							File:   "dict_lit_lambda_test.flux",
+							Source: "() => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+							Start: ast.Position{
+								Column: 14,
+								Line:   35,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 3,
+									Line:   39,
+								},
+								File:   "dict_lit_lambda_test.flux",
+								Source: "({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+								Start: ast.Position{
+									Column: 20,
+									Line:   35,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 2,
+										Line:   39,
+									},
+									File:   "dict_lit_lambda_test.flux",
+									Source: "{\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n}",
+									Start: ast.Position{
+										Column: 21,
+										Line:   35,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   36,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   36,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   36,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 3,
+												Line:   36,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   36,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 30,
+													Line:   36,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   36,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 30,
+														Line:   36,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 33,
+															Line:   36,
+														},
+														File:   "dict_lit_lambda_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 30,
+															Line:   36,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   36,
+														},
+														File:   "dict_lit_lambda_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 35,
+															Line:   36,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   36,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 10,
+												Line:   36,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   36,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 10,
+													Line:   36,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   36,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 10,
+														Line:   36,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   36,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 18,
+														Line:   36,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   37,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   37,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   37,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 3,
+												Line:   37,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   37,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 25,
+													Line:   37,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   37,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 25,
+														Line:   37,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 28,
+															Line:   37,
+														},
+														File:   "dict_lit_lambda_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 25,
+															Line:   37,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   37,
+														},
+														File:   "dict_lit_lambda_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 30,
+															Line:   37,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   37,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 9,
+												Line:   37,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   37,
+												},
+												File:   "dict_lit_lambda_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 9,
+													Line:   37,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   37,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 9,
+														Line:   37,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   37,
+													},
+													File:   "dict_lit_lambda_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 17,
+														Line:   37,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   38,
+										},
+										File:   "dict_lit_lambda_test.flux",
+										Source: "fn: t_dict",
+										Start: ast.Position{
+											Column: 3,
+											Line:   38,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 5,
+												Line:   38,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 3,
+												Line:   38,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   38,
+											},
+											File:   "dict_lit_lambda_test.flux",
+											Source: "t_dict",
+											Start: ast.Position{
+												Column: 7,
+												Line:   38,
+											},
+										},
+									},
+									Name: "t_dict",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 3,
+						Line:   39,
+					},
+					File:   "dict_lit_lambda_test.flux",
+					Source: "test _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   35,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "dict_lit_lambda_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "dict_lit_lambda_test.flux",
+					Source: "import \"dict\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "\"dict\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "dict",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "dict_lit_lambda_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "dict_lit_lambda_test.flux",
+					Source: "package dict_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "dict_lit_lambda_test.flux",
+						Source: "dict_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "dict_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 3,
+					Line:   38,
+				},
+				File:   "dict_lit_test.flux",
+				Source: "package dict_test\n\nimport \"testing\"\nimport \"dict\"\n\ncodes = [0: \"a\", 1: \"b\"]\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"\n\nt_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))\n\ntest _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 25,
+						Line:   6,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "codes = [0: \"a\", 1: \"b\"]",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   6,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "codes",
+						Start: ast.Position{
+							Column: 1,
+							Line:   6,
+						},
+					},
+				},
+				Name: "codes",
+			},
+			Init: &ast.DictExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 25,
+							Line:   6,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "[0: \"a\", 1: \"b\"]",
+						Start: ast.Position{
+							Column: 9,
+							Line:   6,
+						},
+					},
+				},
+				Elements: []*ast.DictItem{&ast.DictItem{
+					Key: &ast.IntegerLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 11,
+									Line:   6,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "0",
+								Start: ast.Position{
+									Column: 10,
+									Line:   6,
+								},
+							},
+						},
+						Value: int64(0),
+					},
+					Val: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   6,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "\"a\"",
+								Start: ast.Position{
+									Column: 13,
+									Line:   6,
+								},
+							},
+						},
+						Value: "a",
+					},
+				}, &ast.DictItem{
+					Key: &ast.IntegerLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 19,
+									Line:   6,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "1",
+								Start: ast.Position{
+									Column: 18,
+									Line:   6,
+								},
+							},
+						},
+						Value: int64(1),
+					},
+					Val: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   6,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "\"b\"",
+								Start: ast.Position{
+									Column: 21,
+									Line:   6,
+								},
+							},
+						},
+						Value: "b",
+					},
+				}},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   16,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   16,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,1\n,,0,2018-05-22T19:53:46Z,_m,_f,2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   26,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   18,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   18,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   18,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   26,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   18,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long,string\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,a\n,,0,2018-05-22T19:53:36Z,_m,_f,1,b\n,,0,2018-05-22T19:53:46Z,_m,_f,2,c\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 89,
+						Line:   32,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "t_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   28,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   28,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "t_dict",
+						Start: ast.Position{
+							Column: 1,
+							Line:   28,
+						},
+					},
+				},
+				Name: "t_dict",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 89,
+							Line:   32,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "(table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+						Start: ast.Position{
+							Column: 10,
+							Line:   28,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   29,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   29,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   30,
+									},
+									File:   "dict_lit_test.flux",
+									Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   29,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   30,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "start: 2018-05-22T19:53:26Z",
+											Start: ast.Position{
+												Column: 12,
+												Line:   30,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   30,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "start: 2018-05-22T19:53:26Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   30,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   30,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 12,
+														Line:   30,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   30,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "2018-05-22T19:53:26Z",
+													Start: ast.Position{
+														Column: 19,
+														Line:   30,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-05-22T19:53:26Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   30,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "range(start: 2018-05-22T19:53:26Z)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   30,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   30,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 6,
+												Line:   30,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   31,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 3,
+									Line:   29,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   31,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   31,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   31,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "columns: [\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 11,
+												Line:   31,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   31,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 11,
+													Line:   31,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   31,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 20,
+													Line:   31,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   31,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 21,
+														Line:   31,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   31,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 31,
+														Line:   31,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   31,
+									},
+									File:   "dict_lit_test.flux",
+									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 6,
+										Line:   31,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 10,
+											Line:   31,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 6,
+											Line:   31,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 89,
+								Line:   32,
+							},
+							File:   "dict_lit_test.flux",
+							Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+							Start: ast.Position{
+								Column: 3,
+								Line:   29,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 88,
+										Line:   32,
+									},
+									File:   "dict_lit_test.flux",
+									Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+									Start: ast.Position{
+										Column: 10,
+										Line:   32,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 88,
+											Line:   32,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+										Start: ast.Position{
+											Column: 10,
+											Line:   32,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   32,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 10,
+												Line:   32,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.FunctionExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 88,
+												Line:   32,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "(r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+											Start: ast.Position{
+												Column: 14,
+												Line:   32,
+											},
+										},
+									},
+									Body: &ast.ParenExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 88,
+													Line:   32,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "({r with code: dict.get(dict: codes, key: r._value, default: \"c\")})",
+												Start: ast.Position{
+													Column: 21,
+													Line:   32,
+												},
+											},
+										},
+										Expression: &ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 87,
+														Line:   32,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "{r with code: dict.get(dict: codes, key: r._value, default: \"c\")}",
+													Start: ast.Position{
+														Column: 22,
+														Line:   32,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 86,
+															Line:   32,
+														},
+														File:   "dict_lit_test.flux",
+														Source: "code: dict.get(dict: codes, key: r._value, default: \"c\")",
+														Start: ast.Position{
+															Column: 30,
+															Line:   32,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 34,
+																Line:   32,
+															},
+															File:   "dict_lit_test.flux",
+															Source: "code",
+															Start: ast.Position{
+																Column: 30,
+																Line:   32,
+															},
+														},
+													},
+													Name: "code",
+												},
+												Value: &ast.CallExpression{
+													Arguments: []ast.Expression{&ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 85,
+																	Line:   32,
+																},
+																File:   "dict_lit_test.flux",
+																Source: "dict: codes, key: r._value, default: \"c\"",
+																Start: ast.Position{
+																	Column: 45,
+																	Line:   32,
+																},
+															},
+														},
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 56,
+																		Line:   32,
+																	},
+																	File:   "dict_lit_test.flux",
+																	Source: "dict: codes",
+																	Start: ast.Position{
+																		Column: 45,
+																		Line:   32,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 49,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_test.flux",
+																		Source: "dict",
+																		Start: ast.Position{
+																			Column: 45,
+																			Line:   32,
+																		},
+																	},
+																},
+																Name: "dict",
+															},
+															Value: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 56,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_test.flux",
+																		Source: "codes",
+																		Start: ast.Position{
+																			Column: 51,
+																			Line:   32,
+																		},
+																	},
+																},
+																Name: "codes",
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 71,
+																		Line:   32,
+																	},
+																	File:   "dict_lit_test.flux",
+																	Source: "key: r._value",
+																	Start: ast.Position{
+																		Column: 58,
+																		Line:   32,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 61,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_test.flux",
+																		Source: "key",
+																		Start: ast.Position{
+																			Column: 58,
+																			Line:   32,
+																		},
+																	},
+																},
+																Name: "key",
+															},
+															Value: &ast.MemberExpression{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 71,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_test.flux",
+																		Source: "r._value",
+																		Start: ast.Position{
+																			Column: 63,
+																			Line:   32,
+																		},
+																	},
+																},
+																Object: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 64,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_test.flux",
+																			Source: "r",
+																			Start: ast.Position{
+																				Column: 63,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Name: "r",
+																},
+																Property: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 71,
+																				Line:   32,
+																			},
+																			File:   "dict_lit_test.flux",
+																			Source: "_value",
+																			Start: ast.Position{
+																				Column: 65,
+																				Line:   32,
+																			},
+																		},
+																	},
+																	Name: "_value",
+																},
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 85,
+																		Line:   32,
+																	},
+																	File:   "dict_lit_test.flux",
+																	Source: "default: \"c\"",
+																	Start: ast.Position{
+																		Column: 73,
+																		Line:   32,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 80,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_test.flux",
+																		Source: "default",
+																		Start: ast.Position{
+																			Column: 73,
+																			Line:   32,
+																		},
+																	},
+																},
+																Name: "default",
+															},
+															Value: &ast.StringLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 85,
+																			Line:   32,
+																		},
+																		File:   "dict_lit_test.flux",
+																		Source: "\"c\"",
+																		Start: ast.Position{
+																			Column: 82,
+																			Line:   32,
+																		},
+																	},
+																},
+																Value: "c",
+															},
+														}},
+														With: nil,
+													}},
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 86,
+																Line:   32,
+															},
+															File:   "dict_lit_test.flux",
+															Source: "dict.get(dict: codes, key: r._value, default: \"c\")",
+															Start: ast.Position{
+																Column: 36,
+																Line:   32,
+															},
+														},
+													},
+													Callee: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 44,
+																	Line:   32,
+																},
+																File:   "dict_lit_test.flux",
+																Source: "dict.get",
+																Start: ast.Position{
+																	Column: 36,
+																	Line:   32,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 40,
+																		Line:   32,
+																	},
+																	File:   "dict_lit_test.flux",
+																	Source: "dict",
+																	Start: ast.Position{
+																		Column: 36,
+																		Line:   32,
+																	},
+																},
+															},
+															Name: "dict",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 44,
+																		Line:   32,
+																	},
+																	File:   "dict_lit_test.flux",
+																	Source: "get",
+																	Start: ast.Position{
+																		Column: 41,
+																		Line:   32,
+																	},
+																},
+															},
+															Name: "get",
+														},
+													},
+												},
+											}},
+											With: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   32,
+														},
+														File:   "dict_lit_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 23,
+															Line:   32,
+														},
+													},
+												},
+												Name: "r",
+											},
+										},
+									},
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   32,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "r",
+												Start: ast.Position{
+													Column: 15,
+													Line:   32,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   32,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 15,
+														Line:   32,
+													},
+												},
+											},
+											Name: "r",
+										},
+										Value: nil,
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 89,
+									Line:   32,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "map(fn: (r) => ({r with code: dict.get(dict: codes, key: r._value, default: \"c\")}))",
+								Start: ast.Position{
+									Column: 6,
+									Line:   32,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 9,
+										Line:   32,
+									},
+									File:   "dict_lit_test.flux",
+									Source: "map",
+									Start: ast.Position{
+										Column: 6,
+										Line:   32,
+									},
+								},
+							},
+							Name: "map",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   28,
+							},
+							File:   "dict_lit_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 11,
+								Line:   28,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   28,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 11,
+									Line:   28,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   28,
+							},
+							File:   "dict_lit_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   28,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 3,
+							Line:   38,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "_dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   34,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   34,
+							},
+							File:   "dict_lit_test.flux",
+							Source: "_dict",
+							Start: ast.Position{
+								Column: 6,
+								Line:   34,
+							},
+						},
+					},
+					Name: "_dict",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 3,
+								Line:   38,
+							},
+							File:   "dict_lit_test.flux",
+							Source: "() => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+							Start: ast.Position{
+								Column: 14,
+								Line:   34,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 3,
+									Line:   38,
+								},
+								File:   "dict_lit_test.flux",
+								Source: "({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+								Start: ast.Position{
+									Column: 20,
+									Line:   34,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 2,
+										Line:   38,
+									},
+									File:   "dict_lit_test.flux",
+									Source: "{\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n}",
+									Start: ast.Position{
+										Column: 21,
+										Line:   34,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   35,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   35,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   35,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 3,
+												Line:   35,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   35,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 30,
+													Line:   35,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   35,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 30,
+														Line:   35,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 33,
+															Line:   35,
+														},
+														File:   "dict_lit_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 30,
+															Line:   35,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   35,
+														},
+														File:   "dict_lit_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 35,
+															Line:   35,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   35,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 10,
+												Line:   35,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   35,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 10,
+													Line:   35,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   35,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 10,
+														Line:   35,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   35,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 18,
+														Line:   35,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   36,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   36,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   36,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 3,
+												Line:   36,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   36,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 25,
+													Line:   36,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   36,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 25,
+														Line:   36,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 28,
+															Line:   36,
+														},
+														File:   "dict_lit_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 25,
+															Line:   36,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   36,
+														},
+														File:   "dict_lit_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 30,
+															Line:   36,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   36,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 9,
+												Line:   36,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   36,
+												},
+												File:   "dict_lit_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 9,
+													Line:   36,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   36,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 9,
+														Line:   36,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   36,
+													},
+													File:   "dict_lit_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 17,
+														Line:   36,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   37,
+										},
+										File:   "dict_lit_test.flux",
+										Source: "fn: t_dict",
+										Start: ast.Position{
+											Column: 3,
+											Line:   37,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 5,
+												Line:   37,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 3,
+												Line:   37,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   37,
+											},
+											File:   "dict_lit_test.flux",
+											Source: "t_dict",
+											Start: ast.Position{
+												Column: 7,
+												Line:   37,
+											},
+										},
+									},
+									Name: "t_dict",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 3,
+						Line:   38,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "test _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   34,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "import \"dict\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "\"dict\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "dict",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "dict_lit_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "dict_lit_test.flux",
+					Source: "package dict_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "dict_lit_test.flux",
+						Source: "dict_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "dict_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 3,
 					Line:   57,
 				},
 				File:   "dict_test.flux",
@@ -6060,6 +9649,3377 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   1,
 						},
 						File:   "dict_test.flux",
+						Source: "dict_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "dict_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 3,
+					Line:   37,
+				},
+				File:   "empty_dict_lambda_test.flux",
+				Source: "package dict_test\n\nimport \"testing\"\nimport \"dict\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"\n\nt_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  })\n\ntest _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   13,
+					},
+					File:   "empty_dict_lambda_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   6,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   6,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   13,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   6,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   22,
+					},
+					File:   "empty_dict_lambda_test.flux",
+					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   15,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   15,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   15,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   22,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   15,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 5,
+						Line:   31,
+					},
+					File:   "empty_dict_lambda_test.flux",
+					Source: "t_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  })",
+					Start: ast.Position{
+						Column: 1,
+						Line:   24,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   24,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "t_dict",
+						Start: ast.Position{
+							Column: 1,
+							Line:   24,
+						},
+					},
+				},
+				Name: "t_dict",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   31,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "(table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  })",
+						Start: ast.Position{
+							Column: 10,
+							Line:   24,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   25,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   25,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   26,
+									},
+									File:   "empty_dict_lambda_test.flux",
+									Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   25,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   26,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "start: 2018-05-22T19:53:26Z",
+											Start: ast.Position{
+												Column: 12,
+												Line:   26,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   26,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "start: 2018-05-22T19:53:26Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   26,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   26,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 12,
+														Line:   26,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   26,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "2018-05-22T19:53:26Z",
+													Start: ast.Position{
+														Column: 19,
+														Line:   26,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-05-22T19:53:26Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   26,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "range(start: 2018-05-22T19:53:26Z)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   26,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   26,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 6,
+												Line:   26,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   27,
+								},
+								File:   "empty_dict_lambda_test.flux",
+								Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 3,
+									Line:   25,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   27,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   27,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   27,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "columns: [\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 11,
+												Line:   27,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   27,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 11,
+													Line:   27,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   27,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 20,
+													Line:   27,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   27,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 21,
+														Line:   27,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   27,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 31,
+														Line:   27,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   27,
+									},
+									File:   "empty_dict_lambda_test.flux",
+									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 6,
+										Line:   27,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 10,
+											Line:   27,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 6,
+											Line:   27,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 5,
+								Line:   31,
+							},
+							File:   "empty_dict_lambda_test.flux",
+							Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  })",
+							Start: ast.Position{
+								Column: 3,
+								Line:   25,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 4,
+										Line:   31,
+									},
+									File:   "empty_dict_lambda_test.flux",
+									Source: "fn: (r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  }",
+									Start: ast.Position{
+										Column: 10,
+										Line:   28,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 4,
+											Line:   31,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "fn: (r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  }",
+										Start: ast.Position{
+											Column: 10,
+											Line:   28,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   28,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 10,
+												Line:   28,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.FunctionExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 4,
+												Line:   31,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "(r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  }",
+											Start: ast.Position{
+												Column: 14,
+												Line:   28,
+											},
+										},
+									},
+									Body: &ast.Block{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 4,
+													Line:   31,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "{\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  }",
+												Start: ast.Position{
+													Column: 21,
+													Line:   28,
+												},
+											},
+										},
+										Body: []ast.Statement{&ast.VariableAssignment{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   29,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "codes = [:]",
+													Start: ast.Position{
+														Column: 5,
+														Line:   29,
+													},
+												},
+											},
+											ID: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 10,
+															Line:   29,
+														},
+														File:   "empty_dict_lambda_test.flux",
+														Source: "codes",
+														Start: ast.Position{
+															Column: 5,
+															Line:   29,
+														},
+													},
+												},
+												Name: "codes",
+											},
+											Init: &ast.DictExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 16,
+															Line:   29,
+														},
+														File:   "empty_dict_lambda_test.flux",
+														Source: "[:]",
+														Start: ast.Position{
+															Column: 13,
+															Line:   29,
+														},
+													},
+												},
+												Elements: []*ast.DictItem{},
+											},
+										}, &ast.ReturnStatement{
+											Argument: &ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 68,
+															Line:   30,
+														},
+														File:   "empty_dict_lambda_test.flux",
+														Source: "{r with code: dict.get(dict: codes, key: 0, default: 2)}",
+														Start: ast.Position{
+															Column: 12,
+															Line:   30,
+														},
+													},
+												},
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 67,
+																Line:   30,
+															},
+															File:   "empty_dict_lambda_test.flux",
+															Source: "code: dict.get(dict: codes, key: 0, default: 2)",
+															Start: ast.Position{
+																Column: 20,
+																Line:   30,
+															},
+														},
+													},
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 24,
+																	Line:   30,
+																},
+																File:   "empty_dict_lambda_test.flux",
+																Source: "code",
+																Start: ast.Position{
+																	Column: 20,
+																	Line:   30,
+																},
+															},
+														},
+														Name: "code",
+													},
+													Value: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 66,
+																		Line:   30,
+																	},
+																	File:   "empty_dict_lambda_test.flux",
+																	Source: "dict: codes, key: 0, default: 2",
+																	Start: ast.Position{
+																		Column: 35,
+																		Line:   30,
+																	},
+																},
+															},
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 46,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lambda_test.flux",
+																		Source: "dict: codes",
+																		Start: ast.Position{
+																			Column: 35,
+																			Line:   30,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 39,
+																				Line:   30,
+																			},
+																			File:   "empty_dict_lambda_test.flux",
+																			Source: "dict",
+																			Start: ast.Position{
+																				Column: 35,
+																				Line:   30,
+																			},
+																		},
+																	},
+																	Name: "dict",
+																},
+																Value: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 46,
+																				Line:   30,
+																			},
+																			File:   "empty_dict_lambda_test.flux",
+																			Source: "codes",
+																			Start: ast.Position{
+																				Column: 41,
+																				Line:   30,
+																			},
+																		},
+																	},
+																	Name: "codes",
+																},
+															}, &ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 54,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lambda_test.flux",
+																		Source: "key: 0",
+																		Start: ast.Position{
+																			Column: 48,
+																			Line:   30,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 51,
+																				Line:   30,
+																			},
+																			File:   "empty_dict_lambda_test.flux",
+																			Source: "key",
+																			Start: ast.Position{
+																				Column: 48,
+																				Line:   30,
+																			},
+																		},
+																	},
+																	Name: "key",
+																},
+																Value: &ast.IntegerLiteral{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 54,
+																				Line:   30,
+																			},
+																			File:   "empty_dict_lambda_test.flux",
+																			Source: "0",
+																			Start: ast.Position{
+																				Column: 53,
+																				Line:   30,
+																			},
+																		},
+																	},
+																	Value: int64(0),
+																},
+															}, &ast.Property{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 66,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lambda_test.flux",
+																		Source: "default: 2",
+																		Start: ast.Position{
+																			Column: 56,
+																			Line:   30,
+																		},
+																	},
+																},
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 63,
+																				Line:   30,
+																			},
+																			File:   "empty_dict_lambda_test.flux",
+																			Source: "default",
+																			Start: ast.Position{
+																				Column: 56,
+																				Line:   30,
+																			},
+																		},
+																	},
+																	Name: "default",
+																},
+																Value: &ast.IntegerLiteral{
+																	BaseNode: ast.BaseNode{
+																		Errors: nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 66,
+																				Line:   30,
+																			},
+																			File:   "empty_dict_lambda_test.flux",
+																			Source: "2",
+																			Start: ast.Position{
+																				Column: 65,
+																				Line:   30,
+																			},
+																		},
+																	},
+																	Value: int64(2),
+																},
+															}},
+															With: nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 67,
+																	Line:   30,
+																},
+																File:   "empty_dict_lambda_test.flux",
+																Source: "dict.get(dict: codes, key: 0, default: 2)",
+																Start: ast.Position{
+																	Column: 26,
+																	Line:   30,
+																},
+															},
+														},
+														Callee: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 34,
+																		Line:   30,
+																	},
+																	File:   "empty_dict_lambda_test.flux",
+																	Source: "dict.get",
+																	Start: ast.Position{
+																		Column: 26,
+																		Line:   30,
+																	},
+																},
+															},
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 30,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lambda_test.flux",
+																		Source: "dict",
+																		Start: ast.Position{
+																			Column: 26,
+																			Line:   30,
+																		},
+																	},
+																},
+																Name: "dict",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 34,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lambda_test.flux",
+																		Source: "get",
+																		Start: ast.Position{
+																			Column: 31,
+																			Line:   30,
+																		},
+																	},
+																},
+																Name: "get",
+															},
+														},
+													},
+												}},
+												With: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 14,
+																Line:   30,
+															},
+															File:   "empty_dict_lambda_test.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 13,
+																Line:   30,
+															},
+														},
+													},
+													Name: "r",
+												},
+											},
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   30,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "return {r with code: dict.get(dict: codes, key: 0, default: 2)}",
+													Start: ast.Position{
+														Column: 5,
+														Line:   30,
+													},
+												},
+											},
+										}},
+									},
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   28,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "r",
+												Start: ast.Position{
+													Column: 15,
+													Line:   28,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   28,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 15,
+														Line:   28,
+													},
+												},
+											},
+											Name: "r",
+										},
+										Value: nil,
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 5,
+									Line:   31,
+								},
+								File:   "empty_dict_lambda_test.flux",
+								Source: "map(fn: (r) => {\n    codes = [:]\n    return {r with code: dict.get(dict: codes, key: 0, default: 2)}\n  })",
+								Start: ast.Position{
+									Column: 6,
+									Line:   28,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 9,
+										Line:   28,
+									},
+									File:   "empty_dict_lambda_test.flux",
+									Source: "map",
+									Start: ast.Position{
+										Column: 6,
+										Line:   28,
+									},
+								},
+							},
+							Name: "map",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   24,
+							},
+							File:   "empty_dict_lambda_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 11,
+								Line:   24,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   24,
+								},
+								File:   "empty_dict_lambda_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 11,
+									Line:   24,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   24,
+							},
+							File:   "empty_dict_lambda_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   24,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 3,
+							Line:   37,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "_dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   33,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   33,
+							},
+							File:   "empty_dict_lambda_test.flux",
+							Source: "_dict",
+							Start: ast.Position{
+								Column: 6,
+								Line:   33,
+							},
+						},
+					},
+					Name: "_dict",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 3,
+								Line:   37,
+							},
+							File:   "empty_dict_lambda_test.flux",
+							Source: "() => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+							Start: ast.Position{
+								Column: 14,
+								Line:   33,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 3,
+									Line:   37,
+								},
+								File:   "empty_dict_lambda_test.flux",
+								Source: "({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+								Start: ast.Position{
+									Column: 20,
+									Line:   33,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 2,
+										Line:   37,
+									},
+									File:   "empty_dict_lambda_test.flux",
+									Source: "{\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n}",
+									Start: ast.Position{
+										Column: 21,
+										Line:   33,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   34,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   34,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   34,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 3,
+												Line:   34,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   34,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 30,
+													Line:   34,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   34,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 30,
+														Line:   34,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 33,
+															Line:   34,
+														},
+														File:   "empty_dict_lambda_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 30,
+															Line:   34,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   34,
+														},
+														File:   "empty_dict_lambda_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 35,
+															Line:   34,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   34,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 10,
+												Line:   34,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   34,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 10,
+													Line:   34,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   34,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 10,
+														Line:   34,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   34,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 18,
+														Line:   34,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   35,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   35,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   35,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 3,
+												Line:   35,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   35,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 25,
+													Line:   35,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   35,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 25,
+														Line:   35,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 28,
+															Line:   35,
+														},
+														File:   "empty_dict_lambda_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 25,
+															Line:   35,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   35,
+														},
+														File:   "empty_dict_lambda_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 30,
+															Line:   35,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   35,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 9,
+												Line:   35,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   35,
+												},
+												File:   "empty_dict_lambda_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 9,
+													Line:   35,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   35,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 9,
+														Line:   35,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   35,
+													},
+													File:   "empty_dict_lambda_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 17,
+														Line:   35,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   36,
+										},
+										File:   "empty_dict_lambda_test.flux",
+										Source: "fn: t_dict",
+										Start: ast.Position{
+											Column: 3,
+											Line:   36,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 5,
+												Line:   36,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 3,
+												Line:   36,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   36,
+											},
+											File:   "empty_dict_lambda_test.flux",
+											Source: "t_dict",
+											Start: ast.Position{
+												Column: 7,
+												Line:   36,
+											},
+										},
+									},
+									Name: "t_dict",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 3,
+						Line:   37,
+					},
+					File:   "empty_dict_lambda_test.flux",
+					Source: "test _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   33,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "empty_dict_lambda_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "empty_dict_lambda_test.flux",
+					Source: "import \"dict\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "\"dict\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "dict",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "empty_dict_lambda_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "empty_dict_lambda_test.flux",
+					Source: "package dict_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "empty_dict_lambda_test.flux",
+						Source: "dict_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "dict_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
+					Column: 3,
+					Line:   36,
+				},
+				File:   "empty_dict_lit_test.flux",
+				Source: "package dict_test\n\nimport \"testing\"\nimport \"dict\"\n\ncodes = [:]\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"\n\nt_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))\n\ntest _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 12,
+						Line:   6,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "codes = [:]",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   6,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "codes",
+						Start: ast.Position{
+							Column: 1,
+							Line:   6,
+						},
+					},
+				},
+				Name: "codes",
+			},
+			Init: &ast.DictExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   6,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "[:]",
+						Start: ast.Position{
+							Column: 9,
+							Line:   6,
+						},
+					},
+				},
+				Elements: []*ast.DictItem{},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   15,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   15,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:26Z,_m,_f,0\n,,0,2018-05-22T19:53:36Z,_m,_f,0\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   24,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   17,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   17,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   17,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   24,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   17,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,long,long\n#group,false,false,false,true,true,false,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,_value,code\n,,0,2018-05-22T19:53:26Z,_m,_f,0,2\n,,0,2018-05-22T19:53:36Z,_m,_f,0,2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 80,
+						Line:   30,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "t_dict = (table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+					Start: ast.Position{
+						Column: 1,
+						Line:   26,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   26,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "t_dict",
+						Start: ast.Position{
+							Column: 1,
+							Line:   26,
+						},
+					},
+				},
+				Name: "t_dict",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 80,
+							Line:   30,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "(table=<-) =>\n  table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+						Start: ast.Position{
+							Column: 10,
+							Line:   26,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 8,
+											Line:   27,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "table",
+										Start: ast.Position{
+											Column: 3,
+											Line:   27,
+										},
+									},
+								},
+								Name: "table",
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   28,
+									},
+									File:   "empty_dict_lit_test.flux",
+									Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   27,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   28,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "start: 2018-05-22T19:53:26Z",
+											Start: ast.Position{
+												Column: 12,
+												Line:   28,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   28,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "start: 2018-05-22T19:53:26Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   28,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   28,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "start",
+													Start: ast.Position{
+														Column: 12,
+														Line:   28,
+													},
+												},
+											},
+											Name: "start",
+										},
+										Value: &ast.DateTimeLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   28,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "2018-05-22T19:53:26Z",
+													Start: ast.Position{
+														Column: 19,
+														Line:   28,
+													},
+												},
+											},
+											Value: parser.MustParseTime("2018-05-22T19:53:26Z"),
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 40,
+											Line:   28,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "range(start: 2018-05-22T19:53:26Z)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   28,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   28,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "range",
+											Start: ast.Position{
+												Column: 6,
+												Line:   28,
+											},
+										},
+									},
+									Name: "range",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   29,
+								},
+								File:   "empty_dict_lit_test.flux",
+								Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 3,
+									Line:   27,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   29,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   29,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   29,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "columns: [\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 11,
+												Line:   29,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   29,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "columns",
+												Start: ast.Position{
+													Column: 11,
+													Line:   29,
+												},
+											},
+										},
+										Name: "columns",
+									},
+									Value: &ast.ArrayExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 39,
+													Line:   29,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "[\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 20,
+													Line:   29,
+												},
+											},
+										},
+										Elements: []ast.Expression{&ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   29,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "\"_start\"",
+													Start: ast.Position{
+														Column: 21,
+														Line:   29,
+													},
+												},
+											},
+											Value: "_start",
+										}, &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   29,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "\"_stop\"",
+													Start: ast.Position{
+														Column: 31,
+														Line:   29,
+													},
+												},
+											},
+											Value: "_stop",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 40,
+										Line:   29,
+									},
+									File:   "empty_dict_lit_test.flux",
+									Source: "drop(columns: [\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 6,
+										Line:   29,
+									},
+								},
+							},
+							Callee: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 10,
+											Line:   29,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "drop",
+										Start: ast.Position{
+											Column: 6,
+											Line:   29,
+										},
+									},
+								},
+								Name: "drop",
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 80,
+								Line:   30,
+							},
+							File:   "empty_dict_lit_test.flux",
+							Source: "table\n  |> range(start: 2018-05-22T19:53:26Z)\n  |> drop(columns: [\"_start\", \"_stop\"])\n  |> map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+							Start: ast.Position{
+								Column: 3,
+								Line:   27,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 79,
+										Line:   30,
+									},
+									File:   "empty_dict_lit_test.flux",
+									Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+									Start: ast.Position{
+										Column: 10,
+										Line:   30,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 79,
+											Line:   30,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+										Start: ast.Position{
+											Column: 10,
+											Line:   30,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   30,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 10,
+												Line:   30,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.FunctionExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 79,
+												Line:   30,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "(r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+											Start: ast.Position{
+												Column: 14,
+												Line:   30,
+											},
+										},
+									},
+									Body: &ast.ParenExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   30,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "({r with code: dict.get(dict: codes, key: 1, default: 2)})",
+												Start: ast.Position{
+													Column: 21,
+													Line:   30,
+												},
+											},
+										},
+										Expression: &ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 78,
+														Line:   30,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "{r with code: dict.get(dict: codes, key: 1, default: 2)}",
+													Start: ast.Position{
+														Column: 22,
+														Line:   30,
+													},
+												},
+											},
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 77,
+															Line:   30,
+														},
+														File:   "empty_dict_lit_test.flux",
+														Source: "code: dict.get(dict: codes, key: 1, default: 2)",
+														Start: ast.Position{
+															Column: 30,
+															Line:   30,
+														},
+													},
+												},
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 34,
+																Line:   30,
+															},
+															File:   "empty_dict_lit_test.flux",
+															Source: "code",
+															Start: ast.Position{
+																Column: 30,
+																Line:   30,
+															},
+														},
+													},
+													Name: "code",
+												},
+												Value: &ast.CallExpression{
+													Arguments: []ast.Expression{&ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 76,
+																	Line:   30,
+																},
+																File:   "empty_dict_lit_test.flux",
+																Source: "dict: codes, key: 1, default: 2",
+																Start: ast.Position{
+																	Column: 45,
+																	Line:   30,
+																},
+															},
+														},
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 56,
+																		Line:   30,
+																	},
+																	File:   "empty_dict_lit_test.flux",
+																	Source: "dict: codes",
+																	Start: ast.Position{
+																		Column: 45,
+																		Line:   30,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 49,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lit_test.flux",
+																		Source: "dict",
+																		Start: ast.Position{
+																			Column: 45,
+																			Line:   30,
+																		},
+																	},
+																},
+																Name: "dict",
+															},
+															Value: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 56,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lit_test.flux",
+																		Source: "codes",
+																		Start: ast.Position{
+																			Column: 51,
+																			Line:   30,
+																		},
+																	},
+																},
+																Name: "codes",
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 64,
+																		Line:   30,
+																	},
+																	File:   "empty_dict_lit_test.flux",
+																	Source: "key: 1",
+																	Start: ast.Position{
+																		Column: 58,
+																		Line:   30,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 61,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lit_test.flux",
+																		Source: "key",
+																		Start: ast.Position{
+																			Column: 58,
+																			Line:   30,
+																		},
+																	},
+																},
+																Name: "key",
+															},
+															Value: &ast.IntegerLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 64,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lit_test.flux",
+																		Source: "1",
+																		Start: ast.Position{
+																			Column: 63,
+																			Line:   30,
+																		},
+																	},
+																},
+																Value: int64(1),
+															},
+														}, &ast.Property{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 76,
+																		Line:   30,
+																	},
+																	File:   "empty_dict_lit_test.flux",
+																	Source: "default: 2",
+																	Start: ast.Position{
+																		Column: 66,
+																		Line:   30,
+																	},
+																},
+															},
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 73,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lit_test.flux",
+																		Source: "default",
+																		Start: ast.Position{
+																			Column: 66,
+																			Line:   30,
+																		},
+																	},
+																},
+																Name: "default",
+															},
+															Value: &ast.IntegerLiteral{
+																BaseNode: ast.BaseNode{
+																	Errors: nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 76,
+																			Line:   30,
+																		},
+																		File:   "empty_dict_lit_test.flux",
+																		Source: "2",
+																		Start: ast.Position{
+																			Column: 75,
+																			Line:   30,
+																		},
+																	},
+																},
+																Value: int64(2),
+															},
+														}},
+														With: nil,
+													}},
+													BaseNode: ast.BaseNode{
+														Errors: nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 77,
+																Line:   30,
+															},
+															File:   "empty_dict_lit_test.flux",
+															Source: "dict.get(dict: codes, key: 1, default: 2)",
+															Start: ast.Position{
+																Column: 36,
+																Line:   30,
+															},
+														},
+													},
+													Callee: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Errors: nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 44,
+																	Line:   30,
+																},
+																File:   "empty_dict_lit_test.flux",
+																Source: "dict.get",
+																Start: ast.Position{
+																	Column: 36,
+																	Line:   30,
+																},
+															},
+														},
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 40,
+																		Line:   30,
+																	},
+																	File:   "empty_dict_lit_test.flux",
+																	Source: "dict",
+																	Start: ast.Position{
+																		Column: 36,
+																		Line:   30,
+																	},
+																},
+															},
+															Name: "dict",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Errors: nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 44,
+																		Line:   30,
+																	},
+																	File:   "empty_dict_lit_test.flux",
+																	Source: "get",
+																	Start: ast.Position{
+																		Column: 41,
+																		Line:   30,
+																	},
+																},
+															},
+															Name: "get",
+														},
+													},
+												},
+											}},
+											With: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   30,
+														},
+														File:   "empty_dict_lit_test.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 23,
+															Line:   30,
+														},
+													},
+												},
+												Name: "r",
+											},
+										},
+									},
+									Params: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   30,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "r",
+												Start: ast.Position{
+													Column: 15,
+													Line:   30,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   30,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "r",
+													Start: ast.Position{
+														Column: 15,
+														Line:   30,
+													},
+												},
+											},
+											Name: "r",
+										},
+										Value: nil,
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 80,
+									Line:   30,
+								},
+								File:   "empty_dict_lit_test.flux",
+								Source: "map(fn: (r) => ({r with code: dict.get(dict: codes, key: 1, default: 2)}))",
+								Start: ast.Position{
+									Column: 6,
+									Line:   30,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 9,
+										Line:   30,
+									},
+									File:   "empty_dict_lit_test.flux",
+									Source: "map",
+									Start: ast.Position{
+										Column: 6,
+										Line:   30,
+									},
+								},
+							},
+							Name: "map",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   26,
+							},
+							File:   "empty_dict_lit_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 11,
+								Line:   26,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 16,
+									Line:   26,
+								},
+								File:   "empty_dict_lit_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 11,
+									Line:   26,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 19,
+								Line:   26,
+							},
+							File:   "empty_dict_lit_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 17,
+								Line:   26,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 3,
+							Line:   36,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "_dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   32,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   32,
+							},
+							File:   "empty_dict_lit_test.flux",
+							Source: "_dict",
+							Start: ast.Position{
+								Column: 6,
+								Line:   32,
+							},
+						},
+					},
+					Name: "_dict",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 3,
+								Line:   36,
+							},
+							File:   "empty_dict_lit_test.flux",
+							Source: "() => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+							Start: ast.Position{
+								Column: 14,
+								Line:   32,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 3,
+									Line:   36,
+								},
+								File:   "empty_dict_lit_test.flux",
+								Source: "({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+								Start: ast.Position{
+									Column: 20,
+									Line:   32,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 2,
+										Line:   36,
+									},
+									File:   "empty_dict_lit_test.flux",
+									Source: "{\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n}",
+									Start: ast.Position{
+										Column: 21,
+										Line:   32,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   33,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   33,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   33,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 3,
+												Line:   33,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   33,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 30,
+													Line:   33,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 41,
+														Line:   33,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 30,
+														Line:   33,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 33,
+															Line:   33,
+														},
+														File:   "empty_dict_lit_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 30,
+															Line:   33,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 41,
+															Line:   33,
+														},
+														File:   "empty_dict_lit_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 35,
+															Line:   33,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   33,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 10,
+												Line:   33,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   33,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 10,
+													Line:   33,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   33,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 10,
+														Line:   33,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 29,
+														Line:   33,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 18,
+														Line:   33,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   34,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   34,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 7,
+												Line:   34,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 3,
+												Line:   34,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   34,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 25,
+													Line:   34,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   34,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 25,
+														Line:   34,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 28,
+															Line:   34,
+														},
+														File:   "empty_dict_lit_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 25,
+															Line:   34,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   34,
+														},
+														File:   "empty_dict_lit_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 30,
+															Line:   34,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 38,
+												Line:   34,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 9,
+												Line:   34,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 24,
+													Line:   34,
+												},
+												File:   "empty_dict_lit_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 9,
+													Line:   34,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 16,
+														Line:   34,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 9,
+														Line:   34,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   34,
+													},
+													File:   "empty_dict_lit_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 17,
+														Line:   34,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   35,
+										},
+										File:   "empty_dict_lit_test.flux",
+										Source: "fn: t_dict",
+										Start: ast.Position{
+											Column: 3,
+											Line:   35,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 5,
+												Line:   35,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 3,
+												Line:   35,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   35,
+											},
+											File:   "empty_dict_lit_test.flux",
+											Source: "t_dict",
+											Start: ast.Position{
+												Column: 7,
+												Line:   35,
+											},
+										},
+									},
+									Name: "t_dict",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 3,
+						Line:   36,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "test _dict = () => ({\n  input: testing.loadStorage(csv: inData),\n  want: testing.loadMem(csv: outData),\n  fn: t_dict,\n})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   32,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   4,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "import \"dict\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   4,
+						},
+						File:   "empty_dict_lit_test.flux",
+						Source: "\"dict\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "dict",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "empty_dict_lit_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 18,
+						Line:   1,
+					},
+					File:   "empty_dict_lit_test.flux",
+					Source: "package dict_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 18,
+							Line:   1,
+						},
+						File:   "empty_dict_lit_test.flux",
 						Source: "dict_test",
 						Start: ast.Position{
 							Column: 9,
