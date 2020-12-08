@@ -95,6 +95,7 @@ func (*MemberAssignment) node()    {}
 func (*StringExpression) node()      {}
 func (*ParenExpression) node()       {}
 func (*ArrayExpression) node()       {}
+func (*DictExpression) node()        {}
 func (*FunctionExpression) node()    {}
 func (*BinaryExpression) node()      {}
 func (*CallExpression) node()        {}
@@ -801,6 +802,7 @@ type Expression interface {
 func (*StringExpression) expression()       {}
 func (*ParenExpression) expression()        {}
 func (*ArrayExpression) expression()        {}
+func (*DictExpression) expression()         {}
 func (*FunctionExpression) expression()     {}
 func (*BinaryExpression) expression()       {}
 func (*BooleanLiteral) expression()         {}
@@ -1264,6 +1266,44 @@ func (e *ArrayExpression) Copy() Node {
 
 	return ne
 }
+
+// DictExpression represents dictionary literals
+type DictExpression struct {
+	BaseNode
+	Elements []*DictItem `json:"elements"`
+}
+
+// Type is the abstract type
+func (*DictExpression) Type() string { return "DictExpression" }
+
+func (e *DictExpression) Copy() Node {
+	if e == nil {
+		return e
+	}
+	ne := new(DictExpression)
+	*ne = *e
+	ne.BaseNode = e.BaseNode.Copy()
+
+	if len(e.Elements) > 0 {
+		ne.Elements = make([]*DictItem, len(e.Elements))
+		for i, item := range e.Elements {
+			ne.Elements[i] = &DictItem{
+				Key: item.Key.Copy().(Expression),
+				Val: item.Val.Copy().(Expression),
+			}
+		}
+	}
+
+	return ne
+}
+
+// DictItem represents a key value pair of a dictionary literal
+type DictItem struct {
+	Key Expression `json:"key"`
+	Val Expression `json:"val"`
+}
+
+func (*DictItem) Type() string { return "DictItem" }
 
 // ObjectExpression allows the declaration of an anonymous object within a declaration.
 type ObjectExpression struct {

@@ -610,6 +610,13 @@ func TestJSONMarshal(t *testing.T) {
 			want: `{"type":"ArrayExpression","elements":[{"type":"StringLiteral","value":"hello"}]}`,
 		},
 		{
+			name: "dict expression",
+			node: &ast.DictExpression{
+				Elements: []*ast.DictItem{{Key: &ast.StringLiteral{Value: "a"}, Val: &ast.IntegerLiteral{Value: 0}}, {Key: &ast.StringLiteral{Value: "b"}, Val: &ast.IntegerLiteral{Value: 1}}, {Key: &ast.StringLiteral{Value: "c"}, Val: &ast.IntegerLiteral{Value: 2}}},
+			},
+			want: `{"type":"DictExpression","elements":[{"type":"DictItem","key":{"type":"StringLiteral","value":"a"},"val":{"type":"IntegerLiteral","value":"0"}},{"type":"DictItem","key":{"type":"StringLiteral","value":"b"},"val":{"type":"IntegerLiteral","value":"1"}},{"type":"DictItem","key":{"type":"StringLiteral","value":"c"},"val":{"type":"IntegerLiteral","value":"2"}}]}`,
+		},
+		{
 			name: "object expression",
 			node: &ast.ObjectExpression{
 				Properties: []*ast.Property{{

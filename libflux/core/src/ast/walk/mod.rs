@@ -17,6 +17,7 @@ pub enum Node<'a> {
     Identifier(&'a Identifier),
 
     ArrayExpr(&'a ArrayExpr),
+    DictExpr(&'a DictExpr),
     FunctionExpr(&'a FunctionExpr),
     LogicalExpr(&'a LogicalExpr),
     ObjectExpr(&'a ObjectExpr),
@@ -75,6 +76,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::ImportDeclaration(_) => write!(f, "ImportDeclaration"),
             Node::Identifier(_) => write!(f, "Identifier"),
             Node::ArrayExpr(_) => write!(f, "ArrayExpr"),
+            Node::DictExpr(_) => write!(f, "DictExpr"),
             Node::FunctionExpr(_) => write!(f, "FunctionExpr"),
             Node::LogicalExpr(_) => write!(f, "LogicalExpr"),
             Node::ObjectExpr(_) => write!(f, "ObjectExpr"),
@@ -122,6 +124,7 @@ impl<'a> Node<'a> {
             Node::ImportDeclaration(n) => &n.base,
             Node::Identifier(n) => &n.base,
             Node::ArrayExpr(n) => &n.base,
+            Node::DictExpr(n) => &n.base,
             Node::FunctionExpr(n) => &n.base,
             Node::LogicalExpr(n) => &n.base,
             Node::ObjectExpr(n) => &n.base,
@@ -166,6 +169,7 @@ impl<'a> Node<'a> {
         match expr {
             Expression::Identifier(e) => Node::Identifier(e),
             Expression::Array(e) => Node::ArrayExpr(e),
+            Expression::Dict(e) => Node::DictExpr(e),
             Expression::Function(e) => Node::FunctionExpr(e),
             Expression::Logical(e) => Node::LogicalExpr(e),
             Expression::Object(e) => Node::ObjectExpr(e),
@@ -300,6 +304,12 @@ where
             Node::ArrayExpr(n) => {
                 for element in n.elements.iter() {
                     walk(&w, Node::from_expr(&element.expression));
+                }
+            }
+            Node::DictExpr(n) => {
+                for element in n.elements.iter() {
+                    walk(&w, Node::from_expr(&element.key));
+                    walk(&w, Node::from_expr(&element.val));
                 }
             }
             Node::FunctionExpr(n) => {

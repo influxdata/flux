@@ -94,6 +94,7 @@ union Expression {
   StringExpression,
   ParenExpression,
   ArrayExpression,
+  DictExpression,
   FunctionExpression,
   BinaryExpression,
   BooleanLiteral,
@@ -365,6 +366,16 @@ table ParenExpression {
 table ArrayExpression {
   base_node:BaseNode;
   elements:[WrappedExpression];
+}
+
+table DictExpression {
+  base_node:BaseNode;
+  elements:[DictItem];
+}
+
+table DictItem {
+  key:Expression;
+  val:Expression;
 }
 
 union ExpressionOrBlock {

@@ -114,6 +114,8 @@ pub enum Expression {
     Identifier(Identifier),
     #[serde(rename = "ArrayExpression")]
     Array(Box<ArrayExpr>),
+    #[serde(rename = "DictExpression")]
+    Dict(Box<DictExpr>),
     #[serde(rename = "FunctionExpression")]
     Function(Box<FunctionExpr>),
     #[serde(rename = "LogicalExpression")]
@@ -168,6 +170,7 @@ impl Expression {
         match self {
             Expression::Identifier(wrapped) => &wrapped.base,
             Expression::Array(wrapped) => &wrapped.base,
+            Expression::Dict(wrapped) => &wrapped.base,
             Expression::Function(wrapped) => &wrapped.base,
             Expression::Logical(wrapped) => &wrapped.base,
             Expression::Object(wrapped) => &wrapped.base,
@@ -1280,6 +1283,29 @@ pub struct ArrayExpr {
     pub elements: Vec<ArrayItem>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rbrack: CommentList,
+}
+
+// DictExpr represents a dictionary literal
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct DictExpr {
+    #[serde(skip_serializing_if = "BaseNode::is_empty")]
+    #[serde(default)]
+    #[serde(flatten)]
+    pub base: BaseNode,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lbrack: CommentList,
+    #[serde(deserialize_with = "deserialize_default_from_null")]
+    pub elements: Vec<DictItem>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rbrack: CommentList,
+}
+
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct DictItem {
+    pub key: Expression,
+    pub val: Expression,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub comma: CommentList,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]

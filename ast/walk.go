@@ -272,6 +272,17 @@ func walk(v Visitor, node Node) {
 				walk(w, e)
 			}
 		}
+	case *DictExpression:
+		if n == nil {
+			return
+		}
+		w := v.Visit(n)
+		if w != nil {
+			for _, item := range n.Elements {
+				walk(w, item.Key)
+				walk(w, item.Val)
+			}
+		}
 	case *FunctionExpression:
 		if n == nil {
 			return

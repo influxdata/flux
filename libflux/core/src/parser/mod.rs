@@ -938,32 +938,6 @@ impl Parser {
         let expr = self.parse_logical_and_expression_suffix(expr);
         self.parse_logical_or_expression_suffix(expr)
     }
-    fn parse_expression_list(&mut self) -> Vec<ArrayItem> {
-        let mut exprs = Vec::<ArrayItem>::new();
-        while self.more() {
-            match self.peek().tok {
-                TOK_IDENT | TOK_INT | TOK_FLOAT | TOK_STRING | TOK_TIME | TOK_DURATION
-                | TOK_PIPE_RECEIVE | TOK_LPAREN | TOK_LBRACK | TOK_LBRACE | TOK_ADD | TOK_SUB
-                | TOK_DIV | TOK_NOT | TOK_EXISTS | TOK_QUOTE => {
-                    let mut comments = None;
-                    let expr = self.parse_expression();
-                    if self.peek().tok == TOK_COMMA {
-                        let t = self.scan();
-                        comments = self.make_comments(&t);
-                    }
-                    exprs.push(ArrayItem {
-                        expression: expr,
-                        comma: comments,
-                    });
-                }
-                _ => {
-                    // TODO: bad expression
-                    self.consume();
-                }
-            };
-        }
-        exprs
-    }
     fn parse_conditional_expression(&mut self) -> Expression {
         let t = self.peek();
         if t.tok == TOK_IF {
@@ -1450,7 +1424,10 @@ impl Parser {
                 }
             }
             TOK_PIPE_RECEIVE => Expression::PipeLit(self.parse_pipe_literal()),
-            TOK_LBRACK => Expression::Array(Box::new(self.parse_array_literal())),
+            TOK_LBRACK => {
+                let start = self.open(TOK_LBRACK, TOK_RBRACK);
+                self.parse_array_or_dict(&start)
+            }
             TOK_LBRACE => Expression::Object(Box::new(self.parse_object_literal())),
             TOK_LPAREN => self.parse_paren_expression(),
             // We got a bad token, do not consume it, but use it in the message.
@@ -1616,15 +1593,138 @@ impl Parser {
             base: self.base_node_from_token(&t),
         }
     }
-    fn parse_array_literal(&mut self) -> ArrayExpr {
-        let start = self.open(TOK_LBRACK, TOK_RBRACK);
-        let exprs = self.parse_expression_list();
-        let end = self.close(TOK_RBRACK);
-        ArrayExpr {
-            base: self.base_node_from_tokens(&start, &end),
-            lbrack: self.make_comments(&start),
-            elements: exprs,
-            rbrack: self.make_comments(&end),
+    fn parse_array_or_dict(&mut self, start: &Token) -> Expression {
+        match self.peek().tok {
+            // empty dictionary [:]
+            TOK_COLON => {
+                self.consume();
+                let end = self.close(TOK_RBRACK);
+                let base = self.base_node_from_tokens(start, &end);
+                let elements = Vec::new();
+                let lbrack = self.make_comments(start);
+                let rbrack = self.make_comments(&end);
+                Expression::Dict(Box::new(DictExpr {
+                    base,
+                    elements,
+                    lbrack,
+                    rbrack,
+                }))
+            }
+            // empty array []
+            TOK_RBRACK => {
+                let end = self.close(TOK_RBRACK);
+                let base = self.base_node_from_tokens(start, &end);
+                let elements = Vec::new();
+                let lbrack = self.make_comments(start);
+                let rbrack = self.make_comments(&end);
+                Expression::Array(Box::new(ArrayExpr {
+                    base,
+                    elements,
+                    lbrack,
+                    rbrack,
+                }))
+            }
+            _ => {
+                let expr = self.parse_expression();
+                match self.peek().tok {
+                    // non-empty dictionary
+                    TOK_COLON => {
+                        self.consume();
+                        let val = self.parse_expression();
+                        self.parse_dict_items_rest(start, expr, val)
+                    }
+                    // non-empty array
+                    _ => self.parse_array_items_rest(start, expr),
+                }
+            }
+        }
+    }
+    fn parse_array_items_rest(&mut self, start: &Token, init: Expression) -> Expression {
+        match self.peek().tok {
+            TOK_RBRACK => {
+                let end = self.close(TOK_RBRACK);
+                Expression::Array(Box::new(ArrayExpr {
+                    base: self.base_node_from_tokens(start, &end),
+                    lbrack: self.make_comments(start),
+                    elements: vec![ArrayItem {
+                        expression: init,
+                        comma: None,
+                    }],
+                    rbrack: self.make_comments(&end),
+                }))
+            }
+            _ => {
+                let comma = self.expect(TOK_COMMA);
+                let mut items = vec![ArrayItem {
+                    expression: init,
+                    comma: self.make_comments(&comma),
+                }];
+                while self.more() {
+                    let expression = self.parse_expression();
+                    let comma = match self.peek().tok {
+                        TOK_COMMA => {
+                            let comma = self.scan();
+                            self.make_comments(&comma)
+                        }
+                        _ => None,
+                    };
+                    items.push(ArrayItem { expression, comma });
+                }
+                let end = self.close(TOK_RBRACK);
+                Expression::Array(Box::new(ArrayExpr {
+                    base: self.base_node_from_tokens(start, &end),
+                    lbrack: self.make_comments(start),
+                    elements: items,
+                    rbrack: self.make_comments(&end),
+                }))
+            }
+        }
+    }
+    fn parse_dict_items_rest(
+        &mut self,
+        start: &Token,
+        key: Expression,
+        val: Expression,
+    ) -> Expression {
+        match self.peek().tok {
+            TOK_RBRACK => {
+                let end = self.close(TOK_RBRACK);
+                Expression::Dict(Box::new(DictExpr {
+                    base: self.base_node_from_tokens(start, &end),
+                    lbrack: self.make_comments(start),
+                    elements: vec![DictItem {
+                        key,
+                        val,
+                        comma: None,
+                    }],
+                    rbrack: self.make_comments(&end),
+                }))
+            }
+            _ => {
+                let comma = self.expect(TOK_COMMA);
+                let comma = self.make_comments(&comma);
+                let mut items = vec![DictItem { key, val, comma }];
+                while self.more() {
+                    let key = self.parse_expression();
+                    self.expect(TOK_COLON);
+                    let val = self.parse_expression();
+                    let comma = match self.peek().tok {
+                        TOK_COMMA => {
+                            let comma = self.scan();
+                            self.make_comments(&comma)
+                        }
+                        _ => None,
+                    };
+                    items.push(DictItem { key, val, comma });
+                }
+                let end = self.close(TOK_RBRACK);
+                Expression::Dict(Box::new(DictExpr {
+                    base: self.base_node_from_tokens(start, &end),
+                    lbrack: self.make_comments(start),
+                    elements: items,
+                    rbrack: self.make_comments(&end),
+                }))
+            }
         }
     }
     fn parse_object_literal(&mut self) -> ObjectExpr {
