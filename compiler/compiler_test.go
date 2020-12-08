@@ -290,6 +290,22 @@ func TestCompileAndEval(t *testing.T) {
 			),
 		},
 		{
+			name: "dict literal",
+			fn: `() => {
+				a = "a"
+				b = "b"
+				return [a: "a", b: "b"]
+			}`,
+			inType: semantic.NewObjectType(nil),
+			input:  values.NewObjectWithValues(nil),
+			want: func() values.Value {
+				builder := values.NewDictBuilder(semantic.NewDictType(semantic.BasicString, semantic.BasicString))
+				builder.Insert(values.NewString("a"), values.NewString("a"))
+				builder.Insert(values.NewString("b"), values.NewString("b"))
+				return builder.Dict()
+			}(),
+		},
+		{
 			name: "array access",
 			fn:   `(values) => values[0]`,
 			inType: semantic.NewObjectType([]semantic.PropertyType{

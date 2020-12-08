@@ -324,6 +324,8 @@ func (itrp *Interpreter) doExpression(ctx context.Context, expr semantic.Express
 		return itrp.doStringExpression(ctx, e, scope)
 	case *semantic.ArrayExpression:
 		return itrp.doArray(ctx, e, scope)
+	case *semantic.DictExpression:
+		return itrp.doDict(ctx, e, scope)
 	case *semantic.IdentifierExpression:
 		value, ok := scope.Lookup(e.Name)
 		if !ok {
@@ -513,6 +515,27 @@ func (itrp *Interpreter) doArray(ctx context.Context, a *semantic.ArrayExpressio
 		elements[i] = v
 	}
 	return values.NewArrayWithBacking(a.TypeOf(), elements), nil
+}
+
+func (itrp *Interpreter) doDict(ctx context.Context, e *semantic.DictExpression, scope values.Scope) (values.Value, error) {
+	if len(e.Elements) == 0 {
+		return values.NewEmptyDict(e.TypeOf()), nil
+	}
+	builder := values.NewDictBuilder(e.TypeOf())
+	for _, pair := range e.Elements {
+		key, err := itrp.doExpression(ctx, pair.Key, scope)
+		if err != nil {
+			return nil, err
+		}
+		val, err := itrp.doExpression(ctx, pair.Val, scope)
+		if err != nil {
+			return nil, err
+		}
+		if err := builder.Insert(key, val); err != nil {
+			return nil, err
+		}
+	}
+	return builder.Dict(), nil
 }
 
 func (itrp *Interpreter) doObject(ctx context.Context, m *semantic.ObjectExpression, scope values.Scope) (values.Value, error) {
@@ -1217,6 +1240,41 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 		}
 		node.Type = semantic.NewArrayType(elemType)
 		return node, true, nil
+	case semantic.Dictionary:
+		dict := v.Dict()
+		elements := []struct {
+			Key semantic.Expression
+			Val semantic.Expression
+		}{}
+		var (
+			err error
+			ok  = true
+		)
+		dict.Range(func(key, val values.Value) {
+			if err != nil || !ok {
+				return
+			}
+			var k, v semantic.Node
+			k, ok, err = resolveValue(key)
+			if err != nil || !ok {
+				return
+			}
+			v, ok, err = resolveValue(val)
+			if err != nil || !ok {
+				return
+			}
+			elements = append(elements, struct {
+				Key semantic.Expression
+				Val semantic.Expression
+			}{Key: k.(semantic.Expression), Val: v.(semantic.Expression)})
+		})
+		if err != nil || !ok {
+			return nil, false, err
+		}
+		return &semantic.DictExpression{
+			Elements: elements,
+			Type:     dict.Type(),
+		}, true, nil
 	case semantic.Object:
 		obj := v.Object()
 		node := new(semantic.ObjectExpression)
@@ -1244,8 +1302,6 @@ func resolveValue(v values.Value) (semantic.Node, bool, error) {
 			return nil, false, err
 		}
 		return node, true, nil
-	case semantic.Dictionary:
-		return nil, false, errors.New(codes.Unimplemented, "cannot resolve dictionary value")
 	default:
 		return nil, false, errors.Newf(codes.Internal, "cannot resolve value of type %v", k)
 	}

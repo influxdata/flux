@@ -134,6 +134,32 @@ func substituteTypes(subst map[uint64]semantic.MonoType, inferredType, actualTyp
 			return err
 		}
 		return substituteTypes(subst, lt, rt)
+	case semantic.Dict:
+		lk, err := inferredType.KeyType()
+		if err != nil {
+			return err
+		}
+
+		rk, err := actualType.KeyType()
+		if err != nil {
+			return err
+		}
+
+		if err := substituteTypes(subst, lk, rk); err != nil {
+			return err
+		}
+
+		lv, err := inferredType.ValueType()
+		if err != nil {
+			return err
+		}
+
+		rv, err := actualType.ValueType()
+		if err != nil {
+			return err
+		}
+
+		return substituteTypes(subst, lv, rv)
 	case semantic.Record:
 		// We need to compare the Record type that was inferred
 		// and the reality. It is ok for Record properties to exist
@@ -444,6 +470,29 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		return &arrayEvaluator{
 			t:     apply(subst, nil, n.TypeOf()),
 			array: elements,
+		}, nil
+	case *semantic.DictExpression:
+		elements := make([]struct {
+			Key Evaluator
+			Val Evaluator
+		}, len(n.Elements))
+		for i, item := range n.Elements {
+			key, err := compile(item.Key, subst, scope)
+			if err != nil {
+				return nil, err
+			}
+			val, err := compile(item.Val, subst, scope)
+			if err != nil {
+				return nil, err
+			}
+			elements[i] = struct {
+				Key Evaluator
+				Val Evaluator
+			}{Key: key, Val: val}
+		}
+		return &dictEvaluator{
+			t:        apply(subst, nil, n.TypeOf()),
+			elements: elements,
 		}, nil
 	case *semantic.IdentifierExpression:
 		return &identifierEvaluator{

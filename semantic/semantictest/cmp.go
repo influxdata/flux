@@ -173,9 +173,9 @@ func TransformValue(v values.Value) map[string]interface{} {
 			"type": v.Type().String(),
 		}
 	case semantic.Dictionary:
-		elements := make(map[interface{}]interface{})
-		v.Dict().Range(func(key, value values.Value) {
-			elements[TransformValue(key)] = TransformValue(value)
+		elements := [][2]interface{}{}
+		v.Dict().Range(func(key, val values.Value) {
+			elements = append(elements, [2]interface{}{TransformValue(key), TransformValue(val)})
 		})
 		return map[string]interface{}{
 			"type":     semantic.Dictionary.String(),

@@ -21,6 +21,9 @@ import (
 
 var prelude = `
 import "internal/testutil"
+import "dict"
+get = dict.get
+insert = dict.insert
 fail = testutil.fail
 fortyTwo = () => 42.0
 six = () => 6.0
@@ -272,6 +275,27 @@ func TestEval(t *testing.T) {
 				a = [1, 2, 3]
 				x = a[1]
 				x == 2 or fail()
+			`,
+		},
+		{
+			name: "dict expression",
+			query: `
+				m = ["a" + "b": 0, "c" + "d": 1]
+				x = get(dict: m, key: "ab", default: 2)
+				y = get(dict: m, key: "cd", default: 2)
+				z = get(dict: m, key: "ef", default: 2)
+				x == 0 and y == 1 and z == 2 or fail()
+			`,
+		},
+		{
+			name: "empy dictionary",
+			query: `
+				m0 = [:]
+				m1 = insert(dict: m0, key: "a", value: 0)
+				m2 = insert(dict: m0, key: 0, value: "a")
+				v1 = get(dict: m1, key: "a", default: -1)
+				v2 = get(dict: m2, key: 0, default: "b")
+				v1 == 0 and v2 == "a" or fail()
 			`,
 		},
 		{
