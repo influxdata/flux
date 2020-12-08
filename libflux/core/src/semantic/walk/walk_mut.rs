@@ -19,6 +19,7 @@ pub enum NodeMut<'a> {
     // Expressions.
     IdentifierExpr(&'a mut IdentifierExpr),
     ArrayExpr(&'a mut ArrayExpr),
+    DictExpr(&'a mut DictExpr),
     FunctionExpr(&'a mut FunctionExpr),
     LogicalExpr(&'a mut LogicalExpr),
     ObjectExpr(&'a mut ObjectExpr),
@@ -65,6 +66,7 @@ impl<'a> fmt::Display for NodeMut<'a> {
             NodeMut::Identifier(_) => write!(f, "Identifier"),
             NodeMut::IdentifierExpr(_) => write!(f, "IdentifierExpr"),
             NodeMut::ArrayExpr(_) => write!(f, "ArrayExpr"),
+            NodeMut::DictExpr(_) => write!(f, "DictExpr"),
             NodeMut::FunctionExpr(_) => write!(f, "FunctionExpr"),
             NodeMut::FunctionParameter(_) => write!(f, "FunctionParameter"),
             NodeMut::LogicalExpr(_) => write!(f, "LogicalExpr"),
@@ -113,6 +115,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::Identifier(n) => &n.loc,
             NodeMut::IdentifierExpr(n) => &n.loc,
             NodeMut::ArrayExpr(n) => &n.loc,
+            NodeMut::DictExpr(n) => &n.loc,
             NodeMut::FunctionExpr(n) => &n.loc,
             NodeMut::FunctionParameter(n) => &n.loc,
             NodeMut::LogicalExpr(n) => &n.loc,
@@ -150,6 +153,7 @@ impl<'a> NodeMut<'a> {
         match self {
             NodeMut::IdentifierExpr(n) => Some(Expression::Identifier((*n).clone()).type_of()),
             NodeMut::ArrayExpr(n) => Some(Expression::Array(Box::new((*n).clone())).type_of()),
+            NodeMut::DictExpr(n) => Some(Expression::Dict(Box::new((*n).clone())).type_of()),
             NodeMut::FunctionExpr(n) => {
                 Some(Expression::Function(Box::new((*n).clone())).type_of())
             }
@@ -186,6 +190,7 @@ impl<'a> NodeMut<'a> {
             NodeMut::Identifier(ref mut n) => n.loc = loc,
             NodeMut::IdentifierExpr(ref mut n) => n.loc = loc,
             NodeMut::ArrayExpr(ref mut n) => n.loc = loc,
+            NodeMut::DictExpr(ref mut n) => n.loc = loc,
             NodeMut::FunctionExpr(ref mut n) => n.loc = loc,
             NodeMut::FunctionParameter(ref mut n) => n.loc = loc,
             NodeMut::LogicalExpr(ref mut n) => n.loc = loc,
@@ -227,6 +232,7 @@ impl<'a> NodeMut<'a> {
         match *expr {
             Expression::Identifier(ref mut e) => NodeMut::IdentifierExpr(e),
             Expression::Array(ref mut e) => NodeMut::ArrayExpr(e),
+            Expression::Dict(ref mut e) => NodeMut::DictExpr(e),
             Expression::Function(ref mut e) => NodeMut::FunctionExpr(e),
             Expression::Logical(ref mut e) => NodeMut::LogicalExpr(e),
             Expression::Object(ref mut e) => NodeMut::ObjectExpr(e),
@@ -358,6 +364,12 @@ where
             NodeMut::ArrayExpr(ref mut n) => {
                 for mut element in n.elements.iter_mut() {
                     walk_mut(v, &mut NodeMut::from_expr(&mut element));
+                }
+            }
+            NodeMut::DictExpr(ref mut n) => {
+                for item in n.elements.iter_mut() {
+                    walk_mut(v, &mut NodeMut::from_expr(&mut item.0));
+                    walk_mut(v, &mut NodeMut::from_expr(&mut item.1));
                 }
             }
             NodeMut::FunctionExpr(ref mut n) => {

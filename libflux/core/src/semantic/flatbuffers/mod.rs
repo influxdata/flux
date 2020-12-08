@@ -571,6 +571,46 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                 ))
             }
 
+            walk::Node::DictExpr(dict) => {
+                let num_elems = dict.elements.len();
+                let stop = v.expr_stack.len();
+                let start = stop - 2 * num_elems;
+                let elements = {
+                    let elems = &v.expr_stack.as_slice();
+                    let mut items = Vec::with_capacity(num_elems);
+                    for i in (start..stop).step_by(2) {
+                        let (key, key_type) = elems[i];
+                        let (val, val_type) = elems[i + 1];
+                        items.push(fbsemantic::DictItem::create(
+                            &mut v.builder,
+                            &fbsemantic::DictItemArgs {
+                                key_type,
+                                val_type,
+                                key: Some(key),
+                                val: Some(val),
+                            },
+                        ));
+                    }
+                    Some(v.builder.create_vector(items.as_slice()))
+                };
+                v.expr_stack.truncate(start);
+                let (typ, typ_type) = types::build_type(&mut v.builder, dict.typ.clone());
+
+                let dict = fbsemantic::DictExpression::create(
+                    &mut v.builder,
+                    &fbsemantic::DictExpressionArgs {
+                        loc,
+                        elements,
+                        typ: Some(typ),
+                        typ_type,
+                    },
+                );
+                v.expr_stack.push((
+                    dict.as_union_value(),
+                    fbsemantic::Expression::DictExpression,
+                ))
+            }
+
             walk::Node::TextPart(tp) => {
                 let text_value = Some(v.builder.create_string(tp.value.as_str()));
                 let text = fbsemantic::StringExpressionPart::create(

@@ -19,6 +19,7 @@ pub enum Node<'a> {
     // Expressions.
     IdentifierExpr(&'a IdentifierExpr),
     ArrayExpr(&'a ArrayExpr),
+    DictExpr(&'a DictExpr),
     FunctionExpr(&'a FunctionExpr),
     LogicalExpr(&'a LogicalExpr),
     ObjectExpr(&'a ObjectExpr),
@@ -65,6 +66,7 @@ impl<'a> fmt::Display for Node<'a> {
             Node::Identifier(_) => write!(f, "Identifier"),
             Node::IdentifierExpr(_) => write!(f, "IdentifierExpr"),
             Node::ArrayExpr(_) => write!(f, "ArrayExpr"),
+            Node::DictExpr(_) => write!(f, "DictExpr"),
             Node::FunctionExpr(_) => write!(f, "FunctionExpr"),
             Node::FunctionParameter(_) => write!(f, "FunctionParameter"),
             Node::LogicalExpr(_) => write!(f, "LogicalExpr"),
@@ -114,6 +116,7 @@ impl<'a> Node<'a> {
             Node::Identifier(n) => &n.loc,
             Node::IdentifierExpr(n) => &n.loc,
             Node::ArrayExpr(n) => &n.loc,
+            Node::DictExpr(n) => &n.loc,
             Node::FunctionExpr(n) => &n.loc,
             Node::FunctionParameter(n) => &n.loc,
             Node::LogicalExpr(n) => &n.loc,
@@ -151,6 +154,7 @@ impl<'a> Node<'a> {
         match self {
             Node::IdentifierExpr(n) => Some(Expression::Identifier((*n).clone()).type_of()),
             Node::ArrayExpr(n) => Some(Expression::Array(Box::new((*n).clone())).type_of()),
+            Node::DictExpr(n) => Some(Expression::Dict(Box::new((*n).clone())).type_of()),
             Node::FunctionExpr(n) => Some(Expression::Function(Box::new((*n).clone())).type_of()),
             Node::LogicalExpr(n) => Some(Expression::Logical(Box::new((*n).clone())).type_of()),
             Node::ObjectExpr(n) => Some(Expression::Object(Box::new((*n).clone())).type_of()),
@@ -182,6 +186,7 @@ impl<'a> Node<'a> {
         match *expr {
             Expression::Identifier(ref e) => Node::IdentifierExpr(e),
             Expression::Array(ref e) => Node::ArrayExpr(e),
+            Expression::Dict(ref e) => Node::DictExpr(e),
             Expression::Function(ref e) => Node::FunctionExpr(e),
             Expression::Logical(ref e) => Node::LogicalExpr(e),
             Expression::Object(ref e) => Node::ObjectExpr(e),
@@ -350,6 +355,12 @@ where
             Node::ArrayExpr(ref n) => {
                 for element in n.elements.iter() {
                     walk(v, Rc::new(Node::from_expr(element)));
+                }
+            }
+            Node::DictExpr(ref n) => {
+                for (key, val) in n.elements.iter() {
+                    walk(v, Rc::new(Node::from_expr(key)));
+                    walk(v, Rc::new(Node::from_expr(val)));
                 }
             }
             Node::FunctionExpr(ref n) => {
