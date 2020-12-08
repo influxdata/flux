@@ -125,6 +125,7 @@ union Assignment {
 union Expression {
   StringExpression,
   ArrayExpression,
+  DictExpression,
   FunctionExpression,
   BinaryExpression,
   CallExpression,
@@ -251,6 +252,17 @@ table ArrayExpression {
   loc:SourceLocation;
   elements:[WrappedExpression];
   typ:MonoType;
+}
+
+table DictExpression {
+  loc:SourceLocation;
+  elements:[DictItem];
+  typ:MonoType;
+}
+
+table DictItem {
+  key:Expression;
+  val:Expression;
 }
 
 table FunctionExpression {

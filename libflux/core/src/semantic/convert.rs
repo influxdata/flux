@@ -333,6 +333,7 @@ fn convert_expression(expr: ast::Expression, fresher: &mut Fresher) -> Result<Ex
         ast::Expression::Conditional(expr) => Ok(Expression::Conditional(Box::new(convert_conditional_expression(*expr, fresher)?))),
         ast::Expression::Object(expr) => Ok(Expression::Object(Box::new(convert_object_expression(*expr, fresher)?))),
         ast::Expression::Array(expr) => Ok(Expression::Array(Box::new(convert_array_expression(*expr, fresher)?))),
+        ast::Expression::Dict(expr) => Ok(Expression::Dict(Box::new(convert_dict_expression(*expr, fresher)?))),
         ast::Expression::Identifier(expr) => Ok(Expression::Identifier(convert_identifier_expression(expr, fresher)?)),
         ast::Expression::StringExpr(expr) => Ok(Expression::StringExpr(Box::new(convert_string_expression(*expr, fresher)?))),
         ast::Expression::Paren(expr) => convert_expression(expr.expression, fresher),
@@ -601,6 +602,21 @@ fn convert_array_expression(expr: ast::ArrayExpr, fresher: &mut Fresher) -> Resu
     Ok(ArrayExpr {
         loc: expr.base.location,
         typ: MonoType::Var(fresher.fresh()),
+        elements,
+    })
+}
+
+fn convert_dict_expression(expr: ast::DictExpr, f: &mut Fresher) -> Result<DictExpr> {
+    let mut elements = Vec::new();
+    for item in expr.elements.into_iter() {
+        elements.push((
+            convert_expression(item.key, f)?,
+            convert_expression(item.val, f)?,
+        ));
+    }
+    Ok(DictExpr {
+        loc: expr.base.location,
+        typ: MonoType::Var(f.fresh()),
         elements,
     })
 }

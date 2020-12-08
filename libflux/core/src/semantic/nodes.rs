@@ -19,7 +19,10 @@ use crate::semantic::{
     import::Importer,
     infer::{Constraint, Constraints},
     sub::{Substitutable, Substitution},
-    types::{Array, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar, TvarKinds},
+    types::{
+        Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
+        TvarKinds,
+    },
 };
 
 use chrono::prelude::DateTime;
@@ -125,6 +128,7 @@ impl Assignment {
 pub enum Expression {
     Identifier(IdentifierExpr),
     Array(Box<ArrayExpr>),
+    Dict(Box<DictExpr>),
     Function(Box<FunctionExpr>),
     Logical(Box<LogicalExpr>),
     Object(Box<ObjectExpr>),
@@ -151,6 +155,7 @@ impl Expression {
         match self {
             Expression::Identifier(e) => e.typ.clone(),
             Expression::Array(e) => e.typ.clone(),
+            Expression::Dict(e) => e.typ.clone(),
             Expression::Function(e) => e.typ.clone(),
             Expression::Logical(_) => MonoType::Bool,
             Expression::Object(e) => e.typ.clone(),
@@ -175,6 +180,7 @@ impl Expression {
         match self {
             Expression::Identifier(e) => &e.loc,
             Expression::Array(e) => &e.loc,
+            Expression::Dict(e) => &e.loc,
             Expression::Function(e) => &e.loc,
             Expression::Logical(e) => &e.loc,
             Expression::Object(e) => &e.loc,
@@ -199,6 +205,7 @@ impl Expression {
         match self {
             Expression::Identifier(e) => e.infer(env, f),
             Expression::Array(e) => e.infer(env, f),
+            Expression::Dict(e) => e.infer(env, f),
             Expression::Function(e) => e.infer(env, f),
             Expression::Logical(e) => e.infer(env, f),
             Expression::Object(e) => e.infer(env, f),
@@ -223,6 +230,7 @@ impl Expression {
         match self {
             Expression::Identifier(e) => Expression::Identifier(e.apply(&sub)),
             Expression::Array(e) => Expression::Array(Box::new(e.apply(&sub))),
+            Expression::Dict(e) => Expression::Dict(Box::new(e.apply(&sub))),
             Expression::Function(e) => Expression::Function(Box::new(e.apply(&sub))),
             Expression::Logical(e) => Expression::Logical(Box::new(e.apply(&sub))),
             Expression::Object(e) => Expression::Object(Box::new(e.apply(&sub))),
@@ -716,6 +724,73 @@ impl ArrayExpr {
             .elements
             .into_iter()
             .map(|element| element.apply(&sub))
+            .collect();
+        self
+    }
+}
+
+#[derive(Derivative)]
+#[derivative(Debug, PartialEq, Clone)]
+pub struct DictExpr {
+    pub loc: ast::SourceLocation,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
+    pub elements: Vec<(Expression, Expression)>,
+}
+
+impl DictExpr {
+    fn infer(&mut self, mut env: Environment, f: &mut Fresher) -> Result {
+        let mut cons = Constraints::empty();
+
+        let key = MonoType::Var(f.fresh());
+        let val = MonoType::Var(f.fresh());
+
+        for (k, v) in &mut self.elements {
+            let (e, c0) = k.infer(env, f)?;
+            let (e, c1) = v.infer(e, f)?;
+
+            let kt = k.type_of();
+            let vt = v.type_of();
+
+            let kc = Constraint::Equal {
+                exp: key.clone(),
+                act: kt,
+                loc: k.loc().clone(),
+            };
+            let vc = Constraint::Equal {
+                exp: val.clone(),
+                act: vt,
+                loc: v.loc().clone(),
+            };
+
+            cons = cons + c0 + c1 + vec![kc, vc].into();
+            env = e;
+        }
+
+        let ty = MonoType::Dict(Box::new(Dictionary {
+            key: key.clone(),
+            val,
+        }));
+
+        let eq = Constraint::Equal {
+            exp: ty,
+            act: self.typ.clone(),
+            loc: self.loc.clone(),
+        };
+        let tc = Constraint::Kind {
+            exp: Kind::Comparable,
+            act: key,
+            loc: self.loc.clone(),
+        };
+
+        Ok((env, cons + vec![eq, tc].into()))
+    }
+    fn apply(mut self, sub: &Substitution) -> Self {
+        self.typ = self.typ.apply(&sub);
+        self.elements = self
+            .elements
+            .into_iter()
+            .map(|(key, val)| (key.apply(&sub), val.apply(&sub)))
             .collect();
         self
     }

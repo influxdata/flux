@@ -312,6 +312,53 @@ macro_rules! package {
 }
 
 #[test]
+fn dictionary_literals() {
+    test_infer! {
+        src: r#"
+            m = ["a": 0, "b": 1, "c": 2]
+        "#,
+        exp: map![
+            "m" => "[string: int]",
+        ],
+    }
+    test_infer! {
+        env: map![
+            "a" => "string",
+            "b" => "string",
+            "one" => "int",
+            "two" => "int"
+        ],
+        src: r#"
+            m = [a: one, b: two]
+        "#,
+        exp: map![
+            "m" => "[string: int]",
+        ],
+    }
+    test_infer! {
+        src: r#"
+            m = [1970-01-01T00:00:00Z: 0, 1970-01-01T01:00:00Z: 1]"#,
+        exp: map![
+            "m" => "[time: int]",
+        ],
+    }
+    test_infer_err! {
+        src: r#"
+            m = ["1": 1.1, 2: 2.2]
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            m = ["a": "1", "b": 2]
+        "#,
+    }
+    test_infer_err! {
+        src: r#"
+            m = [[]: 1]
+        "#,
+    }
+}
+#[test]
 fn dictionary() {
     test_infer! {
         env: map![

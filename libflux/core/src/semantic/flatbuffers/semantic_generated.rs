@@ -383,28 +383,29 @@ pub mod fbsemantic {
         NONE = 0,
         StringExpression = 1,
         ArrayExpression = 2,
-        FunctionExpression = 3,
-        BinaryExpression = 4,
-        CallExpression = 5,
-        ConditionalExpression = 6,
-        IdentifierExpression = 7,
-        LogicalExpression = 8,
-        MemberExpression = 9,
-        IndexExpression = 10,
-        ObjectExpression = 11,
-        UnaryExpression = 12,
-        BooleanLiteral = 13,
-        DateTimeLiteral = 14,
-        DurationLiteral = 15,
-        FloatLiteral = 16,
-        IntegerLiteral = 17,
-        StringLiteral = 18,
-        RegexpLiteral = 19,
-        UnsignedIntegerLiteral = 20,
+        DictExpression = 3,
+        FunctionExpression = 4,
+        BinaryExpression = 5,
+        CallExpression = 6,
+        ConditionalExpression = 7,
+        IdentifierExpression = 8,
+        LogicalExpression = 9,
+        MemberExpression = 10,
+        IndexExpression = 11,
+        ObjectExpression = 12,
+        UnaryExpression = 13,
+        BooleanLiteral = 14,
+        DateTimeLiteral = 15,
+        DurationLiteral = 16,
+        FloatLiteral = 17,
+        IntegerLiteral = 18,
+        StringLiteral = 19,
+        RegexpLiteral = 20,
+        UnsignedIntegerLiteral = 21,
     }
 
     const ENUM_MIN_EXPRESSION: u8 = 0;
-    const ENUM_MAX_EXPRESSION: u8 = 20;
+    const ENUM_MAX_EXPRESSION: u8 = 21;
 
     impl<'a> flatbuffers::Follow<'a> for Expression {
         type Inner = Self;
@@ -438,10 +439,11 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_EXPRESSION: [Expression; 21] = [
+    const ENUM_VALUES_EXPRESSION: [Expression; 22] = [
         Expression::NONE,
         Expression::StringExpression,
         Expression::ArrayExpression,
+        Expression::DictExpression,
         Expression::FunctionExpression,
         Expression::BinaryExpression,
         Expression::CallExpression,
@@ -463,10 +465,11 @@ pub mod fbsemantic {
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_EXPRESSION: [&'static str; 21] = [
+    const ENUM_NAMES_EXPRESSION: [&'static str; 22] = [
         "NONE",
         "StringExpression",
         "ArrayExpression",
+        "DictExpression",
         "FunctionExpression",
         "BinaryExpression",
         "CallExpression",
@@ -3929,6 +3932,17 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn expression_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.expression_type() == Expression::DictExpression {
+                self.expression()
+                    .map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn expression_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.expression_type() == Expression::FunctionExpression {
                 self.expression()
@@ -4266,6 +4280,16 @@ pub mod fbsemantic {
         pub fn argument_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.argument_type() == Expression::ArrayExpression {
                 self.argument().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn argument_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.argument_type() == Expression::DictExpression {
+                self.argument().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -4635,6 +4659,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn init__as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.init__type() == Expression::DictExpression {
+                self.init_().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn init__as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.init__type() == Expression::FunctionExpression {
                 self.init_().map(|u| FunctionExpression::init_from_table(u))
@@ -4995,6 +5029,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn init__as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.init__type() == Expression::DictExpression {
+                self.init_().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn init__as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.init__type() == Expression::FunctionExpression {
                 self.init_().map(|u| FunctionExpression::init_from_table(u))
@@ -5317,6 +5361,17 @@ pub mod fbsemantic {
             if self.expression_type() == Expression::ArrayExpression {
                 self.expression()
                     .map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn expression_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.expression_type() == Expression::DictExpression {
+                self.expression()
+                    .map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -5782,6 +5837,17 @@ pub mod fbsemantic {
             if self.interpolated_expression_type() == Expression::ArrayExpression {
                 self.interpolated_expression()
                     .map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn interpolated_expression_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.interpolated_expression_type() == Expression::DictExpression {
+                self.interpolated_expression()
+                    .map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -6282,6 +6348,764 @@ pub mod fbsemantic {
         }
     }
 
+    pub enum DictExpressionOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct DictExpression<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for DictExpression<'a> {
+        type Inner = DictExpression<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> DictExpression<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            DictExpression { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args DictExpressionArgs<'args>,
+        ) -> flatbuffers::WIPOffset<DictExpression<'bldr>> {
+            let mut builder = DictExpressionBuilder::new(_fbb);
+            if let Some(x) = args.typ {
+                builder.add_typ(x);
+            }
+            if let Some(x) = args.elements {
+                builder.add_elements(x);
+            }
+            if let Some(x) = args.loc {
+                builder.add_loc(x);
+            }
+            builder.add_typ_type(args.typ_type);
+            builder.finish()
+        }
+
+        pub const VT_LOC: flatbuffers::VOffsetT = 4;
+        pub const VT_ELEMENTS: flatbuffers::VOffsetT = 6;
+        pub const VT_TYP_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_TYP: flatbuffers::VOffsetT = 10;
+
+        #[inline]
+        pub fn loc(&self) -> Option<SourceLocation<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<SourceLocation<'a>>>(
+                    DictExpression::VT_LOC,
+                    None,
+                )
+        }
+        #[inline]
+        pub fn elements(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<DictItem<'a>>>> {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<flatbuffers::ForwardsUOffset<DictItem<'a>>>,
+            >>(DictExpression::VT_ELEMENTS, None)
+        }
+        #[inline]
+        pub fn typ_type(&self) -> MonoType {
+            self._tab
+                .get::<MonoType>(DictExpression::VT_TYP_TYPE, Some(MonoType::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn typ(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(
+                    DictExpression::VT_TYP,
+                    None,
+                )
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_basic(&self) -> Option<Basic<'a>> {
+            if self.typ_type() == MonoType::Basic {
+                self.typ().map(|u| Basic::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_var(&self) -> Option<Var<'a>> {
+            if self.typ_type() == MonoType::Var {
+                self.typ().map(|u| Var::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_arr(&self) -> Option<Arr<'a>> {
+            if self.typ_type() == MonoType::Arr {
+                self.typ().map(|u| Arr::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_record(&self) -> Option<Record<'a>> {
+            if self.typ_type() == MonoType::Record {
+                self.typ().map(|u| Record::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_fun(&self) -> Option<Fun<'a>> {
+            if self.typ_type() == MonoType::Fun {
+                self.typ().map(|u| Fun::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn typ_as_dict(&self) -> Option<Dict<'a>> {
+            if self.typ_type() == MonoType::Dict {
+                self.typ().map(|u| Dict::init_from_table(u))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub struct DictExpressionArgs<'a> {
+        pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
+        pub elements: Option<
+            flatbuffers::WIPOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<DictItem<'a>>>,
+            >,
+        >,
+        pub typ_type: MonoType,
+        pub typ: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for DictExpressionArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            DictExpressionArgs {
+                loc: None,
+                elements: None,
+                typ_type: MonoType::NONE,
+                typ: None,
+            }
+        }
+    }
+    pub struct DictExpressionBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> DictExpressionBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_loc(&mut self, loc: flatbuffers::WIPOffset<SourceLocation<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<SourceLocation>>(
+                    DictExpression::VT_LOC,
+                    loc,
+                );
+        }
+        #[inline]
+        pub fn add_elements(
+            &mut self,
+            elements: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<DictItem<'b>>>,
+            >,
+        ) {
+            self.fbb_.push_slot_always::<flatbuffers::WIPOffset<_>>(
+                DictExpression::VT_ELEMENTS,
+                elements,
+            );
+        }
+        #[inline]
+        pub fn add_typ_type(&mut self, typ_type: MonoType) {
+            self.fbb_
+                .push_slot::<MonoType>(DictExpression::VT_TYP_TYPE, typ_type, MonoType::NONE);
+        }
+        #[inline]
+        pub fn add_typ(&mut self, typ: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(DictExpression::VT_TYP, typ);
+        }
+        #[inline]
+        pub fn new(
+            _fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        ) -> DictExpressionBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            DictExpressionBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<DictExpression<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
+    pub enum DictItemOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct DictItem<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for DictItem<'a> {
+        type Inner = DictItem<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> DictItem<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            DictItem { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args DictItemArgs,
+        ) -> flatbuffers::WIPOffset<DictItem<'bldr>> {
+            let mut builder = DictItemBuilder::new(_fbb);
+            if let Some(x) = args.val {
+                builder.add_val(x);
+            }
+            if let Some(x) = args.key {
+                builder.add_key(x);
+            }
+            builder.add_val_type(args.val_type);
+            builder.add_key_type(args.key_type);
+            builder.finish()
+        }
+
+        pub const VT_KEY_TYPE: flatbuffers::VOffsetT = 4;
+        pub const VT_KEY: flatbuffers::VOffsetT = 6;
+        pub const VT_VAL_TYPE: flatbuffers::VOffsetT = 8;
+        pub const VT_VAL: flatbuffers::VOffsetT = 10;
+
+        #[inline]
+        pub fn key_type(&self) -> Expression {
+            self._tab
+                .get::<Expression>(DictItem::VT_KEY_TYPE, Some(Expression::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn key(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(DictItem::VT_KEY, None)
+        }
+        #[inline]
+        pub fn val_type(&self) -> Expression {
+            self._tab
+                .get::<Expression>(DictItem::VT_VAL_TYPE, Some(Expression::NONE))
+                .unwrap()
+        }
+        #[inline]
+        pub fn val(&self) -> Option<flatbuffers::Table<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<flatbuffers::Table<'a>>>(DictItem::VT_VAL, None)
+        }
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_string_expression(&self) -> Option<StringExpression<'a>> {
+            if self.key_type() == Expression::StringExpression {
+                self.key().map(|u| StringExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
+            if self.key_type() == Expression::ArrayExpression {
+                self.key().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.key_type() == Expression::DictExpression {
+                self.key().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
+            if self.key_type() == Expression::FunctionExpression {
+                self.key().map(|u| FunctionExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
+            if self.key_type() == Expression::BinaryExpression {
+                self.key().map(|u| BinaryExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_call_expression(&self) -> Option<CallExpression<'a>> {
+            if self.key_type() == Expression::CallExpression {
+                self.key().map(|u| CallExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
+            if self.key_type() == Expression::ConditionalExpression {
+                self.key()
+                    .map(|u| ConditionalExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
+            if self.key_type() == Expression::IdentifierExpression {
+                self.key().map(|u| IdentifierExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
+            if self.key_type() == Expression::LogicalExpression {
+                self.key().map(|u| LogicalExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_member_expression(&self) -> Option<MemberExpression<'a>> {
+            if self.key_type() == Expression::MemberExpression {
+                self.key().map(|u| MemberExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_index_expression(&self) -> Option<IndexExpression<'a>> {
+            if self.key_type() == Expression::IndexExpression {
+                self.key().map(|u| IndexExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
+            if self.key_type() == Expression::ObjectExpression {
+                self.key().map(|u| ObjectExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
+            if self.key_type() == Expression::UnaryExpression {
+                self.key().map(|u| UnaryExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
+            if self.key_type() == Expression::BooleanLiteral {
+                self.key().map(|u| BooleanLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
+            if self.key_type() == Expression::DateTimeLiteral {
+                self.key().map(|u| DateTimeLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
+            if self.key_type() == Expression::DurationLiteral {
+                self.key().map(|u| DurationLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
+            if self.key_type() == Expression::FloatLiteral {
+                self.key().map(|u| FloatLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
+            if self.key_type() == Expression::IntegerLiteral {
+                self.key().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_string_literal(&self) -> Option<StringLiteral<'a>> {
+            if self.key_type() == Expression::StringLiteral {
+                self.key().map(|u| StringLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
+            if self.key_type() == Expression::RegexpLiteral {
+                self.key().map(|u| RegexpLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn key_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
+            if self.key_type() == Expression::UnsignedIntegerLiteral {
+                self.key()
+                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_string_expression(&self) -> Option<StringExpression<'a>> {
+            if self.val_type() == Expression::StringExpression {
+                self.val().map(|u| StringExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
+            if self.val_type() == Expression::ArrayExpression {
+                self.val().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.val_type() == Expression::DictExpression {
+                self.val().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
+            if self.val_type() == Expression::FunctionExpression {
+                self.val().map(|u| FunctionExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_binary_expression(&self) -> Option<BinaryExpression<'a>> {
+            if self.val_type() == Expression::BinaryExpression {
+                self.val().map(|u| BinaryExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_call_expression(&self) -> Option<CallExpression<'a>> {
+            if self.val_type() == Expression::CallExpression {
+                self.val().map(|u| CallExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_conditional_expression(&self) -> Option<ConditionalExpression<'a>> {
+            if self.val_type() == Expression::ConditionalExpression {
+                self.val()
+                    .map(|u| ConditionalExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_identifier_expression(&self) -> Option<IdentifierExpression<'a>> {
+            if self.val_type() == Expression::IdentifierExpression {
+                self.val().map(|u| IdentifierExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_logical_expression(&self) -> Option<LogicalExpression<'a>> {
+            if self.val_type() == Expression::LogicalExpression {
+                self.val().map(|u| LogicalExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_member_expression(&self) -> Option<MemberExpression<'a>> {
+            if self.val_type() == Expression::MemberExpression {
+                self.val().map(|u| MemberExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_index_expression(&self) -> Option<IndexExpression<'a>> {
+            if self.val_type() == Expression::IndexExpression {
+                self.val().map(|u| IndexExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_object_expression(&self) -> Option<ObjectExpression<'a>> {
+            if self.val_type() == Expression::ObjectExpression {
+                self.val().map(|u| ObjectExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_unary_expression(&self) -> Option<UnaryExpression<'a>> {
+            if self.val_type() == Expression::UnaryExpression {
+                self.val().map(|u| UnaryExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_boolean_literal(&self) -> Option<BooleanLiteral<'a>> {
+            if self.val_type() == Expression::BooleanLiteral {
+                self.val().map(|u| BooleanLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_date_time_literal(&self) -> Option<DateTimeLiteral<'a>> {
+            if self.val_type() == Expression::DateTimeLiteral {
+                self.val().map(|u| DateTimeLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_duration_literal(&self) -> Option<DurationLiteral<'a>> {
+            if self.val_type() == Expression::DurationLiteral {
+                self.val().map(|u| DurationLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_float_literal(&self) -> Option<FloatLiteral<'a>> {
+            if self.val_type() == Expression::FloatLiteral {
+                self.val().map(|u| FloatLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_integer_literal(&self) -> Option<IntegerLiteral<'a>> {
+            if self.val_type() == Expression::IntegerLiteral {
+                self.val().map(|u| IntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_string_literal(&self) -> Option<StringLiteral<'a>> {
+            if self.val_type() == Expression::StringLiteral {
+                self.val().map(|u| StringLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_regexp_literal(&self) -> Option<RegexpLiteral<'a>> {
+            if self.val_type() == Expression::RegexpLiteral {
+                self.val().map(|u| RegexpLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn val_as_unsigned_integer_literal(&self) -> Option<UnsignedIntegerLiteral<'a>> {
+            if self.val_type() == Expression::UnsignedIntegerLiteral {
+                self.val()
+                    .map(|u| UnsignedIntegerLiteral::init_from_table(u))
+            } else {
+                None
+            }
+        }
+    }
+
+    pub struct DictItemArgs {
+        pub key_type: Expression,
+        pub key: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+        pub val_type: Expression,
+        pub val: Option<flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>>,
+    }
+    impl<'a> Default for DictItemArgs {
+        #[inline]
+        fn default() -> Self {
+            DictItemArgs {
+                key_type: Expression::NONE,
+                key: None,
+                val_type: Expression::NONE,
+                val: None,
+            }
+        }
+    }
+    pub struct DictItemBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> DictItemBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_key_type(&mut self, key_type: Expression) {
+            self.fbb_
+                .push_slot::<Expression>(DictItem::VT_KEY_TYPE, key_type, Expression::NONE);
+        }
+        #[inline]
+        pub fn add_key(&mut self, key: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(DictItem::VT_KEY, key);
+        }
+        #[inline]
+        pub fn add_val_type(&mut self, val_type: Expression) {
+            self.fbb_
+                .push_slot::<Expression>(DictItem::VT_VAL_TYPE, val_type, Expression::NONE);
+        }
+        #[inline]
+        pub fn add_val(&mut self, val: flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(DictItem::VT_VAL, val);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> DictItemBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            DictItemBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<DictItem<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
     pub enum FunctionExpressionOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 
@@ -6613,6 +7437,16 @@ pub mod fbsemantic {
         pub fn default_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.default_type() == Expression::ArrayExpression {
                 self.default().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn default_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.default_type() == Expression::DictExpression {
+                self.default().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -7129,6 +7963,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn left_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.left_type() == Expression::DictExpression {
+                self.left().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn left_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.left_type() == Expression::FunctionExpression {
                 self.left().map(|u| FunctionExpression::init_from_table(u))
@@ -7325,6 +8169,16 @@ pub mod fbsemantic {
         pub fn right_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.right_type() == Expression::ArrayExpression {
                 self.right().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn right_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.right_type() == Expression::DictExpression {
+                self.right().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -7814,6 +8668,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn callee_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.callee_type() == Expression::DictExpression {
+                self.callee().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn callee_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.callee_type() == Expression::FunctionExpression {
                 self.callee()
@@ -8011,6 +8875,16 @@ pub mod fbsemantic {
         pub fn pipe_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.pipe_type() == Expression::ArrayExpression {
                 self.pipe().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn pipe_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.pipe_type() == Expression::DictExpression {
+                self.pipe().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -8499,6 +9373,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn test_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.test_type() == Expression::DictExpression {
+                self.test().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn test_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.test_type() == Expression::FunctionExpression {
                 self.test().map(|u| FunctionExpression::init_from_table(u))
@@ -8697,6 +9581,16 @@ pub mod fbsemantic {
             if self.alternate_type() == Expression::ArrayExpression {
                 self.alternate()
                     .map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn alternate_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.alternate_type() == Expression::DictExpression {
+                self.alternate().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -8911,6 +9805,17 @@ pub mod fbsemantic {
             if self.consequent_type() == Expression::ArrayExpression {
                 self.consequent()
                     .map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn consequent_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.consequent_type() == Expression::DictExpression {
+                self.consequent()
+                    .map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -9333,6 +10238,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn left_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.left_type() == Expression::DictExpression {
+                self.left().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn left_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.left_type() == Expression::FunctionExpression {
                 self.left().map(|u| FunctionExpression::init_from_table(u))
@@ -9529,6 +10444,16 @@ pub mod fbsemantic {
         pub fn right_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.right_type() == Expression::ArrayExpression {
                 self.right().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn right_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.right_type() == Expression::DictExpression {
+                self.right().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -9911,6 +10836,16 @@ pub mod fbsemantic {
         pub fn object_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.object_type() == Expression::ArrayExpression {
                 self.object().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn object_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.object_type() == Expression::DictExpression {
+                self.object().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -10371,6 +11306,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn array_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.array_type() == Expression::DictExpression {
+                self.array().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn array_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.array_type() == Expression::FunctionExpression {
                 self.array().map(|u| FunctionExpression::init_from_table(u))
@@ -10567,6 +11512,16 @@ pub mod fbsemantic {
         pub fn index_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.index_type() == Expression::ArrayExpression {
                 self.index().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn index_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.index_type() == Expression::DictExpression {
+                self.index().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
@@ -11258,6 +12213,16 @@ pub mod fbsemantic {
 
         #[inline]
         #[allow(non_snake_case)]
+        pub fn argument_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.argument_type() == Expression::DictExpression {
+                self.argument().map(|u| DictExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
         pub fn argument_as_function_expression(&self) -> Option<FunctionExpression<'a>> {
             if self.argument_type() == Expression::FunctionExpression {
                 self.argument()
@@ -11677,6 +12642,16 @@ pub mod fbsemantic {
         pub fn value_as_array_expression(&self) -> Option<ArrayExpression<'a>> {
             if self.value_type() == Expression::ArrayExpression {
                 self.value().map(|u| ArrayExpression::init_from_table(u))
+            } else {
+                None
+            }
+        }
+
+        #[inline]
+        #[allow(non_snake_case)]
+        pub fn value_as_dict_expression(&self) -> Option<DictExpression<'a>> {
+            if self.value_type() == Expression::DictExpression {
+                self.value().map(|u| DictExpression::init_from_table(u))
             } else {
                 None
             }
