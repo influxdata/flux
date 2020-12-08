@@ -19,6 +19,7 @@ var IgnoreBaseNodeOptions = []cmp.Option{
 	cmpopts.IgnoreFields(ast.CallExpression{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.ConditionalExpression{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.DateTimeLiteral{}, "BaseNode"),
+	cmpopts.IgnoreFields(ast.DictExpression{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.DictType{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.DurationLiteral{}, "BaseNode"),
 	cmpopts.IgnoreFields(ast.ExpressionStatement{}, "BaseNode"),

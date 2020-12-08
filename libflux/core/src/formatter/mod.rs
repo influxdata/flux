@@ -255,6 +255,7 @@ impl Formatter {
             Node::ConditionalExpr(m) => self.format_conditional_expression(m),
             Node::StringExpr(m) => self.format_string_expression(m),
             Node::ArrayExpr(m) => self.format_array_expression(m),
+            Node::DictExpr(m) => self.format_dict_expression(m),
             Node::MemberExpr(m) => self.format_member_expression(m),
             Node::UnaryExpr(m) => self.format_unary_expression(m),
             Node::BinaryExpr(m) => self.format_binary_expression(m),
@@ -640,6 +641,43 @@ impl Formatter {
                 }
             }
             self.format_node(&Node::from_expr(&item.expression));
+            self.format_comments(&item.comma);
+        }
+        if multiline {
+            self.temp_tabstops = false;
+            self.write_string(sep);
+            self.unindent();
+            self.write_indent();
+        }
+        self.format_comments(&n.rbrack);
+        self.write_rune(']')
+    }
+
+    fn format_dict_expression(&mut self, n: &ast::DictExpr) {
+        let multiline = n.elements.len() > 4 || n.base.is_multiline();
+        self.format_comments(&n.lbrack);
+        self.write_rune('[');
+        if multiline {
+            self.temp_tabstops = true;
+            self.write_rune('\n');
+            self.indent();
+            self.write_indent();
+        }
+        let sep = match multiline {
+            true => ",\n",
+            false => ", ",
+        };
+        for (i, item) in (&n.elements).iter().enumerate() {
+            if i != 0 {
+                self.write_string(sep);
+                if multiline {
+                    self.write_indent()
+                }
+            }
+            self.format_node(&Node::from_expr(&item.key));
+            self.write_rune(':');
+            self.write_rune(' ');
+            self.format_node(&Node::from_expr(&item.val));
             self.format_comments(&item.comma);
         }
         if multiline {
@@ -1284,6 +1322,7 @@ fn starts_with_comment(n: Node) -> bool {
         Node::ImportDeclaration(n) => n.base.comments.is_some(),
         Node::Identifier(n) => n.base.comments.is_some(),
         Node::ArrayExpr(n) => n.lbrack.is_some(),
+        Node::DictExpr(n) => n.lbrack.is_some(),
         Node::FunctionExpr(n) => n.lparen.is_some(),
         Node::LogicalExpr(n) => starts_with_comment(Node::from_expr(&n.left)),
         Node::ObjectExpr(n) => n.lbrace.is_some(),

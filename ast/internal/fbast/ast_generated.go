@@ -91,27 +91,28 @@ const (
 	ExpressionStringExpression       Expression = 1
 	ExpressionParenExpression        Expression = 2
 	ExpressionArrayExpression        Expression = 3
-	ExpressionFunctionExpression     Expression = 4
-	ExpressionBinaryExpression       Expression = 5
-	ExpressionBooleanLiteral         Expression = 6
-	ExpressionCallExpression         Expression = 7
-	ExpressionConditionalExpression  Expression = 8
-	ExpressionDateTimeLiteral        Expression = 9
-	ExpressionDurationLiteral        Expression = 10
-	ExpressionFloatLiteral           Expression = 11
-	ExpressionIdentifier             Expression = 12
-	ExpressionIntegerLiteral         Expression = 13
-	ExpressionLogicalExpression      Expression = 14
-	ExpressionMemberExpression       Expression = 15
-	ExpressionIndexExpression        Expression = 16
-	ExpressionObjectExpression       Expression = 17
-	ExpressionPipeExpression         Expression = 18
-	ExpressionPipeLiteral            Expression = 19
-	ExpressionRegexpLiteral          Expression = 20
-	ExpressionStringLiteral          Expression = 21
-	ExpressionUnaryExpression        Expression = 22
-	ExpressionUnsignedIntegerLiteral Expression = 23
-	ExpressionBadExpression          Expression = 24
+	ExpressionDictExpression         Expression = 4
+	ExpressionFunctionExpression     Expression = 5
+	ExpressionBinaryExpression       Expression = 6
+	ExpressionBooleanLiteral         Expression = 7
+	ExpressionCallExpression         Expression = 8
+	ExpressionConditionalExpression  Expression = 9
+	ExpressionDateTimeLiteral        Expression = 10
+	ExpressionDurationLiteral        Expression = 11
+	ExpressionFloatLiteral           Expression = 12
+	ExpressionIdentifier             Expression = 13
+	ExpressionIntegerLiteral         Expression = 14
+	ExpressionLogicalExpression      Expression = 15
+	ExpressionMemberExpression       Expression = 16
+	ExpressionIndexExpression        Expression = 17
+	ExpressionObjectExpression       Expression = 18
+	ExpressionPipeExpression         Expression = 19
+	ExpressionPipeLiteral            Expression = 20
+	ExpressionRegexpLiteral          Expression = 21
+	ExpressionStringLiteral          Expression = 22
+	ExpressionUnaryExpression        Expression = 23
+	ExpressionUnsignedIntegerLiteral Expression = 24
+	ExpressionBadExpression          Expression = 25
 )
 
 var EnumNamesExpression = map[Expression]string{
@@ -119,6 +120,7 @@ var EnumNamesExpression = map[Expression]string{
 	ExpressionStringExpression:       "StringExpression",
 	ExpressionParenExpression:        "ParenExpression",
 	ExpressionArrayExpression:        "ArrayExpression",
+	ExpressionDictExpression:         "DictExpression",
 	ExpressionFunctionExpression:     "FunctionExpression",
 	ExpressionBinaryExpression:       "BinaryExpression",
 	ExpressionBooleanLiteral:         "BooleanLiteral",
@@ -3627,6 +3629,156 @@ func ArrayExpressionStartElementsVector(builder *flatbuffers.Builder, numElems i
 	return builder.StartVector(4, numElems, 4)
 }
 func ArrayExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type DictExpression struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsDictExpression(buf []byte, offset flatbuffers.UOffsetT) *DictExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &DictExpression{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *DictExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *DictExpression) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *DictExpression) BaseNode(obj *BaseNode) *BaseNode {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(BaseNode)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *DictExpression) Elements(obj *DictItem, j int) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		x := rcv._tab.Vector(o)
+		x += flatbuffers.UOffsetT(j) * 4
+		x = rcv._tab.Indirect(x)
+		obj.Init(rcv._tab.Bytes, x)
+		return true
+	}
+	return false
+}
+
+func (rcv *DictExpression) ElementsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
+func DictExpressionStart(builder *flatbuffers.Builder) {
+	builder.StartObject(2)
+}
+func DictExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
+}
+func DictExpressionAddElements(builder *flatbuffers.Builder, elements flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(elements), 0)
+}
+func DictExpressionStartElementsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func DictExpressionEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
+	return builder.EndObject()
+}
+
+type DictItem struct {
+	_tab flatbuffers.Table
+}
+
+func GetRootAsDictItem(buf []byte, offset flatbuffers.UOffsetT) *DictItem {
+	n := flatbuffers.GetUOffsetT(buf[offset:])
+	x := &DictItem{}
+	x.Init(buf, n+offset)
+	return x
+}
+
+func (rcv *DictItem) Init(buf []byte, i flatbuffers.UOffsetT) {
+	rcv._tab.Bytes = buf
+	rcv._tab.Pos = i
+}
+
+func (rcv *DictItem) Table() flatbuffers.Table {
+	return rcv._tab
+}
+
+func (rcv *DictItem) KeyType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *DictItem) MutateKeyType(n byte) bool {
+	return rcv._tab.MutateByteSlot(4, n)
+}
+
+func (rcv *DictItem) Key(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func (rcv *DictItem) ValType() byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.GetByte(o + rcv._tab.Pos)
+	}
+	return 0
+}
+
+func (rcv *DictItem) MutateValType(n byte) bool {
+	return rcv._tab.MutateByteSlot(8, n)
+}
+
+func (rcv *DictItem) Val(obj *flatbuffers.Table) bool {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
+	if o != 0 {
+		rcv._tab.Union(obj, o)
+		return true
+	}
+	return false
+}
+
+func DictItemStart(builder *flatbuffers.Builder) {
+	builder.StartObject(4)
+}
+func DictItemAddKeyType(builder *flatbuffers.Builder, keyType byte) {
+	builder.PrependByteSlot(0, keyType, 0)
+}
+func DictItemAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(key), 0)
+}
+func DictItemAddValType(builder *flatbuffers.Builder, valType byte) {
+	builder.PrependByteSlot(2, valType, 0)
+}
+func DictItemAddVal(builder *flatbuffers.Builder, val flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(val), 0)
+}
+func DictItemEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
 }
 

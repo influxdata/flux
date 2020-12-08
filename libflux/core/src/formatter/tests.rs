@@ -139,6 +139,25 @@ a[i]"#,
 }
 
 #[test]
+fn dict() {
+    assert_unchanged(r#"["a": 0, "b": 1]"#);
+    assert_unchanged(
+        r#"[
+    "a": 0,
+    //comment
+    "b": 1,
+]"#,
+    );
+    assert_unchanged(
+        r#"[
+    "a": 0,
+    "b": 1,
+    "c": 2,
+]"#,
+    );
+}
+
+#[test]
 fn dict_type() {
     assert_unchanged("builtin dict : [string:int]");
     assert_unchanged("builtin dict : [string:string]");

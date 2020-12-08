@@ -1500,6 +1500,56 @@ fn test_json_array_expression() {
     let deserialized: Expression = serde_json::from_str(serialized.as_str()).unwrap();
     assert_eq!(deserialized, n)
 }
+#[test]
+fn test_json_dict_expression() {
+    let n = Expression::Dict(Box::new(DictExpr {
+        base: BaseNode::default(),
+        lbrack: None,
+        elements: vec![
+            DictItem {
+                key: Expression::StringLit(StringLit {
+                    base: BaseNode::default(),
+                    value: "a".to_string(),
+                }),
+                val: Expression::Integer(IntegerLit {
+                    base: BaseNode::default(),
+                    value: 0,
+                }),
+                comma: None,
+            },
+            DictItem {
+                key: Expression::StringLit(StringLit {
+                    base: BaseNode::default(),
+                    value: "b".to_string(),
+                }),
+                val: Expression::Integer(IntegerLit {
+                    base: BaseNode::default(),
+                    value: 1,
+                }),
+                comma: None,
+            },
+            DictItem {
+                key: Expression::StringLit(StringLit {
+                    base: BaseNode::default(),
+                    value: "c".to_string(),
+                }),
+                val: Expression::Integer(IntegerLit {
+                    base: BaseNode::default(),
+                    value: 2,
+                }),
+                comma: None,
+            },
+        ],
+        rbrack: None,
+    }));
+    let serialized = serde_json::to_string(&n).unwrap();
+    assert_eq!(
+        serialized,
+        r#"{"type":"DictExpression","elements":[{"key":{"type":"StringLiteral","value":"a"},"val":{"type":"IntegerLiteral","value":"0"}},{"key":{"type":"StringLiteral","value":"b"},"val":{"type":"IntegerLiteral","value":"1"}},{"key":{"type":"StringLiteral","value":"c"},"val":{"type":"IntegerLiteral","value":"2"}}]}"#
+    );
+    let deserialized: Expression = serde_json::from_str(serialized.as_str()).unwrap();
+    assert_eq!(deserialized, n)
+}
 /*
 {
     name: "object expression",

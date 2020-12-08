@@ -776,6 +776,76 @@ func (e *ArrayExpression) UnmarshalJSON(data []byte) error {
 	}
 	return nil
 }
+func (e *DictExpression) MarshalJSON() ([]byte, error) {
+	type Alias DictExpression
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  e.Type(),
+		Alias: (*Alias)(e),
+	}
+	return json.Marshal(raw)
+}
+func (e *DictExpression) UnmarshalJSON(data []byte) error {
+	type Alias DictExpression
+	raw := struct {
+		*Alias
+		Elements []json.RawMessage `json:"elements"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.Alias != nil {
+		*e = *(*DictExpression)(raw.Alias)
+	}
+
+	e.Elements = make([]*DictItem, len(raw.Elements))
+	for i, r := range raw.Elements {
+		item := new(DictItem)
+		if err := item.UnmarshalJSON(r); err != nil {
+			return err
+		}
+		e.Elements[i] = item
+	}
+	return nil
+}
+func (item *DictItem) MarshalJSON() ([]byte, error) {
+	type Alias DictItem
+	raw := struct {
+		Type string `json:"type"`
+		*Alias
+	}{
+		Type:  item.Type(),
+		Alias: (*Alias)(item),
+	}
+	return json.Marshal(raw)
+}
+func (item *DictItem) UnmarshalJSON(data []byte) error {
+	type Alias DictItem
+	raw := struct {
+		*Alias
+		Key json.RawMessage `json:"key"`
+		Val json.RawMessage `json:"val"`
+	}{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	key, err := unmarshalExpression(raw.Key)
+	if err != nil {
+		return err
+	}
+	item.Key = key
+
+	val, err := unmarshalExpression(raw.Val)
+	if err != nil {
+		return err
+	}
+	item.Val = val
+
+	return nil
+}
 func (e *ObjectExpression) MarshalJSON() ([]byte, error) {
 	type Alias ObjectExpression
 	raw := struct {
@@ -1534,6 +1604,8 @@ func unmarshalNode(msg json.RawMessage) (Node, error) {
 		node = new(ConditionalExpression)
 	case "ArrayExpression":
 		node = new(ArrayExpression)
+	case "DictExpression":
+		node = new(DictExpression)
 	case "Identifier":
 		node = new(Identifier)
 	case "PipeLiteral":
