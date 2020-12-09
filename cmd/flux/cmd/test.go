@@ -48,14 +48,15 @@ func (t *Test) Run() {
 	c := lang.ASTCompiler{AST: jsonAST}
 
 	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-	program, Err := c.Compile(ctx, runtime.Default)
-	if Err != nil {
+	program, err := c.Compile(ctx, runtime.Default)
+	if err != nil {
 		t.Err = errors.Wrap(Err, codes.Invalid, "failed to compile")
+		return
 	}
 
 	alloc := &memory.Allocator{}
-	result, Err := program.Start(ctx, alloc)
-	if Err != nil {
+	result, err := program.Start(ctx, alloc)
+	if err != nil {
 		// XXX: rockstar (8 Dec 2020) - Not all tests should return streaming data.
 		if !strings.Contains(Err.Error(), "this Flux script returns no streaming data") {
 			t.Err = errors.Wrap(Err, codes.Inherit, "error while executing program")
@@ -65,15 +66,15 @@ func (t *Test) Run() {
 	defer result.Done()
 
 	for res := range result.Results() {
-		Err := res.Tables().Do(func(tbl flux.Table) error {
+		err := res.Tables().Do(func(tbl flux.Table) error {
 			// If there *is* streaming data from the flux test, it is assumed to come from
 			// `testing.diff`, and if that returns tables, that they are showing the failed diff.
 			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
 			// is not exactly "human readable."
 			return fmt.Errorf("%s", table.Stringify(tbl))
 		})
-		if Err != nil {
-			t.Err = Err
+		if err != nil {
+			t.Err = err
 		}
 	}
 }
