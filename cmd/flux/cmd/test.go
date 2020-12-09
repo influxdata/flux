@@ -24,32 +24,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-/* Test wraps the functionality of a single `testcase` statement,
-   to handle its execution and its pass/fail state.
-*/
+// Test wraps the functionality of a single testcase statement,
+// to handle its execution and its pass/fail state.
 type Test struct {
 	ast *ast.Package
 	err error
 }
 
-/* Create a new `Test` instance from an ast.Package. */
+// Create a new Test instance from an ast.Package.
 func NewTest(ast *ast.Package) Test {
 	return Test{
 		ast: ast,
 	}
 }
 
-/* Get the name of the `Test` */
+// Get the name of the Test.
 func (t *Test) Name() string {
 	return t.ast.Files[0].Name
 }
 
-/* Get the error from the test, if one exists. */
+// Get the error from the test, if one exists.
 func (t *Test) Error() error {
 	return t.err
 }
 
-/* Run the test, saving the error to the `err` property of the struct. */
+// Run the test, saving the error to the err property of the struct.
 func (t *Test) Run() {
 	jsonAST, err := json.Marshal(t.ast)
 	if err != nil {
