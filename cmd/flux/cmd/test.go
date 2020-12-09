@@ -24,25 +24,36 @@ import (
 	"github.com/spf13/cobra"
 )
 
+/* Test wraps the functionality of a single `testcase` statement,
+   to handle its execution and its pass/fail state.
+*/
 type Test struct {
 	ast *ast.Package
-	Err error
+	err error
 }
 
+/* Create a new `Test` instance from an ast.Package. */
 func NewTest(ast *ast.Package) Test {
 	return Test{
 		ast: ast,
 	}
 }
 
+/* Get the name of the `Test` */
 func (t *Test) Name() string {
 	return t.ast.Files[0].Name
 }
 
+/* Get the error from the test, if one exists. */
+func (t *Test) Error() error {
+	return t.err
+}
+
+/* Run the test, saving the error to the `err` property of the struct. */
 func (t *Test) Run() {
-	jsonAST, Err := json.Marshal(t.ast)
-	if Err != nil {
-		t.Err = Err
+	jsonAST, err := json.Marshal(t.ast)
+	if err != nil {
+		t.err = err
 		return
 	}
 	c := lang.ASTCompiler{AST: jsonAST}
@@ -50,31 +61,30 @@ func (t *Test) Run() {
 	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
 	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
-		t.Err = errors.Wrap(Err, codes.Invalid, "failed to compile")
+		t.err = errors.Wrap(err, codes.Invalid, "failed to compile")
 		return
 	}
 
 	alloc := &memory.Allocator{}
-	result, err := program.Start(ctx, alloc)
+	query, err := program.Start(ctx, alloc)
 	if err != nil {
-		// XXX: rockstar (8 Dec 2020) - Not all tests should return streaming data.
-		if !strings.Contains(Err.Error(), "this Flux script returns no streaming data") {
-			t.Err = errors.Wrap(Err, codes.Inherit, "error while executing program")
-			return
-		}
+		t.err = errors.Wrap(err, codes.Inherit, "error while executing program")
+		return
 	}
-	defer result.Done()
+	defer query.Done()
 
-	for res := range result.Results() {
-		err := res.Tables().Do(func(tbl flux.Table) error {
-			// If there *is* streaming data from the flux test, it is assumed to come from
-			// `testing.diff`, and if that returns tables, that they are showing the failed diff.
+	results := flux.NewResultIteratorFromQuery(query)
+	for results.More() {
+		result := results.Next()
+		err := result.Tables().Do(func(tbl flux.Table) error {
+			// The data returned here is the result of `testing.diff`, so any result means that
+			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
 			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
 			// is not exactly "human readable."
 			return fmt.Errorf("%s", table.Stringify(tbl))
 		})
 		if err != nil {
-			t.Err = err
+			t.err = err
 		}
 	}
 }
@@ -94,9 +104,9 @@ func init() {
 }
 
 func runFluxTests() {
-	root, Err := filepath.Abs("./stdlib")
-	if Err != nil {
-		fmt.Println(Err)
+	root, err := filepath.Abs("./stdlib")
+	if err != nil {
+		fmt.Println(err)
 		os.Exit(1)
 	}
 
@@ -104,18 +114,18 @@ func runFluxTests() {
 
 	filepath.Walk(
 		root,
-		func(path string, info os.FileInfo, Err error) error {
+		func(path string, info os.FileInfo, err error) error {
 			if strings.HasSuffix(path, "_test.flux") {
-				source, Err := ioutil.ReadFile(path)
-				if Err != nil {
-					fmt.Println(Err)
-					return Err
+				source, err := ioutil.ReadFile(path)
+				if err != nil {
+					fmt.Println(err)
+					return err
 				}
 
 				baseAST := parser.ParseSource(string(source))
-				asts, Err := edit.TestcaseTransform(baseAST)
-				if Err != nil {
-					return Err
+				asts, err := edit.TestcaseTransform(baseAST)
+				if err != nil {
+					return err
 				}
 				for _, ast := range asts {
 					test := NewTest(ast)
@@ -128,7 +138,7 @@ func runFluxTests() {
 	failures := []Test{}
 	for _, test := range tests {
 		test.Run()
-		if test.Err != nil {
+		if test.Error() != nil {
 			failures = append(failures, test)
 			fmt.Print("x")
 		} else {
@@ -145,7 +155,7 @@ func runFluxTests() {
 ----
 %s
 
-`, test.Name(), test.Err.Error())
+`, test.Name(), test.Error())
 		}
 	}
 	fmt.Printf("\n---\nRan %d tests with %d failures.\n", len(tests), len(failures))
