@@ -86,7 +86,7 @@ impl Substitutable for PolyType {
 impl MaxTvar for Vec<Tvar> {
     fn max_tvar(&self) -> Tvar {
         self.iter()
-            .fold(Tvar(0), |max, tv| if *tv > max { *tv } else { max })
+            .fold(Tvar(0, [false; 11]), |max, tv| if *tv > max { *tv } else { max })
     }
 }
 
@@ -208,7 +208,7 @@ impl fmt::Display for Error {
 }
 
 // Kind represents a class or family of types
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
 pub enum Kind {
     Addable,
     Subtractable,
@@ -345,7 +345,7 @@ impl MaxTvar for MonoType {
             | MonoType::Duration
             | MonoType::Time
             | MonoType::Regexp
-            | MonoType::Bytes => Tvar(0),
+            | MonoType::Bytes => Tvar(0, [false; 11]),
             MonoType::Var(tvr) => tvr.max_tvar(),
             MonoType::Arr(arr) => arr.max_tvar(),
             MonoType::Record(obj) => obj.max_tvar(),
@@ -513,8 +513,7 @@ impl MonoType {
 // Tvar stands for type variable.
 // A type variable holds an unknown type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
-pub struct Tvar(pub u64);
-
+pub struct Tvar(pub u64, pub [bool; 11]);
 // TvarKinds is a map from type variables to their constraining kinds.
 pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
 pub type TvarMap = SemanticMap<Tvar, Tvar>;
@@ -770,7 +769,7 @@ impl Substitutable for Record {
 impl MaxTvar for Record {
     fn max_tvar(&self) -> Tvar {
         match self {
-            Record::Empty => Tvar(0),
+            Record::Empty => Tvar(0, [false; 11]),
             Record::Extension { head, tail } => vec![head.max_tvar(), tail.max_tvar()].max_tvar(),
         }
     }
@@ -1106,14 +1105,14 @@ impl<U, T: MaxTvar> MaxTvar for SemanticMap<U, T> {
     fn max_tvar(&self) -> Tvar {
         self.iter()
             .map(|(_, t)| t.max_tvar())
-            .fold(Tvar(0), |max, tv| if tv > max { tv } else { max })
+            .fold(Tvar(0, [false; 11]), |max, tv| if tv > max { tv } else { max })
     }
 }
 
 impl<T: MaxTvar> MaxTvar for Option<T> {
     fn max_tvar(&self) -> Tvar {
         match self {
-            None => Tvar(0),
+            None => Tvar(0, [false; 11]),
             Some(t) => t.max_tvar(),
         }
     }
@@ -1389,7 +1388,7 @@ mod tests {
     }
     #[test]
     fn display_type_tvar() {
-        assert_eq!("t10", MonoType::Var(Tvar(10)).to_string());
+        assert_eq!("t10", MonoType::Var(Tvar(10, [false; 11])).to_string());
     }
     #[test]
     fn display_type_array() {
@@ -1412,7 +1411,7 @@ mod tests {
                         k: String::from("b"),
                         v: MonoType::String,
                     },
-                    tail: MonoType::Var(Tvar(0)),
+                    tail: MonoType::Var(Tvar(0, [false; 11])),
                 })),
             }
             .to_string()
@@ -1572,15 +1571,15 @@ mod tests {
         assert_eq!(
             "(x:A) => A",
             PolyType {
-                vars: vec![Tvar(0)],
+                vars: vec![Tvar(0,[false; 11])],
                 cons: TvarKinds::new(),
                 expr: MonoType::Fun(Box::new(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
+                        String::from("x") => MonoType::Var(Tvar(0,[false; 11])),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::Var(Tvar(0)),
+                    retn: MonoType::Var(Tvar(0, [false; 11])),
                 })),
             }
             .to_string(),
@@ -1588,24 +1587,24 @@ mod tests {
         assert_eq!(
             "(x:A, y:B) => {x:A, y:B}",
             PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
+                vars: vec![Tvar(0,[false; 11]), Tvar(1, [false; 11])],
                 cons: TvarKinds::new(),
                 expr: MonoType::Fun(Box::new(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
+                        String::from("x") => MonoType::Var(Tvar(0, [false; 11])),
+                        String::from("y") => MonoType::Var(Tvar(1, [false; 11])),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
+                            v: MonoType::Var(Tvar(0, [false; 11])),
                         },
                         tail: MonoType::Record(Box::new(Record::Extension {
                             head: Property {
                                 k: String::from("y"),
-                                v: MonoType::Var(Tvar(1)),
+                                v: MonoType::Var(Tvar(1, [false; 11])),
                             },
                             tail: MonoType::Record(Box::new(Record::Empty)),
                         })),
@@ -1617,16 +1616,16 @@ mod tests {
         assert_eq!(
             "(a:A, b:A) => A where A: Addable",
             PolyType {
-                vars: vec![Tvar(0)],
-                cons: semantic_map! {Tvar(0) => vec![Kind::Addable]},
+                vars: vec![Tvar(0, [false; 11])],
+                cons: semantic_map! {Tvar(0, [false; 11]) => vec![Kind::Addable]},
                 expr: MonoType::Fun(Box::new(Function {
                     req: semantic_map! {
-                        String::from("a") => MonoType::Var(Tvar(0)),
-                        String::from("b") => MonoType::Var(Tvar(0)),
+                        String::from("a") => MonoType::Var(Tvar(0, [false; 11])),
+                        String::from("b") => MonoType::Var(Tvar(0, [false; 11])),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
-                    retn: MonoType::Var(Tvar(0)),
+                    retn: MonoType::Var(Tvar(0, [false; 11])),
                 })),
             }
             .to_string(),
@@ -1634,27 +1633,27 @@ mod tests {
         assert_eq!(
             "(x:A, y:B) => {x:A, y:B} where A: Addable, B: Divisible",
             PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
+                vars: vec![Tvar(0, [false; 11]), Tvar(1, [false; 11])],
                 cons: semantic_map! {
-                    Tvar(0) => vec![Kind::Addable],
-                    Tvar(1) => vec![Kind::Divisible],
+                    Tvar(0, [false; 11]) => vec![Kind::Addable],
+                    Tvar(1, [false; 11]) => vec![Kind::Divisible],
                 },
                 expr: MonoType::Fun(Box::new(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
+                        String::from("x") => MonoType::Var(Tvar(0, [false; 11])),
+                        String::from("y") => MonoType::Var(Tvar(1, [false; 11])),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
+                            v: MonoType::Var(Tvar(0, [false; 11])),
                         },
                         tail: MonoType::Record(Box::new(Record::Extension {
                             head: Property {
                                 k: String::from("y"),
-                                v: MonoType::Var(Tvar(1)),
+                                v: MonoType::Var(Tvar(1, [false; 11])),
                             },
                             tail: MonoType::Record(Box::new(Record::Empty)),
                         })),
@@ -1666,27 +1665,27 @@ mod tests {
         assert_eq!(
             "(x:A, y:B) => {x:A, y:B} where A: Comparable + Equatable, B: Addable + Divisible",
             PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
+                vars: vec![Tvar(0, [false; 11]), Tvar(1, [false; 11])],
                 cons: semantic_map! {
-                    Tvar(0) => vec![Kind::Comparable, Kind::Equatable],
-                    Tvar(1) => vec![Kind::Addable, Kind::Divisible],
+                    Tvar(0, [false; 11]) => vec![Kind::Comparable, Kind::Equatable],
+                    Tvar(1, [false; 11]) => vec![Kind::Addable, Kind::Divisible],
                 },
                 expr: MonoType::Fun(Box::new(Function {
                     req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
+                        String::from("x") => MonoType::Var(Tvar(0, [false; 11])),
+                        String::from("y") => MonoType::Var(Tvar(1, [false; 11])),
                     },
                     opt: MonoTypeMap::new(),
                     pipe: None,
                     retn: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
+                            v: MonoType::Var(Tvar(0, [false; 11])),
                         },
                         tail: MonoType::Record(Box::new(Record::Extension {
                             head: Property {
                                 k: String::from("y"),
-                                v: MonoType::Var(Tvar(1)),
+                                v: MonoType::Var(Tvar(1, [false; 11])),
                             },
                             tail: MonoType::Record(Box::new(Record::Empty)),
                         })),
@@ -1711,7 +1710,7 @@ mod tests {
                         k: String::from("b"),
                         v: MonoType::String,
                     },
-                    tail: MonoType::Var(Tvar(0)),
+                    tail: MonoType::Var(Tvar(0, [false; 11])),
                 })),
             })),
             // {A with b:string, a:int}
@@ -1725,7 +1724,7 @@ mod tests {
                         k: String::from("a"),
                         v: MonoType::Int,
                     },
-                    tail: MonoType::Var(Tvar(0)),
+                    tail: MonoType::Var(Tvar(0, [false; 11])),
                 })),
             })),
         );
@@ -1751,7 +1750,7 @@ mod tests {
                                 k: String::from("c"),
                                 v: MonoType::Float,
                             },
-                            tail: MonoType::Var(Tvar(0)),
+                            tail: MonoType::Var(Tvar(0, [false; 11])),
                         })),
                     })),
                 })),
@@ -1777,7 +1776,7 @@ mod tests {
                                 k: String::from("a"),
                                 v: MonoType::Int,
                             },
-                            tail: MonoType::Var(Tvar(0)),
+                            tail: MonoType::Var(Tvar(0, [false; 11])),
                         })),
                     })),
                 })),
@@ -1805,7 +1804,7 @@ mod tests {
                                 k: String::from("c"),
                                 v: MonoType::Float,
                             },
-                            tail: MonoType::Var(Tvar(0)),
+                            tail: MonoType::Var(Tvar(0, [false; 11])),
                         })),
                     })),
                 })),
@@ -1831,7 +1830,7 @@ mod tests {
                                 k: String::from("c"),
                                 v: MonoType::Float,
                             },
-                            tail: MonoType::Var(Tvar(0)),
+                            tail: MonoType::Var(Tvar(0, [false; 11])),
                         })),
                     })),
                 })),
@@ -1882,7 +1881,7 @@ mod tests {
                     k: String::from("a"),
                     v: MonoType::Int,
                 },
-                tail: MonoType::Var(Tvar(0)),
+                tail: MonoType::Var(Tvar(0, [false; 11])),
             })),
         );
         assert_ne!(
@@ -1892,7 +1891,7 @@ mod tests {
                     k: String::from("a"),
                     v: MonoType::Int,
                 },
-                tail: MonoType::Var(Tvar(0)),
+                tail: MonoType::Var(Tvar(0, [false; 11])),
             })),
             // {B with a:int}
             MonoType::Record(Box::new(Record::Extension {
@@ -1900,7 +1899,7 @@ mod tests {
                     k: String::from("a"),
                     v: MonoType::Int,
                 },
-                tail: MonoType::Var(Tvar(1)),
+                tail: MonoType::Var(Tvar(1, [false; 11])),
             })),
         );
     }
@@ -1981,31 +1980,31 @@ mod tests {
     }
     #[test]
     fn unify_tvars() {
-        let sub = MonoType::Var(Tvar(0))
+        let sub = MonoType::Var(Tvar(0, [false; 11]))
             .unify(
-                MonoType::Var(Tvar(1)),
+                MonoType::Var(Tvar(1, [false; 11])),
                 &mut TvarKinds::new(),
                 &mut Fresher::default(),
             )
             .unwrap();
         assert_eq!(
             sub,
-            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))}),
+            Substitution::from(semantic_map! {Tvar(0, [false; 11]) => MonoType::Var(Tvar(1, [false; 11]))}),
         );
     }
     #[test]
     fn unify_constrained_tvars() {
-        let mut cons = semantic_map! {Tvar(0) => vec![Kind::Addable, Kind::Divisible]};
-        let sub = MonoType::Var(Tvar(0))
-            .unify(MonoType::Var(Tvar(1)), &mut cons, &mut Fresher::default())
+        let mut cons = semantic_map! {Tvar(0, [false; 11]) => vec![Kind::Addable, Kind::Divisible]};
+        let sub = MonoType::Var(Tvar(0, [false; 11]))
+            .unify(MonoType::Var(Tvar(1, [false; 11])), &mut cons, &mut Fresher::default())
             .unwrap();
         assert_eq!(
             sub,
-            Substitution::from(semantic_map! {Tvar(0) => MonoType::Var(Tvar(1))})
+            Substitution::from(semantic_map! {Tvar(0, [false; 11]) => MonoType::Var(Tvar(1, [false; 11]))})
         );
         assert_eq!(
             cons,
-            semantic_map! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
+            semantic_map! {Tvar(1, [false; 11]) => vec![Kind::Addable, Kind::Divisible]},
         );
     }
     #[test]
@@ -2093,10 +2092,10 @@ mod tests {
                 .unwrap();
             assert_eq!(
                 sub,
-                Substitution::from(semantic_map! {Tvar(0) => MonoType::Int})
+                Substitution::from(semantic_map! {Tvar(0, [false; 11]) => MonoType::Int})
             );
             // the constraint on A gets removed.
-            assert_eq!(cons, semantic_map! {Tvar(1) => vec![Kind::Divisible]});
+            assert_eq!(cons, semantic_map! {Tvar(1, [false; 11]) => vec![Kind::Divisible]});
         } else {
             panic!("the monotype under examination is not a function");
         }
@@ -2126,8 +2125,8 @@ mod tests {
             assert_eq!(
                 sub,
                 Substitution::from(semantic_map! {
-                    Tvar(0) => MonoType::Int,
-                    Tvar(1) => MonoType::Float,
+                    Tvar(0, [false; 11]) => MonoType::Int,
+                    Tvar(1, [false; 11]) => MonoType::Float,
                 })
             );
             // we know everything about tvars, there is no constraint.

@@ -153,7 +153,7 @@ impl From<fb::Basic<'_>> for MonoType {
 
 impl From<fb::Var<'_>> for Tvar {
     fn from(t: fb::Var) -> Tvar {
-        Tvar(t.i())
+        Tvar(t.i(), [false; 11])
     }
 }
 

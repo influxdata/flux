@@ -19,7 +19,7 @@ impl Fresher {
     pub fn fresh(&mut self) -> Tvar {
         let u = self.0;
         self.0 += 1;
-        Tvar(u)
+        Tvar(u, [false; 11])
     }
 }
 
@@ -113,7 +113,7 @@ impl Fresh for Record {
     fn fresh(mut self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         let mut props = MonoTypeVecMap::new();
         let mut extends = false;
-        let mut tv = Tvar(0);
+        let mut tv = Tvar(0, [false; 11]);
         loop {
             match self {
                 Record::Empty => {

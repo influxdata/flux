@@ -2556,7 +2556,7 @@ mod tests {
                         },
                         Expression::Function(Box::new(FunctionExpr {
                             loc: b.location.clone(),
-                            typ: MonoType::Var(Tvar(0)),
+                            typ: MonoType::Var(Tvar(0, [false; 11])),
                             params: vec![
                                 FunctionParameter {
                                     loc: b.location.clone(),
@@ -2581,16 +2581,16 @@ mod tests {
                                 loc: b.location.clone(),
                                 argument: Expression::Binary(Box::new(BinaryExpr {
                                     loc: b.location.clone(),
-                                    typ: MonoType::Var(Tvar(1)),
+                                    typ: MonoType::Var(Tvar(1, [false; 11])),
                                     operator: ast::Operator::AdditionOperator,
                                     left: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
-                                        typ: MonoType::Var(Tvar(2)),
+                                        typ: MonoType::Var(Tvar(2, [false; 11])),
                                         name: "a".to_string(),
                                     }),
                                     right: Expression::Identifier(IdentifierExpr {
                                         loc: b.location.clone(),
-                                        typ: MonoType::Var(Tvar(3)),
+                                        typ: MonoType::Var(Tvar(3, [false; 11])),
                                         name: "piped".to_string(),
                                     }),
                                 })),
@@ -2602,15 +2602,15 @@ mod tests {
                         loc: b.location.clone(),
                         expression: Expression::Call(Box::new(CallExpr {
                             loc: b.location.clone(),
-                            typ: MonoType::Var(Tvar(4)),
+                            typ: MonoType::Var(Tvar(4, [false; 11])),
                             pipe: Some(Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 3,
-                                typ: MonoType::Var(Tvar(9)),
+                                typ: MonoType::Var(Tvar(9, [false; 11])),
                             })),
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
-                                typ: MonoType::Var(Tvar(6)),
+                                typ: MonoType::Var(Tvar(6, [false; 11])),
                                 name: "f".to_string(),
                             }),
                             arguments: vec![Property {
@@ -2631,14 +2631,14 @@ mod tests {
             }],
         };
         let sub: Substitution = semantic_map! {
-            Tvar(0) => MonoType::Int,
-            Tvar(1) => MonoType::Int,
-            Tvar(2) => MonoType::Int,
-            Tvar(3) => MonoType::Int,
-            Tvar(4) => MonoType::Int,
-            Tvar(5) => MonoType::Int,
-            Tvar(6) => MonoType::Int,
-            Tvar(7) => MonoType::Int,
+            Tvar(0, [false; 11]) => MonoType::Int,
+            Tvar(1, [false; 11]) => MonoType::Int,
+            Tvar(2, [false; 11]) => MonoType::Int,
+            Tvar(3, [false; 11]) => MonoType::Int,
+            Tvar(4, [false; 11]) => MonoType::Int,
+            Tvar(5, [false; 11]) => MonoType::Int,
+            Tvar(6, [false; 11]) => MonoType::Int,
+            Tvar(7, [false; 11]) => MonoType::Int,
         }
         .into();
         let poly_pkg = inject_pkg_types(pkg, &sub);

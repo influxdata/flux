@@ -74,7 +74,8 @@ func TestEval(t *testing.T) {
     {
       name:  "call polymorphic instantiation",
       query:`
-        1 + 0.5`,
+        x = 1
+        x + 0.5`,
       want: []values.Value{
           values.NewFloat(1.5),
         },

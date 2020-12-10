@@ -716,7 +716,7 @@ mod tests {
     // type_info() is used for the expected semantic graph.
     // The id for the Tvar does not matter, because that is not compared.
     fn type_info() -> MonoType {
-        MonoType::Var(Tvar(0))
+        MonoType::Var(Tvar(0, [false; 11]))
     }
 
     fn test_convert(pkg: ast::Package) -> Result<Package> {
@@ -997,7 +997,7 @@ mod tests {
                             value: Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 10,
-                                typ: MonoType::Var(Tvar(0)),
+                                typ: MonoType::Var(Tvar(0, [false; 11])),
                             }),
                         }],
                     })),
@@ -1068,7 +1068,7 @@ mod tests {
                             value: Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 10,
-                                typ: MonoType::Var(Tvar(0)),
+                                typ: MonoType::Var(Tvar(0, [false; 11])),
                             }),
                         }],
                     })),
@@ -1155,7 +1155,7 @@ mod tests {
                                 value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 10,
-                                    typ: MonoType::Var(Tvar(0)),
+                                    typ: MonoType::Var(Tvar(0, [false; 11])),
                                 }),
                             },
                             Property {
@@ -1167,7 +1167,7 @@ mod tests {
                                 value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 11,
-                                    typ: MonoType::Var(Tvar(0)),
+                                    typ: MonoType::Var(Tvar(0, [false; 11])),
                                 }),
                             },
                         ],
@@ -1458,7 +1458,7 @@ mod tests {
                                     value: Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 5,
-                                        typ: MonoType::Var(Tvar(0)),
+                                        typ: MonoType::Var(Tvar(0, [false; 11])),
                                     }),
                                 },
                             ],
@@ -1735,7 +1735,7 @@ mod tests {
                                     value: Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 2,
-                                        typ: MonoType::Var(Tvar(0)),
+                                        typ: MonoType::Var(Tvar(0, [false; 11])),
                                     }),
                                 },
                                 Property {
@@ -1747,7 +1747,7 @@ mod tests {
                                     value: Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 3,
-                                        typ: MonoType::Var(Tvar(0)),
+                                        typ: MonoType::Var(Tvar(0, [false; 11])),
                                     }),
                                 },
                             ],
@@ -1909,7 +1909,7 @@ mod tests {
                                     default: Some(Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 0,
-                                        typ: MonoType::Var(Tvar(0)),
+                                        typ: MonoType::Var(Tvar(0, [false; 11])),
                                     })),
                                 },
                                 FunctionParameter {
@@ -1922,7 +1922,7 @@ mod tests {
                                     default: Some(Expression::PolyNumeric(PolyNumericLit {
                                         loc: b.location.clone(),
                                         value: 0,
-                                        typ: MonoType::Var(Tvar(0)),
+                                        typ: MonoType::Var(Tvar(0, [false; 11])),
                                     })),
                                 },
                                 FunctionParameter {
@@ -1986,7 +1986,7 @@ mod tests {
                                 value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 42,
-                                    typ: MonoType::Var(Tvar(0)),
+                                    typ: MonoType::Var(Tvar(0, [false; 11])),
                                 }),
                             }],
                         })),
@@ -2324,7 +2324,7 @@ mod tests {
                             pipe: Some(Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 3,
-                                typ: MonoType::Var(Tvar(0)),
+                                typ: MonoType::Var(Tvar(0, [false; 11])),
                             })),
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
@@ -2340,7 +2340,7 @@ mod tests {
                                 value: Expression::PolyNumeric(PolyNumericLit {
                                     loc: b.location.clone(),
                                     value: 2,
-                                    typ: MonoType::Var(Tvar(0)),
+                                    typ: MonoType::Var(Tvar(0, [false; 11])),
                                 }),
                             }],
                         })),
@@ -2414,7 +2414,7 @@ mod tests {
             default: Some(Expression::PolyNumeric(PolyNumericLit {
                 loc: b.location.clone(),
                 value: 0,
-                typ: MonoType::Var(Tvar(0)),
+                typ: MonoType::Var(Tvar(0, [false; 11])),
             })),
         };
         let default1 = FunctionParameter {
@@ -2427,7 +2427,7 @@ mod tests {
             default: Some(Expression::PolyNumeric(PolyNumericLit {
                 loc: b.location.clone(),
                 value: 1,
-                typ: MonoType::Var(Tvar(0)),
+                typ: MonoType::Var(Tvar(0, [false; 11])),
             })),
         };
         let default2 = FunctionParameter {
@@ -2440,7 +2440,7 @@ mod tests {
             default: Some(Expression::PolyNumeric(PolyNumericLit {
                 loc: b.location.clone(),
                 value: 2,
-                typ: MonoType::Var(Tvar(0)),
+                typ: MonoType::Var(Tvar(0, [false; 11])),
             })),
         };
         let no_default = FunctionParameter {
@@ -2537,7 +2537,7 @@ mod tests {
                         index: Expression::PolyNumeric(PolyNumericLit {
                             loc: b.location.clone(),
                             value: 3,
-                            typ: MonoType::Var(Tvar(0)),
+                            typ: MonoType::Var(Tvar(0, [false; 11])),
                         }),
                     })),
                 })],
@@ -2611,13 +2611,13 @@ mod tests {
                             index: Expression::PolyNumeric(PolyNumericLit {
                                 loc: b.location.clone(),
                                 value: 3,
-                                typ: MonoType::Var(Tvar(0)),
+                                typ: MonoType::Var(Tvar(0, [false; 11])),
                             }),
                         })),
                         index: Expression::PolyNumeric(PolyNumericLit {
                             loc: b.location.clone(),
                             value: 5,
-                            typ: MonoType::Var(Tvar(0)),
+                            typ: MonoType::Var(Tvar(0, [false; 11])),
                         }),
                     })),
                 })],
@@ -2691,7 +2691,7 @@ mod tests {
                         index: Expression::PolyNumeric(PolyNumericLit {
                             loc: b.location.clone(),
                             value: 3,
-                            typ: MonoType::Var(Tvar(0)),
+                            typ: MonoType::Var(Tvar(0, [false; 11])),
                         }),
                     })),
                 })],
@@ -2958,7 +2958,7 @@ mod tests {
                 k: "B".to_string(),
                 v: MonoType::Int,
             },
-            tail: MonoType::Var(Tvar(0)),
+            tail: MonoType::Var(Tvar(0, [false; 11])),
         }));
         assert_eq!(want, got);
     }
@@ -3075,26 +3075,26 @@ mod tests {
         };
         let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
-        vars.push(types::Tvar(0));
-        vars.push(types::Tvar(1));
+        vars.push(types::Tvar(0, [false; 11]));
+        vars.push(types::Tvar(1, [false; 11]));
         let mut cons = types::TvarKinds::new();
         let mut kind_vector_1 = Vec::<types::Kind>::new();
         kind_vector_1.push(types::Kind::Addable);
-        cons.insert(types::Tvar(0), kind_vector_1);
+        cons.insert(types::Tvar(0, [false; 11]), kind_vector_1);
 
         let mut kind_vector_2 = Vec::<types::Kind>::new();
         kind_vector_2.push(types::Kind::Divisible);
-        cons.insert(types::Tvar(1), kind_vector_2);
+        cons.insert(types::Tvar(1, [false; 11]), kind_vector_2);
 
         let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        req.insert("A".to_string(), MonoType::Var(Tvar(0, [false; 11])));
+        req.insert("B".to_string(), MonoType::Var(Tvar(1, [false; 11])));
         let expr = MonoType::Fun(Box::new({
             types::Function {
                 req,
                 opt: MonoTypeMap::new(),
                 pipe: None,
-                retn: MonoType::Var(Tvar(0)),
+                retn: MonoType::Var(Tvar(0, [false; 11])),
             }
         }));
         let want = types::PolyType { vars, cons, expr };
@@ -3161,22 +3161,22 @@ mod tests {
         };
         let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
-        vars.push(types::Tvar(0));
-        vars.push(types::Tvar(1));
+        vars.push(types::Tvar(0, [false; 11]));
+        vars.push(types::Tvar(1, [false; 11]));
         let mut cons = types::TvarKinds::new();
         let mut kind_vector_1 = Vec::<types::Kind>::new();
         kind_vector_1.push(types::Kind::Addable);
-        cons.insert(types::Tvar(0), kind_vector_1);
+        cons.insert(types::Tvar(0, [false; 11]), kind_vector_1);
 
         let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        req.insert("A".to_string(), MonoType::Var(Tvar(0, [false; 11])));
+        req.insert("B".to_string(), MonoType::Var(Tvar(1, [false; 11])));
         let expr = MonoType::Fun(Box::new({
             types::Function {
                 req,
                 opt: MonoTypeMap::new(),
                 pipe: None,
-                retn: MonoType::Var(Tvar(0)),
+                retn: MonoType::Var(Tvar(0, [false; 11])),
             }
         }));
         let want = types::PolyType { vars, cons, expr };
