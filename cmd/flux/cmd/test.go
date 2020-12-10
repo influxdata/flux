@@ -24,6 +24,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var testCommand = &cobra.Command{
+	Use:   "test",
+	Short: "Run flux tests",
+	Long:  "Run flux tests",
+	Run: func(cmd *cobra.Command, args []string) {
+		fluxinit.FluxInit()
+		runFluxTests()
+	},
+}
+
+var testNames []string
+var rootDir string
+var verbosity int
+
+func init() {
+	rootCmd.AddCommand(testCommand)
+	testCommand.Flags().StringVarP(&rootDir, "path", "p", "./stdlib", "The root level directory for all packages.")
+	testCommand.Flags().StringSliceVar(&testNames, "test", []string{}, "The name of a specific test to run.")
+	testCommand.Flags().CountVarP(&verbosity, "verbose", "v", "verbose (-v, or -vv)")
+}
+
+// runFluxTests invokes the test runner.
+func runFluxTests() {
+	runner := NewTestRunner(NewTestReporter(verbosity))
+	err := runner.Gather(rootDir, testNames)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	runner.Run(verbosity)
+
+	runner.Finish()
+}
+
 // Test wraps the functionality of a single testcase statement,
 // to handle its execution and its pass/fail state.
 type Test struct {
@@ -88,36 +122,41 @@ func (t *Test) Run() {
 	}
 }
 
-var testCommand = &cobra.Command{
-	Use:   "test",
-	Short: "Run flux tests",
-	Long:  "Run flux tests",
-	Run: func(cmd *cobra.Command, args []string) {
-		fluxinit.FluxInit()
-		runFluxTests()
-	},
+// contains checks a slice of strings for a given string.
+func contains(names []string, name string) bool {
+	for _, n := range names {
+		if n == name {
+			return true
+		}
+	}
+	return false
 }
 
-func init() {
-	rootCmd.AddCommand(testCommand)
+// TestRunner gathers and runs all tests.
+type TestRunner struct {
+	tests    []*Test
+	reporter TestReporter
 }
 
-func runFluxTests() {
-	root, err := filepath.Abs("./stdlib")
+// NewTestRunner returns a new TestRunner.
+func NewTestRunner(reporter TestReporter) TestRunner {
+	return TestRunner{tests: []*Test{}, reporter: reporter}
+}
+
+// Gather gathers all tests from the filesystem and creates Test instances
+// from that info.
+func (t *TestRunner) Gather(rootDir string, names []string) error {
+	root, err := filepath.Abs(rootDir)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		return err
 	}
 
-	tests := []Test{}
-
-	filepath.Walk(
+	return filepath.Walk(
 		root,
 		func(path string, info os.FileInfo, err error) error {
 			if strings.HasSuffix(path, "_test.flux") {
 				source, err := ioutil.ReadFile(path)
 				if err != nil {
-					fmt.Println(err)
 					return err
 				}
 
@@ -128,34 +167,70 @@ func runFluxTests() {
 				}
 				for _, ast := range asts {
 					test := NewTest(ast)
-					tests = append(tests, test)
+					if len(testNames) == 0 || contains(testNames, test.Name()) {
+						t.tests = append(t.tests, &test)
+					}
 				}
 			}
 			return nil
 		})
+}
 
-	failures := []Test{}
-	for _, test := range tests {
+// Run runs all tests, reporting their results.
+func (t *TestRunner) Run(verbosity int) {
+	for _, test := range t.tests {
 		test.Run()
+		t.reporter.ReportTestRun(test)
+	}
+}
+
+// Finish summarizes the test run, and returns the
+// exit code based on success for failure.
+func (t *TestRunner) Finish() {
+	t.reporter.Summarize(t.tests)
+	for _, test := range t.tests {
 		if test.Error() != nil {
-			failures = append(failures, test)
+			os.Exit(1)
+		}
+	}
+	os.Exit(0)
+}
+
+// TestReporter handles reporting of test results.
+type TestReporter struct {
+	verbosity int
+}
+
+// NewTestReporter creates a new TestReporter with a provided verbosity.
+func NewTestReporter(verbosity int) TestReporter {
+	return TestReporter{verbosity: verbosity}
+}
+
+// ReportTestRun reports the result a single test run, intended to be run as
+// each test is run.
+func (t *TestReporter) ReportTestRun(test *Test) {
+	if t.verbosity == 0 {
+		if test.Error() != nil {
 			fmt.Print("x")
 		} else {
 			fmt.Print(".")
 		}
-	}
-	fmt.Print("\n")
-
-	// XXX: rockstar (09 Dec 2020) - This logic should be abstracted out
-	// into a test reporter interface.
-	if len(failures) > 0 {
-		for _, test := range failures {
-			fmt.Printf(`%s
-----
-%s
-
-`, test.Name(), test.Error())
+	} else {
+		if test.Error() != nil {
+			fmt.Printf("%s...fail\n", test.Name())
+		} else {
+			fmt.Printf("%s...success\n", test.Name())
 		}
 	}
-	fmt.Printf("\n---\nRan %d tests with %d failures.\n", len(tests), len(failures))
+}
+
+// Summarize summarizes the test run.
+func (t *TestReporter) Summarize(tests []*Test) {
+	failures := 0
+	for _, test := range tests {
+		if test.Error() != nil {
+			failures = failures + 1
+		}
+	}
+	fmt.Printf("\n---\nRan %d tests with %d failure(s)\n", len(tests), failures)
 }
