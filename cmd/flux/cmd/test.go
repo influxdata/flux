@@ -31,7 +31,7 @@ type Test struct {
 	err error
 }
 
-// Create a new Test instance from an ast.Package.
+// NewTest creates a new Test instance from an ast.Package.
 func NewTest(ast *ast.Package) Test {
 	return Test{
 		ast: ast,
