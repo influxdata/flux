@@ -124,6 +124,23 @@ func generate(cmd *cobra.Command, args []string) error {
 			}
 		}
 		if testPkg != nil {
+			// Strip out test files with the testcase statement.
+			validFiles := []*ast.File{}
+			for _, file := range testPkg.Files {
+				valid := true
+				for _, item := range file.Body {
+					if _, ok := item.(*ast.TestCaseStatement); ok {
+						valid = false
+					}
+				}
+				if valid {
+					validFiles = append(validFiles, file)
+				}
+			}
+			if len(validFiles) < len(testPkg.Files) {
+				testPkg.Files = validFiles
+			}
+
 			if ast.Check(testPkg) > 0 {
 				return errors.Wrapf(ast.GetError(testPkg), codes.Inherit, "failed to parse test package %q", testPkg.Package)
 			}
