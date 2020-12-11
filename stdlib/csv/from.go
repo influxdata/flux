@@ -151,6 +151,7 @@ func (c *CSVSource) Run(ctx context.Context) {
 			Context:   ctx,
 		})
 		results, decodeErr := decoder.Decode(ioutil.NopCloser(strings.NewReader(c.tx)))
+		defer results.Release()
 		if decodeErr != nil {
 			err = decodeErr
 			goto FINISH
@@ -181,7 +182,7 @@ func (c *CSVSource) Run(ctx context.Context) {
 		if results.More() {
 			err = errors.New(
 				codes.FailedPrecondition,
-				"csv.from() should only return 1 result",
+				"csv.from() can only parse 1 result",
 			)
 			goto FINISH
 		}

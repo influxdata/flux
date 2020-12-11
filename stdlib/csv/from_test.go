@@ -27,7 +27,7 @@ func TestFromCSV_ReturnSingleResult(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "Happy path",
+			name: "happy path",
 			spec: &csv.FromCSVProcedureSpec{
 				CSV: `#datatype,string,long,string,string,string,string,double,dateTime:RFC3339
 #group,false,false,true,true,true,true,false,false
@@ -153,7 +153,7 @@ func TestFromCSV_ReturnSingleResult(t *testing.T) {
 			},
 			wantErr: errors.New(
 				codes.FailedPrecondition,
-				"error in csv.from(): csv.from() should only return 1 result",
+				"error in csv.from(): csv.from() can only parse 1 result",
 			),
 		},
 		{
