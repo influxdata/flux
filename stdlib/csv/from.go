@@ -2,6 +2,7 @@ package csv
 
 import (
 	"context"
+	"io/ioutil"
 	"strings"
 
 	"github.com/influxdata/flux"
@@ -138,21 +139,30 @@ func (c *CSVSource) Run(ctx context.Context) {
 	var err error
 	var max execute.Time
 	maxSet := false
+
 	for _, t := range c.ts {
 		// For each downstream transformation, instantiate a new result
 		// decoder. This way a table instance goes to one and only one
 		// transformation. Unlike other sources, tables from csv sources
 		// are not read-only. They contain mutable state and therefore
 		// cannot be shared among goroutines.
-		decoder := csv.NewResultDecoder(csv.ResultDecoderConfig{
+		decoder := csv.NewMultiResultDecoder(csv.ResultDecoderConfig{
 			Allocator: c.alloc,
 			Context:   ctx,
 		})
-		result, decodeErr := decoder.Decode(strings.NewReader(c.tx))
+		results, decodeErr := decoder.Decode(ioutil.NopCloser(strings.NewReader(c.tx)))
+		defer results.Release()
 		if decodeErr != nil {
 			err = decodeErr
 			goto FINISH
 		}
+
+		if !results.More() {
+			err = results.Err()
+			goto FINISH
+		}
+		result := results.Next()
+
 		err = result.Tables().Do(func(tbl flux.Table) error {
 			err := t.Process(c.id, tbl)
 			if err != nil {
@@ -167,6 +177,13 @@ func (c *CSVSource) Run(ctx context.Context) {
 			return nil
 		})
 		if err != nil {
+			goto FINISH
+		}
+		if results.More() {
+			err = errors.New(
+				codes.FailedPrecondition,
+				"csv.from() can only parse 1 result",
+			)
 			goto FINISH
 		}
 	}
