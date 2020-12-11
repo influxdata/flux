@@ -56,5 +56,4 @@ require (
 	golang.org/x/tools v0.0.0-20200721032237-77f530d86f9a
 	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
 	google.golang.org/api v0.17.0
-	gotest.tools v2.2.0+incompatible
 )
