@@ -155,10 +155,12 @@ func (c *CSVSource) Run(ctx context.Context) {
 			err = decodeErr
 			goto FINISH
 		}
-		var result flux.Result
-		if results.More() {
-			result = results.Next()
+
+		if !results.More() {
+			err = results.Err()
+			goto FINISH
 		}
+		result := results.Next()
 
 		err = result.Tables().Do(func(tbl flux.Table) error {
 			err := t.Process(c.id, tbl)

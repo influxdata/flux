@@ -156,6 +156,12 @@ func TestFromCSV_ReturnSingleResult(t *testing.T) {
 				"error in csv.from(): csv.from() should only return 1 result",
 			),
 		},
+		{
+			name: "No results",
+			spec: &csv.FromCSVProcedureSpec{
+				CSV: "",
+			},
+		},
 	}
 
 	for _, test := range tests {
