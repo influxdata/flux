@@ -135,7 +135,7 @@ func ParseJSON(bs []byte) (*ASTPkg, error) {
 		defer C.flux_free_bytes(cstr)
 
 		str := C.GoString(cstr)
-		return nil, errors.Newf(codes.Internal, "could not get handle from JSON AST: %v", str)
+		return nil, errors.New(codes.Invalid, str)
 	}
 	p := &ASTPkg{ptr: ptr}
 	runtime.SetFinalizer(p, free)

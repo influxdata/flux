@@ -50,6 +50,7 @@ func TestFluxCompiler(t *testing.T) {
 		name         string
 		now          time.Time
 		extern       *ast.File
+		externRaw    json.RawMessage
 		q            string
 		jsonCompiler []byte
 		compilerErr  string
@@ -112,6 +113,12 @@ func TestFluxCompiler(t *testing.T) {
 			startErr: "undefined identifier twentyFive",
 		},
 		{
+			name:        "extern invalid json",
+			externRaw:   []byte(`{"type":"File","package":null,"imports":null,"body":[{"type":"OptionStatement","assignment":{"type":"VariableAssignment","id":{"type":"Identifier","name":"period"},"init":{"type":"DurationLiteral","values":[{"magnitude":null,"unit":"ms"}]}}}]}`),
+			q:           `from(bucket: "telegraf") |> range(start: -5m)`,
+			compilerErr: `extern json parse error: invalid type: null, expected i64 at line 1 column 286`,
+		},
+		{
 			name: "with now",
 			now:  time.Unix(1000, 0),
 			q:    `from(bucket: "foo") |> range(start: -5m)`,
@@ -132,17 +139,16 @@ func TestFluxCompiler(t *testing.T) {
 			var c lang.FluxCompiler
 			{
 				if tc.q != "" {
-					var extern json.RawMessage
 					if tc.extern != nil {
 						var err error
-						extern, err = json.Marshal(tc.extern)
+						tc.externRaw, err = json.Marshal(tc.extern)
 						if err != nil {
 							t.Fatal(err)
 						}
 					}
 					c = lang.FluxCompiler{
 						Now:    tc.now,
-						Extern: extern,
+						Extern: tc.externRaw,
 						Query:  tc.q,
 					}
 				} else if len(tc.jsonCompiler) > 0 {

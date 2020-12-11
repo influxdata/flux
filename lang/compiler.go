@@ -190,7 +190,7 @@ func (c FluxCompiler) Compile(ctx context.Context, runtime flux.Runtime) (flux.P
 	if IsNonNullJSON(c.Extern) {
 		hdl, err := runtime.JSONToHandle(wrapFileJSONInPkg(c.Extern))
 		if err != nil {
-			return nil, err
+			return nil, errors.Wrap(err, codes.Inherit, "extern json parse error")
 		}
 		return Compile(query, runtime, c.Now, WithExtern(hdl))
 	}
