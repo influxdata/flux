@@ -488,7 +488,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/multiple_range_test.flux":                                      "df7812e90110a287028383f3ba46acb378e2b26a6c2245bb8dd1939649eeba0e",
 	"stdlib/universe/null_as_value_test.flux":                                       "e3faa6576333182af5a9c5b0b422a1e1f77554c27c8b07a30191c385485cfa65",
 	"stdlib/universe/parse_regex_test.flux":                                         "d8a850fc1857582f2ae4a115e97473e337900253686f18e742036ac2f38f2c8c",
-	"stdlib/universe/pivot_col_order_test.flux":                                     "8116e23d0b88b2fd95f2e62c1e4b3310d6256def315411357c8fdb4aac76e680",
+	"stdlib/universe/pivot_col_order_test.flux":                                     "8fb59e64a499e407dc359392f55f1be81e2330eff59f24c26c2182a490d3a748",
 	"stdlib/universe/pivot_fields_test.flux":                                        "a7620f03c11aac090fe4b19c663de607f50714ee5fe3888177284aec0771eaef",
 	"stdlib/universe/pivot_mean_test.flux":                                          "5ddd7825ce7548e670364b8b009164918e362f59a153da9d8661bc126bf3a540",
 	"stdlib/universe/pivot_task_test_test.flux":                                     "e5b6f21d6fb307e3711e7e81bd90b052d2e7dc085c7b7fb732fe95666e598589",
