@@ -61,7 +61,7 @@ func TestFromCSV_ReturnSingleResult(t *testing.T) {
 			},
 		},
 		{
-			name: "Same result IDs",
+			name: "same result ids",
 			spec: &csv.FromCSVProcedureSpec{
 				CSV: `#datatype,string,long,string,string,string,string,double,dateTime:RFC3339
 #group,false,false,true,true,true,true,false,false
@@ -128,7 +128,7 @@ func TestFromCSV_ReturnSingleResult(t *testing.T) {
 			},
 		},
 		{
-			name: "Different result IDs",
+			name: "different result ids",
 			spec: &csv.FromCSVProcedureSpec{
 				CSV: `#datatype,string,long,string,string,string,string,double,dateTime:RFC3339
 #group,false,false,true,true,true,true,false,false
@@ -157,7 +157,7 @@ func TestFromCSV_ReturnSingleResult(t *testing.T) {
 			),
 		},
 		{
-			name: "No results",
+			name: "no results",
 			spec: &csv.FromCSVProcedureSpec{
 				CSV: "",
 			},
