@@ -59,7 +59,7 @@ Basic Example:
               text: "Great Scott!- Disk usage is: **${r.status}**.",
               summary: "Disk Usage is ${r.status}"
             })
-         )
+         )()
 
 ## Contact
 

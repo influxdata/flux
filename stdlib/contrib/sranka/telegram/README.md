@@ -77,7 +77,7 @@ Basic Example:
               text: "Great Scott!- Disk usage is: **${r.status}**.", 
               silent: true
             })
-         )
+         )()
 
 ## Contact
 
