@@ -1,9 +1,13 @@
 package cmd
 
 import (
+	"archive/tar"
+	"archive/zip"
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -151,29 +155,153 @@ func (t *TestRunner) Gather(rootDir string, names []string) error {
 		return err
 	}
 
-	return filepath.Walk(
-		root,
+	var gatherFrom func(filename string) ([]string, error)
+	if strings.HasSuffix(root, ".tar.gz") || strings.HasSuffix(root, ".tar") {
+		gatherFrom = gatherFromTarArchive
+	} else if strings.HasSuffix(root, ".zip") {
+		gatherFrom = gatherFromZipArchive
+	} else if strings.HasSuffix(root, ".flux") {
+		gatherFrom = gatherFromFile
+	} else if st, err := os.Stat(root); err == nil && st.IsDir() {
+		gatherFrom = gatherFromDir
+	} else {
+		return fmt.Errorf("no test runner for file: %s", rootDir)
+	}
+
+	queries, err := gatherFrom(root)
+	if err != nil {
+		return err
+	}
+
+	for _, q := range queries {
+		baseAST := parser.ParseSource(q)
+		asts, err := edit.TestcaseTransform(baseAST)
+		if err != nil {
+			return err
+		}
+		for _, ast := range asts {
+			test := NewTest(ast)
+			if len(testNames) == 0 || contains(testNames, test.Name()) {
+				t.tests = append(t.tests, &test)
+			}
+		}
+	}
+	return nil
+}
+
+func gatherFromTarArchive(filename string) ([]string, error) {
+	var f io.ReadCloser
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = f.Close() }()
+
+	if strings.HasSuffix(filename, ".gz") {
+		r, err := gzip.NewReader(f)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = r.Close() }()
+		f = r
+	}
+
+	var queries []string
+	archive := tar.NewReader(f)
+	for {
+		hdr, err := archive.Next()
+		if errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
+		info := hdr.FileInfo()
+		if !isTestFile(info, hdr.Name) {
+			continue
+		}
+
+		source, err := ioutil.ReadAll(archive)
+		if err != nil {
+			return nil, err
+		}
+		queries = append(queries, string(source))
+	}
+	return queries, nil
+}
+
+func gatherFromZipArchive(filename string) ([]string, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	zipf, err := zip.NewReader(f, info.Size())
+	if err != nil {
+		return nil, err
+	}
+
+	var queries []string
+	for _, file := range zipf.File {
+		info := file.FileInfo()
+		if !isTestFile(info, file.Name) {
+			continue
+		}
+
+		if err := func() error {
+			fp, err := file.Open()
+			if err != nil {
+				return err
+			}
+			defer func() { _ = fp.Close() }()
+
+			source, err := ioutil.ReadAll(fp)
+			if err != nil {
+				return err
+			}
+			queries = append(queries, string(source))
+			return nil
+		}(); err != nil {
+			return nil, err
+		}
+	}
+	return queries, nil
+}
+
+func gatherFromDir(filename string) ([]string, error) {
+	var queries []string
+	if err := filepath.Walk(
+		filename,
 		func(path string, info os.FileInfo, err error) error {
-			if strings.HasSuffix(path, "_test.flux") {
+			if isTestFile(info, path) {
 				source, err := ioutil.ReadFile(path)
 				if err != nil {
 					return err
 				}
-
-				baseAST := parser.ParseSource(string(source))
-				asts, err := edit.TestcaseTransform(baseAST)
-				if err != nil {
-					return err
-				}
-				for _, ast := range asts {
-					test := NewTest(ast)
-					if len(testNames) == 0 || contains(testNames, test.Name()) {
-						t.tests = append(t.tests, &test)
-					}
-				}
+				queries = append(queries, string(source))
 			}
 			return nil
-		})
+		}); err != nil {
+		return nil, err
+	}
+	return queries, nil
+}
+
+func gatherFromFile(filename string) ([]string, error) {
+	query, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	return []string{string(query)}, nil
+}
+
+func isTestFile(fi os.FileInfo, filename string) bool {
+	return !fi.IsDir() && strings.HasSuffix(filename, "_test.flux")
 }
 
 // Run runs all tests, reporting their results.
