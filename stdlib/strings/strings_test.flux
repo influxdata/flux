@@ -118,26 +118,6 @@ testcase string_subset {
     testing.diff(got: result, want: testing.loadMem(csv: outData))
 }
 
-testcase string_subset {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,c,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,1,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with _value: strings.substring(v: r._value, start: 0, end: 1)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
-}
-
 testcase string_replaceAll {
     outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
