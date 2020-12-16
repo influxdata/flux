@@ -76,7 +76,7 @@ Here's an example definition for the `discord.endpoint()` function
       |> endpoint(mapFn: (r) => ({
               content: "Great Scott!- Disk usage is: \"${r.status}\".",
             })
-         )
+         )()
 
 ## Contact
 

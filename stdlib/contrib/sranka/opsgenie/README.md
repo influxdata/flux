@@ -80,7 +80,7 @@ Basic Example:
               details: "{}",
               visibleTo: []
             })
-         )
+         )()
 
 
 ## Contact
