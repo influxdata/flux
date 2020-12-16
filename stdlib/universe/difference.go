@@ -1,8 +1,6 @@
 package universe
 
 import (
-	"math"
-
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
@@ -163,163 +161,143 @@ func (t *differenceTransformation) Process(id execute.DatasetID, tbl flux.Table)
 				break
 			}
 		}
-
-		if found {
-			var typ flux.ColType
-			switch c.Type {
-			case flux.TInt, flux.TUInt:
-				typ = flux.TInt
-			case flux.TFloat:
-				typ = flux.TFloat
-			case flux.TTime:
-				return errors.New(codes.FailedPrecondition, "difference does not support time columns. Try the elapsed function")
-			}
-			if _, err := builder.AddCol(flux.ColMeta{
-				Label: c.Label,
-				Type:  typ,
-			}); err != nil {
+		if !found {
+			if _, err := builder.AddCol(c); err != nil {
 				return err
 			}
-			differences[j] = newDifference(j, t.nonNegative, t.keepFirst)
-		} else {
-			_, err := builder.AddCol(c)
-			if err != nil {
-				return err
-			}
+			continue
 		}
+		var typ flux.ColType
+		switch c.Type {
+		case flux.TInt, flux.TUInt:
+			typ = flux.TInt
+		case flux.TFloat:
+			typ = flux.TFloat
+		case flux.TTime:
+			return errors.New(codes.FailedPrecondition, "difference does not support time columns. Try the elapsed function")
+		}
+		if _, err := builder.AddCol(flux.ColMeta{
+			Label: c.Label,
+			Type:  typ,
+		}); err != nil {
+			return err
+		}
+		differences[j] = newDifference(t.nonNegative)
 	}
 
 	// We need to drop the first row since its difference is undefined
 	firstIdx := 1
 	if t.keepFirst {
-		// Unless the user wants to keep the first row
+		// The user wants to keep the first row
 		firstIdx = 0
 	}
 	return tbl.Do(func(cr flux.ColReader) error {
 		l := cr.Len()
-
-		if l != 0 {
-			for j, c := range cols {
-				d := differences[j]
-				switch c.Type {
-				case flux.TBool:
-					s := arrow.BoolSlice(cr.Bools(j), firstIdx, l)
-					if err := builder.AppendBools(j, s); err != nil {
-						s.Release()
-						return err
-					}
+		if l == 0 {
+			return nil
+		}
+		for j, c := range cols {
+			d := differences[j]
+			switch c.Type {
+			case flux.TBool:
+				s := arrow.BoolSlice(cr.Bools(j), firstIdx, l)
+				if err := builder.AppendBools(j, s); err != nil {
 					s.Release()
-				case flux.TInt:
-					if d != nil {
-						for i := 0; i < l; i++ {
-							if vs := cr.Ints(j); vs.IsValid(i) {
-								if d.checkKeepFirst() {
-									if err := builder.AppendNil(j); err != nil {
-										return err
-									}
-								}
-								if v, first := d.updateInt(vs.Value(i)); !first {
-									if d.nonNegative && v < 0 {
-										if err := builder.AppendNil(j); err != nil {
-											return err
-										}
-									} else {
-										if err := builder.AppendInt(j, v); err != nil {
-											return err
-										}
-									}
-								}
-							} else if err := builder.AppendNil(j); err != nil {
-								return err
-							}
-						}
-					} else {
-						s := arrow.IntSlice(cr.Ints(j), firstIdx, l)
-						if err := builder.AppendInts(j, s); err != nil {
-							s.Release()
-							return err
-						}
-						s.Release()
-					}
-				case flux.TUInt:
-					if d != nil {
-						for i := 0; i < l; i++ {
-							if vs := cr.UInts(j); vs.IsValid(i) {
-								if d.checkKeepFirst() {
-									if err := builder.AppendNil(j); err != nil {
-										return err
-									}
-								}
-								if v, first := d.updateUInt(vs.Value(i)); !first {
-									if d.nonNegative && v < 0 {
-										if err := builder.AppendNil(j); err != nil {
-											return err
-										}
-									} else {
-										if err := builder.AppendInt(j, v); err != nil {
-											return err
-										}
-									}
-								}
-							} else if err := builder.AppendNil(j); err != nil {
-								return err
-							}
-						}
-					} else {
-						s := arrow.UintSlice(cr.UInts(j), firstIdx, l)
-						if err := builder.AppendUInts(j, s); err != nil {
-							s.Release()
-							return err
-						}
-						s.Release()
-					}
-				case flux.TFloat:
-					if d != nil {
-						for i := 0; i < l; i++ {
-							if vs := cr.Floats(j); vs.IsValid(i) {
-								if d.checkKeepFirst() {
-									if err := builder.AppendNil(j); err != nil {
-										return err
-									}
-								}
-								if v, first := d.updateFloat(vs.Value(i)); !first {
-									if d.nonNegative && v < 0 {
-										if err := builder.AppendNil(j); err != nil {
-											return err
-										}
-									} else {
-										if err := builder.AppendFloat(j, v); err != nil {
-											return err
-										}
-									}
-								}
-							} else if err := builder.AppendNil(j); err != nil {
-								return err
-							}
-						}
-					} else {
-						s := arrow.FloatSlice(cr.Floats(j), firstIdx, l)
-						if err := builder.AppendFloats(j, s); err != nil {
-							s.Release()
-							return err
-						}
-						s.Release()
-					}
-				case flux.TString:
-					s := arrow.StringSlice(cr.Strings(j), firstIdx, l)
-					if err := builder.AppendStrings(j, s); err != nil {
-						s.Release()
-						return err
-					}
-					s.Release()
-				case flux.TTime:
-					s := arrow.IntSlice(cr.Times(j), firstIdx, l)
-					if err := builder.AppendTimes(j, s); err != nil {
-						s.Release()
-						return err
-					}
-					s.Release()
+					return err
 				}
+				s.Release()
+			case flux.TInt:
+				values := cr.Ints(j)
+				if d == nil {
+					s := arrow.IntSlice(values, firstIdx, l)
+					if err := builder.AppendInts(j, s); err != nil {
+						s.Release()
+						return err
+					}
+					s.Release()
+					continue
+				}
+				for i := 0; i < l; i++ {
+					v, ok := d.updateInt(values.Value(i), values.IsValid(i))
+					if i < firstIdx {
+						continue
+					}
+					if ok {
+						if err := builder.AppendInt(j, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(j); err != nil {
+							return err
+						}
+					}
+				}
+			case flux.TUInt:
+				values := cr.UInts(j)
+				if d == nil {
+					s := arrow.UintSlice(values, firstIdx, l)
+					if err := builder.AppendUInts(j, s); err != nil {
+						s.Release()
+						return err
+					}
+					s.Release()
+					continue
+				}
+				for i := 0; i < l; i++ {
+					v, ok := d.updateUInt(values.Value(i), values.IsValid(i))
+					if i < firstIdx {
+						continue
+					}
+					if ok {
+						if err := builder.AppendInt(j, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(j); err != nil {
+							return err
+						}
+					}
+				}
+			case flux.TFloat:
+				values := cr.Floats(j)
+				if d == nil {
+					s := arrow.FloatSlice(values, firstIdx, l)
+					if err := builder.AppendFloats(j, s); err != nil {
+						s.Release()
+						return err
+					}
+					s.Release()
+					continue
+				}
+				for i := 0; i < l; i++ {
+					v, ok := d.updateFloat(values.Value(i), values.IsValid(i))
+					if i < firstIdx {
+						continue
+					}
+					if ok {
+						if err := builder.AppendFloat(j, v); err != nil {
+							return err
+						}
+					} else {
+						if err := builder.AppendNil(j); err != nil {
+							return err
+						}
+					}
+				}
+			case flux.TString:
+				s := arrow.StringSlice(cr.Strings(j), firstIdx, l)
+				if err := builder.AppendStrings(j, s); err != nil {
+					s.Release()
+					return err
+				}
+				s.Release()
+			case flux.TTime:
+				s := arrow.IntSlice(cr.Times(j), firstIdx, l)
+				if err := builder.AppendTimes(j, s); err != nil {
+					s.Release()
+					return err
+				}
+				s.Release()
 			}
 		}
 
@@ -339,72 +317,67 @@ func (t *differenceTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func newDifference(col int, nonNegative bool, keepFirst bool) *difference {
+func newDifference(nonNegative bool) *difference {
 	return &difference{
-		col:         col,
-		first:       true,
 		nonNegative: nonNegative,
-		keepFirst:   keepFirst,
 	}
 }
 
 type difference struct {
-	col         int
-	first       bool
 	nonNegative bool
-	keepFirst   bool
 
+	valid       bool
 	pIntValue   int64
 	pUIntValue  uint64
 	pFloatValue float64
 }
 
-func (d *difference) updateInt(v int64) (int64, bool) {
-	if d.first {
-		d.pIntValue = v
-		d.first = false
-		return 0, true
+func (d *difference) updateInt(v int64, valid bool) (int64, bool) {
+	if !valid {
+		return 0, false
 	}
-
-	diff := v - d.pIntValue
+	prev := d.pIntValue
 	d.pIntValue = v
-
-	return diff, false
+	if !d.valid {
+		d.valid = true
+		return 0, false
+	}
+	if diff := v - prev; diff >= 0 || !d.nonNegative {
+		return diff, true
+	}
+	return 0, false
 }
-func (d *difference) updateUInt(v uint64) (int64, bool) {
-	if d.first {
-		d.pUIntValue = v
-		d.first = false
-		return 0, true
-	}
 
-	var diff int64
-	if d.pUIntValue > v {
-		// Prevent uint64 overflow by applying the negative sign after the conversion to an int64.
-		diff = int64(d.pUIntValue-v) * -1
-	} else {
-		diff = int64(v - d.pUIntValue)
+func (d *difference) updateUInt(v uint64, valid bool) (int64, bool) {
+	if !valid {
+		return 0, false
 	}
-
+	prev := d.pUIntValue
 	d.pUIntValue = v
-
-	return diff, false
-}
-func (d *difference) updateFloat(v float64) (float64, bool) {
-	if d.first {
-		d.pFloatValue = v
-		d.first = false
-		return math.NaN(), true
+	if !d.valid {
+		d.valid = true
+		return 0, false
 	}
-
-	diff := v - d.pFloatValue
-	d.pFloatValue = v
-
-	return diff, false
+	// Note: the unsigned substraction works correctly even for negative differences
+	// because of two's-complement arithmetic.
+	if diff := int64(v - prev); diff >= 0 || !d.nonNegative {
+		return diff, true
+	}
+	return 0, false
 }
 
-func (d *difference) checkKeepFirst() bool {
-	c := d.keepFirst
-	d.keepFirst = false
-	return c
+func (d *difference) updateFloat(v float64, valid bool) (float64, bool) {
+	if !valid {
+		return 0, false
+	}
+	prev := d.pFloatValue
+	d.pFloatValue = v
+	if !d.valid {
+		d.valid = true
+		return 0, false
+	}
+	if diff := v - prev; diff >= 0 || !d.nonNegative {
+		return diff, true
+	}
+	return 0, false
 }
