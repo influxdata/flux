@@ -20,19 +20,19 @@ f(a: s)
     .unwrap();
     let f_type = Function {
         req: core::semantic_map! {
-            "a".to_string() => MonoType::Var(Tvar(3, [false; 11])),
+            "a".to_string() => MonoType::Var(Tvar(3)),
         },
         opt: SemanticMap::new(),
         pipe: None,
-        retn: MonoType::Var(Tvar(3, [false; 11])),
+        retn: MonoType::Var(Tvar(3)),
     };
     let f_call_int_type = Function {
         req: core::semantic_map! {
-            "a".to_string() => MonoType::Var(Tvar(8, [false; 11])),
+            "a".to_string() => MonoType::Var(Tvar(8)),
         },
         opt: SemanticMap::new(),
         pipe: None,
-        retn: MonoType::Var(Tvar(8, [false; 11])),
+        retn: MonoType::Var(Tvar(8)),
     };
     let f_call_string_type = Function {
         req: core::semantic_map! {
@@ -105,16 +105,16 @@ f(a: s)
                             loc: ast::BaseNode::default().location,
                             argument: Expression::Binary(Box::new(BinaryExpr {
                                 loc: ast::BaseNode::default().location,
-                                typ: MonoType::Var(Tvar(3, [false; 11])),
+                                typ: MonoType::Var(Tvar(3)),
                                 operator: ast::Operator::AdditionOperator,
                                 left: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
-                                    typ: MonoType::Var(Tvar(3, [false; 11])),
+                                    typ: MonoType::Var(Tvar(3)),
                                     name: "a".to_string(),
                                 }),
                                 right: Expression::Identifier(IdentifierExpr {
                                     loc: ast::BaseNode::default().location,
-                                    typ: MonoType::Var(Tvar(3, [false; 11])),
+                                    typ: MonoType::Var(Tvar(3)),
                                     name: "a".to_string(),
                                 }),
                             })),
@@ -126,7 +126,7 @@ f(a: s)
                     loc: ast::BaseNode::default().location,
                     expression: Expression::Call(Box::new(CallExpr {
                         loc: ast::BaseNode::default().location,
-                        typ: MonoType::Var(Tvar(8, [false; 11])),
+                        typ: MonoType::Var(Tvar(8)),
                         pipe: None,
                         callee: Expression::Identifier(IdentifierExpr {
                             loc: ast::BaseNode::default().location,

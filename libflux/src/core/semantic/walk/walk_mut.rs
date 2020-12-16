@@ -290,15 +290,15 @@ impl<'a> NodeMut<'a> {
 /// impl VisitorMut for TypeMutator {
 ///     fn visit(&mut self, node: &mut NodeMut) -> bool {
 ///         match node {
-///             NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::ArrayExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::FunctionExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::ObjectExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::MemberExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::IndexExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::BinaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::UnaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-///             NodeMut::CallExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
+///             NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::ArrayExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::FunctionExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::ObjectExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::MemberExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::IndexExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::BinaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::UnaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+///             NodeMut::CallExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
 ///             _ => (),
 ///         };
 ///         true
@@ -1012,15 +1012,15 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             walk_mut(
                 &mut |n: &mut NodeMut| {
                     match n {
-                        NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::ArrayExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::FunctionExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::ObjectExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::MemberExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::IndexExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::BinaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::UnaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
-                        NodeMut::CallExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234, [false; 11])),
+                        NodeMut::IdentifierExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::ArrayExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::FunctionExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::ObjectExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::MemberExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::IndexExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::BinaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::UnaryExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
+                        NodeMut::CallExpr(ref mut n) => n.typ = MonoType::Var(Tvar(1234)),
                         _ => (),
                     };
                 },
@@ -1032,7 +1032,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
             let types = v.types;
             assert!(types.len() > 0);
             for tvar in types {
-                assert_eq!(tvar, Tvar(1234, [false; 11]));
+                assert_eq!(tvar, Tvar(1234));
             }
         }
     }

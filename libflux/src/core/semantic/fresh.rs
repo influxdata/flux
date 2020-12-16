@@ -19,7 +19,7 @@ impl Fresher {
     pub fn fresh(&mut self) -> Tvar {
         let u = self.0;
         self.0 += 1;
-        Tvar(u, [false; 11])
+        Tvar(u)
     }
 }
 
@@ -80,8 +80,7 @@ impl Fresh for PolyType {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         let expr = self.expr.fresh(f, sub);
         let vars = self.vars.fresh(f, sub);
-        let cons = self.cons.fresh(f, sub);
-        PolyType { vars, cons, expr }
+        PolyType { vars, expr }
     }
 }
 
@@ -113,7 +112,7 @@ impl Fresh for Record {
     fn fresh(mut self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         let mut props = MonoTypeVecMap::new();
         let mut extends = false;
-        let mut tv = Tvar(0, [false; 11]);
+        let mut tv = Tvar(0);
         loop {
             match self {
                 Record::Empty => {

@@ -29,7 +29,7 @@ use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::import::Importer;
 use crate::semantic::nodes;
-use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds};
+use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap};
 
 use crate::ast;
 use crate::ast::get_err_type_expression;
@@ -3333,7 +3333,6 @@ fn copy_bindings_from_other_env() {
         "a".to_string(),
         PolyType {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
             expr: MonoType::Bool,
         },
     );
@@ -3342,7 +3341,6 @@ fn copy_bindings_from_other_env() {
         "b".to_string(),
         PolyType {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
             expr: MonoType::Var(f.fresh()),
         },
     );
@@ -3355,12 +3353,10 @@ fn copy_bindings_from_other_env() {
             values: semantic_map!(
                 "b".to_string() => PolyType {
                     vars: Vec::new(),
-                    cons: TvarKinds::new(),
                     expr: MonoType::Var(f.fresh()),
                 },
                 "a".to_string() => PolyType {
                     vars: Vec::new(),
-                    cons: TvarKinds::new(),
                     expr: MonoType::Bool,
                 }
             )

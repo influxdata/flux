@@ -564,7 +564,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
 pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
     let mut p = Parser::new(source);
     let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
-    let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0, [false; 11])));
+    let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
     JsValue::from_serde(&ty).unwrap()
 }
 
@@ -655,29 +655,29 @@ mod tests {
         let mut ty = MonoType::Record(Box::new(Record::Extension {
             head: Property {
                 k: "a".to_string(),
-                v: MonoType::Var(Tvar(4949, [false; 11])),
+                v: MonoType::Var(Tvar(4949)),
             },
             tail: MonoType::Record(Box::new(Record::Extension {
                 head: Property {
                     k: "b".to_string(),
-                    v: MonoType::Var(Tvar(4949, [false; 11])),
+                    v: MonoType::Var(Tvar(4949)),
                 },
                 tail: MonoType::Record(Box::new(Record::Extension {
                     head: Property {
                         k: "e".to_string(),
-                        v: MonoType::Var(Tvar(4957, [false; 11])),
+                        v: MonoType::Var(Tvar(4957)),
                     },
                     tail: MonoType::Record(Box::new(Record::Extension {
                         head: Property {
                             k: "f".to_string(),
-                            v: MonoType::Var(Tvar(4957, [false; 11])),
+                            v: MonoType::Var(Tvar(4957)),
                         },
                         tail: MonoType::Record(Box::new(Record::Extension {
                             head: Property {
                                 k: "g".to_string(),
-                                v: MonoType::Var(Tvar(4957, [false; 11])),
+                                v: MonoType::Var(Tvar(4957)),
                             },
-                            tail: MonoType::Var(Tvar(4972, [false; 11])),
+                            tail: MonoType::Var(Tvar(4972)),
                         })),
                     })),
                 })),
@@ -755,7 +755,7 @@ vint = v + 2
         let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        assert_eq!(t, MonoType::Var(Tvar(8291, [false; 11])));
+        assert_eq!(t, MonoType::Var(Tvar(8291)));
 
         assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "{\n  \"Var\": 8291\n}");
     }

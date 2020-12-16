@@ -140,7 +140,6 @@ pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType 
     }
     PolyType {
         vars,
-        cons,
         expr: t,
     }
 }
@@ -154,7 +153,7 @@ pub fn generalize(env: &Environment, with: &TvarKinds, t: MonoType) -> PolyType 
 pub fn instantiate(
     poly: PolyType,
     f: &mut Fresher,
-    loc: SourceLocation,
+    _loc: SourceLocation,
 ) -> (MonoType, Constraints) {
     // Substitute fresh type variables for all quantified variables
     let sub: Substitution = poly
@@ -164,7 +163,7 @@ pub fn instantiate(
         .collect::<SubstitutionMap>()
         .into();
     // Generate constraints for the new fresh type variables
-    let constraints = poly
+    /*let constraints = poly
         .cons
         .into_iter()
         .fold(Constraints::empty(), |cons, (tv, kinds)| {
@@ -177,7 +176,7 @@ pub fn instantiate(
                 })
                 .collect::<Vec<Constraint>>()
                 .into()
-        });
+        });*/
     // Instantiate monotype using new fresh type variables
-    (poly.expr.apply(&sub), constraints)
+    (poly.expr.apply(&sub), Constraints::empty())
 }
