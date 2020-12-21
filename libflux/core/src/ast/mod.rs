@@ -638,7 +638,7 @@ pub fn get_err_type_expression(ty: TypeExpression) -> String {
         return ty.base.errors[0].clone();
     }
     let mt_errs = get_err_monotype(ty.monotype);
-    if mt_errs != "" {
+    if !mt_errs.is_empty() {
         return mt_errs;
     }
     get_err_constraints(ty.constraints)
@@ -647,44 +647,44 @@ fn get_err_monotype(mt: MonoType) -> String {
     match mt {
         MonoType::Basic(t) => {
             let e = get_err_basenode(t.base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             get_err_identifier(t.name)
         }
         MonoType::Tvar(t) => {
             let e = get_err_basenode(t.base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             get_err_identifier(t.name)
         }
         MonoType::Array(t) => {
             let e = get_err_basenode((*t).base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             get_err_monotype((*t).element)
         }
         MonoType::Dict(t) => {
             let e = get_err_basenode(t.base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             let e = get_err_monotype(t.key);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             get_err_monotype(t.val)
         }
         MonoType::Record(t) => {
             let e = get_err_basenode(t.base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             if let Some(tv) = t.tvar {
                 let e = get_err_identifier(tv);
-                if e != "" {
+                if !e.is_empty() {
                     return e;
                 }
             }
@@ -693,11 +693,11 @@ fn get_err_monotype(mt: MonoType) -> String {
         }
         MonoType::Function(t) => {
             let e = get_err_basenode((*t).base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             let e = get_err_parameters((*t).parameters);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             get_err_monotype((*t).monotype)
@@ -718,11 +718,11 @@ fn get_err_parameter(pr: ParameterType) -> String {
             monotype,
         } => {
             let e = get_err_basenode(base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             let e = get_err_identifier(name);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             get_err_monotype(monotype)
@@ -733,12 +733,12 @@ fn get_err_parameter(pr: ParameterType) -> String {
             monotype,
         } => {
             let e = get_err_basenode(base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             if let Some(i) = name {
                 let e = get_err_identifier(i);
-                if e != "" {
+                if !e.is_empty() {
                     return e;
                 }
             }
@@ -750,11 +750,11 @@ fn get_err_parameter(pr: ParameterType) -> String {
             monotype,
         } => {
             let e = get_err_basenode(base);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             let e = get_err_identifier(name);
-            if e != "" {
+            if !e.is_empty() {
                 return e;
             }
             get_err_monotype(monotype)
@@ -764,7 +764,7 @@ fn get_err_parameter(pr: ParameterType) -> String {
 fn get_err_properties(ps: Vec<PropertyType>) -> String {
     for p in ps {
         let e = get_err_property(p);
-        if e != "" {
+        if !e.is_empty() {
             return e;
         }
     }
@@ -772,11 +772,11 @@ fn get_err_properties(ps: Vec<PropertyType>) -> String {
 }
 fn get_err_property(p: PropertyType) -> String {
     let e = get_err_basenode(p.base);
-    if e != "" {
+    if !e.is_empty() {
         return e;
     }
     let e = get_err_identifier(p.name);
-    if e != "" {
+    if !e.is_empty() {
         return e;
     }
     get_err_monotype(p.monotype)
@@ -790,7 +790,7 @@ fn get_err_identifier(i: Identifier) -> String {
 fn get_err_constraints(tc: Vec<TypeConstraint>) -> String {
     for c in tc {
         let e = get_err_constraint(c);
-        if e != "" {
+        if !e.is_empty() {
             return e;
         }
     }
@@ -798,11 +798,11 @@ fn get_err_constraints(tc: Vec<TypeConstraint>) -> String {
 }
 fn get_err_constraint(c: TypeConstraint) -> String {
     let e = get_err_basenode(c.base);
-    if e != "" {
+    if !e.is_empty() {
         return e;
     }
     let e = get_err_identifier(c.tvar);
-    if e != "" {
+    if !e.is_empty() {
         return e;
     }
     get_err_kinds(c.kinds)
@@ -810,7 +810,7 @@ fn get_err_constraint(c: TypeConstraint) -> String {
 fn get_err_kinds(ks: Vec<Identifier>) -> String {
     for k in ks {
         let e = get_err_identifier(k);
-        if e != "" {
+        if !e.is_empty() {
             return e;
         }
     }

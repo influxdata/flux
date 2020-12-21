@@ -359,8 +359,8 @@ fn build_constraint<'a>(
     )
 }
 
-pub fn build_type<'a>(
-    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+pub fn build_type(
+    builder: &mut flatbuffers::FlatBufferBuilder,
     t: MonoType,
 ) -> (
     flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,
@@ -615,7 +615,7 @@ mod tests {
 
     fn test_serde(expr: &'static str) {
         // let want = parser::parse(expr).unwrap();
-        let mut p = parser::Parser::new(expr.clone());
+        let mut p = parser::Parser::new(expr.clone(), false);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -634,7 +634,7 @@ mod tests {
 
     #[test]
     fn serde_type_environment() {
-        let mut p = parser::Parser::new("bool");
+        let mut p = parser::Parser::new("bool", false);
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
         if err != "" {
@@ -643,7 +643,7 @@ mod tests {
         }
         let a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
-        let mut p = parser::Parser::new("time");
+        let mut p = parser::Parser::new("time", false);
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
         if err != "" {

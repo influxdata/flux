@@ -123,12 +123,12 @@ impl Scanner {
         self.checkpoint_line = self.cur_line;
         self.checkpoint_last_newline = self.last_newline;
 
-        let mut token_start = 0 as i32;
-        let mut token_start_line = 0 as i32;
-        let mut token_start_col = 0 as i32;
-        let mut token_end = 0 as i32;
-        let mut token_end_line = 0 as i32;
-        let mut token_end_col = 0 as i32;
+        let mut token_start = 0_i32;
+        let mut token_start_line = 0_i32;
+        let mut token_start_col = 0_i32;
+        let mut token_end = 0_i32;
+        let mut token_end_line = 0_i32;
+        let mut token_end_col = 0_i32;
 
         let error = {
             scanner::scan(

@@ -6,6 +6,7 @@ use std::str;
 use crate::ast;
 use crate::ast::*;
 use crate::scanner;
+use crate::scanner::rust::Scanner as RustScanner;
 use crate::scanner::*;
 
 use wasm_bindgen::prelude::*;
@@ -14,7 +15,7 @@ mod strconv;
 
 #[wasm_bindgen]
 pub fn parse(s: &str) -> JsValue {
-    let mut p = Parser::new(s);
+    let mut p = Parser::new(s, false);
     let file = p.parse_file(String::from(""));
 
     JsValue::from_serde(&file).unwrap()
@@ -23,7 +24,7 @@ pub fn parse(s: &str) -> JsValue {
 // Parses a string of source code.
 // The name is given to the file.
 pub fn parse_string(name: &str, s: &str) -> File {
-    let mut p = Parser::new(s);
+    let mut p = Parser::new(s, false);
     p.parse_file(String::from(name))
 }
 
@@ -107,6 +108,8 @@ fn format_token(t: TOK) -> &'static str {
 
 pub struct Parser {
     s: Scanner,
+    rs: RustScanner,
+    use_rs: bool,
     t: Option<Token>,
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
@@ -118,11 +121,14 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn new(src: &str) -> Parser {
+    pub fn new(src: &str, use_rs: bool) -> Parser {
         let cdata = CString::new(src).expect("CString::new failed");
-        let s = Scanner::new(cdata);
+        let s = Scanner::new(cdata.clone());
+        let rs = RustScanner::new(cdata);
         Parser {
             s,
+            rs,
+            use_rs,
             t: None,
             errs: Vec::new(),
             blocks: HashMap::new(),
@@ -139,7 +145,13 @@ impl Parser {
                 self.t = None;
                 t
             }
-            None => self.s.scan(),
+            None => {
+                if self.use_rs {
+                    self.rs.scan()
+                } else {
+                    self.s.scan()
+                }
+            }
         }
     }
 
@@ -149,7 +161,11 @@ impl Parser {
         match self.t.clone() {
             Some(t) => t,
             None => {
-                let t = self.s.scan();
+                let t = if self.use_rs {
+                    self.rs.scan()
+                } else {
+                    self.s.scan()
+                };
                 self.t = Some(t.clone());
                 t
             }

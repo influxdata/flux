@@ -361,7 +361,7 @@ mod tests {
 
         let want = semantic_map! {
             String::from("z") => {
-                    let mut p = parser::Parser::new("int");
+                    let mut p = parser::Parser::new("int", false);
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
@@ -384,7 +384,7 @@ mod tests {
 
         let want = semantic_map! {
             String::from("a") => {
-            let mut p = parser::Parser::new("{f: (x: A) => A}");
+            let mut p = parser::Parser::new("{f: (x: A) => A}", false);
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
@@ -396,7 +396,7 @@ mod tests {
                     convert_polytype(typ_expr, &mut Fresher::default())?
             },
             String::from("b") => {
-            let mut p = parser::Parser::new("{x: int , y: int}");
+            let mut p = parser::Parser::new("{x: int , y: int}", false);
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {

@@ -1096,7 +1096,7 @@ impl Formatter {
         if nano_sec > 0 {
             f = v.format("%FT%T").to_string();
             let mut frac_nano: String = v.format("%f").to_string();
-            frac_nano.insert_str(0, ".");
+            frac_nano.insert(0, '.');
             let mut r = frac_nano.chars().last().unwrap();
             while r == '0' {
                 frac_nano.pop();

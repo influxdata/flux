@@ -89,7 +89,7 @@ pub unsafe extern "C" fn flux_parse(
 ) -> Box<ast::Package> {
     let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
     let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
-    let mut p = Parser::new(&src);
+    let mut p = Parser::new(&src, false);
     let pkg: ast::Package = p.parse_file(fname).into();
     Box::new(pkg)
 }
@@ -553,7 +553,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
 /// the MonoType, it returns a JsValue。
 #[wasm_bindgen]
 pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
-    let mut p = Parser::new(source);
+    let mut p = Parser::new(source, false);
     let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
     let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
     JsValue::from_serde(&ty).unwrap()
@@ -692,7 +692,7 @@ g = () => v.sweet
 x = g()
 vstr = v.str + "hello"
 "#;
-        let mut p = Parser::new(&source);
+        let mut p = Parser::new(&source, false);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
@@ -741,7 +741,7 @@ vstr = v.str + "hello"
         let source = r#"
 vint = v + 2
 "#;
-        let mut p = Parser::new(&source);
+        let mut p = Parser::new(&source, false);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         assert_eq!(t, MonoType::Int);
@@ -756,7 +756,7 @@ vint = v.int + 2
 o = {v with x: 256}
 p = o.ethan
 "#;
-        let mut p = Parser::new(&source);
+        let mut p = Parser::new(&source, false);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
@@ -801,7 +801,7 @@ from(bucket: v.bucket)
 |> filter(fn: (r) => r.host == "host.local")
 |> aggregateWindow(every: 30s, fn: count)
 "#;
-        let mut p = Parser::new(&source);
+        let mut p = Parser::new(&source, false);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let mut ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
         let mut v = MonoTypeNormalizer::new();
@@ -1000,7 +1000,7 @@ from(bucket: v.bucket)
                     , _field: string
                     , region: B
                     }] where A: Addable, B: Equatable ";
-        let mut p = parser::Parser::new(code);
+        let mut p = parser::Parser::new(code, false);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -1042,7 +1042,7 @@ from(bucket: v.bucket)
                     , _measurement: string
                     , _field: string
                     }] where B: Equatable ";
-        let mut p = parser::Parser::new(code);
+        let mut p = parser::Parser::new(code, false);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -1061,7 +1061,7 @@ from(bucket: v.bucket)
                     , _field: string
                     }] where  B: Equatable";
 
-        let mut p = parser::Parser::new(code);
+        let mut p = parser::Parser::new(code, false);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -1080,7 +1080,7 @@ from(bucket: v.bucket)
                     , _measurement: string
                     , _field: string
                     }] where B: Equatable, C: Equatable ";
-        let mut p = parser::Parser::new(code);
+        let mut p = parser::Parser::new(code, false);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());

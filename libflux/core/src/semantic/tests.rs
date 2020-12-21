@@ -53,7 +53,7 @@ fn parse_program(src: &str) -> ast::Package {
 fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
     m.into_iter()
         .map(|(name, expr)| {
-            let mut p = parser::Parser::new(expr);
+            let mut p = parser::Parser::new(expr, false);
 
             let typ_expr = p.parse_type_expression();
             let err = get_err_type_expression(typ_expr.clone());
