@@ -177,9 +177,9 @@ impl Parser {
         if let Some(token) = &mut self.t {
             if let Token { tok: TOK_DIV, .. } = token {
                 if self.use_rs {
-                    self.rs.comments = token.comments.take();
+                    self.rs.comments = token.comments.take()
                 } else {
-                    self.s.comments = token.comments.take();
+                    self.s.comments = token.comments.take()
                 }
 
                 self.t = None;
@@ -195,10 +195,10 @@ impl Parser {
             Some(t) => t,
             None => {
                 let t = if self.use_rs {
-                    self.rs.scan_with_regex();
+                    self.rs.scan_with_regex()
                 } else {
-                    self.s.scan_with_regex();
-                }
+                    self.s.scan_with_regex()
+                };
                 self.t = Some(t.clone());
                 t
             }
@@ -1480,10 +1480,10 @@ impl Parser {
         let mut parts = Vec::new();
         loop {
             let t = if self.use_rs {
-                self.rs.scan_string_expr();
+                self.rs.scan_string_expr()
             } else {
-                self.s.scan_string_expr();
-            }
+                self.s.scan_string_expr()
+            };
             match t.tok {
                 TOK_TEXT => {
                     let value = strconv::parse_text(t.lit.as_str());
