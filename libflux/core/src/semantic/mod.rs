@@ -60,8 +60,12 @@ impl Importer for Option<()> {}
 
 /// Get a semantic package from the given source and fresher
 /// The returned semantic package is not type-inferred.
-fn get_sem_pkg_from_source(source: &str, fresher: &mut Fresher) -> Result<nodes::Package, Error> {
-    let file = parse_string("", source);
+fn get_sem_pkg_from_source(
+    source: &str,
+    fresher: &mut Fresher,
+    use_rs: bool,
+) -> Result<nodes::Package, Error> {
+    let file = parse_string("", source, use_rs);
     let errs = ast::check::check(ast::walk::Node::File(&file));
     if !errs.is_empty() {
         return Err(Error {
@@ -73,9 +77,9 @@ fn get_sem_pkg_from_source(source: &str, fresher: &mut Fresher) -> Result<nodes:
 }
 
 /// Get a type-inferred semantic package from the given Flux source.
-pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
+pub fn convert_source(source: &str, use_rs: bool) -> Result<nodes::Package, Error> {
     let mut f = Fresher::default();
-    let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
+    let mut sem_pkg = get_sem_pkg_from_source(source, &mut f, use_rs)?;
     // TODO(affo): add a stdlib Importer.
     let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, Environment::empty(false), &mut f, &None)?;
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))

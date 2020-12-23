@@ -46,7 +46,7 @@ where
 fn main() -> Result<(), Error> {
     let dir = path::PathBuf::from(env::var("OUT_DIR")?);
 
-    let (pre, lib, fresher, files) = bootstrap::infer_stdlib()?;
+    let (pre, lib, fresher, files) = bootstrap::infer_stdlib(false)?;
     for f in files.iter() {
         println!("cargo:rerun-if-changed={}", f);
     }

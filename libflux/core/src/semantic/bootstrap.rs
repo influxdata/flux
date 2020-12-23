@@ -79,11 +79,13 @@ impl From<&str> for Error {
 #[allow(clippy::type_complexity)]
 // Infer the types of the standard library returning two importers, one for the prelude
 // and one for the standard library, as well as a type variable fresher.
-pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
+pub fn infer_stdlib(
+    use_rs: bool,
+) -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
     let mut f = Fresher::default();
 
     let dir = "../../stdlib";
-    let files = file_map(parse_flux_files(dir)?);
+    let files = file_map(parse_flux_files(dir, use_rs)?);
     let rerun_if_changed = compute_file_dependencies(dir);
 
     let (prelude, importer) = infer_pre(&mut f, &files)?;
@@ -146,7 +148,7 @@ fn infer_std(
 }
 
 // Recursively parse all flux files within a directory.
-fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
+fn parse_flux_files(path: &str, use_rs: bool) -> io::Result<Vec<ast::File>> {
     let mut files = Vec::new();
     let entries = WalkDir::new(PathBuf::from(path))
         .into_iter()
@@ -159,6 +161,7 @@ fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
                 files.push(parser::parse_string(
                     path.rsplitn(2, "/stdlib/").collect::<Vec<&str>>()[0],
                     &fs::read_to_string(path)?,
+                    use_rs,
                 ));
             }
         }
@@ -422,7 +425,7 @@ mod tests {
 
     #[test]
     fn prelude_dependencies() {
-        let files = file_map(parse_flux_files("../../stdlib").unwrap());
+        let files = file_map(parse_flux_files("../../stdlib", false).unwrap());
 
         let r = PRELUDE.iter().try_fold(
             (Vec::new(), HashSet::new(), HashSet::new()),

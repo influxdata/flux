@@ -28,8 +28,8 @@ pub fn convert_to_string(file: &File) -> Result<String, Error> {
     formatter.output()
 }
 
-pub fn format(contents: &str) -> Result<String, Error> {
-    let file = parse_string("", contents);
+pub fn format(contents: &str, use_rs: bool) -> Result<String, Error> {
+    let file = parse_string("", contents, use_rs);
     convert_to_string(&file)
 }
 
