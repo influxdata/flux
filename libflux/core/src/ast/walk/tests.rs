@@ -4,7 +4,7 @@ use super::*;
 use crate::parser::parse_string;
 
 fn test_walk(source: &str, want: Vec<&str>) {
-    let file = parse_string("test_walk", source);
+    let file = parse_string("test_walk", source, false);
     let mut nodes = Vec::new();
     walk(
         &create_visitor(&mut |n| nodes.push(format!("{}", n))),

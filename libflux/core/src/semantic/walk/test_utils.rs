@@ -5,7 +5,7 @@ use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes;
 
 pub fn compile(source: &str) -> nodes::Package {
-    let file = parse_string("", source);
+    let file = parse_string("", source, false);
     let errs = ast::check::check(ast::walk::Node::File(&file));
     if errs.len() > 0 {
         panic!(format!("got errors on parsing: {:?}", errs));

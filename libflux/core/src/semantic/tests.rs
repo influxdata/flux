@@ -40,7 +40,7 @@ use crate::semantic::convert::convert_polytype;
 use colored::*;
 
 fn parse_program(src: &str) -> ast::Package {
-    let file = parse_string("", src);
+    let file = parse_string("", src, false);
 
     ast::Package {
         base: file.base.clone(),

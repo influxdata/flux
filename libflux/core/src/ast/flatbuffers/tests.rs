@@ -127,7 +127,7 @@ fn serialize_and_compare(path: &str, flux_script: &str) -> Result<(), String> {
     use std::time::Instant;
     println!("{}", path);
     let now = Instant::now();
-    let ast_file = crate::parser::parse_string("test", flux_script);
+    let ast_file = crate::parser::parse_string("test", flux_script, false);
     println!(
         "  parsing took {}s",
         now.elapsed().as_micros() as f64 / 1_000_000.0

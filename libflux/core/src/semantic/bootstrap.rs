@@ -350,9 +350,9 @@ mod tests {
             z = b.y
         "#;
         let files = semantic_map! {
-            String::from("a") => parse_string("a.flux", a),
-            String::from("b") => parse_string("b.flux", b),
-            String::from("c") => parse_string("c.flux", c),
+            String::from("a") => parse_string("a.flux", a, false),
+            String::from("b") => parse_string("b.flux", b, false),
+            String::from("c") => parse_string("c.flux", c, false),
         };
         let (types, imports) = infer_pkg(
             "c",
@@ -446,8 +446,8 @@ mod tests {
             import "a"
         "#;
         let files = semantic_map! {
-            String::from("a") => parse_string("a.flux", a),
-            String::from("b") => parse_string("b.flux", b),
+            String::from("a") => parse_string("a.flux", a, false),
+            String::from("b") => parse_string("b.flux", b, false),
         };
         let got_err = dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new())
             .expect_err("expected cyclic dependency error");

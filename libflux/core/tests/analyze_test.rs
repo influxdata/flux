@@ -16,6 +16,7 @@ f = (a) => a + a
 f(a: n)
 f(a: s)
         "#,
+        false,
     )
     .unwrap();
     let f_type = Function {

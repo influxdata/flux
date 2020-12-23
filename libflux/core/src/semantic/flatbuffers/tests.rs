@@ -30,6 +30,7 @@ test aggregate_window_empty = () => ({
             |> aggregateWindow(every: 30s, fn: sum),
 })
 "#,
+            false,
         ),
         crate::parser::parse_string(
             "test2",
@@ -75,6 +76,7 @@ dt = 2030-01-01T00:00:00Z
 re =~ /foo/
 re !~ /foo/
 "#,
+            false,
         ),
     ];
     let pkg = ast::Package {

@@ -28,6 +28,7 @@ test aggregate_window_empty = () => ({
             |> aggregateWindow(every: 30s, fn: sum),
 })
 "#,
+            false,
         ),
         crate::parser::parse_string(
             "test2",
@@ -77,6 +78,7 @@ re =~ /foo/
 re !~ /foo/
 bad_expr = 3 * / 1
 "#,
+            false,
         ),
     ];
     Package {
