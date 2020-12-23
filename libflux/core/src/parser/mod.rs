@@ -14,8 +14,8 @@ use wasm_bindgen::prelude::*;
 mod strconv;
 
 #[wasm_bindgen]
-pub fn parse(s: &str) -> JsValue {
-    let mut p = Parser::new(s, false);
+pub fn parse(s: &str, use_rs: bool) -> JsValue {
+    let mut p = Parser::new(s, use_rs);
     let file = p.parse_file(String::from(""));
 
     JsValue::from_serde(&file).unwrap()
@@ -23,8 +23,8 @@ pub fn parse(s: &str) -> JsValue {
 
 // Parses a string of source code.
 // The name is given to the file.
-pub fn parse_string(name: &str, s: &str) -> File {
-    let mut p = Parser::new(s, false);
+pub fn parse_string(name: &str, s: &str, use_rs: bool) -> File {
+    let mut p = Parser::new(s, use_rs);
     p.parse_file(String::from(name))
 }
 
