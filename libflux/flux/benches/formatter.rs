@@ -9,7 +9,7 @@ fn format_everything(c: &mut Criterion) {
     let flux = include_str!("./everything.flux");
     c.bench_function("format_everything.flux", |b| {
         b.iter(black_box(|| {
-            format(flux).unwrap();
+            format(flux, false).unwrap();
         }));
     });
 }
