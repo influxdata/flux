@@ -6,7 +6,7 @@ use std::str;
 use crate::ast;
 use crate::ast::*;
 use crate::scanner;
-use crate::scanner::rust::Scanner as RustScanner;
+use crate::scanner::rust::{Scan, Scanner as RustScanner};
 use crate::scanner::*;
 
 use wasm_bindgen::prelude::*;
@@ -107,9 +107,7 @@ fn format_token(t: TOK) -> &'static str {
 }
 
 pub struct Parser {
-    s: Scanner,
-    rs: RustScanner,
-    use_rs: bool,
+    s: Box<dyn Scan>,
     t: Option<Token>,
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
@@ -123,12 +121,15 @@ pub struct Parser {
 impl Parser {
     pub fn new(src: &str, use_rs: bool) -> Parser {
         let cdata = CString::new(src).expect("CString::new failed");
-        let s = Scanner::new(cdata.clone());
-        let rs = RustScanner::new(cdata);
+
+        let s = if use_rs {
+            Box::new(RustScanner::new(cdata)) as Box<dyn Scan>
+        } else {
+            Box::new(Scanner::new(cdata)) as Box<dyn Scan>
+        };
+
         Parser {
             s,
-            rs,
-            use_rs,
             t: None,
             errs: Vec::new(),
             blocks: HashMap::new(),
@@ -145,13 +146,7 @@ impl Parser {
                 self.t = None;
                 t
             }
-            None => {
-                if self.use_rs {
-                    self.rs.scan()
-                } else {
-                    self.s.scan()
-                }
-            }
+            None => self.s.scan(),
         }
     }
 
@@ -161,11 +156,7 @@ impl Parser {
         match self.t.clone() {
             Some(t) => t,
             None => {
-                let t = if self.use_rs {
-                    self.rs.scan()
-                } else {
-                    self.s.scan()
-                };
+                let t = self.s.scan();
                 self.t = Some(t.clone());
                 t
             }
@@ -176,29 +167,15 @@ impl Parser {
     fn peek_with_regex(&mut self) -> Token {
         if let Some(token) = &mut self.t {
             if let Token { tok: TOK_DIV, .. } = token {
-                if self.use_rs {
-                    self.rs.comments = token.comments.take()
-                } else {
-                    self.s.comments = token.comments.take()
-                }
-
+                self.s.set_comments(&mut token.comments);
                 self.t = None;
-
-                if self.use_rs {
-                    self.rs.unread();
-                } else {
-                    self.s.unread();
-                }
+                self.s.unread();
             }
         }
         match self.t.clone() {
             Some(t) => t,
             None => {
-                let t = if self.use_rs {
-                    self.rs.scan_with_regex()
-                } else {
-                    self.s.scan_with_regex()
-                };
+                let t = self.s.scan_with_regex();
                 self.t = Some(t.clone());
                 t
             }
@@ -398,17 +375,9 @@ impl Parser {
         if !start.is_valid() || !end.is_valid() {
             return SourceLocation::default();
         }
-        let (s_off, e_off) = if self.use_rs {
-            (
-                self.rs.offset(&scanner::Position::from(start)) as usize,
-                self.rs.offset(&scanner::Position::from(end)) as usize,
-            )
-        } else {
-            (
-                self.s.offset(&scanner::Position::from(start)) as usize,
-                self.s.offset(&scanner::Position::from(end)) as usize,
-            )
-        };
+
+        let s_off = self.s.offset(&scanner::Position::from(start)) as usize;
+        let e_off = self.s.offset(&scanner::Position::from(end)) as usize;
 
         SourceLocation {
             file: Some(self.fname.clone()),
@@ -1479,11 +1448,7 @@ impl Parser {
         let start = self.expect(TOK_QUOTE);
         let mut parts = Vec::new();
         loop {
-            let t = if self.use_rs {
-                self.rs.scan_string_expr()
-            } else {
-                self.s.scan_string_expr()
-            };
+            let t = self.s.scan_string_expr();
             match t.tok {
                 TOK_TEXT => {
                     let value = strconv::parse_text(t.lit.as_str());

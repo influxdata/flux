@@ -23,6 +23,7 @@ pub mod flatbuffers;
 
 use crate::ast;
 use crate::parser::parse_string;
+use crate::scanner::rust::Scan;
 use crate::semantic::convert::convert_with;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
