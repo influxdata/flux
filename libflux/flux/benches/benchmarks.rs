@@ -1,6 +1,7 @@
 #[allow(soft_unstable)]
 extern crate criterion;
 
+use core::scanner::rust::Scan;
 use core::scanner::Scanner;
 use criterion::{criterion_group, criterion_main, Criterion};
 use std::ffi::CString;
