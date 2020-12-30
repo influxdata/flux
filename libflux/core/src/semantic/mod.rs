@@ -22,7 +22,7 @@ mod tests;
 pub mod flatbuffers;
 
 use crate::ast;
-use crate::parser::parse_string;
+use crate::parser::{parse_string, parse_string_with_rust};
 use crate::scanner::rust::Scan;
 use crate::semantic::convert::convert_with;
 use crate::semantic::env::Environment;
@@ -61,12 +61,23 @@ impl Importer for Option<()> {}
 
 /// Get a semantic package from the given source and fresher
 /// The returned semantic package is not type-inferred.
-fn get_sem_pkg_from_source(
+fn get_sem_pkg_from_source(source: &str, fresher: &mut Fresher) -> Result<nodes::Package, Error> {
+    let file = parse_string("", source);
+    let errs = ast::check::check(ast::walk::Node::File(&file));
+    if !errs.is_empty() {
+        return Err(Error {
+            msg: format!("got errors on parsing: {:?}", errs),
+        });
+    }
+    let ast_pkg: ast::Package = file.into();
+    convert_with(ast_pkg, fresher).map_err(|err| err.into())
+}
+
+fn get_sem_pkg_from_source_with_rust(
     source: &str,
     fresher: &mut Fresher,
-    use_rs: bool,
 ) -> Result<nodes::Package, Error> {
-    let file = parse_string("", source, use_rs);
+    let file = parse_string_with_rust("", source);
     let errs = ast::check::check(ast::walk::Node::File(&file));
     if !errs.is_empty() {
         return Err(Error {
@@ -78,9 +89,17 @@ fn get_sem_pkg_from_source(
 }
 
 /// Get a type-inferred semantic package from the given Flux source.
-pub fn convert_source(source: &str, use_rs: bool) -> Result<nodes::Package, Error> {
+pub fn convert_source(source: &str) -> Result<nodes::Package, Error> {
     let mut f = Fresher::default();
-    let mut sem_pkg = get_sem_pkg_from_source(source, &mut f, use_rs)?;
+    let mut sem_pkg = get_sem_pkg_from_source(source, &mut f)?;
+    // TODO(affo): add a stdlib Importer.
+    let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, Environment::empty(false), &mut f, &None)?;
+    Ok(nodes::inject_pkg_types(sem_pkg, &sub))
+}
+
+pub fn convert_source_with_rust(source: &str) -> Result<nodes::Package, Error> {
+    let mut f = Fresher::default();
+    let mut sem_pkg = get_sem_pkg_from_source_with_rust(source, &mut f)?;
     // TODO(affo): add a stdlib Importer.
     let (_, sub) = nodes::infer_pkg_types(&mut sem_pkg, Environment::empty(false), &mut f, &None)?;
     Ok(nodes::inject_pkg_types(sem_pkg, &sub))

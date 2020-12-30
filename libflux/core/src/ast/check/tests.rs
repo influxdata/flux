@@ -6,7 +6,7 @@ use crate::parser::parse_string;
 
 #[test]
 fn test_object_check() {
-    let file = parse_string("object_test", "a = 1\nb = {c: 2, a}", false);
+    let file = parse_string("object_test", "a = 1\nb = {c: 2, a}");
     let got = check(walk::Node::File(&file));
     let want = vec![Error {
         location: SourceLocation {
@@ -25,7 +25,7 @@ fn test_object_check() {
 
 #[test]
 fn test_bad_stmt() {
-    let file = parse_string("bad_stmt_test", "a = 1\nb = \nc=2", false);
+    let file = parse_string("bad_stmt_test", "a = 1\nb = \nc=2");
     let got = check(walk::Node::File(&file));
     let want = vec![Error {
         location: SourceLocation {
@@ -41,7 +41,7 @@ fn test_bad_stmt() {
 
 #[test]
 fn test_bad_expr() {
-    let file = parse_string("bad_expr_test", "a = 3 + / 10", false);
+    let file = parse_string("bad_expr_test", "a = 3 + / 10");
     let got = check(walk::Node::File(&file));
     let want = vec![Error {
         location: SourceLocation {
@@ -60,7 +60,7 @@ fn test_bad_expr() {
 
 #[test]
 fn test_check_ok() {
-    let file = parse_string("test_ok", "a = 1\nb=2", false);
+    let file = parse_string("test_ok", "a = 1\nb=2");
     let got = check(walk::Node::File(&file));
     assert_eq!(got.len(), 0);
 }

@@ -615,7 +615,7 @@ mod tests {
 
     fn test_serde(expr: &'static str) {
         // let want = parser::parse(expr).unwrap();
-        let mut p = parser::Parser::new(expr.clone(), false);
+        let mut p = parser::Parser::new(expr.clone());
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -634,7 +634,7 @@ mod tests {
 
     #[test]
     fn serde_type_environment() {
-        let mut p = parser::Parser::new("bool", false);
+        let mut p = parser::Parser::new("bool");
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
         if err != "" {
@@ -643,7 +643,7 @@ mod tests {
         }
         let a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
-        let mut p = parser::Parser::new("time", false);
+        let mut p = parser::Parser::new("time");
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
         if err != "" {

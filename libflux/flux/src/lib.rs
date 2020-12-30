@@ -89,7 +89,7 @@ pub unsafe extern "C" fn flux_parse(
 ) -> Box<ast::Package> {
     let fname = String::from_utf8(CStr::from_ptr(cfname).to_bytes().to_vec()).unwrap();
     let src = String::from_utf8(CStr::from_ptr(csrc).to_bytes().to_vec()).unwrap();
-    let mut p = Parser::new(&src, false);
+    let mut p = Parser::new(&src);
     let pkg: ast::Package = p.parse_file(fname).into();
     Box::new(pkg)
 }
@@ -553,7 +553,7 @@ pub fn find_var_type(ast_pkg: ast::Package, var_name: String) -> Result<MonoType
 /// the MonoType, it returns a JsValue。
 #[wasm_bindgen]
 pub fn wasm_find_var_type(source: &str, file_name: &str, var_name: &str) -> JsValue {
-    let mut p = Parser::new(source, false);
+    let mut p = Parser::new(source);
     let pkg: ast::Package = p.parse_file(file_name.to_string()).into();
     let ty = find_var_type(pkg, var_name.to_string()).unwrap_or(MonoType::Var(Tvar(0)));
     JsValue::from_serde(&ty).unwrap()
@@ -692,7 +692,7 @@ g = () => v.sweet
 x = g()
 vstr = v.str + "hello"
 "#;
-        let mut p = Parser::new(&source, false);
+        let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
@@ -741,7 +741,7 @@ vstr = v.str + "hello"
         let source = r#"
 vint = v + 2
 "#;
-        let mut p = Parser::new(&source, false);
+        let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         assert_eq!(t, MonoType::Int);
@@ -756,7 +756,7 @@ vint = v.int + 2
 o = {v with x: 256}
 p = o.ethan
 "#;
-        let mut p = Parser::new(&source, false);
+        let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
@@ -801,7 +801,7 @@ from(bucket: v.bucket)
 |> filter(fn: (r) => r.host == "host.local")
 |> aggregateWindow(every: 30s, fn: count)
 "#;
-        let mut p = Parser::new(&source, false);
+        let mut p = Parser::new(&source);
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let mut ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
         let mut v = MonoTypeNormalizer::new();
@@ -817,8 +817,8 @@ from(bucket: v.bucket)
         let in_script = "package foo\na = 1\n";
         let out_script = "package foo\nb = 2\n";
 
-        let in_file = crate::parser::parse_string("test", in_script, false);
-        let out_file = crate::parser::parse_string("test", out_script, false);
+        let in_file = crate::parser::parse_string("test", in_script);
+        let out_file = crate::parser::parse_string("test", out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -843,9 +843,8 @@ from(bucket: v.bucket)
         // and on explicit
         let has_clause_script = "package main\nx = 32";
         let no_clause_script = "y = 32";
-        let has_clause_file =
-            crate::parser::parse_string("has_clause.flux", has_clause_script, false);
-        let no_clause_file = crate::parser::parse_string("no_clause.flux", no_clause_script, false);
+        let has_clause_file = crate::parser::parse_string("has_clause.flux", has_clause_script);
+        let no_clause_file = crate::parser::parse_string("no_clause.flux", no_clause_script);
         {
             let mut out_pkg: ast::Package = has_clause_file.clone().into();
             let mut in_pkg: ast::Package = no_clause_file.clone().into();
@@ -873,7 +872,7 @@ from(bucket: v.bucket)
     fn ok_no_in_pkg() {
         let out_script = "package foo\nb = 2\n";
 
-        let out_file = crate::parser::parse_string("test", out_script, false);
+        let out_file = crate::parser::parse_string("test", out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -897,8 +896,8 @@ from(bucket: v.bucket)
         let in_script = "package foo\na = 1\n";
         let out_script = "";
 
-        let in_file = crate::parser::parse_string("test_in.flux", in_script, false);
-        let out_file = crate::parser::parse_string("test_out.flux", out_script, false);
+        let in_file = crate::parser::parse_string("test_in.flux", in_script);
+        let out_file = crate::parser::parse_string("test_out.flux", out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -921,8 +920,8 @@ from(bucket: v.bucket)
         let in_script = "a = 1000\n";
         let out_script = "package foo\nb = 100\n";
 
-        let in_file = crate::parser::parse_string("test_in.flux", in_script, false);
-        let out_file = crate::parser::parse_string("test_out.flux", out_script, false);
+        let in_file = crate::parser::parse_string("test_in.flux", in_script);
+        let out_file = crate::parser::parse_string("test_out.flux", out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -944,8 +943,8 @@ from(bucket: v.bucket)
     fn ok_no_pkg_clauses() {
         let in_script = "a = 100\n";
         let out_script = "b = a * a\n";
-        let in_file = crate::parser::parse_string("test", in_script, false);
-        let out_file = crate::parser::parse_string("test", out_script, false);
+        let in_file = crate::parser::parse_string("test", in_script);
+        let out_file = crate::parser::parse_string("test", out_script);
         let mut in_pkg = ast::Package {
             base: Default::default(),
             path: "./test".to_string(),
@@ -965,7 +964,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn test_ast_get_error() {
-        let ast = crate::parser::parse_string("test", "x = 3 + / 10 - \"", false);
+        let ast = crate::parser::parse_string("test", "x = 3 + / 10 - \"");
         let ast = Box::into_raw(Box::new(ast.into()));
         let errh = unsafe { flux_ast_get_error(ast) };
         assert_eq!(
@@ -985,7 +984,7 @@ from(bucket: v.bucket)
                 |> map(fn: (r) => ({r with _value: r._value + r._value}))
         "#;
 
-        let ast = core::parser::parse_string("main.flux", src, false);
+        let ast = core::parser::parse_string("main.flux", src);
         let mut f = super::fresher();
 
         let mut file = convert_file(ast, &mut f).unwrap();
@@ -1001,7 +1000,7 @@ from(bucket: v.bucket)
                     , _field: string
                     , region: B
                     }] where A: Addable, B: Equatable ";
-        let mut p = parser::Parser::new(code, false);
+        let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -1028,7 +1027,7 @@ from(bucket: v.bucket)
             c = union(tables: [a, b])
         "#;
 
-        let ast = core::parser::parse_string("main.flux", src, false);
+        let ast = core::parser::parse_string("main.flux", src);
         let mut f = super::fresher();
 
         let mut file = convert_file(ast, &mut f).unwrap();
@@ -1043,7 +1042,7 @@ from(bucket: v.bucket)
                     , _measurement: string
                     , _field: string
                     }] where B: Equatable ";
-        let mut p = parser::Parser::new(code, false);
+        let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -1062,7 +1061,7 @@ from(bucket: v.bucket)
                     , _field: string
                     }] where  B: Equatable";
 
-        let mut p = parser::Parser::new(code, false);
+        let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -1081,7 +1080,7 @@ from(bucket: v.bucket)
                     , _measurement: string
                     , _field: string
                     }] where B: Equatable, C: Equatable ";
-        let mut p = parser::Parser::new(code, false);
+        let mut p = parser::Parser::new(code);
 
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
@@ -1099,7 +1098,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn analyze_error() {
-        let ast: ast::Package = core::parser::parse_string("", "x = ()", false).into();
+        let ast: ast::Package = core::parser::parse_string("", "x = ()").into();
         match analyze(ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {

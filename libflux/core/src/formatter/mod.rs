@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 use crate::ast::{self, walk::Node, File};
-use crate::parser::parse_string;
+use crate::parser::{parse_string, parse_string_with_rust};
 use crate::Error;
 
 use std::io;
@@ -28,8 +28,13 @@ pub fn convert_to_string(file: &File) -> Result<String, Error> {
     formatter.output()
 }
 
-pub fn format(contents: &str, use_rs: bool) -> Result<String, Error> {
-    let file = parse_string("", contents, use_rs);
+pub fn format(contents: &str) -> Result<String, Error> {
+    let file = parse_string("", contents);
+    convert_to_string(&file)
+}
+
+pub fn format_with_rust(contents: &str) -> Result<String, Error> {
+    let file = parse_string_with_rust("", contents);
     convert_to_string(&file)
 }
 

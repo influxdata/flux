@@ -14,8 +14,16 @@ use wasm_bindgen::prelude::*;
 mod strconv;
 
 #[wasm_bindgen]
-pub fn parse(s: &str, use_rs: bool) -> JsValue {
-    let mut p = Parser::new(s, use_rs);
+pub fn parse(s: &str) -> JsValue {
+    let mut p = Parser::new(s);
+    let file = p.parse_file(String::from(""));
+
+    JsValue::from_serde(&file).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn parse_with_rust(s: &str) -> JsValue {
+    let mut p = Parser::with_rust(s);
     let file = p.parse_file(String::from(""));
 
     JsValue::from_serde(&file).unwrap()
@@ -23,8 +31,13 @@ pub fn parse(s: &str, use_rs: bool) -> JsValue {
 
 // Parses a string of source code.
 // The name is given to the file.
-pub fn parse_string(name: &str, s: &str, use_rs: bool) -> File {
-    let mut p = Parser::new(s, use_rs);
+pub fn parse_string(name: &str, s: &str) -> File {
+    let mut p = Parser::new(s);
+    p.parse_file(String::from(name))
+}
+
+pub fn parse_string_with_rust(name: &str, s: &str) -> File {
+    let mut p = Parser::new(s);
     p.parse_file(String::from(name))
 }
 
@@ -119,14 +132,25 @@ pub struct Parser {
 }
 
 impl Parser {
-    pub fn new(src: &str, use_rs: bool) -> Parser {
+    pub fn new(src: &str) -> Parser {
         let cdata = CString::new(src).expect("CString::new failed");
 
-        let s = if use_rs {
-            Box::new(RustScanner::new(cdata)) as Box<dyn Scan>
-        } else {
-            Box::new(Scanner::new(cdata)) as Box<dyn Scan>
-        };
+        let s = Box::new(Scanner::new(cdata)) as Box<dyn Scan>;
+
+        Parser {
+            s,
+            t: None,
+            errs: Vec::new(),
+            blocks: HashMap::new(),
+            fname: "".to_string(),
+            source: src.to_string(),
+        }
+    }
+
+    pub fn with_rust(src: &str) -> Parser {
+        let cdata = CString::new(src).expect("CString::new failed");
+
+        let s = Box::new(RustScanner::new(cdata)) as Box<dyn Scan>;
 
         Parser {
             s,

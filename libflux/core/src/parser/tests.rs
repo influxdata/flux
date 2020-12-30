@@ -50,7 +50,7 @@ impl<'a> Locator<'a> {
 
 #[test]
 fn parse_invalid_unicode_bare() {
-    let mut p = Parser::new(r#"®some string®"#, false);
+    let mut p = Parser::new(r#"®some string®"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -113,7 +113,7 @@ fn parse_invalid_unicode_bare() {
 
 #[test]
 fn parse_invalid_unicode_paren_wrapped() {
-    let mut p = Parser::new(r#"(‛some string‛)"#, false);
+    let mut p = Parser::new(r#"(‛some string‛)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -171,7 +171,7 @@ fn parse_invalid_unicode_paren_wrapped() {
 
 #[test]
 fn parse_invalid_unicode_interspersed() {
-    let mut p = Parser::new(r#"®s®t®r®i®n®g"#, false);
+    let mut p = Parser::new(r#"®s®t®r®i®n®g"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -314,7 +314,7 @@ fn parse_invalid_unicode_interspersed() {
 
 #[test]
 fn parse_greedy_quotes_paren_wrapped() {
-    let mut p = Parser::new(r#"(“some string”)"#, false);
+    let mut p = Parser::new(r#"(“some string”)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -372,7 +372,7 @@ fn parse_greedy_quotes_paren_wrapped() {
 
 #[test]
 fn parse_greedy_quotes_bare() {
-    let mut p = Parser::new(r#"“some string”"#, false);
+    let mut p = Parser::new(r#"“some string”"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -435,7 +435,7 @@ fn parse_greedy_quotes_bare() {
 
 #[test]
 fn parse_greedy_quotes_interspersed() {
-    let mut p = Parser::new(r#"“s”t“r”i“n”g"#, false);
+    let mut p = Parser::new(r#"“s”t“r”i“n”g"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -578,7 +578,7 @@ fn parse_greedy_quotes_interspersed() {
 
 #[test]
 fn string_interpolation_simple() {
-    let mut p = Parser::new(r#""a + b = ${a + b}""#, false);
+    let mut p = Parser::new(r#""a + b = ${a + b}""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -647,10 +647,7 @@ fn string_interpolation_simple() {
 
 #[test]
 fn string_interpolation_array() {
-    let mut p = Parser::new(
-        r#"a = ["influx", "test", "InfluxOfflineTimeAlert", "acu:${r.a}"]"#,
-        false,
-    );
+    let mut p = Parser::new(r#"a = ["influx", "test", "InfluxOfflineTimeAlert", "acu:${r.a}"]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -770,7 +767,7 @@ fn string_interpolation_array() {
 
 #[test]
 fn string_interpolation_multiple() {
-    let mut p = Parser::new(r#""a = ${a} and b = ${b}""#, false);
+    let mut p = Parser::new(r#""a = ${a} and b = ${b}""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -845,7 +842,7 @@ fn string_interpolation_multiple() {
 
 #[test]
 fn string_interpolation_nested() {
-    let mut p = Parser::new(r#""we ${"can ${"add" + "strings"}"} together""#, false);
+    let mut p = Parser::new(r#""we ${"can ${"add" + "strings"}"} together""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -942,7 +939,7 @@ fn string_interpolation_nested() {
 
 #[test]
 fn string_interp_with_escapes() {
-    let mut p = Parser::new(r#""string \"interpolation with ${"escapes"}\"""#, false);
+    let mut p = Parser::new(r#""string \"interpolation with ${"escapes"}\"""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1004,7 +1001,7 @@ fn string_interp_with_escapes() {
 
 #[test]
 fn bad_string_expression() {
-    let mut p = Parser::new(r#"fn = (a) => "${a}"#, false);
+    let mut p = Parser::new(r#"fn = (a) => "${a}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1074,7 +1071,7 @@ fn bad_string_expression() {
 
 #[test]
 fn package_clause() {
-    let mut p = Parser::new(r#"package foo"#, false);
+    let mut p = Parser::new(r#"package foo"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1108,7 +1105,7 @@ fn package_clause() {
 
 #[test]
 fn import() {
-    let mut p = Parser::new(r#"import "path/foo""#, false);
+    let mut p = Parser::new(r#"import "path/foo""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1143,7 +1140,7 @@ fn import() {
 
 #[test]
 fn import_as() {
-    let mut p = Parser::new(r#"import bar "path/foo""#, false);
+    let mut p = Parser::new(r#"import bar "path/foo""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1187,7 +1184,6 @@ fn imports() {
     let mut p = Parser::new(
         r#"import "path/foo"
 import "path/bar""#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -1245,7 +1241,6 @@ package baz
 
 import "path/foo"
 import "path/bar""#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -1317,7 +1312,6 @@ import "path/foo"
 import "path/bar"
 
 1 + 1"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -1415,7 +1409,6 @@ fn optional_query_metadata() {
 				cron: "0 2 * * *",
 				retry: 5,
 			  }"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -1591,7 +1584,6 @@ fn optional_query_metadata_preceding_query_text() {
 
     // Task will execute the following query
     from() |> count()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -1748,7 +1740,7 @@ fn optional_query_metadata_preceding_query_text() {
 
 #[test]
 fn qualified_option() {
-    let mut p = Parser::new(r#"option alert.state = "Warning""#, false);
+    let mut p = Parser::new(r#"option alert.state = "Warning""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1810,7 +1802,7 @@ fn qualified_option() {
 
 #[test]
 fn builtin() {
-    let mut p = Parser::new(r#"builtin from : int"#, false);
+    let mut p = Parser::new(r#"builtin from : int"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1865,7 +1857,7 @@ fn builtin() {
 
 #[test]
 fn test_parse_type_expression() {
-    let mut p = Parser::new(r#"(a:T, b:T) => T where T: Addable + Divisible"#, false);
+    let mut p = Parser::new(r#"(a:T, b:T) => T where T: Addable + Divisible"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -1983,7 +1975,7 @@ fn test_parse_type_expression() {
 
 #[test]
 fn test_parse_type_expression_tvar() {
-    let mut p = Parser::new(r#"A"#, false);
+    let mut p = Parser::new(r#"A"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2013,7 +2005,7 @@ fn test_parse_type_expression_tvar() {
 
 #[test]
 fn test_parse_type_expression_int() {
-    let mut p = Parser::new(r#"int"#, false);
+    let mut p = Parser::new(r#"int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2043,7 +2035,7 @@ fn test_parse_type_expression_int() {
 
 #[test]
 fn test_parse_type_expression_uint() {
-    let mut p = Parser::new(r#"uint"#, false);
+    let mut p = Parser::new(r#"uint"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2073,7 +2065,7 @@ fn test_parse_type_expression_uint() {
 
 #[test]
 fn test_parse_type_expression_float() {
-    let mut p = Parser::new(r#"float"#, false);
+    let mut p = Parser::new(r#"float"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2103,7 +2095,7 @@ fn test_parse_type_expression_float() {
 
 #[test]
 fn test_parse_type_expression_string() {
-    let mut p = Parser::new(r#"string"#, false);
+    let mut p = Parser::new(r#"string"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2133,7 +2125,7 @@ fn test_parse_type_expression_string() {
 
 #[test]
 fn test_parse_type_expression_bool() {
-    let mut p = Parser::new(r#"bool"#, false);
+    let mut p = Parser::new(r#"bool"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2163,7 +2155,7 @@ fn test_parse_type_expression_bool() {
 
 #[test]
 fn test_parse_type_expression_time() {
-    let mut p = Parser::new(r#"time"#, false);
+    let mut p = Parser::new(r#"time"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2193,7 +2185,7 @@ fn test_parse_type_expression_time() {
 
 #[test]
 fn test_parse_type_expression_duration() {
-    let mut p = Parser::new(r#"duration"#, false);
+    let mut p = Parser::new(r#"duration"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2223,7 +2215,7 @@ fn test_parse_type_expression_duration() {
 
 #[test]
 fn test_parse_type_expression_bytes() {
-    let mut p = Parser::new(r#"bytes"#, false);
+    let mut p = Parser::new(r#"bytes"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2253,7 +2245,7 @@ fn test_parse_type_expression_bytes() {
 
 #[test]
 fn test_parse_type_expression_regexp() {
-    let mut p = Parser::new(r#"regexp"#, false);
+    let mut p = Parser::new(r#"regexp"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2283,7 +2275,7 @@ fn test_parse_type_expression_regexp() {
 
 #[test]
 fn test_parse_type_expression_array_int() {
-    let mut p = Parser::new(r#"[int]"#, false);
+    let mut p = Parser::new(r#"[int]"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2319,7 +2311,7 @@ fn test_parse_type_expression_array_int() {
 
 #[test]
 fn test_parse_type_expression_array_string() {
-    let mut p = Parser::new(r#"[string]"#, false);
+    let mut p = Parser::new(r#"[string]"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2355,7 +2347,7 @@ fn test_parse_type_expression_array_string() {
 
 #[test]
 fn test_parse_type_expression_dict() {
-    let mut p = Parser::new(r#"[string:int]"#, false);
+    let mut p = Parser::new(r#"[string:int]"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2404,7 +2396,7 @@ fn test_parse_type_expression_dict() {
 
 #[test]
 fn test_parse_record_type_only_properties() {
-    let mut p = Parser::new(r#"{a:int, b:uint}"#, false);
+    let mut p = Parser::new(r#"{a:int, b:uint}"#);
     let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2475,7 +2467,7 @@ fn test_parse_record_type_only_properties() {
 
 #[test]
 fn test_parse_record_type_trailing_comma() {
-    let mut p = Parser::new(r#"{a:int,}"#, false);
+    let mut p = Parser::new(r#"{a:int,}"#);
     let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2518,7 +2510,7 @@ fn test_parse_record_type_trailing_comma() {
 
 #[test]
 fn test_parse_record_type_invalid() {
-    let mut p = Parser::new(r#"{a b}"#, false);
+    let mut p = Parser::new(r#"{a b}"#);
     let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2537,7 +2529,7 @@ fn test_parse_record_type_invalid() {
 
 #[test]
 fn test_parse_constraint_one_ident() {
-    let mut p = Parser::new(r#"A : date"#, false);
+    let mut p = Parser::new(r#"A : date"#);
     let parsed = p.parse_constraints();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2566,7 +2558,7 @@ fn test_parse_constraint_one_ident() {
 }
 #[test]
 fn test_parse_record_type_blank() {
-    let mut p = Parser::new(r#"{}"#, false);
+    let mut p = Parser::new(r#"{}"#);
     let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2584,7 +2576,7 @@ fn test_parse_record_type_blank() {
 
 #[test]
 fn test_parse_type_expression_function_with_no_params() {
-    let mut p = Parser::new(r#"() => int"#, false);
+    let mut p = Parser::new(r#"() => int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2622,7 +2614,7 @@ fn test_parse_type_expression_function_with_no_params() {
 
 #[test]
 fn test_parse_function_type_trailing_comma() {
-    let mut p = Parser::new(r#"(a:int,) => int"#, false);
+    let mut p = Parser::new(r#"(a:int,) => int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2685,7 +2677,7 @@ fn test_parse_function_type_trailing_comma() {
 
 #[test]
 fn test_parse_type_expression_function_with_params() {
-    let mut p = Parser::new(r#"(A: int, B: uint) => int"#, false);
+    let mut p = Parser::new(r#"(A: int, B: uint) => int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2776,7 +2768,7 @@ fn test_parse_type_expression_function_with_params() {
 // optional parameters like (.., ?n: ..) -> ..
 #[test]
 fn test_parse_type_expression_function_optional_params() {
-    let mut p = Parser::new(r#"(?A: int) => int"#, false);
+    let mut p = Parser::new(r#"(?A: int) => int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2838,7 +2830,7 @@ fn test_parse_type_expression_function_optional_params() {
 
 #[test]
 fn test_parse_type_expression_function_named_params() {
-    let mut p = Parser::new(r#"(<-A: int) => int"#, false);
+    let mut p = Parser::new(r#"(<-A: int) => int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2900,7 +2892,7 @@ fn test_parse_type_expression_function_named_params() {
 
 #[test]
 fn test_parse_type_expression_function_unnamed_params() {
-    let mut p = Parser::new(r#"(<- : int) => int"#, false);
+    let mut p = Parser::new(r#"(<- : int) => int"#);
     let parsed = p.parse_type_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2956,7 +2948,7 @@ fn test_parse_type_expression_function_unnamed_params() {
 
 #[test]
 fn test_parse_constraint_two_ident() {
-    let mut p = Parser::new(r#"A: Addable + Subtractable"#, false);
+    let mut p = Parser::new(r#"A: Addable + Subtractable"#);
     let parsed = p.parse_constraints();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -2995,7 +2987,7 @@ fn test_parse_constraint_two_ident() {
 
 #[test]
 fn test_parse_constraint_two_con() {
-    let mut p = Parser::new(r#"A: Addable, B: Subtractable"#, false);
+    let mut p = Parser::new(r#"A: Addable, B: Subtractable"#);
     let parsed = p.parse_constraints();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3047,7 +3039,7 @@ fn test_parse_constraint_two_con() {
 
 #[test]
 fn test_parse_record_type_tvar_properties() {
-    let mut p = Parser::new(r#"{A with a:int, b:uint}"#, false);
+    let mut p = Parser::new(r#"{A with a:int, b:uint}"#);
     let parsed = p.parse_record_type();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3124,7 +3116,7 @@ fn test_parse_record_type_tvar_properties() {
 
 #[test]
 fn test_statement() {
-    let mut p = Parser::new(r#"test mean = {want: 0, got: 0}"#, false);
+    let mut p = Parser::new(r#"test mean = {want: 0, got: 0}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3219,7 +3211,7 @@ fn test_statement() {
 
 #[test]
 fn from() {
-    let mut p = Parser::new(r#"from()"#, false);
+    let mut p = Parser::new(r#"from()"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3265,7 +3257,6 @@ fn comment() {
     let mut p = Parser::new(
         r#"// Comment
 			from()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -3317,7 +3308,6 @@ fn comment_builtin() {
 builtin foo
 // colon comment
 : int"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -3384,7 +3374,6 @@ fn comment_function_body() {
         r#"fn = (tables=<-) =>
 // comment
 (tables)"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -3467,7 +3456,7 @@ fn comment_function_body() {
 
 #[test]
 fn identifier_with_number() {
-    let mut p = Parser::new(r#"tan2()"#, false);
+    let mut p = Parser::new(r#"tan2()"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3510,7 +3499,7 @@ fn identifier_with_number() {
 
 #[test]
 fn regex_literal() {
-    let mut p = Parser::new(r#"/.*/"#, false);
+    let mut p = Parser::new(r#"/.*/"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3544,7 +3533,7 @@ fn regex_literal() {
 
 #[test]
 fn regex_literal_with_escape_sequence() {
-    let mut p = Parser::new(r#"/a\/b\\c\d/"#, false);
+    let mut p = Parser::new(r#"/a\/b\\c\d/"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3578,7 +3567,7 @@ fn regex_literal_with_escape_sequence() {
 
 #[test]
 fn bad_regex_literal() {
-    let mut p = Parser::new(r#"/*/"#, false);
+    let mut p = Parser::new(r#"/*/"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3616,7 +3605,7 @@ fn bad_regex_literal() {
 
 #[test]
 fn regex_match_operators() {
-    let mut p = Parser::new(r#""a" =~ /.*/ and "b" !~ /c$/"#, false);
+    let mut p = Parser::new(r#""a" =~ /.*/ and "b" !~ /c$/"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3692,7 +3681,7 @@ fn regex_match_operators() {
 
 #[test]
 fn declare_variable_as_an_int() {
-    let mut p = Parser::new(r#"howdy = 1"#, false);
+    let mut p = Parser::new(r#"howdy = 1"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3733,7 +3722,7 @@ fn declare_variable_as_an_int() {
 
 #[test]
 fn declare_variable_as_a_float() {
-    let mut p = Parser::new(r#"howdy = 1.1"#, false);
+    let mut p = Parser::new(r#"howdy = 1.1"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3774,7 +3763,7 @@ fn declare_variable_as_a_float() {
 
 #[test]
 fn declare_variable_as_an_array() {
-    let mut p = Parser::new(r#"howdy = [1, 2, 3, 4]"#, false);
+    let mut p = Parser::new(r#"howdy = [1, 2, 3, 4]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3858,7 +3847,7 @@ fn declare_variable_as_an_array() {
 
 #[test]
 fn declare_variable_as_an_empty_array() {
-    let mut p = Parser::new(r#"howdy = []"#, false);
+    let mut p = Parser::new(r#"howdy = []"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3901,7 +3890,7 @@ fn declare_variable_as_an_empty_array() {
 
 #[test]
 fn parse_empty_dict() {
-    let mut p = Parser::new(r#"[:]"#, false);
+    let mut p = Parser::new(r#"[:]"#);
     let parsed = p.parse_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3920,7 +3909,7 @@ fn parse_empty_dict() {
 
 #[test]
 fn parse_single_element_dict() {
-    let mut p = Parser::new(r#"["a": 0]"#, false);
+    let mut p = Parser::new(r#"["a": 0]"#);
     let parsed = p.parse_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -3955,7 +3944,7 @@ fn parse_single_element_dict() {
 
 #[test]
 fn parse_multi_element_dict() {
-    let mut p = Parser::new(r#"["a": 0, "b": 1]"#, false);
+    let mut p = Parser::new(r#"["a": 0, "b": 1]"#);
     let parsed = p.parse_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4009,7 +3998,7 @@ fn parse_multi_element_dict() {
 
 #[test]
 fn parse_dict_trailing_comma0() {
-    let mut p = Parser::new(r#"["a": 0, ]"#, false);
+    let mut p = Parser::new(r#"["a": 0, ]"#);
     let parsed = p.parse_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4044,7 +4033,7 @@ fn parse_dict_trailing_comma0() {
 
 #[test]
 fn parse_dict_trailing_comma1() {
-    let mut p = Parser::new(r#"["a": 0, "b": 1, ]"#, false);
+    let mut p = Parser::new(r#"["a": 0, "b": 1, ]"#);
     let parsed = p.parse_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4098,7 +4087,7 @@ fn parse_dict_trailing_comma1() {
 
 #[test]
 fn parse_dict_arbitrary_keys() {
-    let mut p = Parser::new(r#"[1-1: 0, 1+1: 1]"#, false);
+    let mut p = Parser::new(r#"[1-1: 0, 1+1: 1]"#);
     let parsed = p.parse_expression();
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4183,7 +4172,6 @@ fn use_variable_to_declare_something() {
     let mut p = Parser::new(
         r#"howdy = 1
 			from()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -4252,7 +4240,6 @@ fn variable_is_from_statement() {
     let mut p = Parser::new(
         r#"howdy = from()
 			howdy.count()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -4342,7 +4329,7 @@ fn variable_is_from_statement() {
 
 #[test]
 fn pipe_expression() {
-    let mut p = Parser::new(r#"from() |> count()"#, false);
+    let mut p = Parser::new(r#"from() |> count()"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4407,7 +4394,7 @@ fn pipe_expression() {
 
 #[test]
 fn pipe_expression_to_member_expression_function() {
-    let mut p = Parser::new(r#"a |> b.c(d:e)"#, false);
+    let mut p = Parser::new(r#"a |> b.c(d:e)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4508,7 +4495,7 @@ fn pipe_expression_to_member_expression_function() {
 
 #[test]
 fn literal_pipe_expression() {
-    let mut p = Parser::new(r#"5 |> pow2()"#, false);
+    let mut p = Parser::new(r#"5 |> pow2()"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4564,7 +4551,7 @@ fn literal_pipe_expression() {
 
 #[test]
 fn member_expression_pipe_expression() {
-    let mut p = Parser::new(r#"foo.bar |> baz()"#, false);
+    let mut p = Parser::new(r#"foo.bar |> baz()"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4635,7 +4622,7 @@ fn member_expression_pipe_expression() {
 
 #[test]
 fn multiple_pipe_expressions() {
-    let mut p = Parser::new(r#"from() |> range() |> filter() |> count()"#, false);
+    let mut p = Parser::new(r#"from() |> range() |> filter() |> count()"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4744,7 +4731,7 @@ fn multiple_pipe_expressions() {
 
 #[test]
 fn pipe_expression_into_non_call_expression() {
-    let mut p = Parser::new(r#"foo() |> bar"#, false);
+    let mut p = Parser::new(r#"foo() |> bar"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -4815,7 +4802,6 @@ fn two_variables_for_two_froms() {
 			doody = from()
 			howdy|>count()
 			doody|>sum()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -4967,7 +4953,7 @@ fn two_variables_for_two_froms() {
 
 #[test]
 fn from_with_database() {
-    let mut p = Parser::new(r#"from(bucket:"telegraf/autogen")"#, false);
+    let mut p = Parser::new(r#"from(bucket:"telegraf/autogen")"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5045,7 +5031,6 @@ fn map_member_expressions() {
 			m.key1
 			m["key2"]
 			"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -5193,7 +5178,7 @@ fn map_member_expressions() {
 
 #[test]
 fn object_with_string_literal_key() {
-    let mut p = Parser::new(r#"x = {"a": 10}"#, false);
+    let mut p = Parser::new(r#"x = {"a": 10}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5258,7 +5243,7 @@ fn object_with_string_literal_key() {
 
 #[test]
 fn object_with_mixed_keys() {
-    let mut p = Parser::new(r#"x = {"a": 10, b: 11}"#, false);
+    let mut p = Parser::new(r#"x = {"a": 10, b: 11}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5347,7 +5332,7 @@ fn object_with_mixed_keys() {
 
 #[test]
 fn implicit_key_object_literal() {
-    let mut p = Parser::new(r#"x = {a, b}"#, false);
+    let mut p = Parser::new(r#"x = {a, b}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5425,7 +5410,7 @@ fn implicit_key_object_literal() {
 // TODO(affo): that error is injected by ast.Check().
 #[test]
 fn implicit_key_object_literal_error() {
-    let mut p = Parser::new(r#"x = {"a", b}"#, false);
+    let mut p = Parser::new(r#"x = {"a", b}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5504,7 +5489,7 @@ fn implicit_key_object_literal_error() {
 // TODO(affo): that error is injected by ast.Check().
 #[test]
 fn implicit_and_explicit_keys_object_literal_error() {
-    let mut p = Parser::new(r#"x = {a, b:c}"#, false);
+    let mut p = Parser::new(r#"x = {a, b:c}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5588,7 +5573,7 @@ fn implicit_and_explicit_keys_object_literal_error() {
 
 #[test]
 fn object_with() {
-    let mut p = Parser::new(r#"{a with b:c, d:e}"#, false);
+    let mut p = Parser::new(r#"{a with b:c, d:e}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5679,7 +5664,7 @@ fn object_with() {
 
 #[test]
 fn object_with_implicit_keys() {
-    let mut p = Parser::new(r#"{a with b, c}"#, false);
+    let mut p = Parser::new(r#"{a with b, c}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5758,7 +5743,7 @@ fn object_with_implicit_keys() {
 
 #[test]
 fn index_expression() {
-    let mut p = Parser::new(r#"a[3]"#, false);
+    let mut p = Parser::new(r#"a[3]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5807,7 +5792,7 @@ fn index_expression() {
 
 #[test]
 fn nested_index_expression() {
-    let mut p = Parser::new(r#"a[3][5]"#, false);
+    let mut p = Parser::new(r#"a[3][5]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5871,7 +5856,7 @@ fn nested_index_expression() {
 
 #[test]
 fn access_indexed_object_returned_from_function_call() {
-    let mut p = Parser::new(r#"f()[3]"#, false);
+    let mut p = Parser::new(r#"f()[3]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5929,7 +5914,7 @@ fn access_indexed_object_returned_from_function_call() {
 
 #[test]
 fn index_with_member_expressions() {
-    let mut p = Parser::new(r#"a.b["c"]"#, false);
+    let mut p = Parser::new(r#"a.b["c"]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -5993,7 +5978,7 @@ fn index_with_member_expressions() {
 
 #[test]
 fn index_with_member_with_call_expression() {
-    let mut p = Parser::new(r#"a.b()["c"]"#, false);
+    let mut p = Parser::new(r#"a.b()["c"]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -6066,7 +6051,7 @@ fn index_with_member_with_call_expression() {
 
 #[test]
 fn index_with_unclosed_bracket() {
-    let mut p = Parser::new(r#"a[b()"#, false);
+    let mut p = Parser::new(r#"a[b()"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -6125,7 +6110,7 @@ fn index_with_unclosed_bracket() {
 
 #[test]
 fn index_with_unbalanced_parenthesis() {
-    let mut p = Parser::new(r#"a[b(]"#, false);
+    let mut p = Parser::new(r#"a[b(]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -6184,7 +6169,7 @@ fn index_with_unbalanced_parenthesis() {
 
 #[test]
 fn index_with_unexpected_rparen() {
-    let mut p = Parser::new(r#"a[b)]"#, false);
+    let mut p = Parser::new(r#"a[b)]"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -6234,7 +6219,7 @@ fn index_with_unexpected_rparen() {
 
 #[test]
 fn binary_expression() {
-    let mut p = Parser::new(r#"_value < 10.0"#, false);
+    let mut p = Parser::new(r#"_value < 10.0"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -6282,7 +6267,7 @@ fn binary_expression() {
 
 #[test]
 fn member_expression_binary_expression() {
-    let mut p = Parser::new(r#"r._value < 10.0"#, false);
+    let mut p = Parser::new(r#"r._value < 10.0"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -6350,7 +6335,6 @@ fn var_as_binary_expression_of_other_vars() {
             b = 2
             c = a + b
             d = a"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -6471,7 +6455,6 @@ fn var_as_unary_expression_of_other_vars() {
     let mut p = Parser::new(
         r#"a = 5
             c = -a"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -6545,7 +6528,6 @@ fn var_as_both_binary_and_unary_expressions() {
     let mut p = Parser::new(
         r#"a = 5
             c = 10 * -a"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -6633,7 +6615,6 @@ fn unary_expressions_within_logical_expression() {
     let mut p = Parser::new(
         r#"a = 5.0
             10.0 * -a == -0.5 or a == 6.0"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -6760,7 +6741,7 @@ fn unary_expressions_within_logical_expression() {
 
 #[test]
 fn unary_expression_with_member_expression() {
-    let mut p = Parser::new(r#"not m.b"#, false);
+    let mut p = Parser::new(r#"not m.b"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -6823,7 +6804,6 @@ a = 5.0
 10.0 * -a == -0.5
 	// or this
 	or a == 6.0"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -6962,7 +6942,7 @@ a = 5.0
 
 #[test]
 fn expressions_with_function_calls() {
-    let mut p = Parser::new(r#"a = foo() == 10"#, false);
+    let mut p = Parser::new(r#"a = foo() == 10"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7029,7 +7009,6 @@ fn mix_unary_logical_and_binary_expressions() {
     let mut p = Parser::new(
         r#"
             not (f() == 6.0 * x) or fail()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -7142,7 +7121,6 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
     let mut p = Parser::new(
         r#"
             (not (f() == 6.0 * x) or fail())"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -7260,7 +7238,7 @@ fn mix_unary_logical_and_binary_expressions_with_extra_parens() {
 
 #[test]
 fn modulo_op_ints() {
-    let mut p = Parser::new(r#"3 % 8"#, false);
+    let mut p = Parser::new(r#"3 % 8"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7308,7 +7286,7 @@ fn modulo_op_ints() {
 
 #[test]
 fn modulo_op_floats() {
-    let mut p = Parser::new(r#"8.3 % 3.1"#, false);
+    let mut p = Parser::new(r#"8.3 % 3.1"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7356,7 +7334,7 @@ fn modulo_op_floats() {
 
 #[test]
 fn power_op() {
-    let mut p = Parser::new(r#"2 ^ 4"#, false);
+    let mut p = Parser::new(r#"2 ^ 4"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7404,7 +7382,7 @@ fn power_op() {
 
 #[test]
 fn binary_operator_precedence() {
-    let mut p = Parser::new(r#"a / b - 1.0"#, false);
+    let mut p = Parser::new(r#"a / b - 1.0"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7466,7 +7444,7 @@ fn binary_operator_precedence() {
 
 #[test]
 fn binary_operator_precedence_literals_only() {
-    let mut p = Parser::new(r#"2 / "a" - 1.0"#, false);
+    let mut p = Parser::new(r#"2 / "a" - 1.0"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7528,7 +7506,7 @@ fn binary_operator_precedence_literals_only() {
 
 #[test]
 fn binary_operator_precedence_double_subtraction() {
-    let mut p = Parser::new(r#"1 - 2 - 3"#, false);
+    let mut p = Parser::new(r#"1 - 2 - 3"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7590,7 +7568,7 @@ fn binary_operator_precedence_double_subtraction() {
 
 #[test]
 fn binary_operator_precedence_double_subtraction_with_parens() {
-    let mut p = Parser::new(r#"1 - (2 - 3)"#, false);
+    let mut p = Parser::new(r#"1 - (2 - 3)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7660,7 +7638,7 @@ fn binary_operator_precedence_double_subtraction_with_parens() {
 
 #[test]
 fn binary_operator_precedence_double_sum() {
-    let mut p = Parser::new(r#"1 + 2 + 3"#, false);
+    let mut p = Parser::new(r#"1 + 2 + 3"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7722,7 +7700,7 @@ fn binary_operator_precedence_double_sum() {
 
 #[test]
 fn binary_operator_precedence_exponent() {
-    let mut p = Parser::new(r#"5 * 1 ^ 5"#, false);
+    let mut p = Parser::new(r#"5 * 1 ^ 5"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7784,7 +7762,7 @@ fn binary_operator_precedence_exponent() {
 
 #[test]
 fn binary_operator_precedence_double_sum_with_parens() {
-    let mut p = Parser::new(r#"1 + (2 + 3)"#, false);
+    let mut p = Parser::new(r#"1 + (2 + 3)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7854,7 +7832,7 @@ fn binary_operator_precedence_double_sum_with_parens() {
 
 #[test]
 fn binary_operator_precedence_exponent_with_parens() {
-    let mut p = Parser::new(r#"2 ^ (1 + 3)"#, false);
+    let mut p = Parser::new(r#"2 ^ (1 + 3)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7924,7 +7902,7 @@ fn binary_operator_precedence_exponent_with_parens() {
 
 #[test]
 fn logical_unary_operator_precedence() {
-    let mut p = Parser::new(r#"not -1 == a"#, false);
+    let mut p = Parser::new(r#"not -1 == a"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -7989,7 +7967,6 @@ fn all_operators_precedence() {
     let mut p = Parser::new(
         r#"a() == b.a + b.c * d < 100 and e != f[g] and h > i * j and
 k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -8419,7 +8396,7 @@ k / l < m + n - o or p() <= q() or r >= s and not t =~ /a/ and u !~ /a/"#,
 
 #[test]
 fn logical_operators_precedence_1() {
-    let mut p = Parser::new(r#"not a or b"#, false);
+    let mut p = Parser::new(r#"not a or b"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8474,7 +8451,7 @@ fn logical_operators_precedence_1() {
 
 #[test]
 fn logical_operators_precedence_2() {
-    let mut p = Parser::new(r#"a or not b"#, false);
+    let mut p = Parser::new(r#"a or not b"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8529,7 +8506,7 @@ fn logical_operators_precedence_2() {
 
 #[test]
 fn logical_operators_precedence_3() {
-    let mut p = Parser::new(r#"not a and b"#, false);
+    let mut p = Parser::new(r#"not a and b"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8584,7 +8561,7 @@ fn logical_operators_precedence_3() {
 
 #[test]
 fn logical_operators_precedence_4() {
-    let mut p = Parser::new(r#"a and not b"#, false);
+    let mut p = Parser::new(r#"a and not b"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8639,7 +8616,7 @@ fn logical_operators_precedence_4() {
 
 #[test]
 fn logical_operators_precedence_5() {
-    let mut p = Parser::new(r#"a and b or c"#, false);
+    let mut p = Parser::new(r#"a and b or c"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8701,7 +8678,7 @@ fn logical_operators_precedence_5() {
 
 #[test]
 fn logical_operators_precedence_6() {
-    let mut p = Parser::new(r#"a or b and c"#, false);
+    let mut p = Parser::new(r#"a or b and c"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8763,7 +8740,7 @@ fn logical_operators_precedence_6() {
 
 #[test]
 fn logical_operators_precedence_7() {
-    let mut p = Parser::new(r#"not (a or b)"#, false);
+    let mut p = Parser::new(r#"not (a or b)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8826,7 +8803,7 @@ fn logical_operators_precedence_7() {
 
 #[test]
 fn logical_operators_precedence_8() {
-    let mut p = Parser::new(r#"not (a and b)"#, false);
+    let mut p = Parser::new(r#"not (a and b)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8889,7 +8866,7 @@ fn logical_operators_precedence_8() {
 
 #[test]
 fn logical_operators_precedence_9() {
-    let mut p = Parser::new(r#"(a or b) and c"#, false);
+    let mut p = Parser::new(r#"(a or b) and c"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -8959,7 +8936,7 @@ fn logical_operators_precedence_9() {
 
 #[test]
 fn logical_operators_precedence_10() {
-    let mut p = Parser::new(r#"a and (b or c)"#, false);
+    let mut p = Parser::new(r#"a and (b or c)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -9035,7 +9012,6 @@ fn two_logical_operations_with_parens() {
     let mut p = Parser::new(
         r#"not (a and b)
 (a or b) and c"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -9172,7 +9148,6 @@ fn arrow_function_called() {
     let mut p = Parser::new(
         r#"plusOne = (r) => r + 1
    plusOne(r:5)"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -9307,7 +9282,7 @@ fn arrow_function_called() {
 
 #[test]
 fn arrow_function_return_map() {
-    let mut p = Parser::new(r#"toMap = (r) =>({r:r})"#, false);
+    let mut p = Parser::new(r#"toMap = (r) =>({r:r})"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -9405,7 +9380,7 @@ fn arrow_function_return_map() {
 
 #[test]
 fn arrow_function() {
-    let mut p = Parser::new(r#"(x,y) => x == y"#, false);
+    let mut p = Parser::new(r#"(x,y) => x == y"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -9496,7 +9471,7 @@ fn arrow_function() {
 
 #[test]
 fn arrow_function_with_default_arg() {
-    let mut p = Parser::new(r#"addN = (r, n=5) => r + n"#, false);
+    let mut p = Parser::new(r#"addN = (r, n=5) => r + n"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -9604,7 +9579,6 @@ fn arrow_function_called_in_binary_expression() {
         r#"
             plusOne = (r) => r + 1
             plusOne(r:5) == 6 or die()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -9776,7 +9750,7 @@ fn arrow_function_called_in_binary_expression() {
 
 #[test]
 fn arrow_function_as_single_expression() {
-    let mut p = Parser::new(r#"f = (r) => r["_measurement"] == "cpu""#, false);
+    let mut p = Parser::new(r#"f = (r) => r["_measurement"] == "cpu""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -9876,7 +9850,6 @@ fn arrow_function_as_block() {
                 m = r["_measurement"]
                 return m == "cpu"
             }"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -10008,7 +9981,7 @@ fn arrow_function_as_block() {
 
 #[test]
 fn conditional() {
-    let mut p = Parser::new(r#"a = if true then 0 else 1"#, false);
+    let mut p = Parser::new(r#"a = if true then 0 else 1"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -10074,7 +10047,6 @@ fn conditional() {
 fn conditional_with_unary_logical_operators() {
     let mut p = Parser::new(
         r#"a = if exists b or c < d and not e == f then not exists (g - h) else exists exists i"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -10263,7 +10235,6 @@ fn nested_conditionals() {
         r#"if if b < 0 then true else false
                   then if c > 0 then 30 else 60
                   else if d == 0 then 90 else 120"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -10434,7 +10405,6 @@ fn nested_conditionals() {
 fn from_with_filter_with_no_parens() {
     let mut p = Parser::new(
         r#"from(bucket:"telegraf/autogen").filter(fn: (r) => r["other"]=="mem" and r["this"]=="that" or r["these"]!="those")"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -10704,10 +10674,7 @@ fn from_with_filter_with_no_parens() {
 
 #[test]
 fn from_with_range() {
-    let mut p = Parser::new(
-        r#"from(bucket:"telegraf/autogen")|>range(start:-1h, end:10m)"#,
-        false,
-    );
+    let mut p = Parser::new(r#"from(bucket:"telegraf/autogen")|>range(start:-1h, end:10m)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -10869,10 +10836,7 @@ fn from_with_range() {
 
 #[test]
 fn from_with_limit() {
-    let mut p = Parser::new(
-        r#"from(bucket:"telegraf/autogen")|>limit(limit:100, offset:10)"#,
-        false,
-    );
+    let mut p = Parser::new(r#"from(bucket:"telegraf/autogen")|>limit(limit:100, offset:10)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -11025,7 +10989,6 @@ fn from_with_range_and_count() {
         r#"from(bucket:"mydb/autogen")
 						|> range(start:-4h, stop:-2h)
 						|> count()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -11222,7 +11185,6 @@ fn from_with_range_limit_and_count() {
 						|> range(start:-4h, stop:-2h)
 						|> limit(n:10)
 						|> count()"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -11471,7 +11433,6 @@ fn from_with_join() {
 a = from(bucket:"dbA/autogen") |> range(start:-1h)
 b = from(bucket:"dbB/autogen") |> range(start:-1h)
 join(tables:[a,b], on:["host"], fn: (a,b) => a["_field"] + b["_field"])"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -11969,7 +11930,6 @@ b = from(bucket:"Flux/autogen")
 	|> range(start:-1h)
 
 join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_field"])"#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -12759,7 +12719,7 @@ join(tables:[a,b], on:["t1"], fn: (a,b) => (a["_field"] - b["_field"]) / b["_fie
 
 #[test]
 fn duration_literal_all_units() {
-    let mut p = Parser::new(r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#, false);
+    let mut p = Parser::new(r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -12841,7 +12801,7 @@ fn duration_literal_all_units() {
 
 #[test]
 fn duration_literal_months() {
-    let mut p = Parser::new(r#"dur = 6mo"#, false);
+    let mut p = Parser::new(r#"dur = 6mo"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -12885,7 +12845,7 @@ fn duration_literal_months() {
 
 #[test]
 fn duration_literal_milliseconds() {
-    let mut p = Parser::new(r#"dur = 500ms"#, false);
+    let mut p = Parser::new(r#"dur = 500ms"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -12929,7 +12889,7 @@ fn duration_literal_milliseconds() {
 
 #[test]
 fn duration_literal_months_minutes_milliseconds() {
-    let mut p = Parser::new(r#"dur = 6mo30m500ms"#, false);
+    let mut p = Parser::new(r#"dur = 6mo30m500ms"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -12983,7 +12943,7 @@ fn duration_literal_months_minutes_milliseconds() {
 
 #[test]
 fn date_literal_in_the_default_location() {
-    let mut p = Parser::new(r#"now = 2018-11-29"#, false);
+    let mut p = Parser::new(r#"now = 2018-11-29"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13024,7 +12984,7 @@ fn date_literal_in_the_default_location() {
 
 #[test]
 fn data_time_literal_arg() {
-    let mut p = Parser::new(r#"range(start: 2018-11-29T09:00:00)"#, false);
+    let mut p = Parser::new(r#"range(start: 2018-11-29T09:00:00)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13096,7 +13056,7 @@ fn data_time_literal_arg() {
 
 #[test]
 fn date_time_literal() {
-    let mut p = Parser::new(r#"now = 2018-11-29T09:00:00Z"#, false);
+    let mut p = Parser::new(r#"now = 2018-11-29T09:00:00Z"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13137,7 +13097,7 @@ fn date_time_literal() {
 
 #[test]
 fn date_time_literal_with_fractional_seconds() {
-    let mut p = Parser::new(r#"now = 2018-11-29T09:00:00.100000000Z"#, false);
+    let mut p = Parser::new(r#"now = 2018-11-29T09:00:00.100000000Z"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13179,10 +13139,7 @@ fn date_time_literal_with_fractional_seconds() {
 
 #[test]
 fn function_call_with_unbalanced_braces() {
-    let mut p = Parser::new(
-        r#"from() |> range() |> map(fn: (r) => { return r._value )"#,
-        false,
-    );
+    let mut p = Parser::new(r#"from() |> range() |> map(fn: (r) => { return r._value )"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13354,7 +13311,7 @@ fn function_call_with_unbalanced_braces() {
 
 #[test]
 fn string_with_utf_8() {
-    let mut p = Parser::new(r#""日本語""#, false);
+    let mut p = Parser::new(r#""日本語""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13388,7 +13345,7 @@ fn string_with_utf_8() {
 
 #[test]
 fn string_with_byte_values() {
-    let mut p = Parser::new(r#""\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e""#, false);
+    let mut p = Parser::new(r#""\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13422,10 +13379,7 @@ fn string_with_byte_values() {
 
 #[test]
 fn string_with_mixed_values() {
-    let mut p = Parser::new(
-        r#""hello 日x本 \xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e \xc2\xb5s""#,
-        false,
-    );
+    let mut p = Parser::new(r#""hello 日x本 \xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e \xc2\xb5s""#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13466,7 +13420,6 @@ horizontal tab \t
 double quote \"
 backslash \\
 ""#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -13498,7 +13451,6 @@ fn multiline_string() {
 multiline
 string"
 "#,
-        false,
     );
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
@@ -13534,7 +13486,7 @@ string"
 // TODO(affo): that error is injected by ast.Check().
 #[test]
 fn illegal_statement_token() {
-    let mut p = Parser::new(r#"@ ident"#, false);
+    let mut p = Parser::new(r#"@ ident"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13579,7 +13531,7 @@ fn illegal_statement_token() {
 // TODO(affo): that error is injected by ast.Check().
 #[test]
 fn multiple_idents_in_parens() {
-    let mut p = Parser::new(r#"(a b)"#, false);
+    let mut p = Parser::new(r#"(a b)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13638,7 +13590,7 @@ fn multiple_idents_in_parens() {
 // TODO(jsternberg): Parens aren't recorded correctly in the source and are mostly ignored.
 #[test]
 fn missing_left_hand_side() {
-    let mut p = Parser::new(r#"(*b)"#, false);
+    let mut p = Parser::new(r#"(*b)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13699,7 +13651,7 @@ fn missing_left_hand_side() {
 // TODO(jsternberg): Parens aren't recorded correctly in the source and are mostly ignored.
 #[test]
 fn missing_right_hand_side() {
-    let mut p = Parser::new(r#"(a*)"#, false);
+    let mut p = Parser::new(r#"(a*)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13758,7 +13710,7 @@ fn missing_right_hand_side() {
 
 #[test]
 fn illegal_expression() {
-    let mut p = Parser::new(r#"(@)"#, false);
+    let mut p = Parser::new(r#"(@)"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13803,7 +13755,7 @@ fn illegal_expression() {
 // NOTE(affo): this is slightly different from Go. We have a BadExpr in the body.
 #[test]
 fn missing_arrow_in_function_expression() {
-    let mut p = Parser::new(r#"(a, b) a + b"#, false);
+    let mut p = Parser::new(r#"(a, b) a + b"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13887,7 +13839,7 @@ fn missing_arrow_in_function_expression() {
 
 #[test]
 fn property_list_missing_property() {
-    let mut p = Parser::new(r#"o = {a: "a",, b: 7}"#, false);
+    let mut p = Parser::new(r#"o = {a: "a",, b: 7}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -13993,7 +13945,7 @@ fn property_list_missing_property() {
 
 #[test]
 fn property_list_missing_key() {
-    let mut p = Parser::new(r#"o = {: "a"}"#, false);
+    let mut p = Parser::new(r#"o = {: "a"}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -14059,7 +14011,7 @@ fn property_list_missing_key() {
 
 #[test]
 fn property_list_missing_value() {
-    let mut p = Parser::new(r#"o = {a:}"#, false);
+    let mut p = Parser::new(r#"o = {a:}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -14120,7 +14072,7 @@ fn property_list_missing_value() {
 // TODO(affo): that error is injected by ast.Check().
 #[test]
 fn property_list_missing_comma() {
-    let mut p = Parser::new(r#"o = {a: "a" b: 30}"#, false);
+    let mut p = Parser::new(r#"o = {a: "a" b: 30}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -14228,7 +14180,7 @@ fn property_list_missing_comma() {
 
 #[test]
 fn property_list_trailing_comma() {
-    let mut p = Parser::new(r#"o = {a: "a",}"#, false);
+    let mut p = Parser::new(r#"o = {a: "a",}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -14293,7 +14245,7 @@ fn property_list_trailing_comma() {
 
 #[test]
 fn property_list_bad_property() {
-    let mut p = Parser::new(r#"o = {a: "a", 30, b: 7}"#, false);
+    let mut p = Parser::new(r#"o = {a: "a", 30, b: 7}"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -14401,7 +14353,7 @@ fn property_list_bad_property() {
 
 #[test]
 fn integer_literal_overflow() {
-    let mut p = Parser::new(r#"100000000000000000000000000000"#, false);
+    let mut p = Parser::new(r#"100000000000000000000000000000"#);
     let parsed = p.parse_file("".to_string());
     let loc = Locator::new(&p.source[..]);
     assert_eq!(
@@ -14437,7 +14389,7 @@ fn integer_literal_overflow() {
 fn parse_string_literal() {
     let errors: Vec<String> = vec![];
 
-    let mut p = Parser::new(r#""Hello world""#, false);
+    let mut p = Parser::new(r#""Hello world""#);
     let result = p.parse_string_literal();
     assert_eq!("Hello world".to_string(), result.value);
     assert_eq!(errors, result.base.errors);
@@ -14451,7 +14403,7 @@ fn parse_string_literal_invalid_string() {
         "invalid string literal",
     ];
 
-    let mut p = Parser::new(r#"""#, false);
+    let mut p = Parser::new(r#"""#);
     let result = p.parse_string_literal();
     assert_eq!("".to_string(), result.value);
     assert_eq!(errors, result.base.errors);
@@ -14459,7 +14411,7 @@ fn parse_string_literal_invalid_string() {
 
 #[test]
 fn parse_testcase() {
-    let mut parser = Parser::new(r#"testcase my_test { a = 1 }"#, false);
+    let mut parser = Parser::new(r#"testcase my_test { a = 1 }"#);
     let parsed = parser.parse_file("".to_string());
     let loc = Locator::new(&parser.source[..]);
     let expected = vec![Statement::TestCase(Box::new(TestCaseStmt {

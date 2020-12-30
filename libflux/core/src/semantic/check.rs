@@ -303,7 +303,7 @@ mod tests {
         let mut ast_files = vec![];
         let mut ctr = 0;
         for f in files {
-            let file = parser::parse_string(format!("file_{}.flux", ctr).as_str(), f, false);
+            let file = parser::parse_string(format!("file_{}.flux", ctr).as_str(), f);
             ast_files.push(file);
             ctr = ctr + 1;
         }

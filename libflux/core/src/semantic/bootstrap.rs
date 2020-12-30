@@ -79,13 +79,25 @@ impl From<&str> for Error {
 #[allow(clippy::type_complexity)]
 // Infer the types of the standard library returning two importers, one for the prelude
 // and one for the standard library, as well as a type variable fresher.
-pub fn infer_stdlib(
-    use_rs: bool,
-) -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
+pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
     let mut f = Fresher::default();
 
     let dir = "../../stdlib";
-    let files = file_map(parse_flux_files(dir, use_rs)?);
+    let files = file_map(parse_flux_files(dir)?);
+    let rerun_if_changed = compute_file_dependencies(dir);
+
+    let (prelude, importer) = infer_pre(&mut f, &files)?;
+    let importer = infer_std(&mut f, &files, prelude.clone(), importer)?;
+
+    Ok((prelude, importer, f, rerun_if_changed))
+}
+
+#[allow(clippy::type_complexity)]
+pub fn infer_stdlib_with_rust() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
+    let mut f = Fresher::default();
+
+    let dir = "../../stdlib";
+    let files = file_map(parse_flux_files_with_rust(dir)?);
     let rerun_if_changed = compute_file_dependencies(dir);
 
     let (prelude, importer) = infer_pre(&mut f, &files)?;
@@ -148,7 +160,7 @@ fn infer_std(
 }
 
 // Recursively parse all flux files within a directory.
-fn parse_flux_files(path: &str, use_rs: bool) -> io::Result<Vec<ast::File>> {
+fn parse_flux_files(path: &str) -> io::Result<Vec<ast::File>> {
     let mut files = Vec::new();
     let entries = WalkDir::new(PathBuf::from(path))
         .into_iter()
@@ -161,7 +173,26 @@ fn parse_flux_files(path: &str, use_rs: bool) -> io::Result<Vec<ast::File>> {
                 files.push(parser::parse_string(
                     path.rsplitn(2, "/stdlib/").collect::<Vec<&str>>()[0],
                     &fs::read_to_string(path)?,
-                    use_rs,
+                ));
+            }
+        }
+    }
+    Ok(files)
+}
+
+fn parse_flux_files_with_rust(path: &str) -> io::Result<Vec<ast::File>> {
+    let mut files = Vec::new();
+    let entries = WalkDir::new(PathBuf::from(path))
+        .into_iter()
+        .filter_map(|r| r.ok())
+        .filter(|r| r.path().is_file());
+
+    for entry in entries {
+        if let Some(path) = entry.path().to_str() {
+            if path.ends_with(".flux") && !path.ends_with("_test.flux") {
+                files.push(parser::parse_string_with_rust(
+                    path.rsplitn(2, "/stdlib/").collect::<Vec<&str>>()[0],
+                    &fs::read_to_string(path)?,
                 ));
             }
         }
@@ -350,9 +381,9 @@ mod tests {
             z = b.y
         "#;
         let files = semantic_map! {
-            String::from("a") => parse_string("a.flux", a, false),
-            String::from("b") => parse_string("b.flux", b, false),
-            String::from("c") => parse_string("c.flux", c, false),
+            String::from("a") => parse_string("a.flux", a),
+            String::from("b") => parse_string("b.flux", b),
+            String::from("c") => parse_string("c.flux", c),
         };
         let (types, imports) = infer_pkg(
             "c",
@@ -364,7 +395,7 @@ mod tests {
 
         let want = semantic_map! {
             String::from("z") => {
-                    let mut p = parser::Parser::new("int", false);
+                    let mut p = parser::Parser::new("int");
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
@@ -387,7 +418,7 @@ mod tests {
 
         let want = semantic_map! {
             String::from("a") => {
-            let mut p = parser::Parser::new("{f: (x: A) => A}", false);
+            let mut p = parser::Parser::new("{f: (x: A) => A}");
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
@@ -399,7 +430,7 @@ mod tests {
                     convert_polytype(typ_expr, &mut Fresher::default())?
             },
             String::from("b") => {
-            let mut p = parser::Parser::new("{x: int , y: int}", false);
+            let mut p = parser::Parser::new("{x: int , y: int}");
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
@@ -425,7 +456,7 @@ mod tests {
 
     #[test]
     fn prelude_dependencies() {
-        let files = file_map(parse_flux_files("../../stdlib", false).unwrap());
+        let files = file_map(parse_flux_files("../../stdlib").unwrap());
 
         let r = PRELUDE.iter().try_fold(
             (Vec::new(), HashSet::new(), HashSet::new()),
@@ -446,8 +477,8 @@ mod tests {
             import "a"
         "#;
         let files = semantic_map! {
-            String::from("a") => parse_string("a.flux", a, false),
-            String::from("b") => parse_string("b.flux", b, false),
+            String::from("a") => parse_string("a.flux", a),
+            String::from("b") => parse_string("b.flux", b),
         };
         let got_err = dependencies("b", &files, Vec::new(), HashSet::new(), HashSet::new())
             .expect_err("expected cyclic dependency error");
