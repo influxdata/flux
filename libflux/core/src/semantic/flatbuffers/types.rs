@@ -359,8 +359,8 @@ fn build_constraint<'a>(
     )
 }
 
-pub fn build_type<'a>(
-    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+pub fn build_type(
+    builder: &mut flatbuffers::FlatBufferBuilder,
     t: MonoType,
 ) -> (
     flatbuffers::WIPOffset<flatbuffers::UnionWIPOffset>,

@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 use crate::ast::{self, walk::Node, File};
-use crate::parser::parse_string;
+use crate::parser::{parse_string, parse_string_with_rust};
 use crate::Error;
 
 use std::io;
@@ -30,6 +30,11 @@ pub fn convert_to_string(file: &File) -> Result<String, Error> {
 
 pub fn format(contents: &str) -> Result<String, Error> {
     let file = parse_string("", contents);
+    convert_to_string(&file)
+}
+
+pub fn format_with_rust(contents: &str) -> Result<String, Error> {
+    let file = parse_string_with_rust("", contents);
     convert_to_string(&file)
 }
 
@@ -1096,7 +1101,7 @@ impl Formatter {
         if nano_sec > 0 {
             f = v.format("%FT%T").to_string();
             let mut frac_nano: String = v.format("%f").to_string();
-            frac_nano.insert_str(0, ".");
+            frac_nano.insert(0, '.');
             let mut r = frac_nano.chars().last().unwrap();
             while r == '0' {
                 frac_nano.pop();

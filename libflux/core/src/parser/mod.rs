@@ -6,6 +6,7 @@ use std::str;
 use crate::ast;
 use crate::ast::*;
 use crate::scanner;
+use crate::scanner::rust::{Scan, Scanner as RustScanner};
 use crate::scanner::*;
 
 use wasm_bindgen::prelude::*;
@@ -20,9 +21,22 @@ pub fn parse(s: &str) -> JsValue {
     JsValue::from_serde(&file).unwrap()
 }
 
+#[wasm_bindgen]
+pub fn parse_with_rust(s: &str) -> JsValue {
+    let mut p = Parser::with_rust(s);
+    let file = p.parse_file(String::from(""));
+
+    JsValue::from_serde(&file).unwrap()
+}
+
 // Parses a string of source code.
 // The name is given to the file.
 pub fn parse_string(name: &str, s: &str) -> File {
+    let mut p = Parser::new(s);
+    p.parse_file(String::from(name))
+}
+
+pub fn parse_string_with_rust(name: &str, s: &str) -> File {
     let mut p = Parser::new(s);
     p.parse_file(String::from(name))
 }
@@ -106,7 +120,7 @@ fn format_token(t: TOK) -> &'static str {
 }
 
 pub struct Parser {
-    s: Scanner,
+    s: Box<dyn Scan>,
     t: Option<Token>,
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
@@ -120,7 +134,24 @@ pub struct Parser {
 impl Parser {
     pub fn new(src: &str) -> Parser {
         let cdata = CString::new(src).expect("CString::new failed");
-        let s = Scanner::new(cdata);
+
+        let s = Box::new(Scanner::new(cdata)) as Box<dyn Scan>;
+
+        Parser {
+            s,
+            t: None,
+            errs: Vec::new(),
+            blocks: HashMap::new(),
+            fname: "".to_string(),
+            source: src.to_string(),
+        }
+    }
+
+    pub fn with_rust(src: &str) -> Parser {
+        let cdata = CString::new(src).expect("CString::new failed");
+
+        let s = Box::new(RustScanner::new(cdata)) as Box<dyn Scan>;
+
         Parser {
             s,
             t: None,
@@ -160,7 +191,7 @@ impl Parser {
     fn peek_with_regex(&mut self) -> Token {
         if let Some(token) = &mut self.t {
             if let Token { tok: TOK_DIV, .. } = token {
-                self.s.comments = token.comments.take();
+                self.s.set_comments(&mut token.comments);
                 self.t = None;
                 self.s.unread();
             }
@@ -368,8 +399,10 @@ impl Parser {
         if !start.is_valid() || !end.is_valid() {
             return SourceLocation::default();
         }
+
         let s_off = self.s.offset(&scanner::Position::from(start)) as usize;
         let e_off = self.s.offset(&scanner::Position::from(end)) as usize;
+
         SourceLocation {
             file: Some(self.fname.clone()),
             start: start.clone(),

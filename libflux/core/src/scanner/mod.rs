@@ -9,6 +9,7 @@ use std::ffi::CString;
 use std::str;
 
 pub mod rust;
+use rust::Scan;
 
 pub struct Scanner {
     data: CString,
@@ -60,7 +61,7 @@ impl fmt::Display for Token {
 
 impl Scanner {
     // New creates a scanner with the provided input.
-    pub fn new(data: CString) -> Scanner {
+    pub fn new(data: CString) -> Self {
         let ptr = data.as_ptr();
         let bytes = data.as_bytes();
         let end = ((ptr as usize) + bytes.len()) as *const CChar;
@@ -81,69 +82,6 @@ impl Scanner {
         }
     }
 
-    fn scan_with_comments(&mut self, mode: i32) -> Token {
-        let mut token;
-        loop {
-            token = self._scan(mode);
-            if token.tok != TOK_COMMENT {
-                break;
-            }
-            token.comments = self.comments.take();
-            self.comments = Some(Box::new(token));
-        }
-        token.comments = self.comments.take();
-        token
-    }
-
-    // scan produces the next token from the input.
-    pub fn scan(&mut self) -> Token {
-        self.scan_with_comments(0)
-    }
-
-    // scan_with_regex produces the next token from the input accounting for regex.
-    pub fn scan_with_regex(&mut self) -> Token {
-        self.scan_with_comments(1)
-    }
-
-    // scan_string_expr produces the next token from the input in a string expression.
-    pub fn scan_string_expr(&mut self) -> Token {
-        self.scan_with_comments(2)
-    }
-
-    // unread will reset the Scanner to go back to the Scanner's location
-    // before the last scan_with_regex or scan call. If either of the scan_with_regex methods
-    // returned an EOF token, a call to unread will not unread the discarded whitespace.
-    // This method is a no-op if called multiple times.
-    pub fn unread(&mut self) {
-        self.p = self.checkpoint;
-        self.cur_line = self.checkpoint_line;
-        self.last_newline = self.checkpoint_last_newline;
-    }
-
-    pub fn offset(&self, pos: &Position) -> u32 {
-        *self.positions.get(pos).expect("position should be in map")
-    }
-
-    fn get_eof_token(&self) -> Token {
-        let data_len = self.data.as_bytes().len() as u32;
-        let column = self.eof as u32 - self.last_newline as u32 + 1;
-        Token {
-            tok: TOK_EOF,
-            lit: String::from(""),
-            start_offset: data_len,
-            end_offset: data_len,
-            start_pos: Position {
-                line: self.cur_line,
-                column,
-            },
-            end_pos: Position {
-                line: self.cur_line,
-                column,
-            },
-            comments: None,
-        }
-    }
-
     fn _scan(&mut self, mode: i32) -> Token {
         if self.p == self.eof {
             return self.get_eof_token();
@@ -154,12 +92,12 @@ impl Scanner {
         self.checkpoint_line = self.cur_line;
         self.checkpoint_last_newline = self.last_newline;
 
-        let mut token_start = 0 as u32;
-        let mut token_start_line = 0 as u32;
-        let mut token_start_col = 0 as u32;
-        let mut token_end = 0 as u32;
-        let mut token_end_line = 0 as u32;
-        let mut token_end_col = 0 as u32;
+        let mut token_start = 0_u32;
+        let mut token_start_line = 0_u32;
+        let mut token_start_col = 0_u32;
+        let mut token_end = 0_u32;
+        let mut token_end_line = 0_u32;
+        let mut token_end_col = 0_u32;
 
         let error = unsafe {
             scan(
@@ -251,6 +189,75 @@ impl Scanner {
         self.positions.insert(t.end_pos.clone(), t.end_offset);
 
         t
+    }
+
+    fn get_eof_token(&self) -> Token {
+        let data_len = self.data.as_bytes().len() as u32;
+        let column = self.eof as u32 - self.last_newline as u32 + 1;
+        Token {
+            tok: TOK_EOF,
+            lit: String::from(""),
+            start_offset: data_len,
+            end_offset: data_len,
+            start_pos: Position {
+                line: self.cur_line,
+                column,
+            },
+            end_pos: Position {
+                line: self.cur_line,
+                column,
+            },
+            comments: None,
+        }
+    }
+
+    fn scan_with_comments(&mut self, mode: i32) -> Token {
+        let mut token;
+        loop {
+            token = self._scan(mode);
+            if token.tok != TOK_COMMENT {
+                break;
+            }
+            token.comments = self.comments.take();
+            self.comments = Some(Box::new(token));
+        }
+        token.comments = self.comments.take();
+        token
+    }
+}
+
+impl Scan for Scanner {
+    // scan produces the next token from the input.
+    fn scan(&mut self) -> Token {
+        self.scan_with_comments(0)
+    }
+
+    // scan_with_regex produces the next token from the input accounting for regex.
+    fn scan_with_regex(&mut self) -> Token {
+        self.scan_with_comments(1)
+    }
+
+    // scan_string_expr produces the next token from the input in a string expression.
+    fn scan_string_expr(&mut self) -> Token {
+        self.scan_with_comments(2)
+    }
+
+    // unread will reset the Scanner to go back to the Scanner's location
+    // before the last scan_with_regex or scan call. If either of the scan_with_regex methods
+    // returned an EOF token, a call to unread will not unread the discarded whitespace.
+    // This method is a no-op if called multiple times.
+    fn unread(&mut self) {
+        self.p = self.checkpoint;
+        self.cur_line = self.checkpoint_line;
+        self.last_newline = self.checkpoint_last_newline;
+    }
+
+    fn offset(&self, pos: &Position) -> u32 {
+        *self.positions.get(pos).expect("position should be in map")
+    }
+
+    fn set_comments(&mut self, t: &mut Option<Box<Token>>) {
+        self.comments = t.take();
     }
 }
 
