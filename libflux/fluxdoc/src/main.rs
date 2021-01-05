@@ -79,7 +79,7 @@ fn walk_dir(topdir: &PathBuf, dir: &PathBuf) -> Result<DocPackage, Box<dyn std::
 fn generate_docs(
     pkgpath: &Path,
     srcs: Vec<PathBuf>,
-    packages: Vec<DocPackage>,
+    mut packages: Vec<DocPackage>,
 ) -> Result<DocPackage, Box<dyn std::error::Error>> {
     let mut pkg: Option<ast::Package> = None;
     for src in srcs {
@@ -99,11 +99,13 @@ fn generate_docs(
             }
         }
     }
+    packages.sort_by_key(|p| p.name.clone());
     if let Some(pkg) = pkg {
         let path = pkgpath.to_str().unwrap().to_owned();
         let sem_pkg = flux::analyze(pkg.clone())?;
         let types = pkg_types(&sem_pkg);
         let mut values: Vec<DocValue> = Vec::new();
+        values.sort_by_key(|v| v.name.clone());
         let mut doc = String::new();
         for f in &pkg.files {
             let vs = generate_values(&f, &types, path.as_str())?;
@@ -185,7 +187,7 @@ fn generate_values(
         match stmt {
             ast::Statement::Variable(s) => {
                 let mut doc = String::new();
-                comments_to_string(&mut doc, &s.base.comments);
+                comments_to_string(&mut doc, &s.id.base.comments);
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
                 values.push(DocValue {
