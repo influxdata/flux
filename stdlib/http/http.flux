@@ -1,5 +1,6 @@
 package http
 
+
 import "experimental"
 
 // Post submits an HTTP post request to the specified URL with headers and data.
@@ -14,14 +15,18 @@ builtin basicAuth : (u: string, p: string) => string
 // replacing special characters (including /) with %XX sequences as needed.
 builtin pathEscape : (inputString: string) => string
 
-endpoint = (url) =>
-    (mapFn) =>
-        (tables=<-) =>
-            tables
-                |> map(fn: (r) => {
-                    obj = mapFn(r: r)
-                    return {r with
-                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))
-                    }
-                })
-                |> experimental.group(mode:"extend", columns:["_sent"])
+// Endpoint returns a function that acts as a notification endpoint,
+// which will post the notification to the url.
+//
+// See influxdata/influxdb/monitor.notify
+endpoint = (url) => (mapFn) => (tables=<-) => tables
+    |> map(
+        fn: (r) => {
+            obj = mapFn(r: r)
+
+            return {r with
+                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),
+            }
+        },
+    )
+    |> experimental.group(mode: "extend", columns: ["_sent"])

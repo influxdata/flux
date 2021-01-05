@@ -1,6 +1,6 @@
 package math
 
-// builtin constants
+
 builtin pi : float
 builtin e : float
 builtin phi : float
@@ -18,7 +18,12 @@ builtin maxint : int
 builtin minint : int
 builtin maxuint : uint
 
-// builtin functions
+// Abs returns x as a positive value.
+//
+// Example
+//
+//    import "math"
+//    math.abs(x: -10.42) // 10.42
 builtin abs : (x: float) => float
 builtin acos : (x: float) => float
 builtin acosh : (x: float) => float
@@ -43,7 +48,7 @@ builtin expm1 : (x: float) => float
 builtin float64bits : (f: float) => uint
 builtin float64frombits : (b: uint) => float
 builtin floor : (x: float) => float
-builtin frexp : (f: float) => {frac: float , exp: int}
+builtin frexp : (f: float) => {frac: float, exp: int}
 builtin gamma : (x: float) => float
 builtin hypot : (x: float) => float
 builtin ilogb : (x: float) => float
@@ -54,7 +59,7 @@ builtin j0 : (x: float) => float
 builtin j1 : (x: float) => float
 builtin jn : (n: int, x: float) => float
 builtin ldexp : (frac: float, exp: int) => float
-builtin lgamma : (x: float) => {lgamma: float , sign: int}
+builtin lgamma : (x: float) => {lgamma: float, sign: int}
 builtin log : (x: float) => float
 builtin log10 : (x: float) => float
 builtin log1p : (x: float) => float
@@ -63,7 +68,7 @@ builtin logb : (x: float) => float
 builtin mMax : (x: float, y: float) => float
 builtin mMin : (x: float, y: float) => float
 builtin mod : (x: float, y: float) => float
-builtin modf : (f: float) => {int: float , frac: float}
+builtin modf : (f: float) => {int: float, frac: float}
 builtin NaN : () => float
 builtin nextafter : (x: float, y: float) => float
 builtin pow : (x: float, y: float) => float
@@ -73,7 +78,7 @@ builtin round : (x: float) => float
 builtin roundtoeven : (x: float) => float
 builtin signbit : (x: float) => bool
 builtin sin : (x: float) => float
-builtin sincos : (x: float) => {sin: float , cos: float}
+builtin sincos : (x: float) => {sin: float, cos: float}
 builtin sinh : (x: float) => float
 builtin sqrt : (x: float) => float
 builtin tan : (x: float) => float

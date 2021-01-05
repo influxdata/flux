@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Flux Documentation | {% block title %}{% endblock title %}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="/img/favicon.png" type="image/png" sizes="32x32">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/stylesheet.css" media="screen"/>
+
+    <meta name="Copyright" content="InfluxData Inc." />
+    {% endblock head %}
+  </head>
+  <body>
+    <div class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="nav-item">
+        <a class="nav-link nav-brand influx-home" href="https://www.influxdata.com/" title="InfluxData">
+          <img src="https://aws1.discourse-cdn.com/business4/uploads/influxdata/original/2X/8/821ea2815a0782d2e6c33ca5b67e747adb7fa88e.png" alt="InfluxData Community" id="site-logo" class="logo-big">
+        </a>
+      </div>
+      <div class="nav-item">
+        <a class="nav-link docs-home" href="https://fluxlang.dev/"><span class="short">Doc</span><span class="long">umentation</span></a>
+      </div>
+      <div class="nav-item ml-md-auto">
+        <a class="nav-item" href="https://play.fluxlang.dev">Play</a>
+      </div>
+    </div>
+    <div class="breadcrumb">
+      {% block breadcrumb %}
+      {% endblock breadcrumb %}
+    </div><!-- breadcrumb-->
+    <div class="container-fluid">
+      <div class="row">
+        <div id="content" class="col-md-8 col-lg-9">
+          {% block content %}
+          {% endblock content %}
+        </div><!-- content-->
+
+        <div id="sidebar" class="col-md-4 col-lg-3">
+          {% block sidebar %}
+          {% endblock sidebar %}
+        </div><!--sidebar-->
+      </div><!--row-->
+    </div><!--container-fluid-->
+  </body>
+
+  {% block footer %}
+  {% endblock footer %}
+</html>

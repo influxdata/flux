@@ -22,13 +22,13 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 31,
-					Line:   3,
+					Line:   17,
 				},
 				File:   "profiler.flux",
-				Source: "package profiler\n\noption enabledProfilers = [\"\"]",
+				Source: "package profiler\n\n\n// EnabledProfilers sets a list of profilers that should be enabled during execution.\n//\n// Available profilers are:\n//   * query - Profiles time spent in the various phases of query execution.\n//   * operator - Profiles time spent in each operator of the query.\n//\n// Example:\n//\n//    import \"profiler\"\n//    option profiler.enabledProfilers = [\"query\", \"operator\"]\n//\noption enabledProfilers = [\"\"]",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   3,
 				},
 			},
 		},
@@ -39,13 +39,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 31,
-							Line:   3,
+							Line:   17,
 						},
 						File:   "profiler.flux",
 						Source: "enabledProfilers = [\"\"]",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   17,
 						},
 					},
 				},
@@ -55,13 +55,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   3,
+								Line:   17,
 							},
 							File:   "profiler.flux",
 							Source: "enabledProfilers",
 							Start: ast.Position{
 								Column: 8,
-								Line:   3,
+								Line:   17,
 							},
 						},
 					},
@@ -73,13 +73,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   3,
+								Line:   17,
 							},
 							File:   "profiler.flux",
 							Source: "[\"\"]",
 							Start: ast.Position{
 								Column: 27,
-								Line:   3,
+								Line:   17,
 							},
 						},
 					},
@@ -89,13 +89,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   3,
+									Line:   17,
 								},
 								File:   "profiler.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 28,
-									Line:   3,
+									Line:   17,
 								},
 							},
 						},
@@ -108,13 +108,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 31,
-						Line:   3,
+						Line:   17,
 					},
 					File:   "profiler.flux",
 					Source: "option enabledProfilers = [\"\"]",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   17,
 					},
 				},
 			},
@@ -128,13 +128,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   1,
+						Line:   3,
 					},
 					File:   "profiler.flux",
 					Source: "package profiler",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   3,
 					},
 				},
 			},
@@ -144,13 +144,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   1,
+							Line:   3,
 						},
 						File:   "profiler.flux",
 						Source: "profiler",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   3,
 						},
 					},
 				},
