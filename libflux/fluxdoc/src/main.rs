@@ -100,19 +100,20 @@ fn generate_docs(
         }
     }
     if let Some(pkg) = pkg {
+        let path = pkgpath.to_str().unwrap().to_owned();
         let sem_pkg = flux::analyze(pkg.clone())?;
         let types = pkg_types(&sem_pkg);
         let mut values: Vec<DocValue> = Vec::new();
         let mut doc = String::new();
         for f in &pkg.files {
-            let vs = generate_values(&f, &types)?;
+            let vs = generate_values(&f, &types, path.as_str())?;
             values.extend(vs);
             if let Some(comment) = &f.package {
                 comments_to_string(&mut doc, &comment.base.comments);
             }
         }
         Ok(DocPackage {
-            path: pkgpath.to_str().unwrap().to_owned(),
+            path,
             name: pkg.package,
             doc,
             values,
@@ -177,6 +178,7 @@ fn pkg_types(pkg: &semantic::nodes::Package) -> HashMap<String, PolyType> {
 fn generate_values(
     f: &ast::File,
     types: &HashMap<String, PolyType>,
+    pkgpath: &str,
 ) -> Result<Vec<DocValue>, Box<dyn std::error::Error>> {
     let mut values: Vec<DocValue> = Vec::new();
     for stmt in &f.body {
@@ -186,14 +188,24 @@ fn generate_values(
                 comments_to_string(&mut doc, &s.base.comments);
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
-                values.push(DocValue { name, doc, typ });
+                values.push(DocValue {
+                    pkgpath: pkgpath.to_string(),
+                    name,
+                    doc,
+                    typ,
+                });
             }
             ast::Statement::Builtin(s) => {
                 let mut doc = String::new();
                 comments_to_string(&mut doc, &s.base.comments);
                 let name = s.id.name.clone();
                 let typ = format!("{}", types[&name].normal());
-                values.push(DocValue { name, doc, typ });
+                values.push(DocValue {
+                    pkgpath: pkgpath.to_string(),
+                    name,
+                    doc,
+                    typ,
+                });
             }
             ast::Statement::Option(s) => match &s.assignment {
                 ast::Assignment::Variable(v) => {
@@ -201,7 +213,12 @@ fn generate_values(
                     comments_to_string(&mut doc, &s.base.comments);
                     let name = v.id.name.clone();
                     let typ = format!("{}", types[&name].normal());
-                    values.push(DocValue { name, doc, typ });
+                    values.push(DocValue {
+                        pkgpath: pkgpath.to_string(),
+                        name,
+                        doc,
+                        typ,
+                    });
                 }
                 _ => {}
             },
