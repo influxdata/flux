@@ -9,6 +9,7 @@ pub struct DocPackage {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DocValue {
+    pub pkgpath: String,
     pub name: String,
     pub doc: String,
     pub typ: String,
