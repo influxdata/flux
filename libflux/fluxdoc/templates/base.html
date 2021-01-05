@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% block head %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Flux Documentation | {% block title %}{% endblock title %}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="/img/favicon.png" type="image/png" sizes="32x32">
+
+    <meta name="Copyright" content="InfluxData Inc." />
+    {% endblock head %}
+  </head>
+  <body>
+    <div class="topnav">
+      <div class="topnav-left">
+        <a class="influx-home" href="https://www.influxdata.com" title="InfluxData"><span class="icon-influx-logo"></span><span class="icon-influx-logotype"></span></a>
+        <span class="divider"></span>
+        <a class="docs-home" href="/"><span class=short>Doc</span><span class="long">umentation</span></a>
+      </div>
+      <div class="topnav-right">
+      </div>
+    </div>
+    <div class="content">
+      {% block content %}
+      {% endblock content %}
+    </div>
+  </body>
+  {% block footer %}
+  {% endblock footer %}
+</html>

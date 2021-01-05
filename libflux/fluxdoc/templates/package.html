@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ name}}{% endblock title %}
+{% block content %}
+    <h1>{{ name }}</h1>
+    <p>{{ doc }}</p>
+    <ul>
+        {% for v in values %}
+        <li><a href="{{v.name}}.html">{{v.name}}</a></li>
+        {% endfor %}
+    </ul>
+    Packages:
+    <ul>
+        {% for p in packages %}
+        <li><a href="{{p.name}}/">{{p.name}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock content %}

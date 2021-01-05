@@ -117,6 +117,10 @@ impl PolyType {
             .collect::<Vec<_>>()
             .join(" + ")
     }
+    pub fn normal(&self) -> PolyType {
+        self.clone()
+            .fresh(&mut Fresher::from(0), &mut TvarMap::new())
+    }
 }
 
 pub fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> {
