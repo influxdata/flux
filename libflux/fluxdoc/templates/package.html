@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ name}}{% endblock title %}
+{% block breadcrumb %}
+<ul>
+    {% set len = path | length %}
+    {% for p in path %}
+    <li><a href="{%for i in range(end=len - loop.index)%}../{%endfor%}">{{p}}{% if loop.last %}{% else %}/{% endif %}</a></li>
+    {% endfor %}
+</ul>
+{% endblock breadcrumb %}
+{% block content %}
+    <h1>{{ name }}</h1>
+    {{ doc | safe }}
+    <ul>
+        {% for v in values %}
+        <li><a href="{{v.name}}.html">{{v.name}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock content %}
+
+{% block sidebar %}
+    Packages:
+    <ul>
+        {% for p in packages %}
+        <li><a href="{{p.name}}/">{{p.name}}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock sidebar%}

@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   3,
+					Line:   5,
 				},
 				File:   "generate.flux",
-				Source: "package generate\n\nbuiltin from",
+				Source: "package generate\n\n\n// From generates a table with count rows using fn to determine the value of each row.\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -38,13 +38,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   3,
+						Line:   5,
 					},
 					File:   "generate.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   5,
 					},
 				},
 			},
@@ -54,13 +54,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   3,
+							Line:   5,
 						},
 						File:   "generate.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   5,
 						},
 					},
 				},
@@ -71,14 +71,14 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 149,
-							Line:   3,
+							Column: 16,
+							Line:   16,
 						},
 						File:   "generate.flux",
-						Source: "(start: A, stop: A, count: int, fn: (n: int) => int) => [{ _start: time , _stop: time , _time: time , _value:int }] where A: Timeable",
+						Source: "(\n    start: A,\n    stop: A,\n    count: int,\n    fn: (n: int) => int,\n) => [{\n    _start: time,\n    _stop: time,\n    _time: time,\n    _value: int,\n}] where\n    A: Timeable",
 						Start: ast.Position{
 							Column: 16,
-							Line:   3,
+							Line:   5,
 						},
 					},
 				},
@@ -87,14 +87,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 149,
-								Line:   3,
+								Column: 16,
+								Line:   16,
 							},
 							File:   "generate.flux",
 							Source: "A: Timeable",
 							Start: ast.Position{
-								Column: 138,
-								Line:   3,
+								Column: 5,
+								Line:   16,
 							},
 						},
 					},
@@ -103,14 +103,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 149,
-									Line:   3,
+									Column: 16,
+									Line:   16,
 								},
 								File:   "generate.flux",
 								Source: "Timeable",
 								Start: ast.Position{
-									Column: 141,
-									Line:   3,
+									Column: 8,
+									Line:   16,
 								},
 							},
 						},
@@ -121,14 +121,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 139,
-									Line:   3,
+									Column: 6,
+									Line:   16,
 								},
 								File:   "generate.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 138,
-									Line:   3,
+									Column: 5,
+									Line:   16,
 								},
 							},
 						},
@@ -140,14 +140,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 131,
-								Line:   3,
+								Column: 3,
+								Line:   15,
 							},
 							File:   "generate.flux",
-							Source: "(start: A, stop: A, count: int, fn: (n: int) => int) => [{ _start: time , _stop: time , _time: time , _value:int }]",
+							Source: "(\n    start: A,\n    stop: A,\n    count: int,\n    fn: (n: int) => int,\n) => [{\n    _start: time,\n    _stop: time,\n    _time: time,\n    _value: int,\n}]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   3,
+								Line:   5,
 							},
 						},
 					},
@@ -156,14 +156,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   3,
+									Column: 13,
+									Line:   6,
 								},
 								File:   "generate.flux",
 								Source: "start: A",
 								Start: ast.Position{
-									Column: 17,
-									Line:   3,
+									Column: 5,
+									Line:   6,
 								},
 							},
 						},
@@ -173,14 +173,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   3,
+										Column: 10,
+										Line:   6,
 									},
 									File:   "generate.flux",
 									Source: "start",
 									Start: ast.Position{
-										Column: 17,
-										Line:   3,
+										Column: 5,
+										Line:   6,
 									},
 								},
 							},
@@ -191,14 +191,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 25,
-										Line:   3,
+										Column: 13,
+										Line:   6,
 									},
 									File:   "generate.flux",
 									Source: "A",
 									Start: ast.Position{
-										Column: 24,
-										Line:   3,
+										Column: 12,
+										Line:   6,
 									},
 								},
 							},
@@ -207,14 +207,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   3,
+											Column: 13,
+											Line:   6,
 										},
 										File:   "generate.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 24,
-											Line:   3,
+											Column: 12,
+											Line:   6,
 										},
 									},
 								},
@@ -226,14 +226,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 34,
-									Line:   3,
+									Column: 12,
+									Line:   7,
 								},
 								File:   "generate.flux",
 								Source: "stop: A",
 								Start: ast.Position{
-									Column: 27,
-									Line:   3,
+									Column: 5,
+									Line:   7,
 								},
 							},
 						},
@@ -243,14 +243,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 31,
-										Line:   3,
+										Column: 9,
+										Line:   7,
 									},
 									File:   "generate.flux",
 									Source: "stop",
 									Start: ast.Position{
-										Column: 27,
-										Line:   3,
+										Column: 5,
+										Line:   7,
 									},
 								},
 							},
@@ -261,14 +261,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 34,
-										Line:   3,
+										Column: 12,
+										Line:   7,
 									},
 									File:   "generate.flux",
 									Source: "A",
 									Start: ast.Position{
-										Column: 33,
-										Line:   3,
+										Column: 11,
+										Line:   7,
 									},
 								},
 							},
@@ -277,14 +277,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
-											Line:   3,
+											Column: 12,
+											Line:   7,
 										},
 										File:   "generate.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 33,
-											Line:   3,
+											Column: 11,
+											Line:   7,
 										},
 									},
 								},
@@ -296,14 +296,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 46,
-									Line:   3,
+									Column: 15,
+									Line:   8,
 								},
 								File:   "generate.flux",
 								Source: "count: int",
 								Start: ast.Position{
-									Column: 36,
-									Line:   3,
+									Column: 5,
+									Line:   8,
 								},
 							},
 						},
@@ -313,14 +313,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 41,
-										Line:   3,
+										Column: 10,
+										Line:   8,
 									},
 									File:   "generate.flux",
 									Source: "count",
 									Start: ast.Position{
-										Column: 36,
-										Line:   3,
+										Column: 5,
+										Line:   8,
 									},
 								},
 							},
@@ -331,14 +331,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 46,
-										Line:   3,
+										Column: 15,
+										Line:   8,
 									},
 									File:   "generate.flux",
 									Source: "int",
 									Start: ast.Position{
-										Column: 43,
-										Line:   3,
+										Column: 12,
+										Line:   8,
 									},
 								},
 							},
@@ -347,14 +347,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 46,
-											Line:   3,
+											Column: 15,
+											Line:   8,
 										},
 										File:   "generate.flux",
 										Source: "int",
 										Start: ast.Position{
-											Column: 43,
-											Line:   3,
+											Column: 12,
+											Line:   8,
 										},
 									},
 								},
@@ -366,14 +366,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 67,
-									Line:   3,
+									Column: 24,
+									Line:   9,
 								},
 								File:   "generate.flux",
 								Source: "fn: (n: int) => int",
 								Start: ast.Position{
-									Column: 48,
-									Line:   3,
+									Column: 5,
+									Line:   9,
 								},
 							},
 						},
@@ -383,14 +383,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 50,
-										Line:   3,
+										Column: 7,
+										Line:   9,
 									},
 									File:   "generate.flux",
 									Source: "fn",
 									Start: ast.Position{
-										Column: 48,
-										Line:   3,
+										Column: 5,
+										Line:   9,
 									},
 								},
 							},
@@ -401,14 +401,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 67,
-										Line:   3,
+										Column: 24,
+										Line:   9,
 									},
 									File:   "generate.flux",
 									Source: "(n: int) => int",
 									Start: ast.Position{
-										Column: 52,
-										Line:   3,
+										Column: 9,
+										Line:   9,
 									},
 								},
 							},
@@ -417,14 +417,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 59,
-											Line:   3,
+											Column: 16,
+											Line:   9,
 										},
 										File:   "generate.flux",
 										Source: "n: int",
 										Start: ast.Position{
-											Column: 53,
-											Line:   3,
+											Column: 10,
+											Line:   9,
 										},
 									},
 								},
@@ -434,14 +434,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 54,
-												Line:   3,
+												Column: 11,
+												Line:   9,
 											},
 											File:   "generate.flux",
 											Source: "n",
 											Start: ast.Position{
-												Column: 53,
-												Line:   3,
+												Column: 10,
+												Line:   9,
 											},
 										},
 									},
@@ -452,14 +452,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 59,
-												Line:   3,
+												Column: 16,
+												Line:   9,
 											},
 											File:   "generate.flux",
 											Source: "int",
 											Start: ast.Position{
-												Column: 56,
-												Line:   3,
+												Column: 13,
+												Line:   9,
 											},
 										},
 									},
@@ -468,14 +468,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 59,
-													Line:   3,
+													Column: 16,
+													Line:   9,
 												},
 												File:   "generate.flux",
 												Source: "int",
 												Start: ast.Position{
-													Column: 56,
-													Line:   3,
+													Column: 13,
+													Line:   9,
 												},
 											},
 										},
@@ -488,14 +488,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 67,
-											Line:   3,
+											Column: 24,
+											Line:   9,
 										},
 										File:   "generate.flux",
 										Source: "int",
 										Start: ast.Position{
-											Column: 64,
-											Line:   3,
+											Column: 21,
+											Line:   9,
 										},
 									},
 								},
@@ -504,14 +504,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 67,
-												Line:   3,
+												Column: 24,
+												Line:   9,
 											},
 											File:   "generate.flux",
 											Source: "int",
 											Start: ast.Position{
-												Column: 64,
-												Line:   3,
+												Column: 21,
+												Line:   9,
 											},
 										},
 									},
@@ -525,14 +525,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 131,
-									Line:   3,
+									Column: 3,
+									Line:   15,
 								},
 								File:   "generate.flux",
-								Source: "[{ _start: time , _stop: time , _time: time , _value:int }]",
+								Source: "[{\n    _start: time,\n    _stop: time,\n    _time: time,\n    _value: int,\n}]",
 								Start: ast.Position{
-									Column: 72,
-									Line:   3,
+									Column: 6,
+									Line:   10,
 								},
 							},
 						},
@@ -541,14 +541,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 130,
-										Line:   3,
+										Column: 2,
+										Line:   15,
 									},
 									File:   "generate.flux",
-									Source: "{ _start: time , _stop: time , _time: time , _value:int }",
+									Source: "{\n    _start: time,\n    _stop: time,\n    _time: time,\n    _value: int,\n}",
 									Start: ast.Position{
-										Column: 73,
-										Line:   3,
+										Column: 7,
+										Line:   10,
 									},
 								},
 							},
@@ -557,14 +557,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 87,
-											Line:   3,
+											Column: 17,
+											Line:   11,
 										},
 										File:   "generate.flux",
 										Source: "_start: time",
 										Start: ast.Position{
-											Column: 75,
-											Line:   3,
+											Column: 5,
+											Line:   11,
 										},
 									},
 								},
@@ -573,14 +573,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 81,
-												Line:   3,
+												Column: 11,
+												Line:   11,
 											},
 											File:   "generate.flux",
 											Source: "_start",
 											Start: ast.Position{
-												Column: 75,
-												Line:   3,
+												Column: 5,
+												Line:   11,
 											},
 										},
 									},
@@ -591,14 +591,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 87,
-												Line:   3,
+												Column: 17,
+												Line:   11,
 											},
 											File:   "generate.flux",
 											Source: "time",
 											Start: ast.Position{
-												Column: 83,
-												Line:   3,
+												Column: 13,
+												Line:   11,
 											},
 										},
 									},
@@ -607,14 +607,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 87,
-													Line:   3,
+													Column: 17,
+													Line:   11,
 												},
 												File:   "generate.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 83,
-													Line:   3,
+													Column: 13,
+													Line:   11,
 												},
 											},
 										},
@@ -626,14 +626,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 101,
-											Line:   3,
+											Column: 16,
+											Line:   12,
 										},
 										File:   "generate.flux",
 										Source: "_stop: time",
 										Start: ast.Position{
-											Column: 90,
-											Line:   3,
+											Column: 5,
+											Line:   12,
 										},
 									},
 								},
@@ -642,14 +642,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 95,
-												Line:   3,
+												Column: 10,
+												Line:   12,
 											},
 											File:   "generate.flux",
 											Source: "_stop",
 											Start: ast.Position{
-												Column: 90,
-												Line:   3,
+												Column: 5,
+												Line:   12,
 											},
 										},
 									},
@@ -660,14 +660,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 101,
-												Line:   3,
+												Column: 16,
+												Line:   12,
 											},
 											File:   "generate.flux",
 											Source: "time",
 											Start: ast.Position{
-												Column: 97,
-												Line:   3,
+												Column: 12,
+												Line:   12,
 											},
 										},
 									},
@@ -676,14 +676,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 101,
-													Line:   3,
+													Column: 16,
+													Line:   12,
 												},
 												File:   "generate.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 97,
-													Line:   3,
+													Column: 12,
+													Line:   12,
 												},
 											},
 										},
@@ -695,14 +695,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 115,
-											Line:   3,
+											Column: 16,
+											Line:   13,
 										},
 										File:   "generate.flux",
 										Source: "_time: time",
 										Start: ast.Position{
-											Column: 104,
-											Line:   3,
+											Column: 5,
+											Line:   13,
 										},
 									},
 								},
@@ -711,14 +711,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 109,
-												Line:   3,
+												Column: 10,
+												Line:   13,
 											},
 											File:   "generate.flux",
 											Source: "_time",
 											Start: ast.Position{
-												Column: 104,
-												Line:   3,
+												Column: 5,
+												Line:   13,
 											},
 										},
 									},
@@ -729,14 +729,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 115,
-												Line:   3,
+												Column: 16,
+												Line:   13,
 											},
 											File:   "generate.flux",
 											Source: "time",
 											Start: ast.Position{
-												Column: 111,
-												Line:   3,
+												Column: 12,
+												Line:   13,
 											},
 										},
 									},
@@ -745,14 +745,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 115,
-													Line:   3,
+													Column: 16,
+													Line:   13,
 												},
 												File:   "generate.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 111,
-													Line:   3,
+													Column: 12,
+													Line:   13,
 												},
 											},
 										},
@@ -764,14 +764,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 128,
-											Line:   3,
+											Column: 16,
+											Line:   14,
 										},
 										File:   "generate.flux",
-										Source: "_value:int",
+										Source: "_value: int",
 										Start: ast.Position{
-											Column: 118,
-											Line:   3,
+											Column: 5,
+											Line:   14,
 										},
 									},
 								},
@@ -780,14 +780,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 124,
-												Line:   3,
+												Column: 11,
+												Line:   14,
 											},
 											File:   "generate.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 118,
-												Line:   3,
+												Column: 5,
+												Line:   14,
 											},
 										},
 									},
@@ -798,14 +798,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 128,
-												Line:   3,
+												Column: 16,
+												Line:   14,
 											},
 											File:   "generate.flux",
 											Source: "int",
 											Start: ast.Position{
-												Column: 125,
-												Line:   3,
+												Column: 13,
+												Line:   14,
 											},
 										},
 									},
@@ -814,14 +814,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 128,
-													Line:   3,
+													Column: 16,
+													Line:   14,
 												},
 												File:   "generate.flux",
 												Source: "int",
 												Start: ast.Position{
-													Column: 125,
-													Line:   3,
+													Column: 13,
+													Line:   14,
 												},
 											},
 										},

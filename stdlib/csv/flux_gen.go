@@ -22,13 +22,13 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   3,
+					Line:   6,
 				},
 				File:   "csv.flux",
-				Source: "package csv\n\nbuiltin from",
+				Source: "package csv\n\n\n// From parses an annotated CSV and produces a stream of tables.\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   2,
 				},
 			},
 		},
@@ -38,13 +38,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   3,
+						Line:   6,
 					},
 					File:   "csv.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   6,
 					},
 				},
 			},
@@ -54,13 +54,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   3,
+							Line:   6,
 						},
 						File:   "csv.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   6,
 						},
 					},
 				},
@@ -72,13 +72,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 68,
-							Line:   3,
+							Line:   6,
 						},
 						File:   "csv.flux",
 						Source: "(?csv: string, ?file: string) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 16,
-							Line:   3,
+							Line:   6,
 						},
 					},
 				},
@@ -88,13 +88,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 68,
-								Line:   3,
+								Line:   6,
 							},
 							File:   "csv.flux",
 							Source: "A: Record",
 							Start: ast.Position{
 								Column: 59,
-								Line:   3,
+								Line:   6,
 							},
 						},
 					},
@@ -104,13 +104,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 68,
-									Line:   3,
+									Line:   6,
 								},
 								File:   "csv.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 62,
-									Line:   3,
+									Line:   6,
 								},
 							},
 						},
@@ -122,13 +122,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   3,
+									Line:   6,
 								},
 								File:   "csv.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 59,
-									Line:   3,
+									Line:   6,
 								},
 							},
 						},
@@ -141,13 +141,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 52,
-								Line:   3,
+								Line:   6,
 							},
 							File:   "csv.flux",
 							Source: "(?csv: string, ?file: string) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   3,
+								Line:   6,
 							},
 						},
 					},
@@ -157,13 +157,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   3,
+									Line:   6,
 								},
 								File:   "csv.flux",
 								Source: "?csv: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   3,
+									Line:   6,
 								},
 							},
 						},
@@ -174,13 +174,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   3,
+										Line:   6,
 									},
 									File:   "csv.flux",
 									Source: "csv",
 									Start: ast.Position{
 										Column: 18,
-										Line:   3,
+										Line:   6,
 									},
 								},
 							},
@@ -192,13 +192,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   3,
+										Line:   6,
 									},
 									File:   "csv.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 23,
-										Line:   3,
+										Line:   6,
 									},
 								},
 							},
@@ -208,13 +208,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   3,
+											Line:   6,
 										},
 										File:   "csv.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 23,
-											Line:   3,
+											Line:   6,
 										},
 									},
 								},
@@ -227,13 +227,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   3,
+									Line:   6,
 								},
 								File:   "csv.flux",
 								Source: "?file: string",
 								Start: ast.Position{
 									Column: 31,
-									Line:   3,
+									Line:   6,
 								},
 							},
 						},
@@ -244,13 +244,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   3,
+										Line:   6,
 									},
 									File:   "csv.flux",
 									Source: "file",
 									Start: ast.Position{
 										Column: 32,
-										Line:   3,
+										Line:   6,
 									},
 								},
 							},
@@ -262,13 +262,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 44,
-										Line:   3,
+										Line:   6,
 									},
 									File:   "csv.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 38,
-										Line:   3,
+										Line:   6,
 									},
 								},
 							},
@@ -278,13 +278,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   3,
+											Line:   6,
 										},
 										File:   "csv.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 38,
-											Line:   3,
+											Line:   6,
 										},
 									},
 								},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 52,
-									Line:   3,
+									Line:   6,
 								},
 								File:   "csv.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 49,
-									Line:   3,
+									Line:   6,
 								},
 							},
 						},
@@ -314,13 +314,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   3,
+										Line:   6,
 									},
 									File:   "csv.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 50,
-										Line:   3,
+										Line:   6,
 									},
 								},
 							},
@@ -330,13 +330,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 51,
-											Line:   3,
+											Line:   6,
 										},
 										File:   "csv.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 50,
-											Line:   3,
+											Line:   6,
 										},
 									},
 								},
@@ -356,13 +356,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   1,
+						Line:   2,
 					},
 					File:   "csv.flux",
 					Source: "package csv",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   2,
 					},
 				},
 			},
@@ -372,13 +372,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   1,
+							Line:   2,
 						},
 						File:   "csv.flux",
 						Source: "csv",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   2,
 						},
 					},
 				},

@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 72,
-					Line:   27,
+					Column: 62,
+					Line:   32,
 				},
 				File:   "http.flux",
-				Source: "package http\n\nimport \"experimental\"\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record\n\n// basicAuth will take a username/password combination and return the authorization\n// header value.\nbuiltin basicAuth : (u: string, p: string) => string\n\n// PathEscape escapes the string so it can be safely placed inside a URL path segment\n// replacing special characters (including /) with %XX sequences as needed.\nbuiltin pathEscape : (inputString: string) => string\n\nendpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+				Source: "package http\n\n\nimport \"experimental\"\n\n// Post submits an HTTP post request to the specified URL with headers and data.\n// The HTTP status code is returned.\nbuiltin post : (url: string, ?headers: A, ?data: bytes) => int where A: Record\n\n// basicAuth will take a username/password combination and return the authorization\n// header value.\nbuiltin basicAuth : (u: string, p: string) => string\n\n// PathEscape escapes the string so it can be safely placed inside a URL path segment\n// replacing special characters (including /) with %XX sequences as needed.\nbuiltin pathEscape : (inputString: string) => string\n\n// Endpoint returns a function that acts as a notification endpoint,\n// which will post the notification to the url.\n//\n// See influxdata/influxdb/monitor.notify\nendpoint = (url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -38,13 +38,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "http.flux",
 					Source: "builtin post",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -54,13 +54,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "http.flux",
 						Source: "post",
 						Start: ast.Position{
 							Column: 9,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -72,13 +72,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 79,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "http.flux",
 						Source: "(url: string, ?headers: A, ?data: bytes) => int where A: Record",
 						Start: ast.Position{
 							Column: 16,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -88,13 +88,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 79,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "http.flux",
 							Source: "A: Record",
 							Start: ast.Position{
 								Column: 70,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -104,13 +104,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 79,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "http.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 73,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -122,13 +122,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "http.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 70,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -141,13 +141,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 63,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "http.flux",
 							Source: "(url: string, ?headers: A, ?data: bytes) => int",
 							Start: ast.Position{
 								Column: 16,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -157,13 +157,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "http.flux",
 								Source: "url: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -174,13 +174,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   7,
+										Line:   8,
 									},
 									File:   "http.flux",
 									Source: "url",
 									Start: ast.Position{
 										Column: 17,
-										Line:   7,
+										Line:   8,
 									},
 								},
 							},
@@ -192,13 +192,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   7,
+										Line:   8,
 									},
 									File:   "http.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 22,
-										Line:   7,
+										Line:   8,
 									},
 								},
 							},
@@ -208,13 +208,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   7,
+											Line:   8,
 										},
 										File:   "http.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 22,
-											Line:   7,
+											Line:   8,
 										},
 									},
 								},
@@ -227,13 +227,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "http.flux",
 								Source: "?headers: A",
 								Start: ast.Position{
 									Column: 30,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -244,13 +244,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   7,
+										Line:   8,
 									},
 									File:   "http.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 31,
-										Line:   7,
+										Line:   8,
 									},
 								},
 							},
@@ -262,13 +262,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   7,
+										Line:   8,
 									},
 									File:   "http.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 40,
-										Line:   7,
+										Line:   8,
 									},
 								},
 							},
@@ -278,13 +278,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 41,
-											Line:   7,
+											Line:   8,
 										},
 										File:   "http.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 40,
-											Line:   7,
+											Line:   8,
 										},
 									},
 								},
@@ -297,13 +297,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "http.flux",
 								Source: "?data: bytes",
 								Start: ast.Position{
 									Column: 43,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -314,13 +314,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   7,
+										Line:   8,
 									},
 									File:   "http.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 44,
-										Line:   7,
+										Line:   8,
 									},
 								},
 							},
@@ -332,13 +332,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   7,
+										Line:   8,
 									},
 									File:   "http.flux",
 									Source: "bytes",
 									Start: ast.Position{
 										Column: 50,
-										Line:   7,
+										Line:   8,
 									},
 								},
 							},
@@ -348,13 +348,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 55,
-											Line:   7,
+											Line:   8,
 										},
 										File:   "http.flux",
 										Source: "bytes",
 										Start: ast.Position{
 											Column: 50,
-											Line:   7,
+											Line:   8,
 										},
 									},
 								},
@@ -368,13 +368,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 63,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "http.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 60,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -384,13 +384,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 63,
-										Line:   7,
+										Line:   8,
 									},
 									File:   "http.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 60,
-										Line:   7,
+										Line:   8,
 									},
 								},
 							},
@@ -405,13 +405,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   11,
+						Line:   12,
 					},
 					File:   "http.flux",
 					Source: "builtin basicAuth",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   12,
 					},
 				},
 			},
@@ -421,13 +421,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   11,
+							Line:   12,
 						},
 						File:   "http.flux",
 						Source: "basicAuth",
 						Start: ast.Position{
 							Column: 9,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -439,13 +439,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 53,
-							Line:   11,
+							Line:   12,
 						},
 						File:   "http.flux",
 						Source: "(u: string, p: string) => string",
 						Start: ast.Position{
 							Column: 21,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -456,13 +456,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 53,
-								Line:   11,
+								Line:   12,
 							},
 							File:   "http.flux",
 							Source: "(u: string, p: string) => string",
 							Start: ast.Position{
 								Column: 21,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -472,13 +472,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "http.flux",
 								Source: "u: string",
 								Start: ast.Position{
 									Column: 22,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -489,13 +489,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "http.flux",
 									Source: "u",
 									Start: ast.Position{
 										Column: 22,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -507,13 +507,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "http.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -523,13 +523,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   11,
+											Line:   12,
 										},
 										File:   "http.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 25,
-											Line:   11,
+											Line:   12,
 										},
 									},
 								},
@@ -542,13 +542,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "http.flux",
 								Source: "p: string",
 								Start: ast.Position{
 									Column: 33,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -559,13 +559,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "http.flux",
 									Source: "p",
 									Start: ast.Position{
 										Column: 33,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -577,13 +577,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "http.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 36,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -593,13 +593,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   11,
+											Line:   12,
 										},
 										File:   "http.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 36,
-											Line:   11,
+											Line:   12,
 										},
 									},
 								},
@@ -613,13 +613,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "http.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 47,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -629,13 +629,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "http.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 47,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -650,13 +650,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   15,
+						Line:   16,
 					},
 					File:   "http.flux",
 					Source: "builtin pathEscape",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -666,13 +666,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "http.flux",
 						Source: "pathEscape",
 						Start: ast.Position{
 							Column: 9,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -684,13 +684,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 53,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "http.flux",
 						Source: "(inputString: string) => string",
 						Start: ast.Position{
 							Column: 22,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -701,13 +701,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 53,
-								Line:   15,
+								Line:   16,
 							},
 							File:   "http.flux",
 							Source: "(inputString: string) => string",
 							Start: ast.Position{
 								Column: 22,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -717,13 +717,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "http.flux",
 								Source: "inputString: string",
 								Start: ast.Position{
 									Column: 23,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -734,13 +734,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   15,
+										Line:   16,
 									},
 									File:   "http.flux",
 									Source: "inputString",
 									Start: ast.Position{
 										Column: 23,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -752,13 +752,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   15,
+										Line:   16,
 									},
 									File:   "http.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 36,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -768,13 +768,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   15,
+											Line:   16,
 										},
 										File:   "http.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 36,
-											Line:   15,
+											Line:   16,
 										},
 									},
 								},
@@ -788,13 +788,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "http.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 47,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -804,13 +804,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   15,
+										Line:   16,
 									},
 									File:   "http.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 47,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -824,14 +824,14 @@ var pkgAST = &ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 72,
-						Line:   27,
+						Column: 62,
+						Line:   32,
 					},
 					File:   "http.flux",
-					Source: "endpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+					Source: "endpoint = (url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   17,
+						Line:   22,
 					},
 				},
 			},
@@ -841,13 +841,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   17,
+							Line:   22,
 						},
 						File:   "http.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   17,
+							Line:   22,
 						},
 					},
 				},
@@ -858,14 +858,14 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 72,
-							Line:   27,
+							Column: 62,
+							Line:   32,
 						},
 						File:   "http.flux",
-						Source: "(url) =>\n    (mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+						Source: "(url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])",
 						Start: ast.Position{
 							Column: 12,
-							Line:   17,
+							Line:   22,
 						},
 					},
 				},
@@ -874,14 +874,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 72,
-								Line:   27,
+								Column: 62,
+								Line:   32,
 							},
 							File:   "http.flux",
-							Source: "(mapFn) =>\n        (tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])",
 							Start: ast.Position{
-								Column: 5,
-								Line:   18,
+								Column: 21,
+								Line:   22,
 							},
 						},
 					},
@@ -890,14 +890,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 72,
-									Line:   27,
+									Column: 62,
+									Line:   32,
 								},
 								File:   "http.flux",
-								Source: "(tables=<-) =>\n            tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])",
 								Start: ast.Position{
-									Column: 9,
-									Line:   19,
+									Column: 32,
+									Line:   22,
 								},
 							},
 						},
@@ -908,14 +908,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   20,
+												Column: 53,
+												Line:   22,
 											},
 											File:   "http.flux",
 											Source: "tables",
 											Start: ast.Position{
-												Column: 13,
-												Line:   20,
+												Column: 47,
+												Line:   22,
 											},
 										},
 									},
@@ -925,14 +925,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 19,
-											Line:   26,
+											Column: 6,
+											Line:   31,
 										},
 										File:   "http.flux",
-										Source: "tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })",
+										Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )",
 										Start: ast.Position{
-											Column: 13,
-											Line:   20,
+											Column: 47,
+											Line:   22,
 										},
 									},
 								},
@@ -942,14 +942,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 18,
-													Line:   26,
+													Column: 10,
+													Line:   30,
 												},
 												File:   "http.flux",
-												Source: "fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                }",
+												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        }",
 												Start: ast.Position{
-													Column: 24,
-													Line:   21,
+													Column: 9,
+													Line:   24,
 												},
 											},
 										},
@@ -958,14 +958,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 18,
-														Line:   26,
+														Column: 10,
+														Line:   30,
 													},
 													File:   "http.flux",
-													Source: "fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                }",
+													Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        }",
 													Start: ast.Position{
-														Column: 24,
-														Line:   21,
+														Column: 9,
+														Line:   24,
 													},
 												},
 											},
@@ -974,14 +974,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   21,
+															Column: 11,
+															Line:   24,
 														},
 														File:   "http.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 24,
-															Line:   21,
+															Column: 9,
+															Line:   24,
 														},
 													},
 												},
@@ -992,14 +992,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 18,
-															Line:   26,
+															Column: 10,
+															Line:   30,
 														},
 														File:   "http.flux",
-														Source: "(r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                }",
+														Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        }",
 														Start: ast.Position{
-															Column: 28,
-															Line:   21,
+															Column: 13,
+															Line:   24,
 														},
 													},
 												},
@@ -1008,14 +1008,14 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
-																Line:   26,
+																Column: 10,
+																Line:   30,
 															},
 															File:   "http.flux",
-															Source: "{\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                }",
+															Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        }",
 															Start: ast.Position{
-																Column: 35,
-																Line:   21,
+																Column: 20,
+																Line:   24,
 															},
 														},
 													},
@@ -1024,14 +1024,14 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 38,
-																	Line:   22,
+																	Column: 30,
+																	Line:   25,
 																},
 																File:   "http.flux",
 																Source: "obj = mapFn(r: r)",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   22,
+																	Column: 13,
+																	Line:   25,
 																},
 															},
 														},
@@ -1040,14 +1040,14 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 24,
-																		Line:   22,
+																		Column: 16,
+																		Line:   25,
 																	},
 																	File:   "http.flux",
 																	Source: "obj",
 																	Start: ast.Position{
-																		Column: 21,
-																		Line:   22,
+																		Column: 13,
+																		Line:   25,
 																	},
 																},
 															},
@@ -1059,14 +1059,14 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   22,
+																			Column: 29,
+																			Line:   25,
 																		},
 																		File:   "http.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
-																			Column: 33,
-																			Line:   22,
+																			Column: 25,
+																			Line:   25,
 																		},
 																	},
 																},
@@ -1075,14 +1075,14 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 37,
-																				Line:   22,
+																				Column: 29,
+																				Line:   25,
 																			},
 																			File:   "http.flux",
 																			Source: "r: r",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   22,
+																				Column: 25,
+																				Line:   25,
 																			},
 																		},
 																	},
@@ -1091,14 +1091,14 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 34,
-																					Line:   22,
+																					Column: 26,
+																					Line:   25,
 																				},
 																				File:   "http.flux",
 																				Source: "r",
 																				Start: ast.Position{
-																					Column: 33,
-																					Line:   22,
+																					Column: 25,
+																					Line:   25,
 																				},
 																			},
 																		},
@@ -1109,14 +1109,14 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 37,
-																					Line:   22,
+																					Column: 29,
+																					Line:   25,
 																				},
 																				File:   "http.flux",
 																				Source: "r",
 																				Start: ast.Position{
-																					Column: 36,
-																					Line:   22,
+																					Column: 28,
+																					Line:   25,
 																				},
 																			},
 																		},
@@ -1129,14 +1129,14 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
-																		Line:   22,
+																		Column: 30,
+																		Line:   25,
 																	},
 																	File:   "http.flux",
 																	Source: "mapFn(r: r)",
 																	Start: ast.Position{
-																		Column: 27,
-																		Line:   22,
+																		Column: 19,
+																		Line:   25,
 																	},
 																},
 															},
@@ -1145,14 +1145,14 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 32,
-																			Line:   22,
+																			Column: 24,
+																			Line:   25,
 																		},
 																		File:   "http.flux",
 																		Source: "mapFn",
 																		Start: ast.Position{
-																			Column: 27,
-																			Line:   22,
+																			Column: 19,
+																			Line:   25,
 																		},
 																	},
 																},
@@ -1165,14 +1165,14 @@ var pkgAST = &ast.Package{
 																Errors: nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 22,
-																		Line:   25,
+																		Column: 14,
+																		Line:   29,
 																	},
 																	File:   "http.flux",
-																	Source: "{r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }",
+																	Source: "{r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }",
 																	Start: ast.Position{
-																		Column: 28,
-																		Line:   23,
+																		Column: 20,
+																		Line:   27,
 																	},
 																},
 															},
@@ -1181,14 +1181,14 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 102,
-																			Line:   24,
+																			Column: 94,
+																			Line:   28,
 																		},
 																		File:   "http.flux",
 																		Source: "_sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))",
 																		Start: ast.Position{
-																			Column: 25,
-																			Line:   24,
+																			Column: 17,
+																			Line:   28,
 																		},
 																	},
 																},
@@ -1197,14 +1197,14 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 30,
-																				Line:   24,
+																				Column: 22,
+																				Line:   28,
 																			},
 																			File:   "http.flux",
 																			Source: "_sent",
 																			Start: ast.Position{
-																				Column: 25,
-																				Line:   24,
+																				Column: 17,
+																				Line:   28,
 																			},
 																		},
 																	},
@@ -1216,14 +1216,14 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 101,
-																					Line:   24,
+																					Column: 93,
+																					Line:   28,
 																				},
 																				File:   "http.flux",
 																				Source: "v: 200 == post(url: url, headers: obj.headers, data: obj.data)",
 																				Start: ast.Position{
-																					Column: 39,
-																					Line:   24,
+																					Column: 31,
+																					Line:   28,
 																				},
 																			},
 																		},
@@ -1232,14 +1232,14 @@ var pkgAST = &ast.Package{
 																				Errors: nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 101,
-																						Line:   24,
+																						Column: 93,
+																						Line:   28,
 																					},
 																					File:   "http.flux",
 																					Source: "v: 200 == post(url: url, headers: obj.headers, data: obj.data)",
 																					Start: ast.Position{
-																						Column: 39,
-																						Line:   24,
+																						Column: 31,
+																						Line:   28,
 																					},
 																				},
 																			},
@@ -1248,14 +1248,14 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 40,
-																							Line:   24,
+																							Column: 32,
+																							Line:   28,
 																						},
 																						File:   "http.flux",
 																						Source: "v",
 																						Start: ast.Position{
-																							Column: 39,
-																							Line:   24,
+																							Column: 31,
+																							Line:   28,
 																						},
 																					},
 																				},
@@ -1266,14 +1266,14 @@ var pkgAST = &ast.Package{
 																					Errors: nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 101,
-																							Line:   24,
+																							Column: 93,
+																							Line:   28,
 																						},
 																						File:   "http.flux",
 																						Source: "200 == post(url: url, headers: obj.headers, data: obj.data)",
 																						Start: ast.Position{
-																							Column: 42,
-																							Line:   24,
+																							Column: 34,
+																							Line:   28,
 																						},
 																					},
 																				},
@@ -1282,14 +1282,14 @@ var pkgAST = &ast.Package{
 																						Errors: nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 45,
-																								Line:   24,
+																								Column: 37,
+																								Line:   28,
 																							},
 																							File:   "http.flux",
 																							Source: "200",
 																							Start: ast.Position{
-																								Column: 42,
-																								Line:   24,
+																								Column: 34,
+																								Line:   28,
 																							},
 																						},
 																					},
@@ -1302,14 +1302,14 @@ var pkgAST = &ast.Package{
 																							Errors: nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 100,
-																									Line:   24,
+																									Column: 92,
+																									Line:   28,
 																								},
 																								File:   "http.flux",
 																								Source: "url: url, headers: obj.headers, data: obj.data",
 																								Start: ast.Position{
-																									Column: 54,
-																									Line:   24,
+																									Column: 46,
+																									Line:   28,
 																								},
 																							},
 																						},
@@ -1318,14 +1318,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 62,
-																										Line:   24,
+																										Column: 54,
+																										Line:   28,
 																									},
 																									File:   "http.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
-																										Column: 54,
-																										Line:   24,
+																										Column: 46,
+																										Line:   28,
 																									},
 																								},
 																							},
@@ -1334,14 +1334,14 @@ var pkgAST = &ast.Package{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 57,
-																											Line:   24,
+																											Column: 49,
+																											Line:   28,
 																										},
 																										File:   "http.flux",
 																										Source: "url",
 																										Start: ast.Position{
-																											Column: 54,
-																											Line:   24,
+																											Column: 46,
+																											Line:   28,
 																										},
 																									},
 																								},
@@ -1352,14 +1352,14 @@ var pkgAST = &ast.Package{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 62,
-																											Line:   24,
+																											Column: 54,
+																											Line:   28,
 																										},
 																										File:   "http.flux",
 																										Source: "url",
 																										Start: ast.Position{
-																											Column: 59,
-																											Line:   24,
+																											Column: 51,
+																											Line:   28,
 																										},
 																									},
 																								},
@@ -1370,14 +1370,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 84,
-																										Line:   24,
+																										Column: 76,
+																										Line:   28,
 																									},
 																									File:   "http.flux",
 																									Source: "headers: obj.headers",
 																									Start: ast.Position{
-																										Column: 64,
-																										Line:   24,
+																										Column: 56,
+																										Line:   28,
 																									},
 																								},
 																							},
@@ -1386,14 +1386,14 @@ var pkgAST = &ast.Package{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 71,
-																											Line:   24,
+																											Column: 63,
+																											Line:   28,
 																										},
 																										File:   "http.flux",
 																										Source: "headers",
 																										Start: ast.Position{
-																											Column: 64,
-																											Line:   24,
+																											Column: 56,
+																											Line:   28,
 																										},
 																									},
 																								},
@@ -1404,14 +1404,14 @@ var pkgAST = &ast.Package{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 84,
-																											Line:   24,
+																											Column: 76,
+																											Line:   28,
 																										},
 																										File:   "http.flux",
 																										Source: "obj.headers",
 																										Start: ast.Position{
-																											Column: 73,
-																											Line:   24,
+																											Column: 65,
+																											Line:   28,
 																										},
 																									},
 																								},
@@ -1420,14 +1420,14 @@ var pkgAST = &ast.Package{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 76,
-																												Line:   24,
+																												Column: 68,
+																												Line:   28,
 																											},
 																											File:   "http.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 73,
-																												Line:   24,
+																												Column: 65,
+																												Line:   28,
 																											},
 																										},
 																									},
@@ -1438,14 +1438,14 @@ var pkgAST = &ast.Package{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 84,
-																												Line:   24,
+																												Column: 76,
+																												Line:   28,
 																											},
 																											File:   "http.flux",
 																											Source: "headers",
 																											Start: ast.Position{
-																												Column: 77,
-																												Line:   24,
+																												Column: 69,
+																												Line:   28,
 																											},
 																										},
 																									},
@@ -1457,14 +1457,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 100,
-																										Line:   24,
+																										Column: 92,
+																										Line:   28,
 																									},
 																									File:   "http.flux",
 																									Source: "data: obj.data",
 																									Start: ast.Position{
-																										Column: 86,
-																										Line:   24,
+																										Column: 78,
+																										Line:   28,
 																									},
 																								},
 																							},
@@ -1473,14 +1473,14 @@ var pkgAST = &ast.Package{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 90,
-																											Line:   24,
+																											Column: 82,
+																											Line:   28,
 																										},
 																										File:   "http.flux",
 																										Source: "data",
 																										Start: ast.Position{
-																											Column: 86,
-																											Line:   24,
+																											Column: 78,
+																											Line:   28,
 																										},
 																									},
 																								},
@@ -1491,14 +1491,14 @@ var pkgAST = &ast.Package{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 100,
-																											Line:   24,
+																											Column: 92,
+																											Line:   28,
 																										},
 																										File:   "http.flux",
 																										Source: "obj.data",
 																										Start: ast.Position{
-																											Column: 92,
-																											Line:   24,
+																											Column: 84,
+																											Line:   28,
 																										},
 																									},
 																								},
@@ -1507,14 +1507,14 @@ var pkgAST = &ast.Package{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 95,
-																												Line:   24,
+																												Column: 87,
+																												Line:   28,
 																											},
 																											File:   "http.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 92,
-																												Line:   24,
+																												Column: 84,
+																												Line:   28,
 																											},
 																										},
 																									},
@@ -1525,14 +1525,14 @@ var pkgAST = &ast.Package{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 100,
-																												Line:   24,
+																												Column: 92,
+																												Line:   28,
 																											},
 																											File:   "http.flux",
 																											Source: "data",
 																											Start: ast.Position{
-																												Column: 96,
-																												Line:   24,
+																												Column: 88,
+																												Line:   28,
 																											},
 																										},
 																									},
@@ -1546,14 +1546,14 @@ var pkgAST = &ast.Package{
 																						Errors: nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 101,
-																								Line:   24,
+																								Column: 93,
+																								Line:   28,
 																							},
 																							File:   "http.flux",
 																							Source: "post(url: url, headers: obj.headers, data: obj.data)",
 																							Start: ast.Position{
-																								Column: 49,
-																								Line:   24,
+																								Column: 41,
+																								Line:   28,
 																							},
 																						},
 																					},
@@ -1562,14 +1562,14 @@ var pkgAST = &ast.Package{
 																							Errors: nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 53,
-																									Line:   24,
+																									Column: 45,
+																									Line:   28,
 																								},
 																								File:   "http.flux",
 																								Source: "post",
 																								Start: ast.Position{
-																									Column: 49,
-																									Line:   24,
+																									Column: 41,
+																									Line:   28,
 																								},
 																							},
 																						},
@@ -1584,14 +1584,14 @@ var pkgAST = &ast.Package{
 																		Errors: nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 102,
-																				Line:   24,
+																				Column: 94,
+																				Line:   28,
 																			},
 																			File:   "http.flux",
 																			Source: "string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   24,
+																				Column: 24,
+																				Line:   28,
 																			},
 																		},
 																	},
@@ -1600,14 +1600,14 @@ var pkgAST = &ast.Package{
 																			Errors: nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 38,
-																					Line:   24,
+																					Column: 30,
+																					Line:   28,
 																				},
 																				File:   "http.flux",
 																				Source: "string",
 																				Start: ast.Position{
-																					Column: 32,
-																					Line:   24,
+																					Column: 24,
+																					Line:   28,
 																				},
 																			},
 																		},
@@ -1620,14 +1620,14 @@ var pkgAST = &ast.Package{
 																	Errors: nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 30,
-																			Line:   23,
+																			Column: 22,
+																			Line:   27,
 																		},
 																		File:   "http.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 29,
-																			Line:   23,
+																			Column: 21,
+																			Line:   27,
 																		},
 																	},
 																},
@@ -1638,14 +1638,14 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 22,
-																	Line:   25,
+																	Column: 14,
+																	Line:   29,
 																},
 																File:   "http.flux",
-																Source: "return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }",
+																Source: "return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   23,
+																	Column: 13,
+																	Line:   27,
 																},
 															},
 														},
@@ -1656,14 +1656,14 @@ var pkgAST = &ast.Package{
 														Errors: nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 30,
-																Line:   21,
+																Column: 15,
+																Line:   24,
 															},
 															File:   "http.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 29,
-																Line:   21,
+																Column: 14,
+																Line:   24,
 															},
 														},
 													},
@@ -1672,14 +1672,14 @@ var pkgAST = &ast.Package{
 															Errors: nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 30,
-																	Line:   21,
+																	Column: 15,
+																	Line:   24,
 																},
 																File:   "http.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 29,
-																	Line:   21,
+																	Column: 14,
+																	Line:   24,
 																},
 															},
 														},
@@ -1695,14 +1695,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   26,
+												Column: 6,
+												Line:   31,
 											},
 											File:   "http.flux",
-											Source: "map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })",
+											Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )",
 											Start: ast.Position{
-												Column: 20,
-												Line:   21,
+												Column: 8,
+												Line:   23,
 											},
 										},
 									},
@@ -1711,14 +1711,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   21,
+													Column: 11,
+													Line:   23,
 												},
 												File:   "http.flux",
 												Source: "map",
 												Start: ast.Position{
-													Column: 20,
-													Line:   21,
+													Column: 8,
+													Line:   23,
 												},
 											},
 										},
@@ -1730,14 +1730,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 72,
-										Line:   27,
+										Column: 62,
+										Line:   32,
 									},
 									File:   "http.flux",
-									Source: "tables\n                |> map(fn: (r) => {\n                    obj = mapFn(r: r)\n                    return {r with\n                        _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data))\n                    }\n                })\n                |> experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(v: 200 == post(url: url, headers: obj.headers, data: obj.data)),\n            }\n        },\n    )\n    |> experimental.group(mode: \"extend\", columns: [\"_sent\"])",
 									Start: ast.Position{
-										Column: 13,
-										Line:   20,
+										Column: 47,
+										Line:   22,
 									},
 								},
 							},
@@ -1747,14 +1747,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 71,
-												Line:   27,
+												Column: 61,
+												Line:   32,
 											},
 											File:   "http.flux",
-											Source: "mode:\"extend\", columns:[\"_sent\"]",
+											Source: "mode: \"extend\", columns: [\"_sent\"]",
 											Start: ast.Position{
-												Column: 39,
-												Line:   27,
+												Column: 27,
+												Line:   32,
 											},
 										},
 									},
@@ -1763,14 +1763,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 52,
-													Line:   27,
+													Column: 41,
+													Line:   32,
 												},
 												File:   "http.flux",
-												Source: "mode:\"extend\"",
+												Source: "mode: \"extend\"",
 												Start: ast.Position{
-													Column: 39,
-													Line:   27,
+													Column: 27,
+													Line:   32,
 												},
 											},
 										},
@@ -1779,14 +1779,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
-														Line:   27,
+														Column: 31,
+														Line:   32,
 													},
 													File:   "http.flux",
 													Source: "mode",
 													Start: ast.Position{
-														Column: 39,
-														Line:   27,
+														Column: 27,
+														Line:   32,
 													},
 												},
 											},
@@ -1797,14 +1797,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 52,
-														Line:   27,
+														Column: 41,
+														Line:   32,
 													},
 													File:   "http.flux",
 													Source: "\"extend\"",
 													Start: ast.Position{
-														Column: 44,
-														Line:   27,
+														Column: 33,
+														Line:   32,
 													},
 												},
 											},
@@ -1815,14 +1815,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 71,
-													Line:   27,
+													Column: 61,
+													Line:   32,
 												},
 												File:   "http.flux",
-												Source: "columns:[\"_sent\"]",
+												Source: "columns: [\"_sent\"]",
 												Start: ast.Position{
-													Column: 54,
-													Line:   27,
+													Column: 43,
+													Line:   32,
 												},
 											},
 										},
@@ -1831,14 +1831,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 61,
-														Line:   27,
+														Column: 50,
+														Line:   32,
 													},
 													File:   "http.flux",
 													Source: "columns",
 													Start: ast.Position{
-														Column: 54,
-														Line:   27,
+														Column: 43,
+														Line:   32,
 													},
 												},
 											},
@@ -1849,14 +1849,14 @@ var pkgAST = &ast.Package{
 												Errors: nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 71,
-														Line:   27,
+														Column: 61,
+														Line:   32,
 													},
 													File:   "http.flux",
 													Source: "[\"_sent\"]",
 													Start: ast.Position{
-														Column: 62,
-														Line:   27,
+														Column: 52,
+														Line:   32,
 													},
 												},
 											},
@@ -1865,14 +1865,14 @@ var pkgAST = &ast.Package{
 													Errors: nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 70,
-															Line:   27,
+															Column: 60,
+															Line:   32,
 														},
 														File:   "http.flux",
 														Source: "\"_sent\"",
 														Start: ast.Position{
-															Column: 63,
-															Line:   27,
+															Column: 53,
+															Line:   32,
 														},
 													},
 												},
@@ -1886,14 +1886,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 72,
-											Line:   27,
+											Column: 62,
+											Line:   32,
 										},
 										File:   "http.flux",
-										Source: "experimental.group(mode:\"extend\", columns:[\"_sent\"])",
+										Source: "experimental.group(mode: \"extend\", columns: [\"_sent\"])",
 										Start: ast.Position{
-											Column: 20,
-											Line:   27,
+											Column: 8,
+											Line:   32,
 										},
 									},
 								},
@@ -1902,14 +1902,14 @@ var pkgAST = &ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 38,
-												Line:   27,
+												Column: 26,
+												Line:   32,
 											},
 											File:   "http.flux",
 											Source: "experimental.group",
 											Start: ast.Position{
-												Column: 20,
-												Line:   27,
+												Column: 8,
+												Line:   32,
 											},
 										},
 									},
@@ -1918,14 +1918,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 32,
-													Line:   27,
+													Column: 20,
+													Line:   32,
 												},
 												File:   "http.flux",
 												Source: "experimental",
 												Start: ast.Position{
-													Column: 20,
-													Line:   27,
+													Column: 8,
+													Line:   32,
 												},
 											},
 										},
@@ -1936,14 +1936,14 @@ var pkgAST = &ast.Package{
 											Errors: nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 38,
-													Line:   27,
+													Column: 26,
+													Line:   32,
 												},
 												File:   "http.flux",
 												Source: "group",
 												Start: ast.Position{
-													Column: 33,
-													Line:   27,
+													Column: 21,
+													Line:   32,
 												},
 											},
 										},
@@ -1957,14 +1957,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   19,
+										Column: 42,
+										Line:   22,
 									},
 									File:   "http.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
-										Column: 10,
-										Line:   19,
+										Column: 33,
+										Line:   22,
 									},
 								},
 							},
@@ -1973,14 +1973,14 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 16,
-											Line:   19,
+											Column: 39,
+											Line:   22,
 										},
 										File:   "http.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 10,
-											Line:   19,
+											Column: 33,
+											Line:   22,
 										},
 									},
 								},
@@ -1990,14 +1990,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   19,
+										Column: 42,
+										Line:   22,
 									},
 									File:   "http.flux",
 									Source: "<-",
 									Start: ast.Position{
-										Column: 17,
-										Line:   19,
+										Column: 40,
+										Line:   22,
 									},
 								},
 							}},
@@ -2008,14 +2008,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   18,
+									Column: 27,
+									Line:   22,
 								},
 								File:   "http.flux",
 								Source: "mapFn",
 								Start: ast.Position{
-									Column: 6,
-									Line:   18,
+									Column: 22,
+									Line:   22,
 								},
 							},
 						},
@@ -2024,14 +2024,14 @@ var pkgAST = &ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   18,
+										Column: 27,
+										Line:   22,
 									},
 									File:   "http.flux",
 									Source: "mapFn",
 									Start: ast.Position{
-										Column: 6,
-										Line:   18,
+										Column: 22,
+										Line:   22,
 									},
 								},
 							},
@@ -2046,13 +2046,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   17,
+								Line:   22,
 							},
 							File:   "http.flux",
 							Source: "url",
 							Start: ast.Position{
 								Column: 13,
-								Line:   17,
+								Line:   22,
 							},
 						},
 					},
@@ -2062,13 +2062,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   17,
+									Line:   22,
 								},
 								File:   "http.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   17,
+									Line:   22,
 								},
 							},
 						},
@@ -2085,13 +2085,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 22,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "http.flux",
 					Source: "import \"experimental\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -2101,13 +2101,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 22,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "http.flux",
 						Source: "\"experimental\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},

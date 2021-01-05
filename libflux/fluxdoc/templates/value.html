@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ name }}{% endblock title %}
+{% block breadcrumb %}
+<ul>
+    {% set len = pkgpath | length %}
+    {% for p in pkgpath %}
+    <li><a href="{%for i in range(end=len - loop.index)%}../{%endfor%}./">{{p}}{% if loop.last %}{% else %}/{% endif %}</a></li>
+    {% endfor %}
+</ul>
+{% endblock breadcrumb %}
+{% block content %}
+    <h1>{{ name }}</h1>
+    <pre><code>{{name}} : {{ typ }}</code></pre>
+    {{ doc | safe }}
+
+    <div id='discourse-comments'></div>
+
+    <script type="text/javascript">
+      DiscourseEmbed = { discourseUrl: 'https://community.influxdata.com/',
+                  discourseEmbedUrl: 'https://fluxlang.dev/{% for p in pkgpath%}{{p}}/{% endfor %}{{name}}.html' };
+
+      (function() {
+        var d = document.createElement('script'); d.type = 'text/javascript'; d.async = true;
+        d.src = DiscourseEmbed.discourseUrl + 'javascripts/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(d);
+      })();
+    </script>
+{% endblock content %}

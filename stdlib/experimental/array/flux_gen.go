@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   9,
+					Line:   16,
 				},
 				File:   "array.flux",
-				Source: "package array\n\n// from will construct a table from the input rows.\n//\n// This function takes the `rows` parameter. The rows\n// parameter is an array of records that will be constructed.\n// All of the records must have the same keys and the same types\n// for the values.\nbuiltin from",
+				Source: "package array\n\n\n// from will construct a table from the input rows.\n//\n// This function takes the `rows` parameter. The rows\n// parameter is an array of records that will be constructed.\n// All of the records must have the same keys and the same types\n// for the values.\n//\n// Example:\n//\n//    import \"experimental/array\"\n//    array.from(rows:[{a:1, b: false, c: \"hi\"}, {a:2, b: true, c: \"bye\"}])\n//\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -38,13 +38,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   9,
+						Line:   16,
 					},
 					File:   "array.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   16,
 					},
 				},
 			},
@@ -54,13 +54,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   9,
+							Line:   16,
 						},
 						File:   "array.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   9,
+							Line:   16,
 						},
 					},
 				},
@@ -72,13 +72,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 50,
-							Line:   9,
+							Line:   16,
 						},
 						File:   "array.flux",
 						Source: "(rows: [A]) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 16,
-							Line:   9,
+							Line:   16,
 						},
 					},
 				},
@@ -88,13 +88,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   9,
+								Line:   16,
 							},
 							File:   "array.flux",
 							Source: "A: Record",
 							Start: ast.Position{
 								Column: 41,
-								Line:   9,
+								Line:   16,
 							},
 						},
 					},
@@ -104,13 +104,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   9,
+									Line:   16,
 								},
 								File:   "array.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 44,
-									Line:   9,
+									Line:   16,
 								},
 							},
 						},
@@ -122,13 +122,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   9,
+									Line:   16,
 								},
 								File:   "array.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 41,
-									Line:   9,
+									Line:   16,
 								},
 							},
 						},
@@ -141,13 +141,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   9,
+								Line:   16,
 							},
 							File:   "array.flux",
 							Source: "(rows: [A]) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   9,
+								Line:   16,
 							},
 						},
 					},
@@ -157,13 +157,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   9,
+									Line:   16,
 								},
 								File:   "array.flux",
 								Source: "rows: [A]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   9,
+									Line:   16,
 								},
 							},
 						},
@@ -174,13 +174,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
-										Line:   9,
+										Line:   16,
 									},
 									File:   "array.flux",
 									Source: "rows",
 									Start: ast.Position{
 										Column: 17,
-										Line:   9,
+										Line:   16,
 									},
 								},
 							},
@@ -192,13 +192,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   9,
+										Line:   16,
 									},
 									File:   "array.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 23,
-										Line:   9,
+										Line:   16,
 									},
 								},
 							},
@@ -208,13 +208,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   9,
+											Line:   16,
 										},
 										File:   "array.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 24,
-											Line:   9,
+											Line:   16,
 										},
 									},
 								},
@@ -224,13 +224,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   9,
+												Line:   16,
 											},
 											File:   "array.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 24,
-												Line:   9,
+												Line:   16,
 											},
 										},
 									},
@@ -245,13 +245,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   9,
+									Line:   16,
 								},
 								File:   "array.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 31,
-									Line:   9,
+									Line:   16,
 								},
 							},
 						},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   9,
+										Line:   16,
 									},
 									File:   "array.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 32,
-										Line:   9,
+										Line:   16,
 									},
 								},
 							},
@@ -277,13 +277,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   9,
+											Line:   16,
 										},
 										File:   "array.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 32,
-											Line:   9,
+											Line:   16,
 										},
 									},
 								},
