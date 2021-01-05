@@ -3,6 +3,9 @@
 {% block content %}
     <h1>{{ name }}</h1>
     <p>{{ doc }}</p>
+{% endblock content %}
+
+{% block sidebar %}
     <ul>
         {% for v in values %}
         <li><a href="{{v.name}}.html">{{v.name}}</a></li>
@@ -14,4 +17,4 @@
         <li><a href="{{p.name}}/">{{p.name}}</a></li>
         {% endfor %}
     </ul>
-{% endblock content %}
+{% endblock sidebar%}

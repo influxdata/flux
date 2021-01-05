@@ -16,20 +16,39 @@
     {% endblock head %}
   </head>
   <body>
-    <div class="topnav">
-      <div class="topnav-left">
-        <a class="influx-home" href="https://www.influxdata.com" title="InfluxData"><span class="icon-influx-logo"></span><span class="icon-influx-logotype"></span></a>
-        <span class="divider"></span>
-        <a class="docs-home" href="/"><span class=short>Doc</span><span class="long">umentation</span></a>
+    <div class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="nav-item">
+        <a class="nav-link nav-brand influx-home" href="https://www.influxdata.com/" title="InfluxData">
+          <img src="https://aws1.discourse-cdn.com/business4/uploads/influxdata/original/2X/8/821ea2815a0782d2e6c33ca5b67e747adb7fa88e.png" alt="InfluxData Community" id="site-logo" class="logo-big">
+        </a>
       </div>
-      <div class="topnav-right">
+      <div class="nav-item">
+        <a class="nav-link docs-home" href="https://fluxlang.dev/"><span class="short">Doc</span><span class="long">umentation</span></a>
+      </div>
+      <div class="nav-item ml-md-auto">
+        <a class="nav-item">Test</a>
       </div>
     </div>
-    <div class="content">
-      {% block content %}
-      {% endblock content %}
-    </div>
+    <div class="container-fluid">
+
+      <div class="row">
+
+      <div id="content" class="col-md-8 col-lg-9">
+
+        <div class="content">
+          {% block content %}
+          {% endblock content %}
+        </div><!-- content-->
+
+        <div id="sidebar" class="col-md-4 col-lg-3">
+          {% block sidebar %}
+          {% endblock sidebar %}
+        </div><!--sidebar-->
+
+      </div><!--row-->
+    </div><!--container-fluid-->
   </body>
+
   {% block footer %}
   {% endblock footer %}
 </html>
