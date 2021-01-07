@@ -21,22 +21,9 @@ pub fn parse(s: &str) -> JsValue {
     JsValue::from_serde(&file).unwrap()
 }
 
-#[wasm_bindgen]
-pub fn parse_with_rust(s: &str) -> JsValue {
-    let mut p = Parser::with_rust(s);
-    let file = p.parse_file(String::from(""));
-
-    JsValue::from_serde(&file).unwrap()
-}
-
 // Parses a string of source code.
 // The name is given to the file.
 pub fn parse_string(name: &str, s: &str) -> File {
-    let mut p = Parser::new(s);
-    p.parse_file(String::from(name))
-}
-
-pub fn parse_string_with_rust(name: &str, s: &str) -> File {
     let mut p = Parser::new(s);
     p.parse_file(String::from(name))
 }
@@ -135,22 +122,13 @@ impl Parser {
     pub fn new(src: &str) -> Parser {
         let cdata = CString::new(src).expect("CString::new failed");
 
-        let s = Box::new(Scanner::new(cdata)) as Box<dyn Scan>;
-
-        Parser {
-            s,
-            t: None,
-            errs: Vec::new(),
-            blocks: HashMap::new(),
-            fname: "".to_string(),
-            source: src.to_string(),
-        }
-    }
-
-    pub fn with_rust(src: &str) -> Parser {
-        let cdata = CString::new(src).expect("CString::new failed");
-
-        let s = Box::new(RustScanner::new(cdata)) as Box<dyn Scan>;
+        let s = match std::env::var("USE_RUST_SCANNER") {
+            Ok(tf) => match tf.as_str() {
+                "true" => Box::new(RustScanner::new(cdata)) as Box<dyn Scan>,
+                _ => Box::new(Scanner::new(cdata)) as Box<dyn Scan>,
+            },
+            _ => Box::new(Scanner::new(cdata)) as Box<dyn Scan>,
+        };
 
         Parser {
             s,
