@@ -4,9 +4,7 @@ import (
 	"context"
 
 	"github.com/influxdata/flux/fluxinit"
-	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/repl"
-	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +23,4 @@ var replCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(replCmd)
-	plan.RegisterLogicalRules(
-		universe.MergeFiltersRule{},
-	)
 }

@@ -28,37 +28,51 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var testCommand = &cobra.Command{
-	Use:   "test",
-	Short: "Run flux tests",
-	Long:  "Run flux tests",
-	Run: func(cmd *cobra.Command, args []string) {
-		fluxinit.FluxInit()
-		runFluxTests()
-	},
+type testFlags struct {
+	testNames []string
+	path      string
+	verbosity int
 }
 
-var testNames []string
-var rootDir string
-var verbosity int
+func TestCommand(setup TestSetupFunc) *cobra.Command {
+	var flags testFlags
+	testCommand := &cobra.Command{
+		Use:   "test",
+		Short: "Run flux tests",
+		Long:  "Run flux tests",
+		Run: func(cmd *cobra.Command, args []string) {
+			fluxinit.FluxInit()
+			runFluxTests(setup, flags)
+		},
+	}
+	testCommand.Flags().StringVarP(&flags.path, "path", "p", "./stdlib", "The root level directory for all packages.")
+	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
+	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, or -vv)")
+	return testCommand
+}
 
 func init() {
+	testCommand := TestCommand(NewTestExecutor)
 	rootCmd.AddCommand(testCommand)
-	testCommand.Flags().StringVarP(&rootDir, "path", "p", "./stdlib", "The root level directory for all packages.")
-	testCommand.Flags().StringSliceVar(&testNames, "test", []string{}, "The name of a specific test to run.")
-	testCommand.Flags().CountVarP(&verbosity, "verbose", "v", "verbose (-v, or -vv)")
 }
 
 // runFluxTests invokes the test runner.
-func runFluxTests() {
-	runner := NewTestRunner(NewTestReporter(verbosity))
-	err := runner.Gather(rootDir, testNames)
+func runFluxTests(setup TestSetupFunc, flags testFlags) {
+	reporter := NewTestReporter(flags.verbosity)
+	runner := NewTestRunner(reporter)
+	if err := runner.Gather(flags.path, flags.testNames); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	executor, err := setup(context.Background())
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	runner.Run(verbosity)
+	defer func() { _ = executor.Close() }()
 
+	runner.Run(executor, flags.verbosity)
 	runner.Finish()
 }
 
@@ -87,43 +101,8 @@ func (t *Test) Error() error {
 }
 
 // Run the test, saving the error to the err property of the struct.
-func (t *Test) Run() {
-	jsonAST, err := json.Marshal(t.ast)
-	if err != nil {
-		t.err = err
-		return
-	}
-	c := lang.ASTCompiler{AST: jsonAST}
-
-	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
-	program, err := c.Compile(ctx, runtime.Default)
-	if err != nil {
-		t.err = errors.Wrap(err, codes.Invalid, "failed to compile")
-		return
-	}
-
-	alloc := &memory.Allocator{}
-	query, err := program.Start(ctx, alloc)
-	if err != nil {
-		t.err = errors.Wrap(err, codes.Inherit, "error while executing program")
-		return
-	}
-	defer query.Done()
-
-	results := flux.NewResultIteratorFromQuery(query)
-	for results.More() {
-		result := results.Next()
-		err := result.Tables().Do(func(tbl flux.Table) error {
-			// The data returned here is the result of `testing.diff`, so any result means that
-			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
-			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
-			// is not exactly "human readable."
-			return fmt.Errorf("%s", table.Stringify(tbl))
-		})
-		if err != nil {
-			t.err = err
-		}
-	}
+func (t *Test) Run(executor TestExecutor) {
+	t.err = executor.Run(t.ast)
 }
 
 // contains checks a slice of strings for a given string.
@@ -144,7 +123,10 @@ type TestRunner struct {
 
 // NewTestRunner returns a new TestRunner.
 func NewTestRunner(reporter TestReporter) TestRunner {
-	return TestRunner{tests: []*Test{}, reporter: reporter}
+	return TestRunner{
+		tests:    []*Test{},
+		reporter: reporter,
+	}
 }
 
 // Gather gathers all tests from the filesystem and creates Test instances
@@ -181,7 +163,7 @@ func (t *TestRunner) Gather(rootDir string, names []string) error {
 		}
 		for _, ast := range asts {
 			test := NewTest(ast)
-			if len(testNames) == 0 || contains(testNames, test.Name()) {
+			if len(names) == 0 || contains(names, test.Name()) {
 				t.tests = append(t.tests, &test)
 			}
 		}
@@ -305,9 +287,9 @@ func isTestFile(fi os.FileInfo, filename string) bool {
 }
 
 // Run runs all tests, reporting their results.
-func (t *TestRunner) Run(verbosity int) {
+func (t *TestRunner) Run(executor TestExecutor, verbosity int) {
 	for _, test := range t.tests {
-		test.Run()
+		test.Run(executor)
 		t.reporter.ReportTestRun(test)
 	}
 }
@@ -362,3 +344,55 @@ func (t *TestReporter) Summarize(tests []*Test) {
 	}
 	fmt.Printf("\n---\nRan %d tests with %d failure(s)\n", len(tests), failures)
 }
+
+type TestSetupFunc func(ctx context.Context) (TestExecutor, error)
+
+type TestExecutor interface {
+	Run(pkg *ast.Package) error
+	io.Closer
+}
+
+func NewTestExecutor(ctx context.Context) (TestExecutor, error) {
+	return testExecutor{}, nil
+}
+
+type testExecutor struct{}
+
+func (testExecutor) Run(pkg *ast.Package) error {
+	jsonAST, err := json.Marshal(pkg)
+	if err != nil {
+		return err
+	}
+	c := lang.ASTCompiler{AST: jsonAST}
+
+	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	program, err := c.Compile(ctx, runtime.Default)
+	if err != nil {
+		return errors.Wrap(err, codes.Invalid, "failed to compile")
+	}
+
+	alloc := &memory.Allocator{}
+	query, err := program.Start(ctx, alloc)
+	if err != nil {
+		return errors.Wrap(err, codes.Inherit, "error while executing program")
+	}
+	defer query.Done()
+
+	results := flux.NewResultIteratorFromQuery(query)
+	for results.More() {
+		result := results.Next()
+		err := result.Tables().Do(func(tbl flux.Table) error {
+			// The data returned here is the result of `testing.diff`, so any result means that
+			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
+			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
+			// is not exactly "human readable."
+			return fmt.Errorf("%s", table.Stringify(tbl))
+		})
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (testExecutor) Close() error { return nil }
