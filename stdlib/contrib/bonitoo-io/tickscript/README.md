@@ -219,6 +219,8 @@ _See Examples._
 
 ##### Original TICKscript
 ```js
+duration = 5m
+every = 1m
 db = 'gw'
 tier = 'qa'
 metric_type = 'kafka_message_in_rate'
@@ -259,13 +261,14 @@ check = {
 
 // converted TICKscript
 
+duration = 5m
 db = "gw"
 tier = "qa"
 metric_type = "kafka_message_in_rate"
 h_threshold = 5000
 
-from(bucket: servicedb)
-    |> range(start: -period)
+from(bucket: db)
+    |> range(start: -duration)
     |> filter(fn: (r) => r.measurement == db)
     |> filter(fn: (r) => r.realm == tier and r.host =~ /^kafka.+.m02/)
     |> filter(fn: (r) => r._field == metric_type)
