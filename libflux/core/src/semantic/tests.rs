@@ -160,17 +160,18 @@ fn convert_record_constraints (
             match (*rec.clone()) {
                 types::Record::Extension{head: h, tail: t} => {
                     if h.k.chars().next().unwrap().is_alphabetic() {
-                        /*let new_type = None;
-                        let MonoType(he) = h.v.clone()
-                        match he {
-                             
-
-                        }*/
-                        let new_type = is_monotype(*rec.clone(), None);
-                        match new_type {
-                            Some(ret) => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: ret}, tail: t})),
-                            None => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: h.v}, tail: t})), 
-                        }      
+                        let mut new_type = None;
+                        match h.v.clone() {
+                            MonoType::Record(reco) => {
+                                new_type = is_monotype(*reco.clone(), None);
+                                match new_type {
+                                    Some(ret) => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: ret}, tail: t})),
+                                    None => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: h.v}, tail: t})), 
+                                }
+                            }
+                            _ => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: convert_record_constraints(h.v.clone())}, tail: t})),                       
+                        }
+                              
                     } else {
                         let new_type = is_monotype(*rec.clone(), None);
                         match new_type {
