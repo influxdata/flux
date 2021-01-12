@@ -22,14 +22,16 @@
 //! arbitrarily complex.
 //!
 use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::semantic::bootstrap::build_polytype;
 use crate::semantic::convert::convert_with;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
+use crate::semantic::types;
 use crate::semantic::import::Importer;
 use crate::semantic::nodes;
-use crate::semantic::types::{MaxTvar, MonoType, PolyType, PolyTypeMap, SemanticMap, TvarKinds};
+use crate::semantic::types::{MaxTvar, MonoType, MonoTypeMap, PolyType, PolyTypeMap, SemanticMap};
 
 use crate::ast;
 use crate::ast::get_err_type_expression;
@@ -78,6 +80,112 @@ impl Importer for HashMap<&str, PolyType> {
         }
     }
 }
+
+fn is_monotype (
+    ty: types::Record,
+    ret: Option<MonoType>
+) -> Option<MonoType> {
+    match ty {
+        types::Record::Empty => {ret},
+        types::Record::Extension{head: h, tail: t} => {
+        match ret {
+            Some(mono) => {
+                if mono == h.v {
+                    match t {
+                        MonoType::Record(rect) => is_monotype(*rect, Some(h.v)),
+                        _ => None,
+                    }
+                } else {
+                    None
+                }
+            },
+            None => {
+                match t {
+                    MonoType::Record(rect) => is_monotype(*rect, Some(h.v)),
+                    _ => None,
+                }
+			},
+		}
+    }
+}
+}
+
+fn convert_record_constraints (
+    ty: MonoType
+) -> MonoType {
+    match ty {
+        MonoType::Var(tv) => MonoType::Var(tv),
+        MonoType::Bool => MonoType::Bool,
+        MonoType::Int => MonoType::Int,
+        MonoType::Uint => MonoType::Uint, 
+        MonoType::Float => MonoType::Float, 
+        MonoType::String => MonoType::String, 
+        MonoType::Duration => MonoType::Duration, 
+        MonoType::Time => MonoType::Time, 
+        MonoType::Regexp => MonoType::Regexp, 
+        MonoType::Bytes => MonoType::Bytes,         
+        MonoType::Arr(arr) => MonoType::Arr(Box::new(types::Array(convert_record_constraints(arr.0)))),
+        MonoType::Dict(dict) => {
+            let key = convert_record_constraints(dict.key);
+            let val = convert_record_constraints(dict.val);
+            MonoType::Dict(Box::new(types::Dictionary { key, val }))
+        }
+		MonoType::Fun(func) => {
+            let mut req = MonoTypeMap::new();
+            let mut opt = MonoTypeMap::new();
+            let mut pipe = None;
+            for param in func.req {
+            	req.insert(param.0, convert_record_constraints(param.1));
+			}
+			for param in func.opt {
+            	opt.insert(param.0, convert_record_constraints(param.1));
+            }
+			match func.pipe {
+                Some(prop) => {
+                    pipe = Some(types::Property {
+                        k: prop.k,
+                        v: convert_record_constraints(prop.v),
+                    })
+                },
+                None => {},
+            }
+            MonoType::Fun(Box::new(types::Function {
+                req,
+                opt,
+                pipe: pipe,
+                retn: convert_record_constraints(func.retn),
+            }))
+        }        
+        MonoType::Record(rec) => {
+            match (*rec.clone()) {
+                types::Record::Extension{head: h, tail: t} => {
+                    if h.k.chars().next().unwrap().is_alphabetic() {
+                        /*let new_type = None;
+                        let MonoType(he) = h.v.clone()
+                        match he {
+                             
+
+                        }*/
+                        let new_type = is_monotype(*rec.clone(), None);
+                        match new_type {
+                            Some(ret) => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: ret}, tail: t})),
+                            None => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: h.v}, tail: t})), 
+                        }      
+                    } else {
+                        let new_type = is_monotype(*rec.clone(), None);
+                        match new_type {
+                            Some(ret) => ret,
+                            None => MonoType::Record(rec.clone()), 
+                        }
+                    }
+                }
+                _ => {MonoType::Record(rec.clone())},
+            }
+            	
+        }
+    }
+}
+
 
 fn infer_types(
     src: &str,
@@ -136,11 +244,18 @@ fn infer_types(
         Err(e) => return Err(e),
     };
 
+    let mut new_got = BTreeMap::new();
+    for elem in got {
+        new_got.insert(elem.0.clone(), types::PolyType{vars: elem.1.vars.clone(),  expr: convert_record_constraints(elem.1.expr.clone())});
+        
+    }
+
+
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
     if let Some(env) = want {
         let want = parse_map(env);
-        if want != got {
+        if want != new_got {
             panic!(
                 "\n\n{}\n\n{}\n{}\n{}\n{}\n",
                 "unexpected types:".red().bold(),
@@ -148,12 +263,12 @@ fn infer_types(
                 want.iter().fold(String::new(), |acc, (name, poly)| acc
                     + &format!("\t{}: {}\n", name, poly)),
                 "got:".red().bold(),
-                got.iter().fold(String::new(), |acc, (name, poly)| acc
+                new_got.iter().fold(String::new(), |acc, (name, poly)| acc
                     + &format!("\t{}: {}\n", name, poly)),
             );
         }
     }
-    return Ok(got.into());
+    return Ok(new_got.into());
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -3352,7 +3467,6 @@ fn copy_bindings_from_other_env() {
         "a".to_string(),
         PolyType {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
             expr: MonoType::Bool,
         },
     );
@@ -3361,7 +3475,6 @@ fn copy_bindings_from_other_env() {
         "b".to_string(),
         PolyType {
             vars: Vec::new(),
-            cons: TvarKinds::new(),
             expr: MonoType::Var(f.fresh()),
         },
     );
@@ -3374,12 +3487,10 @@ fn copy_bindings_from_other_env() {
             values: semantic_map!(
                 "b".to_string() => PolyType {
                     vars: Vec::new(),
-                    cons: TvarKinds::new(),
                     expr: MonoType::Var(f.fresh()),
                 },
                 "a".to_string() => PolyType {
                     vars: Vec::new(),
-                    cons: TvarKinds::new(),
                     expr: MonoType::Bool,
                 }
             )

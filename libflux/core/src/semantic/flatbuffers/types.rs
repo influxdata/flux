@@ -56,16 +56,8 @@ impl From<fb::PolyType<'_>> for Option<PolyType> {
         for value in v.iter() {
             vars.push(value.into());
         }
-        let c = t.cons()?;
-        let mut cons = TvarKinds::new();
-        for value in c.iter() {
-            let constraint: Option<(Tvar, Kind)> = value.into();
-            let (tv, kind) = constraint?;
-            cons.entry(tv).or_insert_with(Vec::new).push(kind);
-        }
         Some(PolyType {
             vars,
-            cons,
             expr: from_table(t.expr()?, t.expr_type())?,
         })
     }
@@ -325,11 +317,6 @@ pub fn build_polytype<'a>(
     let vars = builder.create_vector(vars.as_slice());
 
     let mut cons = Vec::new();
-    for (tv, kinds) in t.cons {
-        for k in kinds {
-            cons.push((tv, k));
-        }
-    }
     let cons = build_vec(cons, builder, build_constraint);
     let cons = builder.create_vector(cons.as_slice());
 
