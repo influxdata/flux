@@ -27,7 +27,7 @@ pub struct Scanner {
     pub comments: Option<Box<Token>>,
 }
 
-#[derive(Debug, PartialEq, Clone, Hash, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Copy, Clone, Hash, Serialize, Deserialize)]
 pub struct Position {
     pub line: u32,
     pub column: u32,
@@ -185,8 +185,8 @@ impl Scanner {
 
         // Record mapping from position to offset so clients
         // may later go from position to offset by calling offset()
-        self.positions.insert(t.start_pos.clone(), t.start_offset);
-        self.positions.insert(t.end_pos.clone(), t.end_offset);
+        self.positions.insert(t.start_pos, t.start_offset);
+        self.positions.insert(t.end_pos, t.end_offset);
 
         t
     }

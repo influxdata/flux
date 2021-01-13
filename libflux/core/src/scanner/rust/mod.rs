@@ -161,8 +161,8 @@ impl Scanner {
 
         // Record mapping from position to offset so clients
         // may later go from position to offset by calling offset()
-        self.positions.insert(t.start_pos.clone(), t.start_offset);
-        self.positions.insert(t.end_pos.clone(), t.end_offset);
+        self.positions.insert(t.start_pos, t.start_offset);
+        self.positions.insert(t.end_pos, t.end_offset);
 
         t
     }
