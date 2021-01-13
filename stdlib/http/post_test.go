@@ -12,6 +12,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	fluxhttp "github.com/influxdata/flux/dependencies/http"
 	"github.com/influxdata/flux/dependencies/url"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/runtime"
@@ -75,8 +76,7 @@ http.post(url:"http://127.1.1.1/path/a/b/c", headers: {x:"a",y:"b",z:"c"}, data:
 `
 
 	deps := flux.NewDefaultDependencies()
-	deps.Deps.HTTPClient = http.DefaultClient
-	deps.Deps.URLValidator = url.PrivateIPValidator{}
+	deps.Deps.HTTPClient = fluxhttp.NewDefaultClient(url.PrivateIPValidator{})
 	ctx := deps.Inject(context.Background())
 	_, _, err := runtime.Eval(ctx, script)
 	if err == nil {
