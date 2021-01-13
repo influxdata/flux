@@ -197,6 +197,7 @@ dependencies = [
  "cc",
  "chrono",
  "colored",
+ "criterion",
  "derivative",
  "flatbuffers",
  "maplit",
