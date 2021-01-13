@@ -97,6 +97,10 @@ type tableSource struct {
 	ts   execute.TransformationSet
 }
 
+func (s *tableSource) ID() execute.DatasetID {
+	return s.id
+}
+
 func (s *tableSource) AddTransformation(t execute.Transformation) {
 	s.ts = append(s.ts, t)
 }

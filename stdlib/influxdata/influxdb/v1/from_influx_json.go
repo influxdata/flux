@@ -145,6 +145,10 @@ type JSONSource struct {
 	ts      []execute.Transformation
 }
 
+func (c *JSONSource) ID() execute.DatasetID {
+	return c.id
+}
+
 func (c *JSONSource) AddTransformation(t execute.Transformation) {
 	c.ts = append(c.ts, t)
 }

@@ -9,6 +9,7 @@ import (
 )
 
 type Node interface {
+	ID() DatasetID
 	AddTransformation(t Transformation)
 }
 

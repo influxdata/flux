@@ -24,6 +24,10 @@ func NewDataset(id execute.DatasetID, cache *BuilderCache) execute.Dataset {
 	}
 }
 
+func (d *dataset) ID() execute.DatasetID {
+	return d.id
+}
+
 func (d *dataset) AddTransformation(t execute.Transformation) {
 	d.ts = append(d.ts, t)
 }

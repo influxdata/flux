@@ -17,7 +17,7 @@ func RandomDatasetID() execute.DatasetID {
 }
 
 type Dataset struct {
-	ID                    execute.DatasetID
+	DatasetID             execute.DatasetID
 	Retractions           []flux.GroupKey
 	ProcessingTimeUpdates []execute.Time
 	WatermarkUpdates      []execute.Time
@@ -27,8 +27,12 @@ type Dataset struct {
 
 func NewDataset(id execute.DatasetID) *Dataset {
 	return &Dataset{
-		ID: id,
+		DatasetID: id,
 	}
+}
+
+func (d *Dataset) ID() execute.DatasetID {
+	return d.DatasetID
 }
 
 func (d *Dataset) AddTransformation(t execute.Transformation) {
@@ -83,7 +87,7 @@ func TransformationPassThroughTestHelper(t *testing.T, newTr NewTransformation) 
 	tr.Finish(parentID, nil)
 
 	exp := &Dataset{
-		ID:                    d.ID,
+		DatasetID:             d.DatasetID,
 		ProcessingTimeUpdates: []execute.Time{now},
 		WatermarkUpdates:      []execute.Time{now},
 		Finished:              true,

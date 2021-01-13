@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	uuid "github.com/gofrs/uuid"
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
@@ -24,17 +23,29 @@ const FromTestKind = "from-test"
 // It simulates the execution of a basic physical scan operation.
 type FromProcedureSpec struct {
 	execute.ExecutionNode
+	id   execute.DatasetID
 	data []*Table
 	ts   []execute.Transformation
 }
 
 // NewFromProcedureSpec specifies a from-test procedure with source data
 func NewFromProcedureSpec(data []*Table) *FromProcedureSpec {
+	// uuid.NewV4 can return an error because of enthropy. We will stick with the previous
+	// behavior of panicing on errors when creating new uuid's
+	id, err := execute.RandomDatasetID()
+	if err != nil {
+		panic(err)
+	}
+
 	// Normalize data before anything can read it
 	for _, tbl := range data {
 		tbl.Normalize()
 	}
-	return &FromProcedureSpec{data: data}
+	return &FromProcedureSpec{id: id, data: data}
+}
+
+func (src *FromProcedureSpec) ID() execute.DatasetID {
+	return src.id
 }
 
 func (src *FromProcedureSpec) Kind() plan.ProcedureKind {
@@ -54,10 +65,6 @@ func (src *FromProcedureSpec) AddTransformation(t execute.Transformation) {
 }
 
 func (src *FromProcedureSpec) Run(ctx context.Context) {
-	// uuid.NewV4 can return an error because of enthropy. We will stick with the previous
-	// behavior of panicing on errors when creating new uuid's
-	id := execute.DatasetID(uuid.Must(uuid.NewV4()))
-
 	if len(src.ts) == 0 {
 		return
 	} else if len(src.ts) == 1 {
@@ -65,7 +72,7 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 
 		var max execute.Time
 		for _, tbl := range src.data {
-			t.Process(id, tbl)
+			t.Process(src.id, tbl)
 			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
 			if stopIdx >= 0 {
 				if s := tbl.Key().ValueTime(stopIdx); s > max {
@@ -73,8 +80,8 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 				}
 			}
 		}
-		t.UpdateWatermark(id, max)
-		t.Finish(id, nil)
+		t.UpdateWatermark(src.id, max)
+		t.Finish(src.id, nil)
 		return
 	}
 
@@ -94,7 +101,7 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 	for _, t := range src.ts {
 		var max execute.Time
 		for _, tbl := range buffers {
-			t.Process(id, tbl.Copy())
+			t.Process(src.id, tbl.Copy())
 			stopIdx := execute.ColIdx(execute.DefaultStopColLabel, tbl.Cols())
 			if stopIdx >= 0 {
 				if s := tbl.Key().ValueTime(stopIdx); s > max {
@@ -102,8 +109,8 @@ func (src *FromProcedureSpec) Run(ctx context.Context) {
 				}
 			}
 		}
-		t.UpdateWatermark(id, max)
-		t.Finish(id, nil)
+		t.UpdateWatermark(src.id, max)
+		t.Finish(src.id, nil)
 	}
 }
 
@@ -123,6 +130,10 @@ type AllocatingFromProcedureSpec struct {
 }
 
 const AllocatingFromTestKind = "allocating-from-test"
+
+func (s *AllocatingFromProcedureSpec) ID() execute.DatasetID {
+	return s.id
+}
 
 func (AllocatingFromProcedureSpec) Kind() plan.ProcedureKind {
 	return AllocatingFromTestKind
