@@ -1,7 +1,6 @@
 package http
 
 import (
-	"errors"
 	"io"
 	"net"
 	"net/http"
@@ -53,17 +52,6 @@ func (l roundTripLimiter) RoundTrip(r *http.Request) (*http.Response, error) {
 	}
 	response.Body = limitReadCloser(response.Body, l.size)
 	return response, nil
-}
-
-// Check all redirects for invalid URLs.
-func checkRedirect(validator url.Validator) func(req *http.Request, via []*http.Request) error {
-	return func(req *http.Request, via []*http.Request) error {
-		if len(via) >= 10 {
-			return errors.New("stopped after 10 redirects")
-		}
-
-		return validator.Validate(req.URL)
-	}
 }
 
 // NewDefaultClient creates a client with sane defaults.

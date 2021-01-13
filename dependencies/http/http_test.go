@@ -86,7 +86,7 @@ func TestIpValidation(t *testing.T) {
 
 	client := NewDefaultClient(depsUrl.PrivateIPValidator{})
 
-	for k, _ := range bad {
+	for k := range bad {
 		req, err := http.NewRequest("POST", ("http://" + k + "/path"), bytes.NewReader([]byte{}))
 		if err != nil {
 			t.Fatal(err)
@@ -114,7 +114,7 @@ func (TestValidator) Validate(anUrl *url.URL) error {
 }
 
 func (TestValidator) ValidateIP(ip net.IP) error {
-	if ip.Equal( net.ParseIP("127.6.6.6") ) {
+	if ip.Equal(net.ParseIP("127.6.6.6")) {
 		return errors.New(codes.Invalid, "url validation error, it connects to a private IP")
 	}
 	return nil
