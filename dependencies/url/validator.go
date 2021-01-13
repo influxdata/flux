@@ -12,6 +12,7 @@ import (
 // Validator reports whether a given URL is valid.
 type Validator interface {
 	Validate(*url.URL) error
+	ValidateIP(net.IP) error
 }
 
 // PassValidator passes all URLs
@@ -21,18 +22,30 @@ func (PassValidator) Validate(*url.URL) error {
 	return nil
 }
 
+func (PassValidator) ValidateIP(net.IP) error {
+	return nil
+}
+
 // PrivateIPValidator validates that a url does not communicate with a private IP range
 type PrivateIPValidator struct{}
 
-func (PrivateIPValidator) Validate(u *url.URL) error {
+func (v PrivateIPValidator) Validate(u *url.URL) error {
 	ips, err := net.LookupIP(u.Hostname())
 	if err != nil {
 		return err
 	}
 	for _, ip := range ips {
-		if isPrivateIP(ip) {
-			return errors.New(codes.Invalid, "url is not valid, it connects to a private IP")
+		err = v.ValidateIP(ip)
+		if err != nil {
+			return err
 		}
+	}
+	return nil
+}
+
+func (PrivateIPValidator) ValidateIP(ip net.IP) error {
+	if isPrivateIP(ip) {
+		return errors.New(codes.Invalid, "url is not valid, it connects to a private IP")
 	}
 	return nil
 }
@@ -59,7 +72,7 @@ func init() {
 	}
 }
 
-//  isPrivateIP reports whether an IP exists in a known private IP space.
+//  IsPrivateIP reports whether an IP exists in a known private IP space.
 func isPrivateIP(ip net.IP) bool {
 	for _, block := range privateIPBlocks {
 		if block.Contains(ip) {

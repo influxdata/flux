@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -24,22 +23,10 @@ func init() {
 		"post",
 		runtime.MustLookupBuiltinType("http", "post"),
 		func(ctx context.Context, args values.Object) (values.Value, error) {
-			// Get and validate URL
+			// Get URL
 			uV, ok := args.Get("url")
 			if !ok {
 				return nil, errors.New(codes.Invalid, "missing \"url\" parameter")
-			}
-			u, err := url.Parse(uV.Str())
-			if err != nil {
-				return nil, err
-			}
-			deps := flux.GetDependencies(ctx)
-			validator, err := deps.URLValidator()
-			if err != nil {
-				return nil, err
-			}
-			if err := validator.Validate(u); err != nil {
-				return nil, err
 			}
 
 			// Construct data
@@ -72,6 +59,7 @@ func init() {
 			}
 
 			// Perform request
+			deps := flux.GetDependencies(ctx)
 			dc, err := deps.HTTPClient()
 			if err != nil {
 				return nil, errors.Wrap(err, codes.Aborted, "missing client in http.post")

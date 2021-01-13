@@ -5,6 +5,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"syscall"
 	"time"
 
 	"github.com/influxdata/flux/dependencies/url"
@@ -67,16 +68,31 @@ func checkRedirect(validator url.Validator) func(req *http.Request, via []*http.
 
 // NewDefaultClient creates a client with sane defaults.
 func NewDefaultClient(urlValidator url.Validator) *http.Client {
+
+	// Control is called after DNS lookup, but before the network connection is
+	// initiated.
+	control := func(network, address string, c syscall.RawConn) error {
+		host, _, err := net.SplitHostPort(address)
+		if err != nil {
+			return err
+		}
+
+		ip := net.ParseIP(host)
+		return urlValidator.ValidateIP(ip)
+	}
+
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+		Control:   control,
+		// DualStack is deprecated
+	}
+
 	// These defaults are copied from http.DefaultTransport.
 	return &http.Client{
-		CheckRedirect: checkRedirect(urlValidator),
 		Transport: &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			DialContext: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-				// DualStack is deprecated
-			}).DialContext,
+			Proxy:                 http.ProxyFromEnvironment,
+			DialContext:           dialer.DialContext,
 			MaxIdleConns:          100,
 			IdleConnTimeout:       10 * time.Second,
 			TLSHandshakeTimeout:   10 * time.Second,
