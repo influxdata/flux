@@ -61,7 +61,8 @@ func TestLimitedDefaultClient(t *testing.T) {
 // fail. ADT: Would be nice to also test some pass cases, but it is unclear how
 // to prevent the actual network connection out to the public internet. It's
 // the dialer control function we are testing, so we can't mock the dialer to
-// achieve that.
+// achieve that. Can really only replace the validator to pass a connetion to
+// localhost. Doing that below the redirect test.
 func TestIpValidation(t *testing.T) {
 	bad := map[string]mockdns.Zone{
 		"bad01.example.org.": {A: []string{"127.0.0.1"}},
