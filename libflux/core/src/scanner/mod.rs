@@ -31,7 +31,7 @@ pub struct Scanner {
     pub comments: Option<Box<Token>>,
 }
 
-#[derive(Debug, PartialEq, Copy, Clone, Hash, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Copy, Clone, Hash)]
 pub struct Position {
     pub line: u32,
     pub column: u32,
@@ -39,7 +39,7 @@ pub struct Position {
 
 impl std::cmp::Eq for Position {}
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Token {
     pub tok: TokenType,
     pub lit: String,
