@@ -125,9 +125,9 @@ bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
 # This requires ragel 7.0.1.
-libflux/core/src/scanner/rust/scanner.rs: libflux/core/src/scanner/rust/scanner.rl
+libflux/core/src/scanner/scanner.rs: libflux/core/src/scanner/scanner.rl
 	ragel-rust -I libflux/core/src/scanner -o $@ $<
-	rm libflux/core/src/scanner/rust/scanner.ri
+	rm libflux/core/src/scanner/scanner.ri
 
 # If you see the error:
 #    ragel: -C is an invalid argument

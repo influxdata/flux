@@ -1,9 +1,12 @@
-#include "scanner.h"
+
+use std::vec::Vec;
+
+use crate::scanner::*;
 
 %%{
     machine flux;
 
-    alphtype unsigned char;
+    alphtype u8;
 
     include WChar "unicode.rl";
 
@@ -11,7 +14,7 @@
         // We do this for every newline we find.
         // This allows us to return correct line/column for each token
         // back to the caller.
-        (*cur_line)++;
+        *cur_line += 1;
         *last_newline = fpc + 1;
     }
 
@@ -63,7 +66,7 @@
     # in the middle of an expression and we are potentially expecting a division operator.
     main_with_regex := |*
         # If we see a regex literal, we accept that and do not go to the other scanner.
-        regex_lit => { tok = REGEX; fbreak; };
+        regex_lit => { tok = TokenType::REGEX; fbreak; };
 
         # We have to specify whitespace here so that leading whitespace doesn't cause a state transition.
         whitespace;
@@ -76,61 +79,60 @@
 
     # This machine does not contain the regex literal.
     main := |*
-        single_line_comment => { tok = COMMENT; fbreak; };
+        single_line_comment => { tok = TokenType::COMMENT; fbreak; };
 
-        "and" => { tok = AND; fbreak; };
-        "or" => { tok = OR; fbreak; };
-        "not" => { tok = NOT; fbreak; };
-        "empty" => { tok = EMPTY; fbreak; };
-        "in" => { tok = IN; fbreak; };
-        "import" => { tok = IMPORT; fbreak; };
-        "package" => { tok = PACKAGE; fbreak; };
-        "return" => { tok = RETURN; fbreak; };
-        "option" => { tok = OPTION; fbreak; };
-        "builtin" => { tok = BUILTIN; fbreak; };
-        "testcase" => { tok = TESTCASE; fbreak; };
-        "test" => { tok = TEST; fbreak; };
-        "if" => { tok = IF; fbreak; };
-        "then" => { tok = THEN; fbreak; };
-        "else" => { tok = ELSE; fbreak; };
-        "exists" => { tok = EXISTS; fbreak; };
+        "and" => { tok = TokenType::AND; fbreak; };
+        "or" => { tok = TokenType::OR; fbreak; };
+        "not" => { tok = TokenType::NOT; fbreak; };
+        "empty" => { tok = TokenType::EMPTY; fbreak; };
+        "in" => { tok = TokenType::IN; fbreak; };
+        "import" => { tok = TokenType::IMPORT; fbreak; };
+        "package" => { tok = TokenType::PACKAGE; fbreak; };
+        "return" => { tok = TokenType::RETURN; fbreak; };
+        "option" => { tok = TokenType::OPTION; fbreak; };
+        "builtin" => { tok = TokenType::BUILTIN; fbreak; };
+        "test" => { tok = TokenType::TEST; fbreak; };
+        "if" => { tok = TokenType::IF; fbreak; };
+        "then" => { tok = TokenType::THEN; fbreak; };
+        "else" => { tok = TokenType::ELSE; fbreak; };
+        "exists" => { tok = TokenType::EXISTS; fbreak; };
 
-        identifier => { tok = IDENT; fbreak; };
-        int_lit => { tok = INT; fbreak; };
-        float_lit => { tok = FLOAT; fbreak; };
-        duration_lit => { tok = DURATION; fbreak; };
-        date_time_lit => { tok = TIME; fbreak; };
-        string_lit => { tok = STRING; fbreak; };
+        identifier => { tok = TokenType::IDENT; fbreak; };
+        int_lit => { tok = TokenType::INT; fbreak; };
+        float_lit => { tok = TokenType::FLOAT; fbreak; };
+        duration_lit => { tok = TokenType::DURATION; fbreak; };
+        date_time_lit => { tok = TokenType::TIME; fbreak; };
+        string_lit => { tok = TokenType::STRING; fbreak; };
 
-        "+" => { tok = ADD; fbreak; };
-        "-" => { tok = SUB; fbreak; };
-        "*" => { tok = MUL; fbreak; };
-        "/" => { tok = DIV; fbreak; };
-        "%" => { tok = MOD; fbreak; };
-        "^" => { tok = POW; fbreak; };
-        "==" => { tok = EQ; fbreak; };
-        "<" => { tok = LT; fbreak; };
-        ">" => { tok = GT; fbreak; };
-        "<=" => { tok = LTE; fbreak; };
-        ">=" => { tok = GTE; fbreak; };
-        "!=" => { tok = NEQ; fbreak; };
-        "=~" => { tok = REGEXEQ; fbreak; };
-        "!~" => { tok = REGEXNEQ; fbreak; };
-        "=" => { tok = ASSIGN; fbreak; };
-        "=>" => { tok = ARROW; fbreak; };
-        "<-" => { tok = PIPE_RECEIVE; fbreak; };
-        "(" => { tok = LPAREN; fbreak; };
-        ")" => { tok = RPAREN; fbreak; };
-        "[" => { tok = LBRACK; fbreak; };
-        "]" => { tok = RBRACK; fbreak; };
-        "{" => { tok = LBRACE; fbreak; };
-        "}" => { tok = RBRACE; fbreak; };
-        ":" => { tok = COLON; fbreak; };
-        "|>" => { tok = PIPE_FORWARD; fbreak; };
-        "," => { tok = COMMA; fbreak; };
-        "." => { tok = DOT; fbreak; };
-        '"' => { tok = QUOTE; fbreak; };
-        '?' => { tok = QUESTION_MARK; fbreak; };
+        "+" => { tok = TokenType::ADD; fbreak; };
+        "-" => { tok = TokenType::SUB; fbreak; };
+        "*" => { tok = TokenType::MUL; fbreak; };
+        "/" => { tok = TokenType::DIV; fbreak; };
+        "%" => { tok = TokenType::MOD; fbreak; };
+        "^" => { tok = TokenType::POW; fbreak; };
+        "==" => { tok = TokenType::EQ; fbreak; };
+        "<" => { tok = TokenType::LT; fbreak; };
+        ">" => { tok = TokenType::GT; fbreak; };
+        "<=" => { tok = TokenType::LTE; fbreak; };
+        ">=" => { tok = TokenType::GTE; fbreak; };
+        "!=" => { tok = TokenType::NEQ; fbreak; };
+        "=~" => { tok = TokenType::REGEXEQ; fbreak; };
+        "!~" => { tok = TokenType::REGEXNEQ; fbreak; };
+        "=" => { tok = TokenType::ASSIGN; fbreak; };
+        "=>" => { tok = TokenType::ARROW; fbreak; };
+        "<-" => { tok = TokenType::PIPE_RECEIVE; fbreak; };
+        "(" => { tok = TokenType::LPAREN; fbreak; };
+        ")" => { tok = TokenType::RPAREN; fbreak; };
+        "[" => { tok = TokenType::LBRACK; fbreak; };
+        "]" => { tok = TokenType::RBRACK; fbreak; };
+        "{" => { tok = TokenType::LBRACE; fbreak; };
+        "}" => { tok = TokenType::RBRACE; fbreak; };
+        ":" => { tok = TokenType::COLON; fbreak; };
+        "|>" => { tok = TokenType::PIPE_FORWARD; fbreak; };
+        "," => { tok = TokenType::COMMA; fbreak; };
+        "." => { tok = TokenType::DOT; fbreak; };
+        '"' => { tok = TokenType::QUOTE; fbreak; };
+        '?' => { tok = TokenType::QUESTION_MARK; fbreak; };
 
         whitespace;
 
@@ -139,61 +141,60 @@
 
     # This is the scanner used when parsing a string expression.
     string_expr := |*
-        "${" => { tok = STRINGEXPR; fbreak; };
-        '"' => { tok = QUOTE; fbreak; };
-        (string_lit_char - "\"")+ => { tok = TEXT; fbreak; };
+        "${" => { tok = TokenType::STRINGEXPR; fbreak; };
+        '"' => { tok = TokenType::QUOTE; fbreak; };
+        (string_lit_char - "\"")+ => { tok = TokenType::TEXT; fbreak; };
     *|;
 }%%
 
 %% write data nofinal;
 
-int scan(
-    int mode,
-    const unsigned char **pp,
-    const unsigned char *data,
-    const unsigned char *pe,
-    const unsigned char *eof,
-    const unsigned char **last_newline,
-    unsigned int *cur_line,
-    unsigned int *token,
-    unsigned int *token_start,
-    unsigned int *token_start_line,
-    unsigned int *token_start_col,
-    unsigned int *token_end,
-    unsigned int *token_end_line,
-    unsigned int *token_end_col
-) {
-    int cs = flux_start;
-    switch (mode) {
-    case 0:
-        cs = flux_en_main;
-        break;
-    case 1:
-        cs = flux_en_main_with_regex;
-        break;
-    case 2:
-        cs = flux_en_string_expr;
-        break;
+pub fn scan(
+    data: &[u8],
+    mode: i32,
+    pp: &mut i32,
+    _data: i32,
+    pe: i32,
+    eof: i32,
+    last_newline: &mut i32,
+    cur_line: &mut i32,
+    token: &mut TokenType,
+    token_start: &mut i32,
+    token_start_line: &mut i32,
+    token_start_col: &mut i32,
+    token_end: &mut i32,
+    token_end_line: &mut i32,
+    token_end_col: &mut i32 ) -> u32
+{
+    let mut cs = flux_start;
+    match mode {
+        0 => { cs = flux_en_main },
+        1 => { cs = flux_en_main_with_regex },
+        2 => { cs = flux_en_string_expr },
+        _ => {},
     }
-    const unsigned char *p = *pp;
-    int act;
-    const unsigned char *ts;
-    const unsigned char *te;
-    unsigned int tok = ILLEGAL;
-    const unsigned char *last_newline_before_token = *last_newline;
-    unsigned int cur_line_token_start = *cur_line;
+    let mut p: i32 = *pp;
 
+    let mut act: i32 = 0;
+    let mut ts: i32 = 0;
+    let mut te: i32 = 0;
+    let mut tok: TokenType = TokenType::ILLEGAL;
+
+    let mut last_newline_before_token: i32 = *last_newline;
+    let mut cur_line_token_start: i32 = *cur_line;
+
+    // alskdfj
     %% write init nocs;
     %% write exec;
 
     // Update output args.
     *token = tok;
 
-    *token_start = ts - data;
+    *token_start = ts - _data;
     *token_start_line = cur_line_token_start;
     *token_start_col = ts - last_newline_before_token + 1;
 
-    *token_end = te - data;
+    *token_end = te - _data;
 
     if (*last_newline > te) {
         // te (the token end pointer) will only be less than last_newline
@@ -209,5 +210,9 @@ int scan(
     *token_end_col = te - *last_newline + 1;
 
     *pp = p;
-    return cs == flux_error;
+    if cs == flux_error {
+        return 1
+    } else {
+        return 0;
+    }
 }
