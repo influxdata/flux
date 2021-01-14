@@ -91,6 +91,7 @@ use crate::scanner::*;
         "return" => { tok = TokenType::RETURN; fbreak; };
         "option" => { tok = TokenType::OPTION; fbreak; };
         "builtin" => { tok = TokenType::BUILTIN; fbreak; };
+        "testcase" => { tok = TokenType::TESTCASE; fbreak; };
         "test" => { tok = TokenType::TEST; fbreak; };
         "if" => { tok = TokenType::IF; fbreak; };
         "then" => { tok = TokenType::THEN; fbreak; };
