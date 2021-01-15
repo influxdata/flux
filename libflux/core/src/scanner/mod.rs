@@ -131,7 +131,7 @@ impl Scanner {
             // in the sequence so we don't break up any unicode tokens.
             let nc = match std::str::from_utf8(&self.data[(token_start as usize)..]) {
                 Ok(result) => result.chars().next(),
-                Err(_) => None
+                Err(_) => None,
             };
             match nc {
                 Some(nc) => {
@@ -168,7 +168,8 @@ impl Scanner {
             self.get_eof_token()
         } else {
             // No error or EOF, we can process the returned values normally.
-            let lit = match str::from_utf8(&self.data[(token_start as usize)..(token_end as usize)]) {
+            let lit = match str::from_utf8(&self.data[(token_start as usize)..(token_end as usize)])
+            {
                 Ok(result) => result,
                 // XXX: rockstar (15 Jan 2021) - Maybe we should log this?
                 Err(_) => "",
