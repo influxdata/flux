@@ -6,7 +6,7 @@ use std::str;
 use std::vec::Vec;
 
 #[rustfmt::skip]
-#[allow(clippy::all)]
+//#[allow(clippy::all)]
 mod scanner;
 
 mod token;

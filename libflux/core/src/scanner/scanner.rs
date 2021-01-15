@@ -1,3 +1,4 @@
+#![allow(clippy::never_loop)]
 use std::vec::Vec;
 
 use crate::scanner::*;

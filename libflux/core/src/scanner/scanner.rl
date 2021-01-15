@@ -1,4 +1,4 @@
-
+#![allow(clippy::never_loop)]
 use std::vec::Vec;
 
 use crate::scanner::*;
@@ -142,9 +142,9 @@ use crate::scanner::*;
 
     # This is the scanner used when parsing a string expression.
     string_expr := |*
-        "${" => { tok = TokenType::STRINGEXPR; fbreak; };
-        '"' => { tok = TokenType::QUOTE; fbreak; };
-        (string_lit_char - "\"")+ => { tok = TokenType::TEXT; fbreak; };
+        "${" => { tok = TokenType::StringExpr; fbreak; };
+        '"' => { tok = TokenType::Quote; fbreak; };
+        (string_lit_char - "\"")+ => { tok = TokenType::Text; fbreak; };
     *|;
 }%%
 
