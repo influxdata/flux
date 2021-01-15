@@ -131,6 +131,5 @@ impl fmt::Display for TokenType {
             TokenType::StringExpr => write!(f, "STRINGEXPR"),
             TokenType::Text => write!(f, "TEXT"),
         }
-        //write!(f, "x: {}, y: {}", self.x, self.y)
     }
 }

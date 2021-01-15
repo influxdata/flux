@@ -13,7 +13,7 @@ use crate::scanner::*;
     action advance_line {
         // We do this for every newline we find.
         // This allows us to return correct line/column for each token
-        // back to the calle.
+        // back to the caller.
         *cur_line += 1;
         *last_newline = fpc + 1;
     }
