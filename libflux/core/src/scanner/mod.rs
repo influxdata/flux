@@ -1,10 +1,7 @@
 #![allow(missing_docs)]
 
-pub type CChar = u8;
-
 use crate::fmt;
 use std::collections::HashMap;
-use std::ffi::CString;
 use std::str;
 use std::vec::Vec;
 
@@ -14,6 +11,9 @@ mod scanner;
 
 mod token;
 pub use token::TokenType;
+
+#[cfg(test)]
+mod tests;
 
 pub struct Scanner {
     data: Vec<u8>,
@@ -65,19 +65,22 @@ impl fmt::Display for Token {
 
 impl Scanner {
     // New creates a scanner with the provided input.
-    pub fn new(data: CString) -> Self {
-        let ptr = data.as_ptr();
-        let bytes = data.as_bytes();
-        let end = bytes.len() as i32;
+    pub fn new(input: &str) -> Self {
+        let mut data = Vec::new();
+        data.extend_from_slice(input.as_bytes());
+        let end = data.len() as i32;
+        //let data = vec![input.as_bytes()];
+        //let bytes = data.as_bytes();
+        //let end = bytes.len() as i32;
         Scanner {
-            data: data.into_bytes(),
+            data,
             ps: 0,
             p: 0,
             pe: end,
             eof: end,
             last_newline: 0,
             cur_line: 1,
-            token: TokenType::ILLEGAL,
+            token: TokenType::Illegal,
             checkpoint: 0,
             checkpoint_line: 1,
             checkpoint_last_newline: 0,
@@ -141,7 +144,7 @@ impl Scanner {
                     // Advance the data pointer to after the character we just emitted.
                     self.p = unsafe { self.p + size as i32 };
                     Token {
-                        tok: TokenType::ILLEGAL,
+                        tok: TokenType::Illegal,
                         lit: nc.to_string(),
                         start_offset: token_start as u32,
                         end_offset: (token_start + size as i32) as u32,
@@ -161,7 +164,7 @@ impl Scanner {
                 // we would enter an infinite loop if we continued scanning past the token.
                 None => self.get_eof_token(),
             }
-        } else if self.token == TokenType::ILLEGAL && self.p == self.eof {
+        } else if self.token == TokenType::Illegal && self.p == self.eof {
             // end of input
             self.get_eof_token()
         } else {
@@ -198,7 +201,7 @@ impl Scanner {
         let data_len = self.data.len() as u32;
         let column = self.eof as u32 - self.last_newline as u32 + 1;
         Token {
-            tok: TokenType::EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: data_len,
             end_offset: data_len,
@@ -218,7 +221,7 @@ impl Scanner {
         let mut token;
         loop {
             token = self._scan(mode);
-            if token.tok != TokenType::COMMENT {
+            if token.tok != TokenType::Comment {
                 break;
             }
             token.comments = self.comments.take();

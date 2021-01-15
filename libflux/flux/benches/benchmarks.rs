@@ -1,21 +1,17 @@
 #[allow(soft_unstable)]
 extern crate criterion;
 
-use core::scanner::rust::Scan;
 use core::scanner::Scanner;
 use criterion::{criterion_group, criterion_main, Criterion};
-use std::ffi::CString;
 
 // run only this benchmark using `cargo bench` from the current directory
 fn bench_scanner(c: &mut Criterion) {
     let shorter = "from(bucket:\"foo\") |> range(start: -1m)";
-    let short_data = CString::new(shorter).expect("CString::new failed");
-    let mut s = Scanner::new(short_data);
+    let mut s = Scanner::new(shorter);
 
     c.bench_function("scan_short_text", |b| b.iter(|| s.scan()));
 
-    let long_data = CString::new(LONGER).expect("CString::new failed");
-    let mut sc = Scanner::new(long_data);
+    let mut sc = Scanner::new(LONGER);
 
     c.bench_function("scan_long_text", |b| b.iter(|| sc.scan()));
 }

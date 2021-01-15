@@ -66,7 +66,7 @@ use crate::scanner::*;
     # in the middle of an expression and we are potentially expecting a division operator.
     main_with_regex := |*
         # If we see a regex literal, we accept that and do not go to the other scanner.
-        regex_lit => { tok = TokenType::REGEX; fbreak; };
+        regex_lit => { tok = TokenType::Regex; fbreak; };
 
         # We have to specify whitespace here so that leading whitespace doesn't cause a state transition.
         whitespace;
@@ -79,61 +79,61 @@ use crate::scanner::*;
 
     # This machine does not contain the regex literal.
     main := |*
-        single_line_comment => { tok = TokenType::COMMENT; fbreak; };
+        single_line_comment => { tok = TokenType::Comment; fbreak; };
 
-        "and" => { tok = TokenType::AND; fbreak; };
-        "or" => { tok = TokenType::OR; fbreak; };
-        "not" => { tok = TokenType::NOT; fbreak; };
-        "empty" => { tok = TokenType::EMPTY; fbreak; };
-        "in" => { tok = TokenType::IN; fbreak; };
-        "import" => { tok = TokenType::IMPORT; fbreak; };
-        "package" => { tok = TokenType::PACKAGE; fbreak; };
-        "return" => { tok = TokenType::RETURN; fbreak; };
-        "option" => { tok = TokenType::OPTION; fbreak; };
-        "builtin" => { tok = TokenType::BUILTIN; fbreak; };
-        "testcase" => { tok = TokenType::TESTCASE; fbreak; };
-        "test" => { tok = TokenType::TEST; fbreak; };
-        "if" => { tok = TokenType::IF; fbreak; };
-        "then" => { tok = TokenType::THEN; fbreak; };
-        "else" => { tok = TokenType::ELSE; fbreak; };
-        "exists" => { tok = TokenType::EXISTS; fbreak; };
+        "and" => { tok = TokenType::And; fbreak; };
+        "or" => { tok = TokenType::Or; fbreak; };
+        "not" => { tok = TokenType::Not; fbreak; };
+        "empty" => { tok = TokenType::Empty; fbreak; };
+        "in" => { tok = TokenType::In; fbreak; };
+        "import" => { tok = TokenType::Import; fbreak; };
+        "package" => { tok = TokenType::Package; fbreak; };
+        "return" => { tok = TokenType::Return; fbreak; };
+        "option" => { tok = TokenType::Option; fbreak; };
+        "builtin" => { tok = TokenType::Builtin; fbreak; };
+        "testcase" => { tok = TokenType::TestCase; fbreak; };
+        "test" => { tok = TokenType::Test; fbreak; };
+        "if" => { tok = TokenType::If; fbreak; };
+        "then" => { tok = TokenType::Then; fbreak; };
+        "else" => { tok = TokenType::Else; fbreak; };
+        "exists" => { tok = TokenType::Exists; fbreak; };
 
-        identifier => { tok = TokenType::IDENT; fbreak; };
-        int_lit => { tok = TokenType::INT; fbreak; };
-        float_lit => { tok = TokenType::FLOAT; fbreak; };
-        duration_lit => { tok = TokenType::DURATION; fbreak; };
-        date_time_lit => { tok = TokenType::TIME; fbreak; };
-        string_lit => { tok = TokenType::STRING; fbreak; };
+        identifier => { tok = TokenType::Ident; fbreak; };
+        int_lit => { tok = TokenType::Int; fbreak; };
+        float_lit => { tok = TokenType::Float; fbreak; };
+        duration_lit => { tok = TokenType::Duration; fbreak; };
+        date_time_lit => { tok = TokenType::Time; fbreak; };
+        string_lit => { tok = TokenType::String; fbreak; };
 
-        "+" => { tok = TokenType::ADD; fbreak; };
-        "-" => { tok = TokenType::SUB; fbreak; };
-        "*" => { tok = TokenType::MUL; fbreak; };
-        "/" => { tok = TokenType::DIV; fbreak; };
-        "%" => { tok = TokenType::MOD; fbreak; };
-        "^" => { tok = TokenType::POW; fbreak; };
-        "==" => { tok = TokenType::EQ; fbreak; };
-        "<" => { tok = TokenType::LT; fbreak; };
-        ">" => { tok = TokenType::GT; fbreak; };
-        "<=" => { tok = TokenType::LTE; fbreak; };
-        ">=" => { tok = TokenType::GTE; fbreak; };
-        "!=" => { tok = TokenType::NEQ; fbreak; };
-        "=~" => { tok = TokenType::REGEXEQ; fbreak; };
-        "!~" => { tok = TokenType::REGEXNEQ; fbreak; };
-        "=" => { tok = TokenType::ASSIGN; fbreak; };
-        "=>" => { tok = TokenType::ARROW; fbreak; };
-        "<-" => { tok = TokenType::PIPE_RECEIVE; fbreak; };
-        "(" => { tok = TokenType::LPAREN; fbreak; };
-        ")" => { tok = TokenType::RPAREN; fbreak; };
-        "[" => { tok = TokenType::LBRACK; fbreak; };
-        "]" => { tok = TokenType::RBRACK; fbreak; };
-        "{" => { tok = TokenType::LBRACE; fbreak; };
-        "}" => { tok = TokenType::RBRACE; fbreak; };
-        ":" => { tok = TokenType::COLON; fbreak; };
-        "|>" => { tok = TokenType::PIPE_FORWARD; fbreak; };
-        "," => { tok = TokenType::COMMA; fbreak; };
-        "." => { tok = TokenType::DOT; fbreak; };
-        '"' => { tok = TokenType::QUOTE; fbreak; };
-        '?' => { tok = TokenType::QUESTION_MARK; fbreak; };
+        "+" => { tok = TokenType::Add; fbreak; };
+        "-" => { tok = TokenType::Sub; fbreak; };
+        "*" => { tok = TokenType::Mul; fbreak; };
+        "/" => { tok = TokenType::Div; fbreak; };
+        "%" => { tok = TokenType::Mod; fbreak; };
+        "^" => { tok = TokenType::Pow; fbreak; };
+        "==" => { tok = TokenType::Eq; fbreak; };
+        "<" => { tok = TokenType::Lt; fbreak; };
+        ">" => { tok = TokenType::Gt; fbreak; };
+        "<=" => { tok = TokenType::Lte; fbreak; };
+        ">=" => { tok = TokenType::Gte; fbreak; };
+        "!=" => { tok = TokenType::Neq; fbreak; };
+        "=~" => { tok = TokenType::RegexEq; fbreak; };
+        "!~" => { tok = TokenType::RegexNeq; fbreak; };
+        "=" => { tok = TokenType::Assign; fbreak; };
+        "=>" => { tok = TokenType::Arrow; fbreak; };
+        "<-" => { tok = TokenType::PipeReceive; fbreak; };
+        "(" => { tok = TokenType::LParen; fbreak; };
+        ")" => { tok = TokenType::RParen; fbreak; };
+        "[" => { tok = TokenType::LBrack; fbreak; };
+        "]" => { tok = TokenType::RBrack; fbreak; };
+        "{" => { tok = TokenType::LBrace; fbreak; };
+        "}" => { tok = TokenType::RBrace; fbreak; };
+        ":" => { tok = TokenType::Colon; fbreak; };
+        "|>" => { tok = TokenType::PipeForward; fbreak; };
+        "," => { tok = TokenType::Comma; fbreak; };
+        "." => { tok = TokenType::Dot; fbreak; };
+        '"' => { tok = TokenType::Quote; fbreak; };
+        '?' => { tok = TokenType::QuestionMark; fbreak; };
 
         whitespace;
 
@@ -179,7 +179,7 @@ pub fn scan(
     let mut act: i32 = 0;
     let mut ts: i32 = 0;
     let mut te: i32 = 0;
-    let mut tok: TokenType = TokenType::ILLEGAL;
+    let mut tok: TokenType = TokenType::Illegal;
 
     let mut last_newline_before_token: i32 = *last_newline;
     let mut cur_line_token_start: i32 = *cur_line;

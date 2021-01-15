@@ -1,6 +1,5 @@
 #![allow(missing_docs)]
 use std::collections::HashMap;
-use std::ffi::CString;
 use std::str;
 
 use crate::ast;
@@ -27,82 +26,9 @@ pub fn parse_string(name: &str, s: &str) -> File {
     p.parse_file(String::from(name))
 }
 
-// TODO uncomment when we get back to the Go build side.
-//#[no_mangle]
-//pub fn go_parse(s: *const c_char) {
-//    let buf = unsafe {
-//        CStr::from_ptr(s).to_bytes()
-//    };
-//    let str = String::from_utf8(buf.to_vec()).unwrap();
-//    println!("Parse in Rust {}", str);
-//}
-
 struct TokenError {
     pub message: String,
     pub token: Token,
-}
-
-fn format_token(t: TokenType) -> &'static str {
-    match t {
-        TokenType::ILLEGAL => "ILLEGAL",
-        TokenType::EOF => "EOF",
-        TokenType::COMMENT => "COMMENT",
-        TokenType::AND => "AND",
-        TokenType::OR => "OR",
-        TokenType::NOT => "NOT",
-        TokenType::EMPTY => "EMPTY",
-        TokenType::IN => "IN",
-        TokenType::IMPORT => "IMPORT",
-        TokenType::PACKAGE => "PACKAGE",
-        TokenType::RETURN => "RETURN",
-        TokenType::OPTION => "OPTION",
-        TokenType::BUILTIN => "BUILTIN",
-        TokenType::TEST => "TEST",
-        TokenType::TESTCASE => "TESTCASE",
-        TokenType::IF => "IF",
-        TokenType::THEN => "THEN",
-        TokenType::ELSE => "ELSE",
-        TokenType::IDENT => "IDENT",
-        TokenType::INT => "INT",
-        TokenType::FLOAT => "FLOAT",
-        TokenType::STRING => "STRING",
-        TokenType::REGEX => "REGEX",
-        TokenType::TIME => "TIME",
-        TokenType::DURATION => "DURATION",
-        TokenType::ADD => "ADD",
-        TokenType::SUB => "SUB",
-        TokenType::MUL => "MUL",
-        TokenType::DIV => "DIV",
-        TokenType::MOD => "MOD",
-        TokenType::POW => "POW",
-        TokenType::EQ => "EQ",
-        TokenType::LT => "LT",
-        TokenType::GT => "GT",
-        TokenType::LTE => "LTE",
-        TokenType::GTE => "GTE",
-        TokenType::NEQ => "NEQ",
-        TokenType::REGEXEQ => "REGEXEQ",
-        TokenType::REGEXNEQ => "REGEXNEQ",
-        TokenType::ASSIGN => "ASSIGN",
-        TokenType::ARROW => "ARROW",
-        TokenType::LPAREN => "LPAREN",
-        TokenType::RPAREN => "RPAREN",
-        TokenType::LBRACK => "LBRACK",
-        TokenType::RBRACK => "RBRACK",
-        TokenType::LBRACE => "LBRACE",
-        TokenType::RBRACE => "RBRACE",
-        TokenType::COMMA => "COMMA",
-        TokenType::DOT => "DOT",
-        TokenType::COLON => "COLON",
-        TokenType::QUESTION_MARK => "QUESTION_MARK",
-        TokenType::PIPE_FORWARD => "PIPE_FORWARD",
-        TokenType::PIPE_RECEIVE => "PIPE_RECEIVE",
-        TokenType::EXISTS => "EXISTS",
-        TokenType::QUOTE => "QUOTE",
-        TokenType::STRINGEXPR => "STRINGEXPR",
-        TokenType::TEXT => "TEXT",
-        _ => panic!("unknown token {:?}", t),
-    }
 }
 
 pub struct Parser {
@@ -119,8 +45,7 @@ pub struct Parser {
 
 impl Parser {
     pub fn new(src: &str) -> Parser {
-        let cdata = CString::new(src).expect("CString::new failed");
-        let s = Scanner::new(cdata);
+        let s = Scanner::new(src);
         Parser {
             s,
             t: None,
@@ -160,7 +85,7 @@ impl Parser {
     fn peek_with_regex(&mut self) -> Token {
         if let Some(token) = &mut self.t {
             if let Token {
-                tok: TokenType::DIV,
+                tok: TokenType::Div,
                 ..
             } = token
             {
@@ -196,17 +121,17 @@ impl Parser {
             let t = self.scan();
             match t.tok {
                 tok if tok == exp => return t,
-                TokenType::EOF => {
+                TokenType::Eof => {
                     self.errs
-                        .push(format!("expected {}, got EOF", format_token(exp)));
+                        .push(format!("expected {}, got EOF", format!("{}", exp)));
                     return t;
                 }
                 _ => {
                     let pos = ast::Position::from(&t.start_pos);
                     self.errs.push(format!(
                         "expected {}, got {} ({}) at {}:{}",
-                        format_token(exp),
-                        format_token(t.tok),
+                        format!("{}", exp),
+                        format!("{}", t.tok),
                         t.lit,
                         pos.line,
                         pos.column,
@@ -231,7 +156,7 @@ impl Parser {
     // the next token is also not one that would close a block.
     fn more(&mut self) -> bool {
         let t = self.peek();
-        if t.tok == TokenType::EOF {
+        if t.tok == TokenType::Eof {
             return false;
         }
         let cnt = self.blocks.get(&t.tok);
@@ -255,7 +180,7 @@ impl Parser {
     fn close(&mut self, end: TokenType) -> Token {
         // If the end token is EOF, we have to do this specially
         // since we don't track EOF.
-        if end == TokenType::EOF {
+        if end == TokenType::Eof {
             // TODO(jsternberg): Check for EOF and panic if it isn't.
             return self.scan();
         }
@@ -280,8 +205,8 @@ impl Parser {
         // Append an error to the current node.
         self.errs.push(format!(
             "expected {}, got {}",
-            format_token(end),
-            format_token(tok.tok)
+            format!("{}", end),
+            format!("{}", tok.tok)
         ));
         tok
     }
@@ -419,7 +344,7 @@ impl Parser {
 
     fn parse_package_clause(&mut self) -> Option<PackageClause> {
         let t = self.peek();
-        if t.tok == TokenType::PACKAGE {
+        if t.tok == TokenType::Package {
             self.consume();
             let ident = self.parse_identifier();
             return Some(PackageClause {
@@ -434,7 +359,7 @@ impl Parser {
         let mut imports: Vec<ImportDeclaration> = Vec::new();
         loop {
             let t = self.peek();
-            if t.tok != TokenType::IMPORT {
+            if t.tok != TokenType::Import {
                 return imports;
             }
             imports.push(self.parse_import_declaration())
@@ -442,8 +367,8 @@ impl Parser {
     }
 
     fn parse_import_declaration(&mut self) -> ImportDeclaration {
-        let t = self.expect(TokenType::IMPORT);
-        let alias = if self.peek().tok == TokenType::IDENT {
+        let t = self.expect(TokenType::Import);
+        let alias = if self.peek().tok == TokenType::Ident {
             Some(self.parse_identifier())
         } else {
             None
@@ -469,28 +394,28 @@ impl Parser {
     fn parse_statement(&mut self) -> Statement {
         let t = self.peek();
         match t.tok {
-            TokenType::INT
-            | TokenType::FLOAT
-            | TokenType::STRING
-            | TokenType::DIV
-            | TokenType::TIME
-            | TokenType::DURATION
-            | TokenType::PIPE_RECEIVE
-            | TokenType::LPAREN
-            | TokenType::LBRACK
-            | TokenType::LBRACE
-            | TokenType::ADD
-            | TokenType::SUB
-            | TokenType::NOT
-            | TokenType::IF
-            | TokenType::EXISTS
-            | TokenType::QUOTE => self.parse_expression_statement(),
-            TokenType::IDENT => self.parse_ident_statement(),
-            TokenType::OPTION => self.parse_option_assignment(),
-            TokenType::BUILTIN => self.parse_builtin_statement(),
-            TokenType::TEST => self.parse_test_statement(),
-            TokenType::TESTCASE => self.parse_testcase_statement(),
-            TokenType::RETURN => self.parse_return_statement(),
+            TokenType::Int
+            | TokenType::Float
+            | TokenType::String
+            | TokenType::Div
+            | TokenType::Time
+            | TokenType::Duration
+            | TokenType::PipeReceive
+            | TokenType::LParen
+            | TokenType::LBrack
+            | TokenType::LBrace
+            | TokenType::Add
+            | TokenType::Sub
+            | TokenType::Not
+            | TokenType::If
+            | TokenType::Exists
+            | TokenType::Quote => self.parse_expression_statement(),
+            TokenType::Ident => self.parse_ident_statement(),
+            TokenType::Option => self.parse_option_assignment(),
+            TokenType::Builtin => self.parse_builtin_statement(),
+            TokenType::Test => self.parse_test_statement(),
+            TokenType::TestCase => self.parse_testcase_statement(),
+            TokenType::Return => self.parse_return_statement(),
             _ => {
                 self.consume();
                 Statement::Bad(Box::new(BadStmt {
@@ -501,7 +426,7 @@ impl Parser {
         }
     }
     fn parse_option_assignment(&mut self) -> Statement {
-        let t = self.expect(TokenType::OPTION);
+        let t = self.expect(TokenType::Option);
         let ident = self.parse_identifier();
         let assignment = self.parse_option_assignment_suffix(ident);
         match assignment {
@@ -518,7 +443,7 @@ impl Parser {
     fn parse_option_assignment_suffix(&mut self, id: Identifier) -> Result<Assignment, String> {
         let t = self.peek();
         match t.tok {
-            TokenType::ASSIGN => {
+            TokenType::Assign => {
                 let init = self.parse_assign_statement();
                 Ok(Assignment::Variable(Box::new(VariableAssgn {
                     base: self.base_node_from_others_c(&id.base, init.base(), &t),
@@ -526,10 +451,10 @@ impl Parser {
                     init,
                 })))
             }
-            TokenType::DOT => {
+            TokenType::Dot => {
                 self.consume();
                 let prop = self.parse_identifier();
-                let assign = self.expect(TokenType::ASSIGN);
+                let assign = self.expect(TokenType::Assign);
                 let init = self.parse_expression();
                 Ok(Assignment::Member(Box::new(MemberAssgn {
                     base: self.base_node_from_others_c(&id.base, init.base(), &assign),
@@ -547,9 +472,9 @@ impl Parser {
         }
     }
     fn parse_builtin_statement(&mut self) -> Statement {
-        let t = self.expect(TokenType::BUILTIN);
+        let t = self.expect(TokenType::Builtin);
         let id = self.parse_identifier();
-        let colon = self.expect(TokenType::COLON);
+        let colon = self.expect(TokenType::Colon);
         let _type = self.parse_type_expression();
         Statement::Builtin(Box::new(BuiltinStmt {
             base: self.base_node_from_other_end_c(&t, &id.base, &t),
@@ -564,7 +489,7 @@ impl Parser {
         let t = self.peek();
         let mut base = monotype.base().clone();
         let mut constraints = Vec::new();
-        if t.tok == TokenType::IDENT && t.lit == "where" {
+        if t.tok == TokenType::Ident && t.lit == "where" {
             self.consume();
             constraints = self.parse_constraints();
             base = self.base_node_from_others(&base, &constraints[constraints.len() - 1].base);
@@ -580,21 +505,21 @@ impl Parser {
         // Tvar | Basic | Array | Dict | Record | Function
         let t = self.peek();
         match t.tok {
-            TokenType::LBRACK => {
-                let start = self.open(TokenType::LBRACK, TokenType::RBRACK);
+            TokenType::LBrack => {
+                let start = self.open(TokenType::LBrack, TokenType::RBrack);
                 let ty = self.parse_monotype();
                 match self.peek().tok {
-                    TokenType::RBRACK => {
-                        let end = self.close(TokenType::RBRACK);
+                    TokenType::RBrack => {
+                        let end = self.close(TokenType::RBrack);
                         MonoType::Array(Box::new(ArrayType {
                             base: self.base_node_from_tokens(&start, &end),
                             element: ty,
                         }))
                     }
                     _ => {
-                        self.expect(TokenType::COLON);
+                        self.expect(TokenType::Colon);
                         let val = self.parse_monotype();
-                        let end = self.close(TokenType::RBRACK);
+                        let end = self.close(TokenType::RBrack);
                         MonoType::Dict(Box::new(DictType {
                             base: self.base_node_from_tokens(&start, &end),
                             key: ty,
@@ -603,8 +528,8 @@ impl Parser {
                     }
                 }
             }
-            TokenType::LBRACE => self.parse_record_type(),
-            TokenType::LPAREN => self.parse_function_type(),
+            TokenType::LBrace => self.parse_record_type(),
+            TokenType::LParen => self.parse_function_type(),
             _ => {
                 if t.lit.len() == 1 {
                     self.parse_tvar()
@@ -633,18 +558,18 @@ impl Parser {
 
     // "(" [Parameters] ")" "=>" MonoType
     fn parse_function_type(&mut self) -> MonoType {
-        let _lparen = self.open(TokenType::LPAREN, TokenType::RPAREN);
+        let _lparen = self.open(TokenType::LParen, TokenType::RParen);
 
-        let params = if self.peek().tok == TokenType::PIPE_RECEIVE
-            || self.peek().tok == TokenType::QUESTION_MARK
-            || self.peek().tok == TokenType::IDENT
+        let params = if self.peek().tok == TokenType::PipeReceive
+            || self.peek().tok == TokenType::QuestionMark
+            || self.peek().tok == TokenType::Ident
         {
             self.parse_parameters()
         } else {
             Vec::<ParameterType>::new()
         };
-        let _rparen = self.close(TokenType::RPAREN);
-        self.expect(TokenType::ARROW);
+        let _rparen = self.close(TokenType::RParen);
+        self.expect(TokenType::Arrow);
         let mt = self.parse_monotype();
         MonoType::Function(Box::new(FunctionType {
             base: self.base_node_from_other_end(&_lparen, mt.base()),
@@ -659,7 +584,7 @@ impl Parser {
         while self.more() {
             let parameter = self.parse_parameter_type();
             params.push(parameter);
-            if self.peek().tok == TokenType::COMMA {
+            if self.peek().tok == TokenType::Comma {
                 self.consume();
             }
         }
@@ -669,11 +594,11 @@ impl Parser {
     // (identifier | "?" identifier | "<-" identifier | "<-") ":" MonoType
     fn parse_parameter_type(&mut self) -> ParameterType {
         match self.peek().tok {
-            TokenType::QUESTION_MARK => {
+            TokenType::QuestionMark => {
                 // Optional
-                let symbol = self.expect(TokenType::QUESTION_MARK);
+                let symbol = self.expect(TokenType::QuestionMark);
                 let id = self.parse_identifier();
-                self.expect(TokenType::COLON);
+                self.expect(TokenType::Colon);
                 let mt = self.parse_monotype();
                 let _base = self.base_node_from_token(&symbol);
                 ParameterType::Optional {
@@ -682,11 +607,11 @@ impl Parser {
                     monotype: mt,
                 }
             }
-            TokenType::PIPE_RECEIVE => {
-                let symbol = self.expect(TokenType::PIPE_RECEIVE);
-                if self.peek().tok == TokenType::IDENT {
+            TokenType::PipeReceive => {
+                let symbol = self.expect(TokenType::PipeReceive);
+                if self.peek().tok == TokenType::Ident {
                     let id = self.parse_identifier();
-                    self.expect(TokenType::COLON);
+                    self.expect(TokenType::Colon);
                     let mt = self.parse_monotype();
                     let _base = self.base_node_from_token(&symbol);
                     ParameterType::Pipe {
@@ -695,7 +620,7 @@ impl Parser {
                         monotype: mt,
                     }
                 } else {
-                    self.expect(TokenType::COLON);
+                    self.expect(TokenType::Colon);
                     let mt = self.parse_monotype();
                     let _base = self.base_node_from_token(&symbol);
                     ParameterType::Pipe {
@@ -708,7 +633,7 @@ impl Parser {
             _ => {
                 // Required
                 let id = self.parse_identifier();
-                self.expect(TokenType::COLON);
+                self.expect(TokenType::Colon);
                 let mt = self.parse_monotype();
                 ParameterType::Required {
                     base: self.base_node_from_others(&id.base, mt.base()),
@@ -722,7 +647,7 @@ impl Parser {
     fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
         let mut constraints = Vec::<TypeConstraint>::new();
         constraints.push(self.parse_constraint());
-        while self.peek().tok == TokenType::COMMA {
+        while self.peek().tok == TokenType::Comma {
             self.consume();
             constraints.push(self.parse_constraint());
         }
@@ -732,10 +657,10 @@ impl Parser {
     fn parse_constraint(&mut self) -> TypeConstraint {
         let mut id = Vec::<Identifier>::new();
         let _tvar = self.parse_identifier();
-        self.expect(TokenType::COLON);
+        self.expect(TokenType::Colon);
         let identifier = self.parse_identifier();
         id.push(identifier);
-        while self.peek().tok == TokenType::ADD {
+        while self.peek().tok == TokenType::Add {
             self.consume();
             let identifier = self.parse_identifier();
             id.push(identifier);
@@ -751,23 +676,23 @@ impl Parser {
     // Suffix1 = ":" MonoType { "," Property }
     // Suffix2 = "with" [Properties]
     fn parse_record_type(&mut self) -> MonoType {
-        let start = self.open(TokenType::LBRACE, TokenType::RBRACE);
+        let start = self.open(TokenType::LBrace, TokenType::RBrace);
         let mut id: Option<Identifier> = None;
 
         let t = self.peek();
         let properties = match t.tok {
-            TokenType::IDENT => {
+            TokenType::Ident => {
                 let identifier = self.parse_identifier();
                 let t = self.peek();
                 match t.tok {
-                    TokenType::COLON => self.parse_property_type_list_suffix(identifier),
-                    TokenType::IDENT if t.lit == "with" => {
+                    TokenType::Colon => self.parse_property_type_list_suffix(identifier),
+                    TokenType::Ident if t.lit == "with" => {
                         id = Some(identifier);
-                        self.expect(TokenType::IDENT);
+                        self.expect(TokenType::Ident);
                         self.parse_property_type_list()
                     }
                     // This is an error, but the token is not consumed so the error gets
-                    // caught below with self.close(TokenType::RBRACE)
+                    // caught below with self.close(TokenType::RBrace)
                     _ => vec![],
                 }
             }
@@ -775,7 +700,7 @@ impl Parser {
             _ => vec![],
         };
 
-        let end = self.close(TokenType::RBRACE);
+        let end = self.close(TokenType::RBrace);
 
         MonoType::Record(RecordType {
             base: self.base_node_from_tokens(&start, &end),
@@ -791,13 +716,13 @@ impl Parser {
         let mut properties = Vec::<PropertyType>::with_capacity(5);
         let p = self.parse_property_type_suffix(id);
         properties.push(p);
-        if self.peek().tok == TokenType::COMMA {
+        if self.peek().tok == TokenType::Comma {
             self.consume();
         }
         // check for more properties
         while self.more() {
             properties.push(self.parse_property_type());
-            if self.peek().tok == TokenType::COMMA {
+            if self.peek().tok == TokenType::Comma {
                 self.consume();
             }
         }
@@ -808,7 +733,7 @@ impl Parser {
         self.parse_property_type_suffix(identifier)
     }
     fn parse_property_type_suffix(&mut self, id: Identifier) -> PropertyType {
-        self.expect(TokenType::COLON); // :
+        self.expect(TokenType::Colon); // :
         let monotype = self.parse_monotype();
         PropertyType {
             base: self.base_node_from_others(&id.base, monotype.base()),
@@ -818,7 +743,7 @@ impl Parser {
     }
 
     fn parse_test_statement(&mut self) -> Statement {
-        let t = self.expect(TokenType::TEST);
+        let t = self.expect(TokenType::Test);
         let id = self.parse_identifier();
         let assign = self.peek();
         let assignment = self.parse_assign_statement();
@@ -833,7 +758,7 @@ impl Parser {
     }
 
     fn parse_testcase_statement(&mut self) -> Statement {
-        let t = self.expect(TokenType::TESTCASE);
+        let t = self.expect(TokenType::TestCase);
         let id = self.parse_identifier();
         let block = self.parse_block();
         Statement::TestCase(Box::new(TestCaseStmt {
@@ -847,7 +772,7 @@ impl Parser {
         let id = self.parse_identifier();
         let t = self.peek();
         match t.tok {
-            TokenType::ASSIGN => {
+            TokenType::Assign => {
                 let init = self.parse_assign_statement();
                 Statement::Variable(Box::new(VariableAssgn {
                     base: self.base_node_from_others_c(&id.base, init.base(), &t),
@@ -865,11 +790,11 @@ impl Parser {
         }
     }
     fn parse_assign_statement(&mut self) -> Expression {
-        self.expect(TokenType::ASSIGN);
+        self.expect(TokenType::Assign);
         self.parse_expression()
     }
     fn parse_return_statement(&mut self) -> Statement {
-        let t = self.expect(TokenType::RETURN);
+        let t = self.expect(TokenType::Return);
         let expr = self.parse_expression();
         Statement::Return(Box::new(ReturnStmt {
             base: self.base_node_from_other_end_c(&t, expr.base(), &t),
@@ -885,9 +810,9 @@ impl Parser {
         Statement::Expr(Box::new(stmt))
     }
     fn parse_block(&mut self) -> Block {
-        let start = self.open(TokenType::LBRACE, TokenType::RBRACE);
+        let start = self.open(TokenType::LBrace, TokenType::RBrace);
         let stmts = self.parse_statement_list();
-        let end = self.close(TokenType::RBRACE);
+        let end = self.close(TokenType::RBrace);
         Block {
             base: self.base_node_from_tokens(&start, &end),
             lbrace: self.make_comments(&start),
@@ -959,12 +884,12 @@ impl Parser {
     }
     fn parse_conditional_expression(&mut self) -> Expression {
         let t = self.peek();
-        if t.tok == TokenType::IF {
+        if t.tok == TokenType::If {
             let if_tok = self.scan();
             let test = self.parse_expression();
-            let then_tok = self.expect(TokenType::THEN);
+            let then_tok = self.expect(TokenType::Then);
             let cons = self.parse_expression();
-            let else_tok = self.expect(TokenType::ELSE);
+            let else_tok = self.expect(TokenType::Else);
             let alt = self.parse_expression();
             return Expression::Conditional(Box::new(ConditionalExpr {
                 base: self.base_node_from_other_end(&t, alt.base()),
@@ -1004,7 +929,7 @@ impl Parser {
     }
     fn parse_or_operator(&mut self) -> Option<LogicalOperator> {
         let t = self.peek().tok;
-        if t == TokenType::OR {
+        if t == TokenType::Or {
             Some(LogicalOperator::OrOperator)
         } else {
             None
@@ -1036,7 +961,7 @@ impl Parser {
     }
     fn parse_and_operator(&mut self) -> Option<LogicalOperator> {
         let t = self.peek().tok;
-        if t == TokenType::AND {
+        if t == TokenType::And {
             Some(LogicalOperator::AndOperator)
         } else {
             None
@@ -1061,8 +986,8 @@ impl Parser {
     fn parse_logical_unary_operator(&mut self) -> Option<Operator> {
         let t = self.peek().tok;
         match t {
-            TokenType::NOT => Some(Operator::NotOperator),
-            TokenType::EXISTS => Some(Operator::ExistsOperator),
+            TokenType::Not => Some(Operator::NotOperator),
+            TokenType::Exists => Some(Operator::ExistsOperator),
             _ => None,
         }
     }
@@ -1094,14 +1019,14 @@ impl Parser {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            TokenType::EQ => res = Some(Operator::EqualOperator),
-            TokenType::NEQ => res = Some(Operator::NotEqualOperator),
-            TokenType::LTE => res = Some(Operator::LessThanEqualOperator),
-            TokenType::LT => res = Some(Operator::LessThanOperator),
-            TokenType::GTE => res = Some(Operator::GreaterThanEqualOperator),
-            TokenType::GT => res = Some(Operator::GreaterThanOperator),
-            TokenType::REGEXEQ => res = Some(Operator::RegexpMatchOperator),
-            TokenType::REGEXNEQ => res = Some(Operator::NotRegexpMatchOperator),
+            TokenType::Eq => res = Some(Operator::EqualOperator),
+            TokenType::Neq => res = Some(Operator::NotEqualOperator),
+            TokenType::Lte => res = Some(Operator::LessThanEqualOperator),
+            TokenType::Lt => res = Some(Operator::LessThanOperator),
+            TokenType::Gte => res = Some(Operator::GreaterThanEqualOperator),
+            TokenType::Gt => res = Some(Operator::GreaterThanOperator),
+            TokenType::RegexEq => res = Some(Operator::RegexpMatchOperator),
+            TokenType::RegexNeq => res = Some(Operator::NotRegexpMatchOperator),
             _ => (),
         }
         res
@@ -1134,8 +1059,8 @@ impl Parser {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            TokenType::ADD => res = Some(Operator::AdditionOperator),
-            TokenType::SUB => res = Some(Operator::SubtractionOperator),
+            TokenType::Add => res = Some(Operator::AdditionOperator),
+            TokenType::Sub => res = Some(Operator::SubtractionOperator),
             _ => (),
         }
         res
@@ -1169,9 +1094,9 @@ impl Parser {
         let t = self.peek().tok;
         let mut res = None;
         match t {
-            TokenType::MUL => res = Some(Operator::MultiplicationOperator),
-            TokenType::DIV => res = Some(Operator::DivisionOperator),
-            TokenType::MOD => res = Some(Operator::ModuloOperator),
+            TokenType::Mul => res = Some(Operator::MultiplicationOperator),
+            TokenType::Div => res = Some(Operator::DivisionOperator),
+            TokenType::Mod => res = Some(Operator::ModuloOperator),
             _ => (),
         }
         res
@@ -1208,7 +1133,7 @@ impl Parser {
         let t = self.peek().tok;
         let mut res = None;
 
-        if let TokenType::POW = t {
+        if let TokenType::Pow = t {
             res = Some(Operator::PowerOperator)
         }
         res
@@ -1264,7 +1189,7 @@ impl Parser {
     }
     fn parse_pipe_operator(&mut self) -> bool {
         let t = self.peek().tok;
-        t == TokenType::PIPE_FORWARD
+        t == TokenType::PipeForward
     }
     fn parse_unary_expression(&mut self) -> Expression {
         let t = self.peek();
@@ -1308,14 +1233,14 @@ impl Parser {
     fn parse_postfix_operator(&mut self, expr: Expression) -> Result<Expression, Expression> {
         let t = self.peek();
         match t.tok {
-            TokenType::DOT => Ok(self.parse_dot_expression(expr)),
-            TokenType::LPAREN => Ok(self.parse_call_expression(expr)),
-            TokenType::LBRACK => Ok(self.parse_index_expression(expr)),
+            TokenType::Dot => Ok(self.parse_dot_expression(expr)),
+            TokenType::LParen => Ok(self.parse_call_expression(expr)),
+            TokenType::LBrack => Ok(self.parse_index_expression(expr)),
             _ => Err(expr),
         }
     }
     fn parse_dot_expression(&mut self, expr: Expression) -> Expression {
-        let dot = self.expect(TokenType::DOT);
+        let dot = self.expect(TokenType::Dot);
         let id = self.parse_identifier();
         Expression::Member(Box::new(MemberExpr {
             base: self.base_node_from_others(expr.base(), &id.base),
@@ -1326,9 +1251,9 @@ impl Parser {
         }))
     }
     fn parse_call_expression(&mut self, expr: Expression) -> Expression {
-        let lparen = self.open(TokenType::LPAREN, TokenType::RPAREN);
+        let lparen = self.open(TokenType::LParen, TokenType::RParen);
         let params = self.parse_property_list();
-        let end = self.close(TokenType::RPAREN);
+        let end = self.close(TokenType::RParen);
         let mut call = CallExpr {
             base: self.base_node_from_other_start(expr.base(), &end),
             callee: expr,
@@ -1351,9 +1276,9 @@ impl Parser {
         Expression::Call(Box::new(call))
     }
     fn parse_index_expression(&mut self, expr: Expression) -> Expression {
-        let start = self.open(TokenType::LBRACK, TokenType::RBRACK);
+        let start = self.open(TokenType::LBrack, TokenType::RBrack);
         let iexpr = self.parse_expression_while_more(None, &[]);
-        let end = self.close(TokenType::RBRACK);
+        let end = self.close(TokenType::RBrack);
         match iexpr {
             Some(Expression::StringLit(sl)) => Expression::Member(Box::new(MemberExpr {
                 base: self.base_node_from_other_start(expr.base(), &end),
@@ -1400,7 +1325,7 @@ impl Parser {
             },
             text: format!(
                 "invalid token for primary expression: {}",
-                format_token(t.tok)
+                format!("{}", t.tok)
             ),
             expression: None,
         }))
@@ -1409,32 +1334,32 @@ impl Parser {
     fn parse_primary_expression(&mut self) -> Expression {
         let t = self.peek_with_regex();
         match t.tok {
-            TokenType::IDENT => Expression::Identifier(self.parse_identifier()),
-            TokenType::INT => Expression::Integer(self.parse_int_literal()),
-            TokenType::FLOAT => {
+            TokenType::Ident => Expression::Identifier(self.parse_identifier()),
+            TokenType::Int => Expression::Integer(self.parse_int_literal()),
+            TokenType::Float => {
                 let lit = self.parse_float_literal();
                 match lit {
                     Ok(lit) => Expression::Float(lit),
                     Err(terr) => self.create_bad_expression(terr.token),
                 }
             }
-            TokenType::STRING => Expression::StringLit(self.parse_string_literal()),
-            TokenType::QUOTE => {
+            TokenType::String => Expression::StringLit(self.parse_string_literal()),
+            TokenType::Quote => {
                 let lit = self.parse_string_expression();
                 match lit {
                     Ok(lit) => Expression::StringExpr(Box::new(lit)),
                     Err(terr) => self.create_bad_expression(terr.token),
                 }
             }
-            TokenType::REGEX => Expression::Regexp(self.parse_regexp_literal()),
-            TokenType::TIME => {
+            TokenType::Regex => Expression::Regexp(self.parse_regexp_literal()),
+            TokenType::Time => {
                 let lit = self.parse_time_literal();
                 match lit {
                     Ok(lit) => Expression::DateTime(lit),
                     Err(terr) => self.create_bad_expression(terr.token),
                 }
             }
-            TokenType::DURATION => {
+            TokenType::Duration => {
                 let lit = self.parse_duration_literal();
 
                 match lit {
@@ -1442,25 +1367,25 @@ impl Parser {
                     Err(terr) => self.create_bad_expression(terr.token),
                 }
             }
-            TokenType::PIPE_RECEIVE => Expression::PipeLit(self.parse_pipe_literal()),
-            TokenType::LBRACK => {
-                let start = self.open(TokenType::LBRACK, TokenType::RBRACK);
+            TokenType::PipeReceive => Expression::PipeLit(self.parse_pipe_literal()),
+            TokenType::LBrack => {
+                let start = self.open(TokenType::LBrack, TokenType::RBrack);
                 self.parse_array_or_dict(&start)
             }
-            TokenType::LBRACE => Expression::Object(Box::new(self.parse_object_literal())),
-            TokenType::LPAREN => self.parse_paren_expression(),
+            TokenType::LBrace => Expression::Object(Box::new(self.parse_object_literal())),
+            TokenType::LParen => self.parse_paren_expression(),
             // We got a bad token, do not consume it, but use it in the message.
             // Other methods will match BadExpr and consume the token if needed.
             _ => self.create_bad_expression(t),
         }
     }
     fn parse_string_expression(&mut self) -> Result<StringExpr, TokenError> {
-        let start = self.expect(TokenType::QUOTE);
+        let start = self.expect(TokenType::Quote);
         let mut parts = Vec::new();
         loop {
             let t = self.s.scan_string_expr();
             match t.tok {
-                TokenType::TEXT => {
+                TokenType::Text => {
                     let value = strconv::parse_text(t.lit.as_str());
                     match value {
                         Ok(value) => {
@@ -1472,15 +1397,15 @@ impl Parser {
                         Err(message) => return Err(TokenError { token: t, message }),
                     }
                 }
-                TokenType::STRINGEXPR => {
+                TokenType::StringExpr => {
                     let expr = self.parse_expression();
-                    let end = self.expect(TokenType::RBRACE);
+                    let end = self.expect(TokenType::RBrace);
                     parts.push(StringExprPart::Interpolated(InterpolatedPart {
                         base: self.base_node_from_tokens(&t, &end),
                         expression: expr,
                     }));
                 }
-                TokenType::QUOTE => {
+                TokenType::Quote => {
                     return Ok(StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
                         parts,
@@ -1498,7 +1423,7 @@ impl Parser {
                         loc.start.column,
                         loc.end.line,
                         loc.end.column,
-                        format_token(t.tok)
+                        format!("{}", t.tok)
                     ));
                     return Ok(StringExpr {
                         base: self.base_node_from_tokens(&start, &t),
@@ -1509,14 +1434,14 @@ impl Parser {
         }
     }
     fn parse_identifier(&mut self) -> Identifier {
-        let t = self.expect(TokenType::IDENT);
+        let t = self.expect(TokenType::Ident);
         Identifier {
             base: self.base_node_from_token(&t),
             name: t.lit,
         }
     }
     fn parse_int_literal(&mut self) -> IntegerLit {
-        let t = self.expect(TokenType::INT);
+        let t = self.expect(TokenType::Int);
         match (&t.lit).parse::<i64>() {
             Err(_e) => {
                 self.errs.push(format!(
@@ -1535,7 +1460,7 @@ impl Parser {
         }
     }
     fn parse_float_literal(&mut self) -> Result<FloatLit, TokenError> {
-        let t = self.expect(TokenType::FLOAT);
+        let t = self.expect(TokenType::Float);
 
         let value = (&t.lit).parse::<f64>();
 
@@ -1551,7 +1476,7 @@ impl Parser {
         }
     }
     fn parse_string_literal(&mut self) -> StringLit {
-        let t = self.expect(TokenType::STRING);
+        let t = self.expect(TokenType::String);
         match strconv::parse_string(t.lit.as_str()) {
             Ok(value) => StringLit {
                 base: self.base_node_from_token(&t),
@@ -1567,7 +1492,7 @@ impl Parser {
         }
     }
     fn parse_regexp_literal(&mut self) -> RegexpLit {
-        let t = self.expect(TokenType::REGEX);
+        let t = self.expect(TokenType::Regex);
         let value = strconv::parse_regex(t.lit.as_str());
         match value {
             Err(e) => {
@@ -1584,7 +1509,7 @@ impl Parser {
         }
     }
     fn parse_time_literal(&mut self) -> Result<DateTimeLit, TokenError> {
-        let t = self.expect(TokenType::TIME);
+        let t = self.expect(TokenType::Time);
         let value = strconv::parse_time(t.lit.as_str());
         match value {
             Ok(value) => Ok(DateTimeLit {
@@ -1595,7 +1520,7 @@ impl Parser {
         }
     }
     fn parse_duration_literal(&mut self) -> Result<DurationLit, TokenError> {
-        let t = self.expect(TokenType::DURATION);
+        let t = self.expect(TokenType::Duration);
         let values = strconv::parse_duration(t.lit.as_str());
 
         match values {
@@ -1607,7 +1532,7 @@ impl Parser {
         }
     }
     fn parse_pipe_literal(&mut self) -> PipeLit {
-        let t = self.expect(TokenType::PIPE_RECEIVE);
+        let t = self.expect(TokenType::PipeReceive);
         PipeLit {
             base: self.base_node_from_token(&t),
         }
@@ -1615,9 +1540,9 @@ impl Parser {
     fn parse_array_or_dict(&mut self, start: &Token) -> Expression {
         match self.peek().tok {
             // empty dictionary [:]
-            TokenType::COLON => {
+            TokenType::Colon => {
                 self.consume();
-                let end = self.close(TokenType::RBRACK);
+                let end = self.close(TokenType::RBrack);
                 let base = self.base_node_from_tokens(start, &end);
                 let elements = Vec::new();
                 let lbrack = self.make_comments(start);
@@ -1630,8 +1555,8 @@ impl Parser {
                 }))
             }
             // empty array []
-            TokenType::RBRACK => {
-                let end = self.close(TokenType::RBRACK);
+            TokenType::RBrack => {
+                let end = self.close(TokenType::RBrack);
                 let base = self.base_node_from_tokens(start, &end);
                 let elements = Vec::new();
                 let lbrack = self.make_comments(start);
@@ -1647,7 +1572,7 @@ impl Parser {
                 let expr = self.parse_expression();
                 match self.peek().tok {
                     // non-empty dictionary
-                    TokenType::COLON => {
+                    TokenType::Colon => {
                         self.consume();
                         let val = self.parse_expression();
                         self.parse_dict_items_rest(start, expr, val)
@@ -1660,8 +1585,8 @@ impl Parser {
     }
     fn parse_array_items_rest(&mut self, start: &Token, init: Expression) -> Expression {
         match self.peek().tok {
-            TokenType::RBRACK => {
-                let end = self.close(TokenType::RBRACK);
+            TokenType::RBrack => {
+                let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {
                     base: self.base_node_from_tokens(start, &end),
                     lbrack: self.make_comments(start),
@@ -1673,7 +1598,7 @@ impl Parser {
                 }))
             }
             _ => {
-                let comma = self.expect(TokenType::COMMA);
+                let comma = self.expect(TokenType::Comma);
                 let mut items = vec![ArrayItem {
                     expression: init,
                     comma: self.make_comments(&comma),
@@ -1681,7 +1606,7 @@ impl Parser {
                 while self.more() {
                     let expression = self.parse_expression();
                     let comma = match self.peek().tok {
-                        TokenType::COMMA => {
+                        TokenType::Comma => {
                             let comma = self.scan();
                             self.make_comments(&comma)
                         }
@@ -1689,7 +1614,7 @@ impl Parser {
                     };
                     items.push(ArrayItem { expression, comma });
                 }
-                let end = self.close(TokenType::RBRACK);
+                let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {
                     base: self.base_node_from_tokens(start, &end),
                     lbrack: self.make_comments(start),
@@ -1706,8 +1631,8 @@ impl Parser {
         val: Expression,
     ) -> Expression {
         match self.peek().tok {
-            TokenType::RBRACK => {
-                let end = self.close(TokenType::RBRACK);
+            TokenType::RBrack => {
+                let end = self.close(TokenType::RBrack);
                 Expression::Dict(Box::new(DictExpr {
                     base: self.base_node_from_tokens(start, &end),
                     lbrack: self.make_comments(start),
@@ -1720,15 +1645,15 @@ impl Parser {
                 }))
             }
             _ => {
-                let comma = self.expect(TokenType::COMMA);
+                let comma = self.expect(TokenType::Comma);
                 let comma = self.make_comments(&comma);
                 let mut items = vec![DictItem { key, val, comma }];
                 while self.more() {
                     let key = self.parse_expression();
-                    self.expect(TokenType::COLON);
+                    self.expect(TokenType::Colon);
                     let val = self.parse_expression();
                     let comma = match self.peek().tok {
-                        TokenType::COMMA => {
+                        TokenType::Comma => {
                             let comma = self.scan();
                             self.make_comments(&comma)
                         }
@@ -1736,7 +1661,7 @@ impl Parser {
                     };
                     items.push(DictItem { key, val, comma });
                 }
-                let end = self.close(TokenType::RBRACK);
+                let end = self.close(TokenType::RBrack);
                 Expression::Dict(Box::new(DictExpr {
                     base: self.base_node_from_tokens(start, &end),
                     lbrack: self.make_comments(start),
@@ -1747,26 +1672,26 @@ impl Parser {
         }
     }
     fn parse_object_literal(&mut self) -> ObjectExpr {
-        let start = self.open(TokenType::LBRACE, TokenType::RBRACE);
+        let start = self.open(TokenType::LBrace, TokenType::RBrace);
         let mut obj = self.parse_object_body();
-        let end = self.close(TokenType::RBRACE);
+        let end = self.close(TokenType::RBrace);
         obj.base = self.base_node_from_tokens(&start, &end);
         obj.lbrace = self.make_comments(&start);
         obj.rbrace = self.make_comments(&end);
         obj
     }
     fn parse_paren_expression(&mut self) -> Expression {
-        let lparen = self.open(TokenType::LPAREN, TokenType::RPAREN);
+        let lparen = self.open(TokenType::LParen, TokenType::RParen);
         self.parse_paren_body_expression(lparen)
     }
     fn parse_paren_body_expression(&mut self, lparen: Token) -> Expression {
         let t = self.peek();
         match t.tok {
-            TokenType::RPAREN => {
-                self.close(TokenType::RPAREN);
+            TokenType::RParen => {
+                self.close(TokenType::RParen);
                 self.parse_function_expression(lparen, t, Vec::new())
             }
-            TokenType::IDENT => {
+            TokenType::Ident => {
                 let ident = self.parse_identifier();
                 self.parse_paren_ident_expression(lparen, ident)
             }
@@ -1790,7 +1715,7 @@ impl Parser {
                     }
                     Some(_) => (),
                 };
-                let rparen = self.close(TokenType::RPAREN);
+                let rparen = self.close(TokenType::RParen);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
                     lparen: self.make_comments(&lparen),
@@ -1803,11 +1728,11 @@ impl Parser {
     fn parse_paren_ident_expression(&mut self, lparen: Token, key: Identifier) -> Expression {
         let t = self.peek();
         match t.tok {
-            TokenType::RPAREN => {
-                self.close(TokenType::RPAREN);
+            TokenType::RParen => {
+                self.close(TokenType::RParen);
                 let next = self.peek();
                 match next.tok {
-                    TokenType::ARROW => {
+                    TokenType::Arrow => {
                         let mut params = Vec::new();
                         params.push(Property {
                             base: self.base_node(key.base.location.clone()),
@@ -1826,7 +1751,7 @@ impl Parser {
                     })),
                 }
             }
-            TokenType::ASSIGN => {
+            TokenType::Assign => {
                 self.consume();
                 let value = self.parse_expression();
                 let mut params = Vec::new();
@@ -1837,16 +1762,16 @@ impl Parser {
                     separator: self.make_comments(&t),
                     comma: None,
                 });
-                if self.peek().tok == TokenType::COMMA {
+                if self.peek().tok == TokenType::Comma {
                     let comma = self.scan();
                     params[0].comma = self.make_comments(&comma);
                     let others = &mut self.parse_parameter_list();
                     params.append(others);
                 }
-                let rparen = self.close(TokenType::RPAREN);
+                let rparen = self.close(TokenType::RParen);
                 self.parse_function_expression(lparen, rparen, params)
             }
-            TokenType::COMMA => {
+            TokenType::Comma => {
                 self.consume();
                 let mut params = Vec::new();
                 params.push(Property {
@@ -1858,7 +1783,7 @@ impl Parser {
                 });
                 let others = &mut self.parse_parameter_list();
                 params.append(others);
-                let rparen = self.close(TokenType::RPAREN);
+                let rparen = self.close(TokenType::RParen);
                 self.parse_function_expression(lparen, rparen, params)
             }
             _ => {
@@ -1882,7 +1807,7 @@ impl Parser {
                         right: rhs,
                     }));
                 }
-                let rparen = self.close(TokenType::RPAREN);
+                let rparen = self.close(TokenType::RParen);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
                     lparen: self.make_comments(&lparen),
@@ -1895,11 +1820,11 @@ impl Parser {
     fn parse_object_body(&mut self) -> ObjectExpr {
         let t = self.peek();
         match t.tok {
-            TokenType::IDENT => {
+            TokenType::Ident => {
                 let ident = self.parse_identifier();
                 self.parse_object_body_suffix(ident)
             }
-            TokenType::STRING => {
+            TokenType::String => {
                 let s = self.parse_string_literal();
                 let props = self.parse_property_list_suffix(PropertyKey::StringLit(s));
                 ObjectExpr {
@@ -1924,7 +1849,7 @@ impl Parser {
     fn parse_object_body_suffix(&mut self, ident: Identifier) -> ObjectExpr {
         let t = self.peek();
         match t.tok {
-            TokenType::IDENT => {
+            TokenType::Ident => {
                 if t.lit != "with" {
                     self.errs.push("".to_string())
                 }
@@ -1963,10 +1888,10 @@ impl Parser {
             return props;
         }
         let t = self.peek();
-        if t.tok != TokenType::COMMA {
+        if t.tok != TokenType::Comma {
             self.errs.push(format!(
                 "expected comma in property list, got {}",
-                format_token(t.tok)
+                format!("{}", t.tok)
             ))
         } else {
             let last = props.len() - 1;
@@ -1984,18 +1909,18 @@ impl Parser {
             let mut p: Property;
             let t = self.peek();
             match t.tok {
-                TokenType::IDENT => p = self.parse_ident_property(),
-                TokenType::STRING => p = self.parse_string_property(),
+                TokenType::Ident => p = self.parse_ident_property(),
+                TokenType::String => p = self.parse_string_property(),
                 _ => p = self.parse_invalid_property(),
             }
             p.comma = last_comma_comments.take();
 
             if self.more() {
                 let t = self.peek();
-                if t.tok != TokenType::COMMA {
+                if t.tok != TokenType::Comma {
                     errs.push(format!(
                         "expected comma in property list, got {}",
-                        format_token(t.tok)
+                        format!("{}", t.tok)
                     ))
                 } else {
                     p.comma = self.make_comments(&t);
@@ -2020,7 +1945,7 @@ impl Parser {
         let mut value = None;
         let mut separator = None;
         let t = self.peek();
-        if t.tok == TokenType::COLON {
+        if t.tok == TokenType::Colon {
             self.consume();
             value = self.parse_property_value();
             separator = self.make_comments(&t);
@@ -2042,25 +1967,25 @@ impl Parser {
         let mut value = None;
         let t = self.peek();
         match t.tok {
-            TokenType::COLON => {
+            TokenType::Colon => {
                 errs.push(String::from("missing property key"));
                 self.consume();
                 value = self.parse_property_value();
             }
-            TokenType::COMMA => errs.push(String::from("missing property in property list")),
+            TokenType::Comma => errs.push(String::from("missing property in property list")),
             _ => {
                 errs.push(format!(
                     "unexpected token for property key: {} ({})",
-                    format_token(t.tok),
+                    format!("{}", t.tok),
                     t.lit,
                 ));
 
                 // We are not really parsing an expression, this is just a way to advance to
                 // to just before the next comma, colon, end of block, or EOF.
-                self.parse_expression_while_more(None, &[TokenType::COMMA, TokenType::COLON]);
+                self.parse_expression_while_more(None, &[TokenType::Comma, TokenType::Colon]);
 
                 // If we stopped at a colon, attempt to parse the value
-                if self.peek().tok == TokenType::COLON {
+                if self.peek().tok == TokenType::Colon {
                     self.consume();
                     value = self.parse_property_value();
                 }
@@ -2086,7 +2011,7 @@ impl Parser {
         }
     }
     fn parse_property_value(&mut self) -> Option<Expression> {
-        let res = self.parse_expression_while_more(None, &[TokenType::COMMA, TokenType::COLON]);
+        let res = self.parse_expression_while_more(None, &[TokenType::Comma, TokenType::Colon]);
         if res.is_none() {
             // TODO: return a BadExpr here. It would help simplify logic.
             self.errs.push(String::from("missing property value"));
@@ -2097,7 +2022,7 @@ impl Parser {
         let mut params = Vec::new();
         while self.more() {
             let mut p = self.parse_parameter();
-            if self.peek().tok == TokenType::COMMA {
+            if self.peek().tok == TokenType::Comma {
                 let t = self.scan();
                 p.comma = self.make_comments(&t);
             };
@@ -2109,7 +2034,7 @@ impl Parser {
         let key = self.parse_identifier();
         let base: BaseNode;
         let mut separator = None;
-        let value = if self.peek().tok == TokenType::ASSIGN {
+        let value = if self.peek().tok == TokenType::Assign {
             let t = self.scan();
             separator = self.make_comments(&t);
             let v = self.parse_expression();
@@ -2133,7 +2058,7 @@ impl Parser {
         rparen: Token,
         params: Vec<Property>,
     ) -> Expression {
-        let arrow = self.expect(TokenType::ARROW);
+        let arrow = self.expect(TokenType::Arrow);
         self.parse_function_body_expression(lparen, rparen, arrow, params)
     }
     fn parse_function_body_expression(
@@ -2145,7 +2070,7 @@ impl Parser {
     ) -> Expression {
         let t = self.peek();
         match t.tok {
-            TokenType::LBRACE => {
+            TokenType::LBrace => {
                 let block = self.parse_block();
                 Expression::Function(Box::new(FunctionExpr {
                     base: self.base_node_from_other_end(&lparen, &block.base),

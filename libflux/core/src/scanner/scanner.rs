@@ -47,7 +47,7 @@ token_end_col: &mut i32 ) -> u32
 	let mut act: i32 = 0;
 	let mut ts: i32 = 0;
 	let mut te: i32 = 0;
-	let mut tok: TokenType = TokenType::ILLEGAL;
+	let mut tok: TokenType = TokenType::Illegal;
 	
 	let mut last_newline_before_token: i32 = *last_newline;
 	let mut cur_line_token_start: i32 = *cur_line;
@@ -226,7 +226,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								7  => {
 									{{te = p+1;
-											{tok = TokenType::REGEX; {p += 1;
+											{tok = TokenType::Regex; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -255,7 +255,7 @@ token_end_col: &mut i32 ) -> u32
 								10  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::REGEX; {p += 1;
+											{tok = TokenType::Regex; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -296,7 +296,7 @@ token_end_col: &mut i32 ) -> u32
 									{{match ( act  ) {
 												1  => {
 													p = ((te))-1;
-													{tok = TokenType::REGEX; {p += 1;
+													{tok = TokenType::Regex; {p += 1;
 															break '_resume;
 														} }
 													
@@ -426,7 +426,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								36  => {
 									{{te = p+1;
-											{tok = TokenType::COMMENT; {p += 1;
+											{tok = TokenType::Comment; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -434,7 +434,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								37  => {
 									{{te = p+1;
-											{tok = TokenType::TIME; {p += 1;
+											{tok = TokenType::Time; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -442,7 +442,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								38  => {
 									{{te = p+1;
-											{tok = TokenType::STRING; {p += 1;
+											{tok = TokenType::String; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -450,7 +450,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								39  => {
 									{{te = p+1;
-											{tok = TokenType::ADD; {p += 1;
+											{tok = TokenType::Add; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -458,7 +458,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								40  => {
 									{{te = p+1;
-											{tok = TokenType::SUB; {p += 1;
+											{tok = TokenType::Sub; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -466,7 +466,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								41  => {
 									{{te = p+1;
-											{tok = TokenType::MUL; {p += 1;
+											{tok = TokenType::Mul; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -474,7 +474,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								42  => {
 									{{te = p+1;
-											{tok = TokenType::MOD; {p += 1;
+											{tok = TokenType::Mod; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -482,7 +482,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								43  => {
 									{{te = p+1;
-											{tok = TokenType::POW; {p += 1;
+											{tok = TokenType::Pow; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -490,7 +490,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								44  => {
 									{{te = p+1;
-											{tok = TokenType::EQ; {p += 1;
+											{tok = TokenType::Eq; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -498,7 +498,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								45  => {
 									{{te = p+1;
-											{tok = TokenType::LTE; {p += 1;
+											{tok = TokenType::Lte; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -506,7 +506,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								46  => {
 									{{te = p+1;
-											{tok = TokenType::GTE; {p += 1;
+											{tok = TokenType::Gte; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -514,7 +514,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								47  => {
 									{{te = p+1;
-											{tok = TokenType::NEQ; {p += 1;
+											{tok = TokenType::Neq; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -522,7 +522,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								48  => {
 									{{te = p+1;
-											{tok = TokenType::REGEXEQ; {p += 1;
+											{tok = TokenType::RegexEq; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -530,7 +530,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								49  => {
 									{{te = p+1;
-											{tok = TokenType::REGEXNEQ; {p += 1;
+											{tok = TokenType::RegexNeq; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -538,7 +538,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								50  => {
 									{{te = p+1;
-											{tok = TokenType::ARROW; {p += 1;
+											{tok = TokenType::Arrow; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -546,7 +546,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								51  => {
 									{{te = p+1;
-											{tok = TokenType::PIPE_RECEIVE; {p += 1;
+											{tok = TokenType::PipeReceive; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -554,7 +554,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								52  => {
 									{{te = p+1;
-											{tok = TokenType::LPAREN; {p += 1;
+											{tok = TokenType::LParen; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -562,7 +562,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								53  => {
 									{{te = p+1;
-											{tok = TokenType::RPAREN; {p += 1;
+											{tok = TokenType::RParen; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -570,7 +570,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								54  => {
 									{{te = p+1;
-											{tok = TokenType::LBRACK; {p += 1;
+											{tok = TokenType::LBrack; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -578,7 +578,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								55  => {
 									{{te = p+1;
-											{tok = TokenType::RBRACK; {p += 1;
+											{tok = TokenType::RBrack; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -586,7 +586,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								56  => {
 									{{te = p+1;
-											{tok = TokenType::LBRACE; {p += 1;
+											{tok = TokenType::LBrace; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -594,7 +594,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								57  => {
 									{{te = p+1;
-											{tok = TokenType::RBRACE; {p += 1;
+											{tok = TokenType::RBrace; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -602,7 +602,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								58  => {
 									{{te = p+1;
-											{tok = TokenType::COLON; {p += 1;
+											{tok = TokenType::Colon; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -610,7 +610,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								59  => {
 									{{te = p+1;
-											{tok = TokenType::PIPE_FORWARD; {p += 1;
+											{tok = TokenType::PipeForward; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -618,7 +618,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								60  => {
 									{{te = p+1;
-											{tok = TokenType::COMMA; {p += 1;
+											{tok = TokenType::Comma; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -626,7 +626,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								61  => {
 									{{te = p+1;
-											{tok = TokenType::QUESTION_MARK; {p += 1;
+											{tok = TokenType::QuestionMark; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -643,7 +643,7 @@ token_end_col: &mut i32 ) -> u32
 								63  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::COMMENT; {p += 1;
+											{tok = TokenType::Comment; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -652,7 +652,7 @@ token_end_col: &mut i32 ) -> u32
 								64  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::TEST; {p += 1;
+											{tok = TokenType::Test; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -661,7 +661,7 @@ token_end_col: &mut i32 ) -> u32
 								65  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::IDENT; {p += 1;
+											{tok = TokenType::Ident; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -670,7 +670,7 @@ token_end_col: &mut i32 ) -> u32
 								66  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::INT; {p += 1;
+											{tok = TokenType::Int; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -679,7 +679,7 @@ token_end_col: &mut i32 ) -> u32
 								67  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::DURATION; {p += 1;
+											{tok = TokenType::Duration; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -688,7 +688,7 @@ token_end_col: &mut i32 ) -> u32
 								68  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::TIME; {p += 1;
+											{tok = TokenType::Time; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -697,7 +697,7 @@ token_end_col: &mut i32 ) -> u32
 								69  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::DIV; {p += 1;
+											{tok = TokenType::Div; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -706,7 +706,7 @@ token_end_col: &mut i32 ) -> u32
 								70  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::LT; {p += 1;
+											{tok = TokenType::Lt; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -715,7 +715,7 @@ token_end_col: &mut i32 ) -> u32
 								71  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::GT; {p += 1;
+											{tok = TokenType::Gt; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -724,7 +724,7 @@ token_end_col: &mut i32 ) -> u32
 								72  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::ASSIGN; {p += 1;
+											{tok = TokenType::Assign; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -733,7 +733,7 @@ token_end_col: &mut i32 ) -> u32
 								73  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::QUOTE; {p += 1;
+											{tok = TokenType::Quote; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -747,7 +747,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								75  => {
 									{{p = ((te))-1;
-											{tok = TokenType::INT; {p += 1;
+											{tok = TokenType::Int; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -755,7 +755,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								76  => {
 									{{p = ((te))-1;
-											{tok = TokenType::DURATION; {p += 1;
+											{tok = TokenType::Duration; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -763,7 +763,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								77  => {
 									{{p = ((te))-1;
-											{tok = TokenType::TIME; {p += 1;
+											{tok = TokenType::Time; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -771,7 +771,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								78  => {
 									{{p = ((te))-1;
-											{tok = TokenType::QUOTE; {p += 1;
+											{tok = TokenType::Quote; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -790,147 +790,147 @@ token_end_col: &mut i32 ) -> u32
 												}
 												6  => {
 													p = ((te))-1;
-													{tok = TokenType::AND; {p += 1;
+													{tok = TokenType::And; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												7  => {
 													p = ((te))-1;
-													{tok = TokenType::OR; {p += 1;
+													{tok = TokenType::Or; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												8  => {
 													p = ((te))-1;
-													{tok = TokenType::NOT; {p += 1;
+													{tok = TokenType::Not; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												9  => {
 													p = ((te))-1;
-													{tok = TokenType::EMPTY; {p += 1;
+													{tok = TokenType::Empty; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												10  => {
 													p = ((te))-1;
-													{tok = TokenType::IN; {p += 1;
+													{tok = TokenType::In; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												11  => {
 													p = ((te))-1;
-													{tok = TokenType::IMPORT; {p += 1;
+													{tok = TokenType::Import; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												12  => {
 													p = ((te))-1;
-													{tok = TokenType::PACKAGE; {p += 1;
+													{tok = TokenType::Package; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												13  => {
 													p = ((te))-1;
-													{tok = TokenType::RETURN; {p += 1;
+													{tok = TokenType::Return; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												14  => {
 													p = ((te))-1;
-													{tok = TokenType::OPTION; {p += 1;
+													{tok = TokenType::Option; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												15  => {
 													p = ((te))-1;
-													{tok = TokenType::BUILTIN; {p += 1;
+													{tok = TokenType::Builtin; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												16  => {
 													p = ((te))-1;
-													{tok = TokenType::TESTCASE; {p += 1;
+													{tok = TokenType::TestCase; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												17  => {
 													p = ((te))-1;
-													{tok = TokenType::TEST; {p += 1;
+													{tok = TokenType::Test; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												18  => {
 													p = ((te))-1;
-													{tok = TokenType::IF; {p += 1;
+													{tok = TokenType::If; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												19  => {
 													p = ((te))-1;
-													{tok = TokenType::THEN; {p += 1;
+													{tok = TokenType::Then; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												20  => {
 													p = ((te))-1;
-													{tok = TokenType::ELSE; {p += 1;
+													{tok = TokenType::Else; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												21  => {
 													p = ((te))-1;
-													{tok = TokenType::EXISTS; {p += 1;
+													{tok = TokenType::Exists; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												22  => {
 													p = ((te))-1;
-													{tok = TokenType::IDENT; {p += 1;
+													{tok = TokenType::Ident; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												23  => {
 													p = ((te))-1;
-													{tok = TokenType::INT; {p += 1;
+													{tok = TokenType::Int; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												24  => {
 													p = ((te))-1;
-													{tok = TokenType::FLOAT; {p += 1;
+													{tok = TokenType::Float; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												25  => {
 													p = ((te))-1;
-													{tok = TokenType::DURATION; {p += 1;
+													{tok = TokenType::Duration; {p += 1;
 															break '_resume;
 														} }
 													
 												}
 												54  => {
 													p = ((te))-1;
-													{tok = TokenType::DOT; {p += 1;
+													{tok = TokenType::Dot; {p += 1;
 															break '_resume;
 														} }
 													
@@ -949,7 +949,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								81  => {
 									{{te = p+1;
-											{tok = TokenType::STRINGEXPR; {p += 1;
+											{tok = TokenType::StringExpr; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -957,7 +957,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								82  => {
 									{{te = p+1;
-											{tok = TokenType::QUOTE; {p += 1;
+											{tok = TokenType::Quote; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -966,7 +966,7 @@ token_end_col: &mut i32 ) -> u32
 								83  => {
 									{{te = p;
 											p = p - 1;
-											{tok = TokenType::TEXT; {p += 1;
+											{tok = TokenType::Text; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -974,7 +974,7 @@ token_end_col: &mut i32 ) -> u32
 								}
 								84  => {
 									{{p = ((te))-1;
-											{tok = TokenType::TEXT; {p += 1;
+											{tok = TokenType::Text; {p += 1;
 													break '_resume;
 												} }
 										}}
@@ -993,7 +993,7 @@ token_end_col: &mut i32 ) -> u32
 												}
 												61  => {
 													p = ((te))-1;
-													{tok = TokenType::TEXT; {p += 1;
+													{tok = TokenType::Text; {p += 1;
 															break '_resume;
 														} }
 													
