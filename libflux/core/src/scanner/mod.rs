@@ -139,10 +139,10 @@ impl Scanner {
                     // It's possible that the C scanner left the data pointer in the middle
                     // of a character. This resets the pointer to the
                     // beginning of the token we just failed to scan.
-                    self.p = unsafe { self.ps + token_start };
+                    self.p = self.ps + token_start;
                     let size = nc.len_utf8();
                     // Advance the data pointer to after the character we just emitted.
-                    self.p = unsafe { self.p + size as i32 };
+                    self.p = self.p + size as i32;
                     Token {
                         tok: TokenType::Illegal,
                         lit: nc.to_string(),
