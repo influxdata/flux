@@ -141,7 +141,7 @@ impl Scanner {
                     self.p = self.ps + token_start;
                     let size = nc.len_utf8();
                     // Advance the data pointer to after the character we just emitted.
-                    self.p = self.p + size as i32;
+                    self.p += size as i32;
                     Token {
                         tok: TokenType::Illegal,
                         lit: nc.to_string(),
@@ -168,12 +168,8 @@ impl Scanner {
             self.get_eof_token()
         } else {
             // No error or EOF, we can process the returned values normally.
-            let lit = match str::from_utf8(&self.data[(token_start as usize)..(token_end as usize)])
-            {
-                Ok(result) => result,
-                // XXX: rockstar (15 Jan 2021) - Maybe we should log this?
-                Err(_) => "",
-            };
+            let lit = str::from_utf8(&self.data[(token_start as usize)..(token_end as usize)])
+                .unwrap_or("");
             Token {
                 tok: self.token,
                 lit: String::from(lit),
