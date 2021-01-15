@@ -1,5 +1,4 @@
 use super::*;
-use std::ffi::CString;
 
 #[test]
 fn test_scan() {
