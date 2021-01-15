@@ -1,15 +1,13 @@
 use super::*;
-use std::ffi::CString;
 
 #[test]
 fn test_scan() {
     let text = "from(bucket:\"foo\") |> range(start: -1m)";
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("from"),
             start_offset: 0,
             end_offset: 4,
@@ -21,7 +19,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_LPAREN,
+            tok: TokenType::LParen,
             lit: String::from("("),
             start_offset: 4,
             end_offset: 5,
@@ -33,7 +31,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("bucket"),
             start_offset: 5,
             end_offset: 11,
@@ -48,7 +46,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_COLON,
+            tok: TokenType::Colon,
             lit: String::from(":"),
             start_offset: 11,
             end_offset: 12,
@@ -66,7 +64,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_STRING,
+            tok: TokenType::String,
             lit: String::from("\"foo\""),
             start_offset: 12,
             end_offset: 17,
@@ -84,7 +82,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_RPAREN,
+            tok: TokenType::RParen,
             lit: String::from(")"),
             start_offset: 17,
             end_offset: 18,
@@ -102,7 +100,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_PIPE_FORWARD,
+            tok: TokenType::PipeForward,
             lit: String::from("|>"),
             start_offset: 19,
             end_offset: 21,
@@ -120,7 +118,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("range"),
             start_offset: 22,
             end_offset: 27,
@@ -138,7 +136,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_LPAREN,
+            tok: TokenType::LParen,
             lit: String::from("("),
             start_offset: 27,
             end_offset: 28,
@@ -156,7 +154,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("start"),
             start_offset: 28,
             end_offset: 33,
@@ -174,7 +172,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_COLON,
+            tok: TokenType::Colon,
             lit: String::from(":"),
             start_offset: 33,
             end_offset: 34,
@@ -192,7 +190,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_SUB,
+            tok: TokenType::Sub,
             lit: String::from("-"),
             start_offset: 35,
             end_offset: 36,
@@ -210,7 +208,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_DURATION,
+            tok: TokenType::Duration,
             lit: String::from("1m"),
             start_offset: 36,
             end_offset: 38,
@@ -228,7 +226,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_RPAREN,
+            tok: TokenType::RParen,
             lit: String::from(")"),
             start_offset: 38,
             end_offset: 39,
@@ -246,7 +244,7 @@ fn test_scan() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 39,
             end_offset: 39,
@@ -266,12 +264,11 @@ fn test_scan() {
 #[test]
 fn scan_invalid_unicode_single_quotes() {
     let text = "‛some string‛";
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("‛"),
             start_offset: 0,
             end_offset: 3,
@@ -283,7 +280,7 @@ fn scan_invalid_unicode_single_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("some"),
             start_offset: 3,
             end_offset: 7,
@@ -295,7 +292,7 @@ fn scan_invalid_unicode_single_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("string"),
             start_offset: 8,
             end_offset: 14,
@@ -310,7 +307,7 @@ fn scan_invalid_unicode_single_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("‛"),
             start_offset: 14,
             end_offset: 17,
@@ -328,7 +325,7 @@ fn scan_invalid_unicode_single_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 17,
             end_offset: 17,
@@ -348,12 +345,11 @@ fn scan_invalid_unicode_single_quotes() {
 #[test]
 fn scan_invalid_unicode_double_quotes() {
     let text = "“some string”";
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("“"),
             start_offset: 0,
             end_offset: 3,
@@ -365,7 +361,7 @@ fn scan_invalid_unicode_double_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("some"),
             start_offset: 3,
             end_offset: 7,
@@ -377,7 +373,7 @@ fn scan_invalid_unicode_double_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("string"),
             start_offset: 8,
             end_offset: 14,
@@ -392,7 +388,7 @@ fn scan_invalid_unicode_double_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("”"),
             start_offset: 14,
             end_offset: 17,
@@ -410,7 +406,7 @@ fn scan_invalid_unicode_double_quotes() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 17,
             end_offset: 17,
@@ -430,12 +426,11 @@ fn scan_invalid_unicode_double_quotes() {
 #[test]
 fn scan_invalid_unicode_register() {
     let text = "®some string®";
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("®"),
             start_offset: 0,
             end_offset: 2,
@@ -447,7 +442,7 @@ fn scan_invalid_unicode_register() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("some"),
             start_offset: 2,
             end_offset: 6,
@@ -459,7 +454,7 @@ fn scan_invalid_unicode_register() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("string"),
             start_offset: 7,
             end_offset: 13,
@@ -474,7 +469,7 @@ fn scan_invalid_unicode_register() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("®"),
             start_offset: 13,
             end_offset: 15,
@@ -492,7 +487,7 @@ fn scan_invalid_unicode_register() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 15,
             end_offset: 15,
@@ -512,12 +507,11 @@ fn scan_invalid_unicode_register() {
 #[test]
 fn test_scan_with_regex() {
     let text = "a + b =~ /.*[0-9]/ / 2";
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("a"),
             start_offset: 0,
             end_offset: 1,
@@ -529,7 +523,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_ADD,
+            tok: TokenType::Add,
             lit: String::from("+"),
             start_offset: 2,
             end_offset: 3,
@@ -541,7 +535,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("b"),
             start_offset: 4,
             end_offset: 5,
@@ -553,7 +547,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_REGEXEQ,
+            tok: TokenType::RegexEq,
             lit: String::from("=~"),
             start_offset: 6,
             end_offset: 8,
@@ -565,7 +559,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_REGEX,
+            tok: TokenType::Regex,
             lit: String::from("/.*[0-9]/"),
             start_offset: 9,
             end_offset: 18,
@@ -583,7 +577,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_DIV,
+            tok: TokenType::Div,
             lit: String::from("/"),
             start_offset: 19,
             end_offset: 20,
@@ -601,7 +595,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("2"),
             start_offset: 21,
             end_offset: 22,
@@ -619,7 +613,7 @@ fn test_scan_with_regex() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 22,
             end_offset: 22,
@@ -639,12 +633,11 @@ fn test_scan_with_regex() {
 #[test]
 fn test_scan_string_expr_simple() {
     let text = r#""${a + b}""#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 0,
             end_offset: 1,
@@ -656,7 +649,7 @@ fn test_scan_string_expr_simple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_STRINGEXPR,
+            tok: TokenType::StringExpr,
             lit: String::from("${"),
             start_offset: 1,
             end_offset: 3,
@@ -668,7 +661,7 @@ fn test_scan_string_expr_simple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a + b}"),
             start_offset: 3,
             end_offset: 9,
@@ -683,7 +676,7 @@ fn test_scan_string_expr_simple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 9,
             end_offset: 10,
@@ -703,12 +696,11 @@ fn test_scan_string_expr_simple() {
 #[test]
 fn test_scan_string_expr_start_with_text() {
     let text = r#""a + b = ${a + b}""#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 0,
             end_offset: 1,
@@ -720,7 +712,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a + b = "),
             start_offset: 1,
             end_offset: 9,
@@ -735,7 +727,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_STRINGEXPR,
+            tok: TokenType::StringExpr,
             lit: String::from("${"),
             start_offset: 9,
             end_offset: 11,
@@ -753,7 +745,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a + b}"),
             start_offset: 11,
             end_offset: 17,
@@ -771,7 +763,7 @@ fn test_scan_string_expr_start_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 17,
             end_offset: 18,
@@ -791,12 +783,11 @@ fn test_scan_string_expr_start_with_text() {
 #[test]
 fn test_scan_string_expr_multiple() {
     let text = r#""a + b = ${a + b} and a - b = ${a - b}""#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 0,
             end_offset: 1,
@@ -808,7 +799,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a + b = "),
             start_offset: 1,
             end_offset: 9,
@@ -823,7 +814,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_STRINGEXPR,
+            tok: TokenType::StringExpr,
             lit: String::from("${"),
             start_offset: 9,
             end_offset: 11,
@@ -841,7 +832,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a + b} and a - b = "),
             start_offset: 11,
             end_offset: 30,
@@ -859,7 +850,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_STRINGEXPR,
+            tok: TokenType::StringExpr,
             lit: String::from("${"),
             start_offset: 30,
             end_offset: 32,
@@ -877,7 +868,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a - b}"),
             start_offset: 32,
             end_offset: 38,
@@ -895,7 +886,7 @@ fn test_scan_string_expr_multiple() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 38,
             end_offset: 39,
@@ -915,12 +906,11 @@ fn test_scan_string_expr_multiple() {
 #[test]
 fn test_scan_string_expr_end_with_text() {
     let text = r#""a + b = ${a + b} and a - b = ?""#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 0,
             end_offset: 1,
@@ -932,7 +922,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a + b = "),
             start_offset: 1,
             end_offset: 9,
@@ -947,7 +937,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_STRINGEXPR,
+            tok: TokenType::StringExpr,
             lit: String::from("${"),
             start_offset: 9,
             end_offset: 11,
@@ -965,7 +955,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("a + b} and a - b = ?"),
             start_offset: 11,
             end_offset: 31,
@@ -983,7 +973,7 @@ fn test_scan_string_expr_end_with_text() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 31,
             end_offset: 32,
@@ -1003,12 +993,11 @@ fn test_scan_string_expr_end_with_text() {
 #[test]
 fn test_scan_string_expr_escaped_quotes() {
     let text = r#""these \"\" are escaped quotes""#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 0,
             end_offset: 1,
@@ -1020,7 +1009,7 @@ fn test_scan_string_expr_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from(r#"these \"\" are escaped quotes"#),
             start_offset: 1,
             end_offset: 30,
@@ -1035,7 +1024,7 @@ fn test_scan_string_expr_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 30,
             end_offset: 31,
@@ -1055,12 +1044,11 @@ fn test_scan_string_expr_escaped_quotes() {
 #[test]
 fn test_scan_string_expr_not_escaped_quotes() {
     let text = r#""this " is not an escaped quote""#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 0,
             end_offset: 1,
@@ -1072,7 +1060,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from("this "),
             start_offset: 1,
             end_offset: 6,
@@ -1084,7 +1072,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 6,
             end_offset: 7,
@@ -1096,7 +1084,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_TEXT,
+            tok: TokenType::Text,
             lit: String::from(" is not an escaped quote"),
             start_offset: 7,
             end_offset: 31,
@@ -1111,7 +1099,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
     assert_eq!(
         s.scan_string_expr(),
         Token {
-            tok: TOK_QUOTE,
+            tok: TokenType::Quote,
             lit: String::from("\""),
             start_offset: 31,
             end_offset: 32,
@@ -1131,12 +1119,11 @@ fn test_scan_string_expr_not_escaped_quotes() {
 #[test]
 fn test_scan_unread() {
     let text = "1 / 2 / 3";
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("1"),
             start_offset: 0,
             end_offset: 1,
@@ -1149,7 +1136,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("1"),
             start_offset: 0,
             end_offset: 1,
@@ -1162,7 +1149,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_REGEX,
+            tok: TokenType::Regex,
             lit: String::from("/ 2 /"),
             start_offset: 2,
             end_offset: 7,
@@ -1175,7 +1162,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_DIV,
+            tok: TokenType::Div,
             lit: String::from("/"),
             start_offset: 2,
             end_offset: 3,
@@ -1187,7 +1174,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("2"),
             start_offset: 4,
             end_offset: 5,
@@ -1199,7 +1186,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_DIV,
+            tok: TokenType::Div,
             lit: String::from("/"),
             start_offset: 6,
             end_offset: 7,
@@ -1211,7 +1198,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("3"),
             start_offset: 8,
             end_offset: 9,
@@ -1232,7 +1219,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("3"),
             start_offset: 8,
             end_offset: 9,
@@ -1247,7 +1234,7 @@ fn test_scan_unread() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 9,
             end_offset: 9,
@@ -1270,12 +1257,11 @@ fn test_scan_unread_with_newlines() {
 
 
 /foo/"#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("regex"),
             start_offset: 0,
             end_offset: 5,
@@ -1287,7 +1273,7 @@ fn test_scan_unread_with_newlines() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ASSIGN,
+            tok: TokenType::Assign,
             lit: String::from("="),
             start_offset: 6,
             end_offset: 7,
@@ -1299,7 +1285,7 @@ fn test_scan_unread_with_newlines() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_DIV,
+            tok: TokenType::Div,
             lit: String::from("/"),
             start_offset: 10,
             end_offset: 11,
@@ -1312,7 +1298,7 @@ fn test_scan_unread_with_newlines() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_REGEX,
+            tok: TokenType::Regex,
             lit: String::from("/foo/"),
             start_offset: 10,
             end_offset: 15,
@@ -1331,8 +1317,7 @@ fn test_scan_with_regex_unread() {
     let text = r#"3 * / 1
          y
     "#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
 
     let mut toks = vec![];
     toks.push(s.scan()); // 3
@@ -1342,11 +1327,11 @@ fn test_scan_with_regex_unread() {
     toks.push(s.scan_with_regex()); // /
     toks.push(s.scan()); // 1
     toks.push(s.scan()); // y
-    toks.push(s.scan()); // EOF
+    toks.push(s.scan()); // Eof
     assert_eq!(
         vec![
             Token {
-                tok: TOK_INT,
+                tok: TokenType::Int,
                 lit: String::from("3"),
                 start_offset: 0,
                 end_offset: 1,
@@ -1355,7 +1340,7 @@ fn test_scan_with_regex_unread() {
                 comments: None,
             },
             Token {
-                tok: TOK_MUL,
+                tok: TokenType::Mul,
                 lit: String::from("*"),
                 start_offset: 2,
                 end_offset: 3,
@@ -1364,7 +1349,7 @@ fn test_scan_with_regex_unread() {
                 comments: None,
             },
             Token {
-                tok: TOK_DIV,
+                tok: TokenType::Div,
                 lit: String::from("/"),
                 start_offset: 4,
                 end_offset: 5,
@@ -1373,7 +1358,7 @@ fn test_scan_with_regex_unread() {
                 comments: None,
             },
             Token {
-                tok: TOK_DIV,
+                tok: TokenType::Div,
                 lit: String::from("/"),
                 start_offset: 4,
                 end_offset: 5,
@@ -1382,7 +1367,7 @@ fn test_scan_with_regex_unread() {
                 comments: None,
             },
             Token {
-                tok: TOK_INT,
+                tok: TokenType::Int,
                 lit: String::from("1"),
                 start_offset: 6,
                 end_offset: 7,
@@ -1391,7 +1376,7 @@ fn test_scan_with_regex_unread() {
                 comments: None,
             },
             Token {
-                tok: TOK_IDENT,
+                tok: TokenType::Ident,
                 lit: String::from("y"),
                 start_offset: 17,
                 end_offset: 18,
@@ -1406,7 +1391,7 @@ fn test_scan_with_regex_unread() {
                 comments: None,
             },
             Token {
-                tok: TOK_EOF,
+                tok: TokenType::Eof,
                 lit: String::new(),
                 start_offset: 23,
                 end_offset: 23,
@@ -1424,8 +1409,7 @@ fn test_unclosed_quote() {
     let text = r#"x = "foo
         bar
         baz"#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     let mut toks = vec![];
     toks.push(s.scan()); // x
     toks.push(s.scan()); // =
@@ -1437,7 +1421,7 @@ fn test_unclosed_quote() {
     assert_eq!(
         vec![
             Token {
-                tok: TOK_IDENT,
+                tok: TokenType::Ident,
                 lit: String::from("x"),
                 start_offset: 0,
                 end_offset: 1,
@@ -1446,7 +1430,7 @@ fn test_unclosed_quote() {
                 comments: None,
             },
             Token {
-                tok: TOK_ASSIGN,
+                tok: TokenType::Assign,
                 lit: String::from("="),
                 start_offset: 2,
                 end_offset: 3,
@@ -1455,7 +1439,7 @@ fn test_unclosed_quote() {
                 comments: None,
             },
             Token {
-                tok: TOK_QUOTE,
+                tok: TokenType::Quote,
                 lit: String::from("\""),
                 start_offset: 4,
                 end_offset: 5,
@@ -1464,7 +1448,7 @@ fn test_unclosed_quote() {
                 comments: None,
             },
             Token {
-                tok: TOK_IDENT,
+                tok: TokenType::Ident,
                 lit: String::from("foo"),
                 start_offset: 5,
                 end_offset: 8,
@@ -1473,7 +1457,7 @@ fn test_unclosed_quote() {
                 comments: None,
             },
             Token {
-                tok: TOK_IDENT,
+                tok: TokenType::Ident,
                 lit: String::from("bar"),
                 start_offset: 17,
                 end_offset: 20,
@@ -1485,7 +1469,7 @@ fn test_unclosed_quote() {
                 comments: None,
             },
             Token {
-                tok: TOK_IDENT,
+                tok: TokenType::Ident,
                 lit: String::from("baz"),
                 start_offset: 29,
                 end_offset: 32,
@@ -1497,7 +1481,7 @@ fn test_unclosed_quote() {
                 comments: None,
             },
             Token {
-                tok: TOK_EOF,
+                tok: TokenType::Eof,
                 lit: String::from(""),
                 start_offset: 32,
                 end_offset: 32,
@@ -1525,19 +1509,18 @@ a
 // last but not least.
 1
 // ok, that's it."#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("a"),
             start_offset: 22,
             end_offset: 23,
             start_pos: Position { line: 2, column: 1 },
             end_pos: Position { line: 2, column: 2 },
             comments: Some(Box::new(Token {
-                tok: 2,
+                tok: TokenType::Comment,
                 lit: String::from("// this is a comment.\n"),
                 start_offset: 0,
                 end_offset: 22,
@@ -1550,28 +1533,28 @@ a
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("1"),
             start_offset: 95,
             end_offset: 96,
             start_pos: Position { line: 6, column: 1 },
             end_pos: Position { line: 6, column: 2 },
             comments: Some(Box::new(Token {
-                tok: 2,
+                tok: TokenType::Comment,
                 lit: String::from("// last but not least.\n"),
                 start_offset: 72,
                 end_offset: 95,
                 start_pos: Position { line: 5, column: 1 },
                 end_pos: Position { line: 6, column: 1 },
                 comments: Some(Box::new(Token {
-                    tok: 2,
+                    tok: TokenType::Comment,
                     lit: String::from("// one more.\n"),
                     start_offset: 59,
                     end_offset: 72,
                     start_pos: Position { line: 4, column: 1 },
                     end_pos: Position { line: 5, column: 1 },
                     comments: Some(Box::new(Token {
-                        tok: 2,
+                        tok: TokenType::Comment,
                         lit: String::from("// comment with // nested comment.\n"),
                         start_offset: 24,
                         end_offset: 59,
@@ -1586,7 +1569,7 @@ a
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 114,
             end_offset: 114,
@@ -1599,7 +1582,7 @@ a
                 column: 18
             },
             comments: Some(Box::new(Token {
-                tok: 2,
+                tok: TokenType::Comment,
                 lit: String::from("// ok, that\'s it."),
                 start_offset: 97,
                 end_offset: 114,
@@ -1614,19 +1597,18 @@ a
     );
 
     // with regex
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("a"),
             start_offset: 22,
             end_offset: 23,
             start_pos: Position { line: 2, column: 1 },
             end_pos: Position { line: 2, column: 2 },
             comments: Some(Box::new(Token {
-                tok: 2,
+                tok: TokenType::Comment,
                 lit: String::from("// this is a comment.\n"),
                 start_offset: 0,
                 end_offset: 22,
@@ -1639,28 +1621,28 @@ a
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("1"),
             start_offset: 95,
             end_offset: 96,
             start_pos: Position { line: 6, column: 1 },
             end_pos: Position { line: 6, column: 2 },
             comments: Some(Box::new(Token {
-                tok: 2,
+                tok: TokenType::Comment,
                 lit: String::from("// last but not least.\n"),
                 start_offset: 72,
                 end_offset: 95,
                 start_pos: Position { line: 5, column: 1 },
                 end_pos: Position { line: 6, column: 1 },
                 comments: Some(Box::new(Token {
-                    tok: 2,
+                    tok: TokenType::Comment,
                     lit: String::from("// one more.\n"),
                     start_offset: 59,
                     end_offset: 72,
                     start_pos: Position { line: 4, column: 1 },
                     end_pos: Position { line: 5, column: 1 },
                     comments: Some(Box::new(Token {
-                        tok: 2,
+                        tok: TokenType::Comment,
                         lit: String::from("// comment with // nested comment.\n"),
                         start_offset: 24,
                         end_offset: 59,
@@ -1675,7 +1657,7 @@ a
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 114,
             end_offset: 114,
@@ -1688,7 +1670,7 @@ a
                 column: 18
             },
             comments: Some(Box::new(Token {
-                tok: 2,
+                tok: TokenType::Comment,
                 lit: String::from("// ok, that\'s it."),
                 start_offset: 97,
                 end_offset: 114,
@@ -1706,13 +1688,12 @@ a
 #[test]
 fn test_scan_eof() {
     let text = r#""#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     // idempotence with and without regex.
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
@@ -1724,7 +1705,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
@@ -1736,7 +1717,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
@@ -1748,7 +1729,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
@@ -1760,7 +1741,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
@@ -1772,7 +1753,7 @@ fn test_scan_eof() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 0,
             end_offset: 0,
@@ -1793,12 +1774,11 @@ fn test_scan_eof_trailing_spaces() {
     text.push(' ');
     text.push('\t');
     text.push('\t');
-    let cdata = CString::new(text.clone()).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(&text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 7,
             end_offset: 7,
@@ -1808,12 +1788,11 @@ fn test_scan_eof_trailing_spaces() {
         }
     );
 
-    let cdata = CString::new(text.clone()).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(&text);
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 7,
             end_offset: 7,
@@ -1827,12 +1806,11 @@ fn test_scan_eof_trailing_spaces() {
 #[test]
 fn test_illegal() {
     let text = r#"legal @ illegal"#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata.clone());
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("legal"),
             start_offset: 0,
             end_offset: 5,
@@ -1844,7 +1822,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("@"),
             start_offset: 6,
             end_offset: 7,
@@ -1856,7 +1834,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("illegal"),
             start_offset: 8,
             end_offset: 15,
@@ -1870,11 +1848,11 @@ fn test_illegal() {
     );
 
     // unread
-    let mut s = Scanner::new(cdata.clone());
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("legal"),
             start_offset: 0,
             end_offset: 5,
@@ -1886,7 +1864,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("@"),
             start_offset: 6,
             end_offset: 7,
@@ -1899,7 +1877,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("@"),
             start_offset: 6,
             end_offset: 7,
@@ -1911,7 +1889,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("illegal"),
             start_offset: 8,
             end_offset: 15,
@@ -1925,11 +1903,11 @@ fn test_illegal() {
     );
 
     // with regex
-    let mut s = Scanner::new(cdata.clone());
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("legal"),
             start_offset: 0,
             end_offset: 5,
@@ -1941,7 +1919,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("@"),
             start_offset: 6,
             end_offset: 7,
@@ -1953,7 +1931,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("illegal"),
             start_offset: 8,
             end_offset: 15,
@@ -1967,11 +1945,11 @@ fn test_illegal() {
     );
 
     // unread
-    let mut s = Scanner::new(cdata.clone());
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("legal"),
             start_offset: 0,
             end_offset: 5,
@@ -1983,7 +1961,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("@"),
             start_offset: 6,
             end_offset: 7,
@@ -1996,7 +1974,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_ILLEGAL,
+            tok: TokenType::Illegal,
             lit: String::from("@"),
             start_offset: 6,
             end_offset: 7,
@@ -2008,7 +1986,7 @@ fn test_illegal() {
     assert_eq!(
         s.scan_with_regex(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("illegal"),
             start_offset: 8,
             end_offset: 15,
@@ -2025,12 +2003,11 @@ fn test_illegal() {
 #[test]
 fn test_scan_duration() {
     let text = r#"dur = 1y3mo2w1d4h1m30s1ms2µs70ns"#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("dur"),
             start_offset: 0,
             end_offset: 3,
@@ -2042,7 +2019,7 @@ fn test_scan_duration() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ASSIGN,
+            tok: TokenType::Assign,
             lit: String::from("="),
             start_offset: 4,
             end_offset: 5,
@@ -2054,7 +2031,7 @@ fn test_scan_duration() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_DURATION,
+            tok: TokenType::Duration,
             lit: String::from("1y3mo2w1d4h1m30s1ms2µs70ns"),
             start_offset: 6,
             end_offset: 33,
@@ -2069,7 +2046,7 @@ fn test_scan_duration() {
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 33,
             end_offset: 33,
@@ -2100,12 +2077,11 @@ c = 1 + 2
 
 
 "#;
-    let cdata = CString::new(text).expect("CString::new failed");
-    let mut s = Scanner::new(cdata);
+    let mut s = Scanner::new(text);
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("ms"),
             start_offset: 0,
             end_offset: 2,
@@ -2118,7 +2094,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ASSIGN,
+            tok: TokenType::Assign,
             lit: String::from("="),
             start_offset: 3,
             end_offset: 4,
@@ -2131,7 +2107,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_STRING,
+            tok: TokenType::String,
             lit: String::from("\"multiline\nstring\n\""),
             start_offset: 5,
             end_offset: 24,
@@ -2145,14 +2121,14 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_IDENT,
+            tok: TokenType::Ident,
             lit: String::from("c"),
             start_offset: 38,
             end_offset: 39,
             start_pos: Position { line: 7, column: 1 },
             end_pos: Position { line: 7, column: 2 },
             comments: Some(Box::new(Token {
-                tok: 2,
+                tok: TokenType::Comment,
                 lit: String::from("// comment\n"),
                 start_offset: 26,
                 end_offset: 37,
@@ -2166,7 +2142,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ASSIGN,
+            tok: TokenType::Assign,
             lit: String::from("="),
             start_offset: 40,
             end_offset: 41,
@@ -2179,7 +2155,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("1"),
             start_offset: 42,
             end_offset: 43,
@@ -2192,7 +2168,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_ADD,
+            tok: TokenType::Add,
             lit: String::from("+"),
             start_offset: 44,
             end_offset: 45,
@@ -2205,7 +2181,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_INT,
+            tok: TokenType::Int,
             lit: String::from("2"),
             start_offset: 46,
             end_offset: 47,
@@ -2221,7 +2197,7 @@ c = 1 + 2
     assert_eq!(
         s.scan(),
         Token {
-            tok: TOK_EOF,
+            tok: TokenType::Eof,
             lit: String::from(""),
             start_offset: 52,
             end_offset: 52,
