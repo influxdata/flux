@@ -523,7 +523,7 @@ fn test_scan_with_regex() {
     );
     assert_eq!(
         s.scan_with_regex(),
-        Token{
+        Token {
             tok: TokenType::Add,
             lit: String::from("+"),
             start_offset: 2,
