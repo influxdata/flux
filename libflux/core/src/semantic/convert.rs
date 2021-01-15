@@ -242,42 +242,311 @@ fn convert_monotype(
     }
 }
 
+fn convert_polytype_record_constraints(
+    ty: MonoType,
+    tvars_mapped: HashMap<types::Tvar, types::Tvar>,
+    recs: HashMap<types::Tvar, MonoType>,
+) -> MonoType {
+    match ty {
+        MonoType::Var(tv) => {
+            let tmpvar = tvars_mapped.get(&tv);
+            match tmpvar {
+                Some(vr) => {
+                    let res = recs.get(&vr);
+                    match res {
+                        Some(rs) => {rs.clone()},
+                        _ => {MonoType::Var(tv)},
+                    }
+                },
+                _ => {MonoType::Var(tv)},
+            }
+        }
+        MonoType::Bool => {
+            MonoType::Bool
+        },
+        MonoType::Int => {
+            MonoType::Int
+        },
+        MonoType::Uint => {
+            MonoType::Uint
+        },
+        MonoType::Float => {
+            MonoType::Float
+        },
+        MonoType::String => {
+            MonoType::String
+        },
+        MonoType::Duration => {
+            MonoType::Duration
+        },
+        MonoType::Time => {
+            MonoType::Time
+        },
+        MonoType::Regexp => {
+            MonoType::Regexp
+        },
+        MonoType::Bytes => {
+            MonoType::Bytes
+        },
+        MonoType::Arr(arr) => MonoType::Arr(Box::new(types::Array(convert_polytype_record_constraints(
+            arr.0,
+            tvars_mapped,
+            recs,
+        )))),
+        MonoType::Dict(dict) => {
+            let key = convert_polytype_record_constraints(dict.key, tvars_mapped.clone(), recs.clone());
+            let val = convert_polytype_record_constraints(dict.val, tvars_mapped.clone(), recs.clone());
+            MonoType::Dict(Box::new(types::Dictionary { key, val }))
+        }
+        MonoType::Fun(func) => {
+            let mut req = MonoTypeMap::new();
+            let mut opt = MonoTypeMap::new();
+            let mut pipe = None;
+            for param in func.req {
+                match param.1 {
+                    MonoType::Var(e) =>  {
+                        let tmpvar = tvars_mapped.get(&e);
+                        match tmpvar {
+                            Some(vr) => {
+                                let res = recs.get(&vr);
+                                match res {
+                                    Some(rs) => {req.insert(param.0, rs.clone());},
+                                    _ => {},
+                                }
+                            },
+                            _ => {},
+                        }
+                    }
+                    _ => {},
+                }
+            }
+            for param in func.opt {
+                match param.1 {
+                    MonoType::Var(e) =>  {
+                        let tmpvar = tvars_mapped.get(&e);
+                        match tmpvar {
+                            Some(vr) => {
+                                let res = recs.get(&vr);
+                                match res {
+                                    Some(rs) => {opt.insert(param.0, rs.clone());},
+                                    _ => {},
+                                }
+                            },
+                            _ => {},
+                        }
+                    }
+                    _ => {},
+                }
+            }
+            match func.pipe {
+                Some(prop) => {
+                    pipe = Some(types::Property {
+                        k: prop.k,
+                        v: convert_polytype_record_constraints(prop.v, tvars_mapped.clone(), recs.clone()),
+                    })
+                },
+                None => {},
+            }
+            MonoType::Fun(Box::new(types::Function {
+                req,
+                opt,
+                pipe: pipe,
+                retn: convert_polytype_record_constraints(func.retn, tvars_mapped.clone(), recs.clone()),
+            }))
+        }
+        MonoType::Record(rec) => {
+            let mut r = MonoType::Record(Box::new(types::Record::Empty));
+            match *rec {
+                types::Record::Empty => {}, 
+                types::Record::Extension{head: h, tail: t} => {
+                    let new_property = types::Property {
+                        k: h.k, 
+                        v: convert_polytype_record_constraints(h.v, tvars_mapped.clone(), recs.clone())
+                    };
+                    r = MonoType::Record(Box::new(types::Record::Extension {
+                        head: new_property,
+                        tail: convert_polytype_record_constraints(t, tvars_mapped.clone(), recs.clone()),
+                    }))
+                }
+            }
+            r
+        }
+    }
+}
+
 pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     f: &mut Fresher,
 ) -> Result<types::PolyType> {
     let mut tvars = HashMap::<String, types::Tvar>::new();
-    let expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
+    let mut tvars_mapped = HashMap::<types::Tvar, types::Tvar>::new();
+    let mut expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
     let mut vars = Vec::<types::Tvar>::new();
-    let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
-
-    for (name, tvar) in tvars {
-        vars.push(tvar);
-        let mut kinds = Vec::<types::Kind>::new();
+    let mut recs = HashMap::<types::Tvar, MonoType>::new();
+    
+    let row_tvar = f.fresh();
+    vars.push(row_tvar);
+    for (name, tvar) in &tvars {
+        let mut rec = MonoType::Var(row_tvar);
+        let new_tvar = f.fresh();
+        tvars_mapped.insert(tvar.clone(), new_tvar);
+        vars.push(new_tvar);
         for con in &type_expression.constraints {
-            if con.tvar.name == name {
+            if con.tvar.name == *name {
                 for k in &con.kinds {
                     match k.name.as_str() {
-                        "Addable" => kinds.push(types::Kind::Addable),
-                        "Subtractable" => kinds.push(types::Kind::Subtractable),
-                        "Divisible" => kinds.push(types::Kind::Divisible),
-                        "Numeric" => kinds.push(types::Kind::Numeric),
-                        "Comparable" => kinds.push(types::Kind::Comparable),
-                        "Equatable" => kinds.push(types::Kind::Equatable),
-                        "Nullable" => kinds.push(types::Kind::Nullable),
-                        "Negatable" => kinds.push(types::Kind::Negatable),
-                        "Timeable" => kinds.push(types::Kind::Timeable),
-                        "Record" => kinds.push(types::Kind::Record),
+                        "Addable" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "+".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                        }
+                        "Subtractable" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "-".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                        }
+                        "Divisible" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "*".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "/".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "^".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "%".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                            }))
+                            }))
+                            }))
+                        }
+                        "Numeric" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "@Num".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                        },
+                        "Comparable" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: ">".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "<".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property { 
+                                    k: ">=".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "<=".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                            }))
+                            }))
+                            }))
+                        },
+                        "Equatable" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "==".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "!=".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                            }))
+                        },
+                        "Nullable" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "==".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "!=".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                            }))
+                        },
+                        "Negatable" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "~".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+
+                        },
+                        "Timeable" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: "@Tim".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+                        },
+                        "Record" => {
+                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                                head: types::Property {
+                                    k: ".".to_string(),
+                                    v: MonoType::Var(new_tvar),
+                                },
+                                tail: rec
+                            }))
+
+
+                        },
                         _ => {
                             return Err(format!("Constraint not found {} ", &k.name.as_str()));
                         }
                     }
+                    recs.insert(new_tvar, rec.clone());
                 }
-                cons.insert(tvar, kinds.clone());
             }
         }
     }
-    Ok(types::PolyType { expr, cons, vars })
+    let expr = convert_polytype_record_constraints(expr, tvars_mapped, recs);
+    Ok(types::PolyType { expr, vars })
 }
 
 fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {
@@ -3100,7 +3369,7 @@ mod tests {
                 retn: MonoType::Var(Tvar(0)),
             }
         }));
-        let want = types::PolyType { vars, cons, expr };
+        let want = types::PolyType { vars, expr };
         assert_eq!(want, got);
     }
 
@@ -3182,7 +3451,7 @@ mod tests {
                 retn: MonoType::Var(Tvar(0)),
             }
         }));
-        let want = types::PolyType { vars, cons, expr };
+        let want = types::PolyType { vars, expr };
         assert_eq!(want, got);
     }
 }

@@ -80,8 +80,7 @@ impl Fresh for PolyType {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
         let expr = self.expr.fresh(f, sub);
         let vars = self.vars.fresh(f, sub);
-        let cons = self.cons.fresh(f, sub);
-        PolyType { vars, cons, expr }
+        PolyType { vars, expr }
     }
 }
 
