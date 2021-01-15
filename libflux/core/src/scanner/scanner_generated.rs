@@ -1,4 +1,4 @@
-#![allow(clippy::never_loop)]
+#![allow(clippy::never_loop, clippy::double_parens, clippy::duplicate_underscore_argument, clippy::single_match, clippy::comparison_chain, clippy::too_many_arguments, clippy::assign_op_pattern, clippy::needless_return)]
 use std::vec::Vec;
 
 use crate::scanner::*;

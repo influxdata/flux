@@ -124,9 +124,9 @@ bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
 # This requires ragel 7.0.1.
-libflux/core/src/scanner/scanner.rs: libflux/core/src/scanner/scanner.rl
+libflux/core/src/scanner/scanner_generated.rs: libflux/core/src/scanner/scanner.rl
 	ragel-rust -I libflux/core/src/scanner -o $@ $<
-	rm libflux/core/src/scanner/scanner.ri
+	rm libflux/core/src/scanner/scanner_generated.ri
 
 # This target generates a file that forces the go libflux wrapper
 # to recompile which forces pkg-config to run again.

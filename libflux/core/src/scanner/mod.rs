@@ -6,8 +6,8 @@ use std::str;
 use std::vec::Vec;
 
 #[rustfmt::skip]
-//#[allow(clippy::all)]
-mod scanner;
+mod scanner_generated;
+use scanner_generated::scan;
 
 mod token;
 pub use token::TokenType;
@@ -107,7 +107,7 @@ impl Scanner {
         let mut token_end_col = 0_i32;
 
         let error = {
-            scanner::scan(
+            scan(
                 &self.data,
                 mode,
                 &mut self.p,

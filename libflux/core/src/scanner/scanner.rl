@@ -1,4 +1,4 @@
-#![allow(clippy::never_loop)]
+#![allow(clippy::never_loop, clippy::double_parens, clippy::duplicate_underscore_argument, clippy::single_match, clippy::comparison_chain, clippy::too_many_arguments, clippy::assign_op_pattern, clippy::needless_return)]
 use std::vec::Vec;
 
 use crate::scanner::*;
@@ -13,7 +13,7 @@ use crate::scanner::*;
     action advance_line {
         // We do this for every newline we find.
         // This allows us to return correct line/column for each token
-        // back to the caller.
+        // back to the calle.
         *cur_line += 1;
         *last_newline = fpc + 1;
     }
