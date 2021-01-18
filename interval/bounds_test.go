@@ -2,6 +2,8 @@ package interval
 
 import (
 	"testing"
+
+	"github.com/influxdata/flux/values"
 )
 
 // Written to verify symmetrical behavior of interval.(Bounds).Overlaps
@@ -50,48 +52,48 @@ func TestBounds_Overlaps(t *testing.T) {
 		{
 			name: "single overlap",
 			a: Bounds{
-				start: interval.Time(0),
-				stop:  interval.Time(10),
+				start: values.Time(0),
+				stop:  values.Time(10),
 			},
 			b: Bounds{
-				start: interval.Time(5),
-				stop:  interval.Time(15),
+				start: values.Time(5),
+				stop:  values.Time(15),
 			},
 			want: true,
 		},
 		{
 			name: "no overlap sym",
 			a: Bounds{
-				start: interval.Time(0),
-				stop:  interval.Time(10),
+				start: values.Time(0),
+				stop:  values.Time(10),
 			},
 			b: Bounds{
-				start: interval.Time(5),
-				stop:  interval.Time(15),
+				start: values.Time(5),
+				stop:  values.Time(15),
 			},
 			want: true,
 		},
 		{
 			name: "double overlap (bounds contained)",
 			a: Bounds{
-				start: interval.Time(10),
-				stop:  interval.Time(20),
+				start: values.Time(10),
+				stop:  values.Time(20),
 			},
 			b: Bounds{
-				start: interval.Time(14),
-				stop:  interval.Time(15),
+				start: values.Time(14),
+				stop:  values.Time(15),
 			},
 			want: true,
 		},
 		{
 			name: "double overlap (bounds contained) sym",
 			a: Bounds{
-				start: interval.Time(14),
-				stop:  interval.Time(15),
+				start: values.Time(14),
+				stop:  values.Time(15),
 			},
 			b: Bounds{
-				start: interval.Time(10),
-				stop:  interval.Time(20),
+				start: values.Time(10),
+				stop:  values.Time(20),
 			},
 			want: true,
 		},
