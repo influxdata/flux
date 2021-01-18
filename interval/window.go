@@ -6,8 +6,6 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
-// TODO(nathanielc): Make the epoch a parameter to the window
-// See https://github.com/influxdata/flux/issues/2093
 const epoch = values.Time(0)
 
 var epochYear, epochMonth int64
@@ -19,7 +17,10 @@ func init() {
 	epochMonth = int64(m - 1)
 }
 
-// Window is a description of an infinte set of boundaries in time.
+// TODO(nathanielc): Make the epoch a parameter to the window
+// See https://github.com/influxdata/flux/issues/2093
+//
+// Window is a description of an infinite set of boundaries in time.
 type Window struct {
 	// The ith window start is expressed via this equation:
 	//   window_start_i = zero + every * i
@@ -31,7 +32,7 @@ type Window struct {
 }
 
 // NewWindow creates a window which can be used to determine the boundaries for a given point.
-// Window boundaries are defined to start at the epoch plus the offset.
+// Window boundaries start at the epoch plus the offset.
 // Each subsequent window starts at a multiple of the every duration.
 // Each window's length is the start boundary plus the period.
 // Every must not be a mix of months and nanoseconds in order to preserve constant time bounds lookup.
@@ -58,16 +59,14 @@ func (w Window) isValid() error {
 		return errors.New(codes.Invalid, "duration used as an interval cannot mix month and nanosecond units").
 			WithDocURL(docURL)
 	}
-	// TODO(nathanielc): what about negative every is that allowed?
 	if w.every.IsNegative() {
 		return errors.New(codes.Invalid, "duration used as an interval cannot be negative")
 	}
 	return nil
 }
 
-// GetLatestBounds returns the bounds for the latest window bounds
-// that contains the given time t.  For underlapping windows that
-// do not contain time t, the window directly before time t will be returned.
+// GetLatestBounds returns the bounds for the latest window bounds that contains the given time t.
+// For underlapping windows that do not contain time t, the window directly before time t will be returned.
 func (w Window) GetLatestBounds(t values.Time) Bounds {
 	// Get the latest index that should contain the time t
 	index := w.lastIndex(t)
@@ -170,8 +169,8 @@ func (w Window) PrevBounds(b Bounds) Bounds {
 func (w Window) lastIndex(t values.Time) int {
 	// We treat both nanoseconds and months as the space of whole numbers (aka integers).
 	// This keeps the math the same once we transform into the correct space.
-	//    For months we operate in the number of months since the epoch
-	//    For nanoseconds we operate in the number of nanoseconds since the epoch
+	//    For months, we operate in the number of months since the epoch.
+	//    For nanoseconds, we operate in the number of nanoseconds since the epoch.
 	if w.every.MonthsOnly() {
 		target := monthsSince(t)
 		// Check if the target day and time of the month is before the zero day and time of the month.
@@ -193,7 +192,7 @@ func lastIndex(zero, target, every int64) int {
 	//   index ≤ (target - zero) / every
 	// We want to find the most positive index where the above is true
 
-	// Example: Postive Index
+	// Example: Positive Index
 	// zero = 3 target = 14 every = 5
 	// Number line with window starts marked:
 	//    -2 -1 0 1 2 |3 4 5 6 7 |8 9 10 11 12 |13 14 15 16 17
@@ -205,7 +204,7 @@ func lastIndex(zero, target, every int64) int {
 	//    = 2
 	// We do not adjust because the delta was positive
 
-	// Example: Postive Index on boundary
+	// Example: Positive Index on boundary
 	// zero = 3 target = 13 every = 5
 	// Number line with window starts marked:
 	//    -2 -1 0 1 2 |3 4 5 6 7 |8 9 10 11 12 |13 14 15 16 17

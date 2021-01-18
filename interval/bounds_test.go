@@ -8,7 +8,7 @@ import (
 
 // Written to verify symmetrical behavior of interval.(Bounds).Overlaps
 // Given two Bounds a and b, if a.Overlaps(b) then b.Overlaps(a).
-
+//
 // Cases:
 // given two ranges [a1, a2), [b1, b2)
 // a1 <= b1 <= a2 <= b2 -> true
@@ -17,7 +17,6 @@ import (
 // b2 <= a1 <= a2 <= b2 -> true
 // a1 <= a2 <= b1 <= b2 -> false
 // b1 <= b2 <= a1 <= a2 -> false
-
 func TestBounds_Overlaps(t *testing.T) {
 	tests := []struct {
 		name string

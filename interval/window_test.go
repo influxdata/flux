@@ -830,15 +830,37 @@ func TestWindow_NextBounds(t *testing.T) {
 				{Start: mustTime("2020-12-31T00:00:00Z"), Stop: mustTime("2021-01-31T00:00:00Z")},
 				{Start: mustTime("2021-01-31T00:00:00Z"), Stop: mustTime("2021-02-28T00:00:00Z")},
 				{Start: mustTime("2021-02-28T00:00:00Z"), Stop: mustTime("2021-03-31T00:00:00Z")},
-				// This is the case the index gets right.
-				// If we were to simply add a month to 2-28 the next window
-				// would start on 3-28 instead of 3-31.
+				// This is the case that is fixed by adding index.
+				// If we were to simply add a month to 2-28 the next window would start on 3-28 instead of 3-31.
 				{Start: mustTime("2021-03-31T00:00:00Z"), Stop: mustTime("2021-04-30T00:00:00Z")},
 				{Start: mustTime("2021-04-30T00:00:00Z"), Stop: mustTime("2021-05-31T00:00:00Z")},
 				{Start: mustTime("2021-05-31T00:00:00Z"), Stop: mustTime("2021-06-30T00:00:00Z")},
 				{Start: mustTime("2021-06-30T00:00:00Z"), Stop: mustTime("2021-07-31T00:00:00Z")},
 				{Start: mustTime("2021-07-31T00:00:00Z"), Stop: mustTime("2021-08-31T00:00:00Z")},
 				{Start: mustTime("2021-08-31T00:00:00Z"), Stop: mustTime("2021-09-30T00:00:00Z")},
+			},
+		},
+		{
+			name: "end of month far from bounds",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(-24*time.Hour),
+			),
+			t: mustTime("2121-10-01T00:00:00Z"),
+			want: []Bounds{
+				{Start: mustTime("2121-09-30T00:00:00Z"), Stop: mustTime("2121-10-31T00:00:00Z")},
+				{Start: mustTime("2121-10-31T00:00:00Z"), Stop: mustTime("2121-11-30T00:00:00Z")},
+				{Start: mustTime("2121-11-30T00:00:00Z"), Stop: mustTime("2121-12-31T00:00:00Z")},
+				{Start: mustTime("2121-12-31T00:00:00Z"), Stop: mustTime("2122-01-31T00:00:00Z")},
+				{Start: mustTime("2122-01-31T00:00:00Z"), Stop: mustTime("2122-02-28T00:00:00Z")},
+				{Start: mustTime("2122-02-28T00:00:00Z"), Stop: mustTime("2122-03-31T00:00:00Z")},
+				{Start: mustTime("2122-03-31T00:00:00Z"), Stop: mustTime("2122-04-30T00:00:00Z")},
+				{Start: mustTime("2122-04-30T00:00:00Z"), Stop: mustTime("2122-05-31T00:00:00Z")},
+				{Start: mustTime("2122-05-31T00:00:00Z"), Stop: mustTime("2122-06-30T00:00:00Z")},
+				{Start: mustTime("2122-06-30T00:00:00Z"), Stop: mustTime("2122-07-31T00:00:00Z")},
+				{Start: mustTime("2122-07-31T00:00:00Z"), Stop: mustTime("2122-08-31T00:00:00Z")},
+				{Start: mustTime("2122-08-31T00:00:00Z"), Stop: mustTime("2122-09-30T00:00:00Z")},
 			},
 		},
 	}
@@ -942,6 +964,28 @@ func TestWindow_PrevBounds(t *testing.T) {
 				{Start: mustTime("2020-02-29T00:00:00Z"), Stop: mustTime("2020-03-31T00:00:00Z")},
 				{Start: mustTime("2020-01-31T00:00:00Z"), Stop: mustTime("2020-02-29T00:00:00Z")},
 				{Start: mustTime("2019-12-31T00:00:00Z"), Stop: mustTime("2020-01-31T00:00:00Z")},
+			},
+		},
+		{
+			name: "far from bounds",
+			w: mustWindow(
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationMonths(1),
+				values.ConvertDurationNsecs(0),
+			),
+			t: mustTime("2100-10-01T00:00:00Z"),
+			want: []Bounds{
+				{Start: mustTime("2100-10-01T00:00:00Z"), Stop: mustTime("2100-11-01T00:00:00Z")},
+				{Start: mustTime("2100-09-01T00:00:00Z"), Stop: mustTime("2100-10-01T00:00:00Z")},
+				{Start: mustTime("2100-08-01T00:00:00Z"), Stop: mustTime("2100-09-01T00:00:00Z")},
+				{Start: mustTime("2100-07-01T00:00:00Z"), Stop: mustTime("2100-08-01T00:00:00Z")},
+				{Start: mustTime("2100-06-01T00:00:00Z"), Stop: mustTime("2100-07-01T00:00:00Z")},
+				{Start: mustTime("2100-05-01T00:00:00Z"), Stop: mustTime("2100-06-01T00:00:00Z")},
+				{Start: mustTime("2100-04-01T00:00:00Z"), Stop: mustTime("2100-05-01T00:00:00Z")},
+				{Start: mustTime("2100-03-01T00:00:00Z"), Stop: mustTime("2100-04-01T00:00:00Z")},
+				{Start: mustTime("2100-02-01T00:00:00Z"), Stop: mustTime("2100-03-01T00:00:00Z")},
+				{Start: mustTime("2100-01-01T00:00:00Z"), Stop: mustTime("2100-02-01T00:00:00Z")},
+				{Start: mustTime("2099-12-01T00:00:00Z"), Stop: mustTime("2100-01-01T00:00:00Z")},
 			},
 		},
 	}

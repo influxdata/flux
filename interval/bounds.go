@@ -15,6 +15,9 @@ const (
 type Bounds struct {
 	start values.Time
 	stop  values.Time
+	// As additional windows are added to or subtracted from the initial bounds, index keeps track of how many
+	// windows have been added or subtracted. In essence, it tracks the offset from the original bounds in order
+	// to keep operations more straightforward. See the Window struct and the window tests for additional info.
 	index int
 }
 
