@@ -17,14 +17,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 528,
-					Line:   11,
+					Column: 43,
+					Line:   80,
 				},
 				File:   "interval_test.flux",
-				Source: "package interval_test\n\n\nimport \"experimental\"\nimport \"interval\"\n\nexperimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z) == 2020-01-02T00:00:00Z or die()\nexperimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z) == 2020-02-01T00:00:00Z or die()\nexperimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-28T00:00:00Z or die()\nexperimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z) == 2020-03-28T00:00:00Z or die()\ninterval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z) == [{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}]",
+				Source: "package interval_test\n\nimport \"experimental\"\nimport \"interval\"\n\n// these test cases cannot pass CI, so they're skipped for now. Once we're able to test a non table stream test case,\n// we can unskip them\nexperimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z) == 2020-01-02T00:00:00Z or die(msg: \"day addition\")\nexperimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z) == 2020-02-01T00:00:00Z or die(msg: \"month addition\")\nexperimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-29T00:00:00Z or die(msg: \"month addition end of month\")\nexperimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z) == 2020-03-28T00:00:00Z or die(msg: \"month addition ??\")\n\n// per minute intervals\ninterval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z) == [\n    {start: 2020-10-30T00:09:00Z, stop: 2020-10-30T00:10:00Z},\n    {start: 2020-10-30T00:08:00Z, stop: 2020-10-30T00:09:00Z},\n    {start: 2020-10-30T00:07:00Z, stop: 2020-10-30T00:08:00Z},\n    {start: 2020-10-30T00:06:00Z, stop: 2020-10-30T00:07:00Z},\n    {start: 2020-10-30T00:05:00Z, stop: 2020-10-30T00:06:00Z},\n    {start: 2020-10-30T00:04:00Z, stop: 2020-10-30T00:05:00Z},\n    {start: 2020-10-30T00:03:00Z, stop: 2020-10-30T00:04:00Z},\n    {start: 2020-10-30T00:02:00Z, stop: 2020-10-30T00:03:00Z},\n    {start: 2020-10-30T00:01:00Z, stop: 2020-10-30T00:02:00Z},\n    {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:01:00Z},\n] or die(msg: \"per minute intervals\")\n\n// daily\ninterval.intervals(every: 1d, period: 1d, offset: 11h)(start: 2020-10-30T11:00:00Z, stop: 2020-11-05T11:00:00Z) == [\n    {start: 2020-11-04T11:00:00Z, stop: 2020-11-05T11:00:00Z},\n    {start: 2020-11-03T11:00:00Z, stop: 2020-11-04T11:00:00Z},\n    {start: 2020-11-02T11:00:00Z, stop: 2020-11-03T11:00:00Z},\n    {start: 2020-11-01T11:00:00Z, stop: 2020-11-02T11:00:00Z},\n    {start: 2020-10-31T11:00:00Z, stop: 2020-11-01T11:00:00Z},\n    {start: 2020-10-30T11:00:00Z, stop: 2020-10-31T11:00:00Z},\n] or die(msg: \"per day intervals\")\n\n// daily 9-5\ninterval.intervals(every: 1d, period: 8h, offset: 9h)(start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z) == [\n    {start: 2020-11-04T09:00:00Z, stop: 2020-11-04T17:00:00Z},\n    {start: 2020-11-03T09:00:00Z, stop: 2020-11-03T17:00:00Z},\n    {start: 2020-11-02T09:00:00Z, stop: 2020-11-02T17:00:00Z},\n    {start: 2020-11-01T09:00:00Z, stop: 2020-11-01T17:00:00Z},\n    {start: 2020-10-31T09:00:00Z, stop: 2020-10-31T17:00:00Z},\n    {start: 2020-10-30T09:00:00Z, stop: 2020-10-30T17:00:00Z},\n] or die(msg: \"per day 9AM-5PM intervals\")",
 				Start: ast.Position{
 					Column: 1,
-					Line:   1,
+					Line:   36,
 				},
 			},
 		},
@@ -33,14 +33,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 91,
-						Line:   7,
+						Column: 110,
+						Line:   43,
 					},
 					File:   "interval_test.flux",
-					Source: "experimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z) == 2020-01-02T00:00:00Z or die()",
+					Source: "experimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z) == 2020-01-02T00:00:00Z or die(msg: \"day addition\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   43,
 					},
 				},
 			},
@@ -49,14 +49,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 91,
-							Line:   7,
+							Column: 110,
+							Line:   43,
 						},
 						File:   "interval_test.flux",
-						Source: "experimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z) == 2020-01-02T00:00:00Z or die()",
+						Source: "experimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z) == 2020-01-02T00:00:00Z or die(msg: \"day addition\")",
 						Start: ast.Position{
 							Column: 1,
-							Line:   7,
+							Line:   43,
 						},
 					},
 				},
@@ -66,13 +66,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 82,
-								Line:   7,
+								Line:   43,
 							},
 							File:   "interval_test.flux",
 							Source: "experimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z) == 2020-01-02T00:00:00Z",
 							Start: ast.Position{
 								Column: 1,
-								Line:   7,
+								Line:   43,
 							},
 						},
 					},
@@ -83,13 +83,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 57,
-										Line:   7,
+										Line:   43,
 									},
 									File:   "interval_test.flux",
 									Source: "d: 1d, to: 2020-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 26,
-										Line:   7,
+										Line:   43,
 									},
 								},
 							},
@@ -99,13 +99,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   7,
+											Line:   43,
 										},
 										File:   "interval_test.flux",
 										Source: "d: 1d",
 										Start: ast.Position{
 											Column: 26,
-											Line:   7,
+											Line:   43,
 										},
 									},
 								},
@@ -115,13 +115,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   7,
+												Line:   43,
 											},
 											File:   "interval_test.flux",
 											Source: "d",
 											Start: ast.Position{
 												Column: 26,
-												Line:   7,
+												Line:   43,
 											},
 										},
 									},
@@ -133,13 +133,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   7,
+												Line:   43,
 											},
 											File:   "interval_test.flux",
 											Source: "1d",
 											Start: ast.Position{
 												Column: 29,
-												Line:   7,
+												Line:   43,
 											},
 										},
 									},
@@ -154,13 +154,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 57,
-											Line:   7,
+											Line:   43,
 										},
 										File:   "interval_test.flux",
 										Source: "to: 2020-01-01T00:00:00Z",
 										Start: ast.Position{
 											Column: 33,
-											Line:   7,
+											Line:   43,
 										},
 									},
 								},
@@ -170,13 +170,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   7,
+												Line:   43,
 											},
 											File:   "interval_test.flux",
 											Source: "to",
 											Start: ast.Position{
 												Column: 33,
-												Line:   7,
+												Line:   43,
 											},
 										},
 									},
@@ -188,13 +188,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 57,
-												Line:   7,
+												Line:   43,
 											},
 											File:   "interval_test.flux",
 											Source: "2020-01-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 37,
-												Line:   7,
+												Line:   43,
 											},
 										},
 									},
@@ -208,13 +208,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   7,
+									Line:   43,
 								},
 								File:   "interval_test.flux",
 								Source: "experimental.addDuration(d: 1d, to: 2020-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 1,
-									Line:   7,
+									Line:   43,
 								},
 							},
 						},
@@ -224,13 +224,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   7,
+										Line:   43,
 									},
 									File:   "interval_test.flux",
 									Source: "experimental.addDuration",
 									Start: ast.Position{
 										Column: 1,
-										Line:   7,
+										Line:   43,
 									},
 								},
 							},
@@ -240,13 +240,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   7,
+											Line:   43,
 										},
 										File:   "interval_test.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 1,
-											Line:   7,
+											Line:   43,
 										},
 									},
 								},
@@ -258,13 +258,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   7,
+											Line:   43,
 										},
 										File:   "interval_test.flux",
 										Source: "addDuration",
 										Start: ast.Position{
 											Column: 14,
-											Line:   7,
+											Line:   43,
 										},
 									},
 								},
@@ -279,13 +279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 82,
-									Line:   7,
+									Line:   43,
 								},
 								File:   "interval_test.flux",
 								Source: "2020-01-02T00:00:00Z",
 								Start: ast.Position{
 									Column: 62,
-									Line:   7,
+									Line:   43,
 								},
 							},
 						},
@@ -294,19 +294,89 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Operator: 2,
 				Right: &ast.CallExpression{
-					Arguments: nil,
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 109,
+									Line:   43,
+								},
+								File:   "interval_test.flux",
+								Source: "msg: \"day addition\"",
+								Start: ast.Position{
+									Column: 90,
+									Line:   43,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 109,
+										Line:   43,
+									},
+									File:   "interval_test.flux",
+									Source: "msg: \"day addition\"",
+									Start: ast.Position{
+										Column: 90,
+										Line:   43,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 93,
+											Line:   43,
+										},
+										File:   "interval_test.flux",
+										Source: "msg",
+										Start: ast.Position{
+											Column: 90,
+											Line:   43,
+										},
+									},
+								},
+								Name: "msg",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 109,
+											Line:   43,
+										},
+										File:   "interval_test.flux",
+										Source: "\"day addition\"",
+										Start: ast.Position{
+											Column: 95,
+											Line:   43,
+										},
+									},
+								},
+								Value: "day addition",
+							},
+						}},
+						With: nil,
+					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 91,
-								Line:   7,
+								Column: 110,
+								Line:   43,
 							},
 							File:   "interval_test.flux",
-							Source: "die()",
+							Source: "die(msg: \"day addition\")",
 							Start: ast.Position{
 								Column: 86,
-								Line:   7,
+								Line:   43,
 							},
 						},
 					},
@@ -316,13 +386,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 89,
-									Line:   7,
+									Line:   43,
 								},
 								File:   "interval_test.flux",
 								Source: "die",
 								Start: ast.Position{
 									Column: 86,
-									Line:   7,
+									Line:   43,
 								},
 							},
 						},
@@ -335,14 +405,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 92,
-						Line:   8,
+						Column: 113,
+						Line:   44,
 					},
 					File:   "interval_test.flux",
-					Source: "experimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z) == 2020-02-01T00:00:00Z or die()",
+					Source: "experimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z) == 2020-02-01T00:00:00Z or die(msg: \"month addition\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   44,
 					},
 				},
 			},
@@ -351,14 +421,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 92,
-							Line:   8,
+							Column: 113,
+							Line:   44,
 						},
 						File:   "interval_test.flux",
-						Source: "experimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z) == 2020-02-01T00:00:00Z or die()",
+						Source: "experimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z) == 2020-02-01T00:00:00Z or die(msg: \"month addition\")",
 						Start: ast.Position{
 							Column: 1,
-							Line:   8,
+							Line:   44,
 						},
 					},
 				},
@@ -368,13 +438,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 83,
-								Line:   8,
+								Line:   44,
 							},
 							File:   "interval_test.flux",
 							Source: "experimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z) == 2020-02-01T00:00:00Z",
 							Start: ast.Position{
 								Column: 1,
-								Line:   8,
+								Line:   44,
 							},
 						},
 					},
@@ -385,13 +455,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   8,
+										Line:   44,
 									},
 									File:   "interval_test.flux",
 									Source: "d: 1mo, to: 2020-01-01T00:00:00Z",
 									Start: ast.Position{
 										Column: 26,
-										Line:   8,
+										Line:   44,
 									},
 								},
 							},
@@ -401,13 +471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   8,
+											Line:   44,
 										},
 										File:   "interval_test.flux",
 										Source: "d: 1mo",
 										Start: ast.Position{
 											Column: 26,
-											Line:   8,
+											Line:   44,
 										},
 									},
 								},
@@ -417,13 +487,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   8,
+												Line:   44,
 											},
 											File:   "interval_test.flux",
 											Source: "d",
 											Start: ast.Position{
 												Column: 26,
-												Line:   8,
+												Line:   44,
 											},
 										},
 									},
@@ -435,13 +505,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   8,
+												Line:   44,
 											},
 											File:   "interval_test.flux",
 											Source: "1mo",
 											Start: ast.Position{
 												Column: 29,
-												Line:   8,
+												Line:   44,
 											},
 										},
 									},
@@ -456,13 +526,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   8,
+											Line:   44,
 										},
 										File:   "interval_test.flux",
 										Source: "to: 2020-01-01T00:00:00Z",
 										Start: ast.Position{
 											Column: 34,
-											Line:   8,
+											Line:   44,
 										},
 									},
 								},
@@ -472,13 +542,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   8,
+												Line:   44,
 											},
 											File:   "interval_test.flux",
 											Source: "to",
 											Start: ast.Position{
 												Column: 34,
-												Line:   8,
+												Line:   44,
 											},
 										},
 									},
@@ -490,13 +560,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   8,
+												Line:   44,
 											},
 											File:   "interval_test.flux",
 											Source: "2020-01-01T00:00:00Z",
 											Start: ast.Position{
 												Column: 38,
-												Line:   8,
+												Line:   44,
 											},
 										},
 									},
@@ -510,13 +580,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   8,
+									Line:   44,
 								},
 								File:   "interval_test.flux",
 								Source: "experimental.addDuration(d: 1mo, to: 2020-01-01T00:00:00Z)",
 								Start: ast.Position{
 									Column: 1,
-									Line:   8,
+									Line:   44,
 								},
 							},
 						},
@@ -526,13 +596,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   8,
+										Line:   44,
 									},
 									File:   "interval_test.flux",
 									Source: "experimental.addDuration",
 									Start: ast.Position{
 										Column: 1,
-										Line:   8,
+										Line:   44,
 									},
 								},
 							},
@@ -542,13 +612,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   8,
+											Line:   44,
 										},
 										File:   "interval_test.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 1,
-											Line:   8,
+											Line:   44,
 										},
 									},
 								},
@@ -560,13 +630,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   8,
+											Line:   44,
 										},
 										File:   "interval_test.flux",
 										Source: "addDuration",
 										Start: ast.Position{
 											Column: 14,
-											Line:   8,
+											Line:   44,
 										},
 									},
 								},
@@ -581,13 +651,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 83,
-									Line:   8,
+									Line:   44,
 								},
 								File:   "interval_test.flux",
 								Source: "2020-02-01T00:00:00Z",
 								Start: ast.Position{
 									Column: 63,
-									Line:   8,
+									Line:   44,
 								},
 							},
 						},
@@ -596,19 +666,89 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Operator: 2,
 				Right: &ast.CallExpression{
-					Arguments: nil,
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 112,
+									Line:   44,
+								},
+								File:   "interval_test.flux",
+								Source: "msg: \"month addition\"",
+								Start: ast.Position{
+									Column: 91,
+									Line:   44,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 112,
+										Line:   44,
+									},
+									File:   "interval_test.flux",
+									Source: "msg: \"month addition\"",
+									Start: ast.Position{
+										Column: 91,
+										Line:   44,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 94,
+											Line:   44,
+										},
+										File:   "interval_test.flux",
+										Source: "msg",
+										Start: ast.Position{
+											Column: 91,
+											Line:   44,
+										},
+									},
+								},
+								Name: "msg",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 112,
+											Line:   44,
+										},
+										File:   "interval_test.flux",
+										Source: "\"month addition\"",
+										Start: ast.Position{
+											Column: 96,
+											Line:   44,
+										},
+									},
+								},
+								Value: "month addition",
+							},
+						}},
+						With: nil,
+					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 92,
-								Line:   8,
+								Column: 113,
+								Line:   44,
 							},
 							File:   "interval_test.flux",
-							Source: "die()",
+							Source: "die(msg: \"month addition\")",
 							Start: ast.Position{
 								Column: 87,
-								Line:   8,
+								Line:   44,
 							},
 						},
 					},
@@ -618,13 +758,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 90,
-									Line:   8,
+									Line:   44,
 								},
 								File:   "interval_test.flux",
 								Source: "die",
 								Start: ast.Position{
 									Column: 87,
-									Line:   8,
+									Line:   44,
 								},
 							},
 						},
@@ -637,14 +777,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 92,
-						Line:   9,
+						Column: 126,
+						Line:   45,
 					},
 					File:   "interval_test.flux",
-					Source: "experimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-28T00:00:00Z or die()",
+					Source: "experimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-29T00:00:00Z or die(msg: \"month addition end of month\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   45,
 					},
 				},
 			},
@@ -653,14 +793,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 92,
-							Line:   9,
+							Column: 126,
+							Line:   45,
 						},
 						File:   "interval_test.flux",
-						Source: "experimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-28T00:00:00Z or die()",
+						Source: "experimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-29T00:00:00Z or die(msg: \"month addition end of month\")",
 						Start: ast.Position{
 							Column: 1,
-							Line:   9,
+							Line:   45,
 						},
 					},
 				},
@@ -670,13 +810,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 83,
-								Line:   9,
+								Line:   45,
 							},
 							File:   "interval_test.flux",
-							Source: "experimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-28T00:00:00Z",
+							Source: "experimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z) == 2020-02-29T00:00:00Z",
 							Start: ast.Position{
 								Column: 1,
-								Line:   9,
+								Line:   45,
 							},
 						},
 					},
@@ -687,13 +827,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   9,
+										Line:   45,
 									},
 									File:   "interval_test.flux",
 									Source: "d: 1mo, to: 2020-01-31T00:00:00Z",
 									Start: ast.Position{
 										Column: 26,
-										Line:   9,
+										Line:   45,
 									},
 								},
 							},
@@ -703,13 +843,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   9,
+											Line:   45,
 										},
 										File:   "interval_test.flux",
 										Source: "d: 1mo",
 										Start: ast.Position{
 											Column: 26,
-											Line:   9,
+											Line:   45,
 										},
 									},
 								},
@@ -719,13 +859,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   9,
+												Line:   45,
 											},
 											File:   "interval_test.flux",
 											Source: "d",
 											Start: ast.Position{
 												Column: 26,
-												Line:   9,
+												Line:   45,
 											},
 										},
 									},
@@ -737,13 +877,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   9,
+												Line:   45,
 											},
 											File:   "interval_test.flux",
 											Source: "1mo",
 											Start: ast.Position{
 												Column: 29,
-												Line:   9,
+												Line:   45,
 											},
 										},
 									},
@@ -758,13 +898,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   9,
+											Line:   45,
 										},
 										File:   "interval_test.flux",
 										Source: "to: 2020-01-31T00:00:00Z",
 										Start: ast.Position{
 											Column: 34,
-											Line:   9,
+											Line:   45,
 										},
 									},
 								},
@@ -774,13 +914,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   9,
+												Line:   45,
 											},
 											File:   "interval_test.flux",
 											Source: "to",
 											Start: ast.Position{
 												Column: 34,
-												Line:   9,
+												Line:   45,
 											},
 										},
 									},
@@ -792,13 +932,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   9,
+												Line:   45,
 											},
 											File:   "interval_test.flux",
 											Source: "2020-01-31T00:00:00Z",
 											Start: ast.Position{
 												Column: 38,
-												Line:   9,
+												Line:   45,
 											},
 										},
 									},
@@ -812,13 +952,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   9,
+									Line:   45,
 								},
 								File:   "interval_test.flux",
 								Source: "experimental.addDuration(d: 1mo, to: 2020-01-31T00:00:00Z)",
 								Start: ast.Position{
 									Column: 1,
-									Line:   9,
+									Line:   45,
 								},
 							},
 						},
@@ -828,13 +968,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   9,
+										Line:   45,
 									},
 									File:   "interval_test.flux",
 									Source: "experimental.addDuration",
 									Start: ast.Position{
 										Column: 1,
-										Line:   9,
+										Line:   45,
 									},
 								},
 							},
@@ -844,13 +984,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   9,
+											Line:   45,
 										},
 										File:   "interval_test.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 1,
-											Line:   9,
+											Line:   45,
 										},
 									},
 								},
@@ -862,13 +1002,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   9,
+											Line:   45,
 										},
 										File:   "interval_test.flux",
 										Source: "addDuration",
 										Start: ast.Position{
 											Column: 14,
-											Line:   9,
+											Line:   45,
 										},
 									},
 								},
@@ -883,34 +1023,104 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 83,
-									Line:   9,
+									Line:   45,
 								},
 								File:   "interval_test.flux",
-								Source: "2020-02-28T00:00:00Z",
+								Source: "2020-02-29T00:00:00Z",
 								Start: ast.Position{
 									Column: 63,
-									Line:   9,
+									Line:   45,
 								},
 							},
 						},
-						Value: parser.MustParseTime("2020-02-28T00:00:00Z"),
+						Value: parser.MustParseTime("2020-02-29T00:00:00Z"),
 					},
 				},
 				Operator: 2,
 				Right: &ast.CallExpression{
-					Arguments: nil,
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 125,
+									Line:   45,
+								},
+								File:   "interval_test.flux",
+								Source: "msg: \"month addition end of month\"",
+								Start: ast.Position{
+									Column: 91,
+									Line:   45,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 125,
+										Line:   45,
+									},
+									File:   "interval_test.flux",
+									Source: "msg: \"month addition end of month\"",
+									Start: ast.Position{
+										Column: 91,
+										Line:   45,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 94,
+											Line:   45,
+										},
+										File:   "interval_test.flux",
+										Source: "msg",
+										Start: ast.Position{
+											Column: 91,
+											Line:   45,
+										},
+									},
+								},
+								Name: "msg",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 125,
+											Line:   45,
+										},
+										File:   "interval_test.flux",
+										Source: "\"month addition end of month\"",
+										Start: ast.Position{
+											Column: 96,
+											Line:   45,
+										},
+									},
+								},
+								Value: "month addition end of month",
+							},
+						}},
+						With: nil,
+					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 92,
-								Line:   9,
+								Column: 126,
+								Line:   45,
 							},
 							File:   "interval_test.flux",
-							Source: "die()",
+							Source: "die(msg: \"month addition end of month\")",
 							Start: ast.Position{
 								Column: 87,
-								Line:   9,
+								Line:   45,
 							},
 						},
 					},
@@ -920,13 +1130,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 90,
-									Line:   9,
+									Line:   45,
 								},
 								File:   "interval_test.flux",
 								Source: "die",
 								Start: ast.Position{
 									Column: 87,
-									Line:   9,
+									Line:   45,
 								},
 							},
 						},
@@ -939,14 +1149,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 92,
-						Line:   10,
+						Column: 116,
+						Line:   46,
 					},
 					File:   "interval_test.flux",
-					Source: "experimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z) == 2020-03-28T00:00:00Z or die()",
+					Source: "experimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z) == 2020-03-28T00:00:00Z or die(msg: \"month addition ??\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   46,
 					},
 				},
 			},
@@ -955,14 +1165,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 92,
-							Line:   10,
+							Column: 116,
+							Line:   46,
 						},
 						File:   "interval_test.flux",
-						Source: "experimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z) == 2020-03-28T00:00:00Z or die()",
+						Source: "experimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z) == 2020-03-28T00:00:00Z or die(msg: \"month addition ??\")",
 						Start: ast.Position{
 							Column: 1,
-							Line:   10,
+							Line:   46,
 						},
 					},
 				},
@@ -972,13 +1182,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 83,
-								Line:   10,
+								Line:   46,
 							},
 							File:   "interval_test.flux",
 							Source: "experimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z) == 2020-03-28T00:00:00Z",
 							Start: ast.Position{
 								Column: 1,
-								Line:   10,
+								Line:   46,
 							},
 						},
 					},
@@ -989,13 +1199,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 58,
-										Line:   10,
+										Line:   46,
 									},
 									File:   "interval_test.flux",
 									Source: "d: 1mo, to: 2020-02-28T00:00:00Z",
 									Start: ast.Position{
 										Column: 26,
-										Line:   10,
+										Line:   46,
 									},
 								},
 							},
@@ -1005,13 +1215,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   10,
+											Line:   46,
 										},
 										File:   "interval_test.flux",
 										Source: "d: 1mo",
 										Start: ast.Position{
 											Column: 26,
-											Line:   10,
+											Line:   46,
 										},
 									},
 								},
@@ -1021,13 +1231,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   10,
+												Line:   46,
 											},
 											File:   "interval_test.flux",
 											Source: "d",
 											Start: ast.Position{
 												Column: 26,
-												Line:   10,
+												Line:   46,
 											},
 										},
 									},
@@ -1039,13 +1249,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   10,
+												Line:   46,
 											},
 											File:   "interval_test.flux",
 											Source: "1mo",
 											Start: ast.Position{
 												Column: 29,
-												Line:   10,
+												Line:   46,
 											},
 										},
 									},
@@ -1060,13 +1270,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   10,
+											Line:   46,
 										},
 										File:   "interval_test.flux",
 										Source: "to: 2020-02-28T00:00:00Z",
 										Start: ast.Position{
 											Column: 34,
-											Line:   10,
+											Line:   46,
 										},
 									},
 								},
@@ -1076,13 +1286,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   10,
+												Line:   46,
 											},
 											File:   "interval_test.flux",
 											Source: "to",
 											Start: ast.Position{
 												Column: 34,
-												Line:   10,
+												Line:   46,
 											},
 										},
 									},
@@ -1094,13 +1304,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   10,
+												Line:   46,
 											},
 											File:   "interval_test.flux",
 											Source: "2020-02-28T00:00:00Z",
 											Start: ast.Position{
 												Column: 38,
-												Line:   10,
+												Line:   46,
 											},
 										},
 									},
@@ -1114,13 +1324,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   10,
+									Line:   46,
 								},
 								File:   "interval_test.flux",
 								Source: "experimental.addDuration(d: 1mo, to: 2020-02-28T00:00:00Z)",
 								Start: ast.Position{
 									Column: 1,
-									Line:   10,
+									Line:   46,
 								},
 							},
 						},
@@ -1130,13 +1340,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   10,
+										Line:   46,
 									},
 									File:   "interval_test.flux",
 									Source: "experimental.addDuration",
 									Start: ast.Position{
 										Column: 1,
-										Line:   10,
+										Line:   46,
 									},
 								},
 							},
@@ -1146,13 +1356,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   10,
+											Line:   46,
 										},
 										File:   "interval_test.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 1,
-											Line:   10,
+											Line:   46,
 										},
 									},
 								},
@@ -1164,13 +1374,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   10,
+											Line:   46,
 										},
 										File:   "interval_test.flux",
 										Source: "addDuration",
 										Start: ast.Position{
 											Column: 14,
-											Line:   10,
+											Line:   46,
 										},
 									},
 								},
@@ -1185,13 +1395,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 83,
-									Line:   10,
+									Line:   46,
 								},
 								File:   "interval_test.flux",
 								Source: "2020-03-28T00:00:00Z",
 								Start: ast.Position{
 									Column: 63,
-									Line:   10,
+									Line:   46,
 								},
 							},
 						},
@@ -1200,19 +1410,89 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Operator: 2,
 				Right: &ast.CallExpression{
-					Arguments: nil,
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 115,
+									Line:   46,
+								},
+								File:   "interval_test.flux",
+								Source: "msg: \"month addition ??\"",
+								Start: ast.Position{
+									Column: 91,
+									Line:   46,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 115,
+										Line:   46,
+									},
+									File:   "interval_test.flux",
+									Source: "msg: \"month addition ??\"",
+									Start: ast.Position{
+										Column: 91,
+										Line:   46,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 94,
+											Line:   46,
+										},
+										File:   "interval_test.flux",
+										Source: "msg",
+										Start: ast.Position{
+											Column: 91,
+											Line:   46,
+										},
+									},
+								},
+								Name: "msg",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 115,
+											Line:   46,
+										},
+										File:   "interval_test.flux",
+										Source: "\"month addition ??\"",
+										Start: ast.Position{
+											Column: 96,
+											Line:   46,
+										},
+									},
+								},
+								Value: "month addition ??",
+							},
+						}},
+						With: nil,
+					}},
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 92,
-								Line:   10,
+								Column: 116,
+								Line:   46,
 							},
 							File:   "interval_test.flux",
-							Source: "die()",
+							Source: "die(msg: \"month addition ??\")",
 							Start: ast.Position{
 								Column: 87,
-								Line:   10,
+								Line:   46,
 							},
 						},
 					},
@@ -1222,13 +1502,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 90,
-									Line:   10,
+									Line:   46,
 								},
 								File:   "interval_test.flux",
 								Source: "die",
 								Start: ast.Position{
 									Column: 87,
-									Line:   10,
+									Line:   46,
 								},
 							},
 						},
@@ -1241,186 +1521,63 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 528,
-						Line:   11,
+						Column: 38,
+						Line:   60,
 					},
 					File:   "interval_test.flux",
-					Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z) == [{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}]",
+					Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z) == [\n    {start: 2020-10-30T00:09:00Z, stop: 2020-10-30T00:10:00Z},\n    {start: 2020-10-30T00:08:00Z, stop: 2020-10-30T00:09:00Z},\n    {start: 2020-10-30T00:07:00Z, stop: 2020-10-30T00:08:00Z},\n    {start: 2020-10-30T00:06:00Z, stop: 2020-10-30T00:07:00Z},\n    {start: 2020-10-30T00:05:00Z, stop: 2020-10-30T00:06:00Z},\n    {start: 2020-10-30T00:04:00Z, stop: 2020-10-30T00:05:00Z},\n    {start: 2020-10-30T00:03:00Z, stop: 2020-10-30T00:04:00Z},\n    {start: 2020-10-30T00:02:00Z, stop: 2020-10-30T00:03:00Z},\n    {start: 2020-10-30T00:01:00Z, stop: 2020-10-30T00:02:00Z},\n    {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:01:00Z},\n] or die(msg: \"per minute intervals\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   49,
 					},
 				},
 			},
-			Expression: &ast.BinaryExpression{
+			Expression: &ast.LogicalExpression{
 				BaseNode: ast.BaseNode{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 528,
-							Line:   11,
+							Column: 38,
+							Line:   60,
 						},
 						File:   "interval_test.flux",
-						Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z) == [{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}]",
+						Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z) == [\n    {start: 2020-10-30T00:09:00Z, stop: 2020-10-30T00:10:00Z},\n    {start: 2020-10-30T00:08:00Z, stop: 2020-10-30T00:09:00Z},\n    {start: 2020-10-30T00:07:00Z, stop: 2020-10-30T00:08:00Z},\n    {start: 2020-10-30T00:06:00Z, stop: 2020-10-30T00:07:00Z},\n    {start: 2020-10-30T00:05:00Z, stop: 2020-10-30T00:06:00Z},\n    {start: 2020-10-30T00:04:00Z, stop: 2020-10-30T00:05:00Z},\n    {start: 2020-10-30T00:03:00Z, stop: 2020-10-30T00:04:00Z},\n    {start: 2020-10-30T00:02:00Z, stop: 2020-10-30T00:03:00Z},\n    {start: 2020-10-30T00:01:00Z, stop: 2020-10-30T00:02:00Z},\n    {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:01:00Z},\n] or die(msg: \"per minute intervals\")",
 						Start: ast.Position{
 							Column: 1,
-							Line:   11,
+							Line:   49,
 						},
 					},
 				},
-				Left: &ast.CallExpression{
-					Arguments: []ast.Expression{&ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 110,
-									Line:   11,
-								},
-								File:   "interval_test.flux",
-								Source: "start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z",
-								Start: ast.Position{
-									Column: 55,
-									Line:   11,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 82,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 55,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 60,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "start",
-										Start: ast.Position{
-											Column: 55,
-											Line:   11,
-										},
-									},
-								},
-								Name: "start",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 82,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 62,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 110,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:10:00Z",
-									Start: ast.Position{
-										Column: 84,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 88,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 84,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 110,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:10:00Z",
-										Start: ast.Position{
-											Column: 90,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:10:00Z"),
-							},
-						}},
-						With: nil,
-					}},
+				Left: &ast.BinaryExpression{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 111,
-								Line:   11,
+								Column: 2,
+								Line:   60,
 							},
 							File:   "interval_test.flux",
-							Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z)",
+							Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z) == [\n    {start: 2020-10-30T00:09:00Z, stop: 2020-10-30T00:10:00Z},\n    {start: 2020-10-30T00:08:00Z, stop: 2020-10-30T00:09:00Z},\n    {start: 2020-10-30T00:07:00Z, stop: 2020-10-30T00:08:00Z},\n    {start: 2020-10-30T00:06:00Z, stop: 2020-10-30T00:07:00Z},\n    {start: 2020-10-30T00:05:00Z, stop: 2020-10-30T00:06:00Z},\n    {start: 2020-10-30T00:04:00Z, stop: 2020-10-30T00:05:00Z},\n    {start: 2020-10-30T00:03:00Z, stop: 2020-10-30T00:04:00Z},\n    {start: 2020-10-30T00:02:00Z, stop: 2020-10-30T00:03:00Z},\n    {start: 2020-10-30T00:01:00Z, stop: 2020-10-30T00:02:00Z},\n    {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:01:00Z},\n]",
 							Start: ast.Position{
 								Column: 1,
-								Line:   11,
+								Line:   49,
 							},
 						},
 					},
-					Callee: &ast.CallExpression{
+					Left: &ast.CallExpression{
 						Arguments: []ast.Expression{&ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 53,
-										Line:   11,
+										Column: 110,
+										Line:   49,
 									},
 									File:   "interval_test.flux",
-									Source: "every: 1m, period: 1m, offset: 0s",
+									Source: "start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z",
 									Start: ast.Position{
-										Column: 20,
-										Line:   11,
+										Column: 55,
+										Line:   49,
 									},
 								},
 							},
@@ -1429,14 +1586,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 29,
-											Line:   11,
+											Column: 82,
+											Line:   49,
 										},
 										File:   "interval_test.flux",
-										Source: "every: 1m",
+										Source: "start: 2020-10-30T00:00:00Z",
 										Start: ast.Position{
-											Column: 20,
-											Line:   11,
+											Column: 55,
+											Line:   49,
 										},
 									},
 								},
@@ -1445,53 +1602,50 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   11,
+												Column: 60,
+												Line:   49,
 											},
 											File:   "interval_test.flux",
-											Source: "every",
+											Source: "start",
 											Start: ast.Position{
-												Column: 20,
-												Line:   11,
+												Column: 55,
+												Line:   49,
 											},
 										},
 									},
-									Name: "every",
+									Name: "start",
 								},
-								Value: &ast.DurationLiteral{
+								Value: &ast.DateTimeLiteral{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 29,
-												Line:   11,
+												Column: 82,
+												Line:   49,
 											},
 											File:   "interval_test.flux",
-											Source: "1m",
+											Source: "2020-10-30T00:00:00Z",
 											Start: ast.Position{
-												Column: 27,
-												Line:   11,
+												Column: 62,
+												Line:   49,
 											},
 										},
 									},
-									Values: []ast.Duration{ast.Duration{
-										Magnitude: int64(1),
-										Unit:      "m",
-									}},
+									Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
-											Line:   11,
+											Column: 110,
+											Line:   49,
 										},
 										File:   "interval_test.flux",
-										Source: "period: 1m",
+										Source: "stop: 2020-10-30T00:10:00Z",
 										Start: ast.Position{
-											Column: 31,
-											Line:   11,
+											Column: 84,
+											Line:   49,
 										},
 									},
 								},
@@ -1500,94 +1654,36 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   11,
+												Column: 88,
+												Line:   49,
 											},
 											File:   "interval_test.flux",
-											Source: "period",
+											Source: "stop",
 											Start: ast.Position{
-												Column: 31,
-												Line:   11,
+												Column: 84,
+												Line:   49,
 											},
 										},
 									},
-									Name: "period",
+									Name: "stop",
 								},
-								Value: &ast.DurationLiteral{
+								Value: &ast.DateTimeLiteral{
 									BaseNode: ast.BaseNode{
 										Errors: nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   11,
+												Column: 110,
+												Line:   49,
 											},
 											File:   "interval_test.flux",
-											Source: "1m",
+											Source: "2020-10-30T00:10:00Z",
 											Start: ast.Position{
-												Column: 39,
-												Line:   11,
+												Column: 90,
+												Line:   49,
 											},
 										},
 									},
-									Values: []ast.Duration{ast.Duration{
-										Magnitude: int64(1),
-										Unit:      "m",
-									}},
-								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 53,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "offset: 0s",
-										Start: ast.Position{
-											Column: 43,
-											Line:   11,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 49,
-												Line:   11,
-											},
-											File:   "interval_test.flux",
-											Source: "offset",
-											Start: ast.Position{
-												Column: 43,
-												Line:   11,
-											},
-										},
-									},
-									Name: "offset",
-								},
-								Value: &ast.DurationLiteral{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 53,
-												Line:   11,
-											},
-											File:   "interval_test.flux",
-											Source: "0s",
-											Start: ast.Position{
-												Column: 51,
-												Line:   11,
-											},
-										},
-									},
-									Values: []ast.Duration{ast.Duration{
-										Magnitude: int64(0),
-										Unit:      "s",
-									}},
+									Value: parser.MustParseTime("2020-10-30T00:10:00Z"),
 								},
 							}},
 							With: nil,
@@ -1596,102 +1692,1527 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 54,
-									Line:   11,
+									Column: 111,
+									Line:   49,
 								},
 								File:   "interval_test.flux",
-								Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)",
+								Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)(start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:10:00Z)",
 								Start: ast.Position{
 									Column: 1,
-									Line:   11,
+									Line:   49,
 								},
 							},
 						},
-						Callee: &ast.MemberExpression{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 19,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "interval.intervals",
-									Start: ast.Position{
-										Column: 1,
-										Line:   11,
-									},
-								},
-							},
-							Object: &ast.Identifier{
+						Callee: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 9,
-											Line:   11,
+											Column: 53,
+											Line:   49,
 										},
 										File:   "interval_test.flux",
-										Source: "interval",
+										Source: "every: 1m, period: 1m, offset: 0s",
 										Start: ast.Position{
-											Column: 1,
-											Line:   11,
+											Column: 20,
+											Line:   49,
 										},
 									},
 								},
-								Name: "interval",
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   49,
+											},
+											File:   "interval_test.flux",
+											Source: "every: 1m",
+											Start: ast.Position{
+												Column: 20,
+												Line:   49,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   49,
+												},
+												File:   "interval_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 20,
+													Line:   49,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   49,
+												},
+												File:   "interval_test.flux",
+												Source: "1m",
+												Start: ast.Position{
+													Column: 27,
+													Line:   49,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(1),
+											Unit:      "m",
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   49,
+											},
+											File:   "interval_test.flux",
+											Source: "period: 1m",
+											Start: ast.Position{
+												Column: 31,
+												Line:   49,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   49,
+												},
+												File:   "interval_test.flux",
+												Source: "period",
+												Start: ast.Position{
+													Column: 31,
+													Line:   49,
+												},
+											},
+										},
+										Name: "period",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   49,
+												},
+												File:   "interval_test.flux",
+												Source: "1m",
+												Start: ast.Position{
+													Column: 39,
+													Line:   49,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(1),
+											Unit:      "m",
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 53,
+												Line:   49,
+											},
+											File:   "interval_test.flux",
+											Source: "offset: 0s",
+											Start: ast.Position{
+												Column: 43,
+												Line:   49,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   49,
+												},
+												File:   "interval_test.flux",
+												Source: "offset",
+												Start: ast.Position{
+													Column: 43,
+													Line:   49,
+												},
+											},
+										},
+										Name: "offset",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 53,
+													Line:   49,
+												},
+												File:   "interval_test.flux",
+												Source: "0s",
+												Start: ast.Position{
+													Column: 51,
+													Line:   49,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(0),
+											Unit:      "s",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 54,
+										Line:   49,
+									},
+									File:   "interval_test.flux",
+									Source: "interval.intervals(every: 1m, period: 1m, offset: 0s)",
+									Start: ast.Position{
+										Column: 1,
+										Line:   49,
+									},
+								},
 							},
-							Property: &ast.Identifier{
+							Callee: &ast.MemberExpression{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   11,
+											Line:   49,
 										},
 										File:   "interval_test.flux",
-										Source: "intervals",
+										Source: "interval.intervals",
 										Start: ast.Position{
-											Column: 10,
-											Line:   11,
+											Column: 1,
+											Line:   49,
 										},
 									},
 								},
-								Name: "intervals",
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   49,
+											},
+											File:   "interval_test.flux",
+											Source: "interval",
+											Start: ast.Position{
+												Column: 1,
+												Line:   49,
+											},
+										},
+									},
+									Name: "interval",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   49,
+											},
+											File:   "interval_test.flux",
+											Source: "intervals",
+											Start: ast.Position{
+												Column: 10,
+												Line:   49,
+											},
+										},
+									},
+									Name: "intervals",
+								},
 							},
 						},
+					},
+					Operator: 17,
+					Right: &ast.ArrayExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 2,
+									Line:   60,
+								},
+								File:   "interval_test.flux",
+								Source: "[\n    {start: 2020-10-30T00:09:00Z, stop: 2020-10-30T00:10:00Z},\n    {start: 2020-10-30T00:08:00Z, stop: 2020-10-30T00:09:00Z},\n    {start: 2020-10-30T00:07:00Z, stop: 2020-10-30T00:08:00Z},\n    {start: 2020-10-30T00:06:00Z, stop: 2020-10-30T00:07:00Z},\n    {start: 2020-10-30T00:05:00Z, stop: 2020-10-30T00:06:00Z},\n    {start: 2020-10-30T00:04:00Z, stop: 2020-10-30T00:05:00Z},\n    {start: 2020-10-30T00:03:00Z, stop: 2020-10-30T00:04:00Z},\n    {start: 2020-10-30T00:02:00Z, stop: 2020-10-30T00:03:00Z},\n    {start: 2020-10-30T00:01:00Z, stop: 2020-10-30T00:02:00Z},\n    {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:01:00Z},\n]",
+								Start: ast.Position{
+									Column: 115,
+									Line:   49,
+								},
+							},
+						},
+						Elements: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   50,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:09:00Z, stop: 2020-10-30T00:10:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   50,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   50,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:09:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   50,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   50,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   50,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   50,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:09:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   50,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:09:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   50,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:10:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   50,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   50,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   50,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   50,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:10:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   50,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:10:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   51,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:08:00Z, stop: 2020-10-30T00:09:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   51,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   51,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:08:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   51,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   51,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   51,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   51,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:08:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   51,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:08:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   51,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:09:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   51,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   51,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   51,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   51,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:09:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   51,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:09:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   52,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:07:00Z, stop: 2020-10-30T00:08:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   52,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   52,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:07:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   52,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   52,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   52,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   52,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:07:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   52,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:07:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   52,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:08:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   52,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   52,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   52,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   52,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:08:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   52,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:08:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   53,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:06:00Z, stop: 2020-10-30T00:07:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   53,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   53,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:06:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   53,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   53,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   53,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   53,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:06:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   53,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:06:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   53,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:07:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   53,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   53,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   53,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   53,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:07:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   53,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:07:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   54,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:05:00Z, stop: 2020-10-30T00:06:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   54,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   54,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:05:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   54,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   54,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   54,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   54,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:05:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   54,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:05:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   54,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:06:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   54,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   54,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   54,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   54,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:06:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   54,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:06:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   55,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:04:00Z, stop: 2020-10-30T00:05:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   55,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   55,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:04:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   55,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   55,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   55,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:04:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   55,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:04:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   55,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:05:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   55,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   55,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   55,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:05:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   55,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:05:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   56,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:03:00Z, stop: 2020-10-30T00:04:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   56,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   56,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:03:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   56,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   56,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   56,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   56,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:03:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   56,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:03:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   56,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:04:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   56,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   56,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   56,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   56,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:04:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   56,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:04:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   57,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:02:00Z, stop: 2020-10-30T00:03:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   57,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   57,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:02:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   57,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   57,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   57,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:02:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   57,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:02:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   57,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:03:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   57,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   57,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   57,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   57,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:03:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   57,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:03:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   58,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:01:00Z, stop: 2020-10-30T00:02:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   58,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   58,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:01:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   58,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   58,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   58,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:01:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   58,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:01:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   58,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:02:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   58,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   58,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   58,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   58,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:02:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   58,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:02:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   59,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:01:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   59,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   59,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   59,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   59,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   59,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   59,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   59,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   59,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T00:01:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   59,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   59,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   59,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   59,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:01:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   59,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:01:00Z"),
+								},
+							}},
+							With: nil,
+						}},
 					},
 				},
-				Operator: 17,
-				Right: &ast.ArrayExpression{
-					BaseNode: ast.BaseNode{
-						Errors: nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 528,
-								Line:   11,
-							},
-							File:   "interval_test.flux",
-							Source: "[{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}, {start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}]",
-							Start: ast.Position{
-								Column: 115,
-								Line:   11,
-							},
-						},
-					},
-					Elements: []ast.Expression{&ast.ObjectExpression{
+				Operator: 2,
+				Right: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 173,
-									Line:   11,
+									Column: 37,
+									Line:   60,
 								},
 								File:   "interval_test.flux",
-								Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}",
+								Source: "msg: \"per minute intervals\"",
 								Start: ast.Position{
-									Column: 116,
-									Line:   11,
+									Column: 10,
+									Line:   60,
 								},
 							},
 						},
@@ -1700,14 +3221,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 144,
-										Line:   11,
+										Column: 37,
+										Line:   60,
 									},
 									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
+									Source: "msg: \"per minute intervals\"",
 									Start: ast.Position{
-										Column: 117,
-										Line:   11,
+										Column: 10,
+										Line:   60,
 									},
 								},
 							},
@@ -1716,824 +3237,2677 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 122,
-											Line:   11,
+											Column: 13,
+											Line:   60,
 										},
 										File:   "interval_test.flux",
-										Source: "start",
+										Source: "msg",
 										Start: ast.Position{
-											Column: 117,
-											Line:   11,
+											Column: 10,
+											Line:   60,
 										},
 									},
 								},
-								Name: "start",
+								Name: "msg",
 							},
-							Value: &ast.DateTimeLiteral{
+							Value: &ast.StringLiteral{
 								BaseNode: ast.BaseNode{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 144,
-											Line:   11,
+											Column: 37,
+											Line:   60,
 										},
 										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
+										Source: "\"per minute intervals\"",
 										Start: ast.Position{
-											Column: 124,
-											Line:   11,
+											Column: 15,
+											Line:   60,
 										},
 									},
 								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 172,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 146,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 150,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 146,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 172,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 152,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}},
-						With: nil,
-					}, &ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 232,
-									Line:   11,
-								},
-								File:   "interval_test.flux",
-								Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}",
-								Start: ast.Position{
-									Column: 175,
-									Line:   11,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 203,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 176,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 181,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "start",
-										Start: ast.Position{
-											Column: 176,
-											Line:   11,
-										},
-									},
-								},
-								Name: "start",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 203,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 183,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 231,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 205,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 209,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 205,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 231,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 211,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}},
-						With: nil,
-					}, &ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 291,
-									Line:   11,
-								},
-								File:   "interval_test.flux",
-								Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}",
-								Start: ast.Position{
-									Column: 234,
-									Line:   11,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 262,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 235,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 240,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "start",
-										Start: ast.Position{
-											Column: 235,
-											Line:   11,
-										},
-									},
-								},
-								Name: "start",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 262,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 242,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 290,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 264,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 268,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 264,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 290,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 270,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}},
-						With: nil,
-					}, &ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 350,
-									Line:   11,
-								},
-								File:   "interval_test.flux",
-								Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}",
-								Start: ast.Position{
-									Column: 293,
-									Line:   11,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 321,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 294,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 299,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "start",
-										Start: ast.Position{
-											Column: 294,
-											Line:   11,
-										},
-									},
-								},
-								Name: "start",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 321,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 301,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 349,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 323,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 327,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 323,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 349,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 329,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}},
-						With: nil,
-					}, &ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 409,
-									Line:   11,
-								},
-								File:   "interval_test.flux",
-								Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}",
-								Start: ast.Position{
-									Column: 352,
-									Line:   11,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 380,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 353,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 358,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "start",
-										Start: ast.Position{
-											Column: 353,
-											Line:   11,
-										},
-									},
-								},
-								Name: "start",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 380,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 360,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 408,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 382,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 386,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 382,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 408,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 388,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}},
-						With: nil,
-					}, &ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 468,
-									Line:   11,
-								},
-								File:   "interval_test.flux",
-								Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}",
-								Start: ast.Position{
-									Column: 411,
-									Line:   11,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 439,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 412,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 417,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "start",
-										Start: ast.Position{
-											Column: 412,
-											Line:   11,
-										},
-									},
-								},
-								Name: "start",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 439,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 419,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 467,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 441,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 445,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 441,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 467,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 447,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}},
-						With: nil,
-					}, &ast.ObjectExpression{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 527,
-									Line:   11,
-								},
-								File:   "interval_test.flux",
-								Source: "{start: 2020-10-30T00:00:00Z, stop: 2020-10-30T00:00:00Z}",
-								Start: ast.Position{
-									Column: 470,
-									Line:   11,
-								},
-							},
-						},
-						Properties: []*ast.Property{&ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 498,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "start: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 471,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 476,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "start",
-										Start: ast.Position{
-											Column: 471,
-											Line:   11,
-										},
-									},
-								},
-								Name: "start",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 498,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 478,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
-							},
-						}, &ast.Property{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 526,
-										Line:   11,
-									},
-									File:   "interval_test.flux",
-									Source: "stop: 2020-10-30T00:00:00Z",
-									Start: ast.Position{
-										Column: 500,
-										Line:   11,
-									},
-								},
-							},
-							Key: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 504,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "stop",
-										Start: ast.Position{
-											Column: 500,
-											Line:   11,
-										},
-									},
-								},
-								Name: "stop",
-							},
-							Value: &ast.DateTimeLiteral{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 526,
-											Line:   11,
-										},
-										File:   "interval_test.flux",
-										Source: "2020-10-30T00:00:00Z",
-										Start: ast.Position{
-											Column: 506,
-											Line:   11,
-										},
-									},
-								},
-								Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
+								Value: "per minute intervals",
 							},
 						}},
 						With: nil,
 					}},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   60,
+							},
+							File:   "interval_test.flux",
+							Source: "die(msg: \"per minute intervals\")",
+							Start: ast.Position{
+								Column: 6,
+								Line:   60,
+							},
+						},
+					},
+					Callee: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 9,
+									Line:   60,
+								},
+								File:   "interval_test.flux",
+								Source: "die",
+								Start: ast.Position{
+									Column: 6,
+									Line:   60,
+								},
+							},
+						},
+						Name: "die",
+					},
+				},
+			},
+		}, &ast.ExpressionStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 35,
+						Line:   70,
+					},
+					File:   "interval_test.flux",
+					Source: "interval.intervals(every: 1d, period: 1d, offset: 11h)(start: 2020-10-30T11:00:00Z, stop: 2020-11-05T11:00:00Z) == [\n    {start: 2020-11-04T11:00:00Z, stop: 2020-11-05T11:00:00Z},\n    {start: 2020-11-03T11:00:00Z, stop: 2020-11-04T11:00:00Z},\n    {start: 2020-11-02T11:00:00Z, stop: 2020-11-03T11:00:00Z},\n    {start: 2020-11-01T11:00:00Z, stop: 2020-11-02T11:00:00Z},\n    {start: 2020-10-31T11:00:00Z, stop: 2020-11-01T11:00:00Z},\n    {start: 2020-10-30T11:00:00Z, stop: 2020-10-31T11:00:00Z},\n] or die(msg: \"per day intervals\")",
+					Start: ast.Position{
+						Column: 1,
+						Line:   63,
+					},
+				},
+			},
+			Expression: &ast.LogicalExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 35,
+							Line:   70,
+						},
+						File:   "interval_test.flux",
+						Source: "interval.intervals(every: 1d, period: 1d, offset: 11h)(start: 2020-10-30T11:00:00Z, stop: 2020-11-05T11:00:00Z) == [\n    {start: 2020-11-04T11:00:00Z, stop: 2020-11-05T11:00:00Z},\n    {start: 2020-11-03T11:00:00Z, stop: 2020-11-04T11:00:00Z},\n    {start: 2020-11-02T11:00:00Z, stop: 2020-11-03T11:00:00Z},\n    {start: 2020-11-01T11:00:00Z, stop: 2020-11-02T11:00:00Z},\n    {start: 2020-10-31T11:00:00Z, stop: 2020-11-01T11:00:00Z},\n    {start: 2020-10-30T11:00:00Z, stop: 2020-10-31T11:00:00Z},\n] or die(msg: \"per day intervals\")",
+						Start: ast.Position{
+							Column: 1,
+							Line:   63,
+						},
+					},
+				},
+				Left: &ast.BinaryExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   70,
+							},
+							File:   "interval_test.flux",
+							Source: "interval.intervals(every: 1d, period: 1d, offset: 11h)(start: 2020-10-30T11:00:00Z, stop: 2020-11-05T11:00:00Z) == [\n    {start: 2020-11-04T11:00:00Z, stop: 2020-11-05T11:00:00Z},\n    {start: 2020-11-03T11:00:00Z, stop: 2020-11-04T11:00:00Z},\n    {start: 2020-11-02T11:00:00Z, stop: 2020-11-03T11:00:00Z},\n    {start: 2020-11-01T11:00:00Z, stop: 2020-11-02T11:00:00Z},\n    {start: 2020-10-31T11:00:00Z, stop: 2020-11-01T11:00:00Z},\n    {start: 2020-10-30T11:00:00Z, stop: 2020-10-31T11:00:00Z},\n]",
+							Start: ast.Position{
+								Column: 1,
+								Line:   63,
+							},
+						},
+					},
+					Left: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 111,
+										Line:   63,
+									},
+									File:   "interval_test.flux",
+									Source: "start: 2020-10-30T11:00:00Z, stop: 2020-11-05T11:00:00Z",
+									Start: ast.Position{
+										Column: 56,
+										Line:   63,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   63,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T11:00:00Z",
+										Start: ast.Position{
+											Column: 56,
+											Line:   63,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 56,
+												Line:   63,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T11:00:00Z",
+											Start: ast.Position{
+												Column: 63,
+												Line:   63,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T11:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 111,
+											Line:   63,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-05T11:00:00Z",
+										Start: ast.Position{
+											Column: 85,
+											Line:   63,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 89,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 85,
+												Line:   63,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 111,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-05T11:00:00Z",
+											Start: ast.Position{
+												Column: 91,
+												Line:   63,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-05T11:00:00Z"),
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 112,
+									Line:   63,
+								},
+								File:   "interval_test.flux",
+								Source: "interval.intervals(every: 1d, period: 1d, offset: 11h)(start: 2020-10-30T11:00:00Z, stop: 2020-11-05T11:00:00Z)",
+								Start: ast.Position{
+									Column: 1,
+									Line:   63,
+								},
+							},
+						},
+						Callee: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 54,
+											Line:   63,
+										},
+										File:   "interval_test.flux",
+										Source: "every: 1d, period: 1d, offset: 11h",
+										Start: ast.Position{
+											Column: 20,
+											Line:   63,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "every: 1d",
+											Start: ast.Position{
+												Column: 20,
+												Line:   63,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   63,
+												},
+												File:   "interval_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 20,
+													Line:   63,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   63,
+												},
+												File:   "interval_test.flux",
+												Source: "1d",
+												Start: ast.Position{
+													Column: 27,
+													Line:   63,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(1),
+											Unit:      "d",
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "period: 1d",
+											Start: ast.Position{
+												Column: 31,
+												Line:   63,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   63,
+												},
+												File:   "interval_test.flux",
+												Source: "period",
+												Start: ast.Position{
+													Column: 31,
+													Line:   63,
+												},
+											},
+										},
+										Name: "period",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   63,
+												},
+												File:   "interval_test.flux",
+												Source: "1d",
+												Start: ast.Position{
+													Column: 39,
+													Line:   63,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(1),
+											Unit:      "d",
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 54,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "offset: 11h",
+											Start: ast.Position{
+												Column: 43,
+												Line:   63,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   63,
+												},
+												File:   "interval_test.flux",
+												Source: "offset",
+												Start: ast.Position{
+													Column: 43,
+													Line:   63,
+												},
+											},
+										},
+										Name: "offset",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 54,
+													Line:   63,
+												},
+												File:   "interval_test.flux",
+												Source: "11h",
+												Start: ast.Position{
+													Column: 51,
+													Line:   63,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(11),
+											Unit:      "h",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 55,
+										Line:   63,
+									},
+									File:   "interval_test.flux",
+									Source: "interval.intervals(every: 1d, period: 1d, offset: 11h)",
+									Start: ast.Position{
+										Column: 1,
+										Line:   63,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   63,
+										},
+										File:   "interval_test.flux",
+										Source: "interval.intervals",
+										Start: ast.Position{
+											Column: 1,
+											Line:   63,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "interval",
+											Start: ast.Position{
+												Column: 1,
+												Line:   63,
+											},
+										},
+									},
+									Name: "interval",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   63,
+											},
+											File:   "interval_test.flux",
+											Source: "intervals",
+											Start: ast.Position{
+												Column: 10,
+												Line:   63,
+											},
+										},
+									},
+									Name: "intervals",
+								},
+							},
+						},
+					},
+					Operator: 17,
+					Right: &ast.ArrayExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 2,
+									Line:   70,
+								},
+								File:   "interval_test.flux",
+								Source: "[\n    {start: 2020-11-04T11:00:00Z, stop: 2020-11-05T11:00:00Z},\n    {start: 2020-11-03T11:00:00Z, stop: 2020-11-04T11:00:00Z},\n    {start: 2020-11-02T11:00:00Z, stop: 2020-11-03T11:00:00Z},\n    {start: 2020-11-01T11:00:00Z, stop: 2020-11-02T11:00:00Z},\n    {start: 2020-10-31T11:00:00Z, stop: 2020-11-01T11:00:00Z},\n    {start: 2020-10-30T11:00:00Z, stop: 2020-10-31T11:00:00Z},\n]",
+								Start: ast.Position{
+									Column: 116,
+									Line:   63,
+								},
+							},
+						},
+						Elements: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   64,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-04T11:00:00Z, stop: 2020-11-05T11:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   64,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   64,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-04T11:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   64,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   64,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   64,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   64,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-04T11:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   64,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-04T11:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   64,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-05T11:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   64,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   64,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   64,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   64,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-05T11:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   64,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-05T11:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   65,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-03T11:00:00Z, stop: 2020-11-04T11:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   65,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   65,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-03T11:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   65,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   65,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   65,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-03T11:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   65,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-03T11:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   65,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-04T11:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   65,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   65,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   65,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   65,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-04T11:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   65,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-04T11:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   66,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-02T11:00:00Z, stop: 2020-11-03T11:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   66,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   66,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-02T11:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   66,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   66,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   66,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   66,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-02T11:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   66,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-02T11:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   66,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-03T11:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   66,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   66,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   66,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   66,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-03T11:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   66,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-03T11:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   67,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-01T11:00:00Z, stop: 2020-11-02T11:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   67,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   67,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-01T11:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   67,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   67,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   67,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   67,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-01T11:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   67,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-01T11:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   67,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-02T11:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   67,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   67,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   67,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   67,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-02T11:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   67,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-02T11:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   68,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-31T11:00:00Z, stop: 2020-11-01T11:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   68,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   68,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-31T11:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   68,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   68,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   68,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   68,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-31T11:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   68,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-31T11:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   68,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-01T11:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   68,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   68,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   68,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   68,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-01T11:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   68,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-01T11:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   69,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T11:00:00Z, stop: 2020-10-31T11:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   69,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   69,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T11:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   69,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   69,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   69,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   69,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T11:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   69,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T11:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   69,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-31T11:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   69,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   69,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   69,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   69,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-31T11:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   69,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-31T11:00:00Z"),
+								},
+							}},
+							With: nil,
+						}},
+					},
+				},
+				Operator: 2,
+				Right: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 34,
+									Line:   70,
+								},
+								File:   "interval_test.flux",
+								Source: "msg: \"per day intervals\"",
+								Start: ast.Position{
+									Column: 10,
+									Line:   70,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 34,
+										Line:   70,
+									},
+									File:   "interval_test.flux",
+									Source: "msg: \"per day intervals\"",
+									Start: ast.Position{
+										Column: 10,
+										Line:   70,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   70,
+										},
+										File:   "interval_test.flux",
+										Source: "msg",
+										Start: ast.Position{
+											Column: 10,
+											Line:   70,
+										},
+									},
+								},
+								Name: "msg",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 34,
+											Line:   70,
+										},
+										File:   "interval_test.flux",
+										Source: "\"per day intervals\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   70,
+										},
+									},
+								},
+								Value: "per day intervals",
+							},
+						}},
+						With: nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 35,
+								Line:   70,
+							},
+							File:   "interval_test.flux",
+							Source: "die(msg: \"per day intervals\")",
+							Start: ast.Position{
+								Column: 6,
+								Line:   70,
+							},
+						},
+					},
+					Callee: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 9,
+									Line:   70,
+								},
+								File:   "interval_test.flux",
+								Source: "die",
+								Start: ast.Position{
+									Column: 6,
+									Line:   70,
+								},
+							},
+						},
+						Name: "die",
+					},
+				},
+			},
+		}, &ast.ExpressionStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 43,
+						Line:   80,
+					},
+					File:   "interval_test.flux",
+					Source: "interval.intervals(every: 1d, period: 8h, offset: 9h)(start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z) == [\n    {start: 2020-11-04T09:00:00Z, stop: 2020-11-04T17:00:00Z},\n    {start: 2020-11-03T09:00:00Z, stop: 2020-11-03T17:00:00Z},\n    {start: 2020-11-02T09:00:00Z, stop: 2020-11-02T17:00:00Z},\n    {start: 2020-11-01T09:00:00Z, stop: 2020-11-01T17:00:00Z},\n    {start: 2020-10-31T09:00:00Z, stop: 2020-10-31T17:00:00Z},\n    {start: 2020-10-30T09:00:00Z, stop: 2020-10-30T17:00:00Z},\n] or die(msg: \"per day 9AM-5PM intervals\")",
+					Start: ast.Position{
+						Column: 1,
+						Line:   73,
+					},
+				},
+			},
+			Expression: &ast.LogicalExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 43,
+							Line:   80,
+						},
+						File:   "interval_test.flux",
+						Source: "interval.intervals(every: 1d, period: 8h, offset: 9h)(start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z) == [\n    {start: 2020-11-04T09:00:00Z, stop: 2020-11-04T17:00:00Z},\n    {start: 2020-11-03T09:00:00Z, stop: 2020-11-03T17:00:00Z},\n    {start: 2020-11-02T09:00:00Z, stop: 2020-11-02T17:00:00Z},\n    {start: 2020-11-01T09:00:00Z, stop: 2020-11-01T17:00:00Z},\n    {start: 2020-10-31T09:00:00Z, stop: 2020-10-31T17:00:00Z},\n    {start: 2020-10-30T09:00:00Z, stop: 2020-10-30T17:00:00Z},\n] or die(msg: \"per day 9AM-5PM intervals\")",
+						Start: ast.Position{
+							Column: 1,
+							Line:   73,
+						},
+					},
+				},
+				Left: &ast.BinaryExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   80,
+							},
+							File:   "interval_test.flux",
+							Source: "interval.intervals(every: 1d, period: 8h, offset: 9h)(start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z) == [\n    {start: 2020-11-04T09:00:00Z, stop: 2020-11-04T17:00:00Z},\n    {start: 2020-11-03T09:00:00Z, stop: 2020-11-03T17:00:00Z},\n    {start: 2020-11-02T09:00:00Z, stop: 2020-11-02T17:00:00Z},\n    {start: 2020-11-01T09:00:00Z, stop: 2020-11-01T17:00:00Z},\n    {start: 2020-10-31T09:00:00Z, stop: 2020-10-31T17:00:00Z},\n    {start: 2020-10-30T09:00:00Z, stop: 2020-10-30T17:00:00Z},\n]",
+							Start: ast.Position{
+								Column: 1,
+								Line:   73,
+							},
+						},
+					},
+					Left: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 110,
+										Line:   73,
+									},
+									File:   "interval_test.flux",
+									Source: "start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z",
+									Start: ast.Position{
+										Column: 55,
+										Line:   73,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 82,
+											Line:   73,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T00:00:00Z",
+										Start: ast.Position{
+											Column: 55,
+											Line:   73,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 60,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 55,
+												Line:   73,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 82,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T00:00:00Z",
+											Start: ast.Position{
+												Column: 62,
+												Line:   73,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T00:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 110,
+											Line:   73,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-05T00:00:00Z",
+										Start: ast.Position{
+											Column: 84,
+											Line:   73,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 88,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 84,
+												Line:   73,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 110,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-05T00:00:00Z",
+											Start: ast.Position{
+												Column: 90,
+												Line:   73,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-05T00:00:00Z"),
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 111,
+									Line:   73,
+								},
+								File:   "interval_test.flux",
+								Source: "interval.intervals(every: 1d, period: 8h, offset: 9h)(start: 2020-10-30T00:00:00Z, stop: 2020-11-05T00:00:00Z)",
+								Start: ast.Position{
+									Column: 1,
+									Line:   73,
+								},
+							},
+						},
+						Callee: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 53,
+											Line:   73,
+										},
+										File:   "interval_test.flux",
+										Source: "every: 1d, period: 8h, offset: 9h",
+										Start: ast.Position{
+											Column: 20,
+											Line:   73,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "every: 1d",
+											Start: ast.Position{
+												Column: 20,
+												Line:   73,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   73,
+												},
+												File:   "interval_test.flux",
+												Source: "every",
+												Start: ast.Position{
+													Column: 20,
+													Line:   73,
+												},
+											},
+										},
+										Name: "every",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   73,
+												},
+												File:   "interval_test.flux",
+												Source: "1d",
+												Start: ast.Position{
+													Column: 27,
+													Line:   73,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(1),
+											Unit:      "d",
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 41,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "period: 8h",
+											Start: ast.Position{
+												Column: 31,
+												Line:   73,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   73,
+												},
+												File:   "interval_test.flux",
+												Source: "period",
+												Start: ast.Position{
+													Column: 31,
+													Line:   73,
+												},
+											},
+										},
+										Name: "period",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 41,
+													Line:   73,
+												},
+												File:   "interval_test.flux",
+												Source: "8h",
+												Start: ast.Position{
+													Column: 39,
+													Line:   73,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(8),
+											Unit:      "h",
+										}},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 53,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "offset: 9h",
+											Start: ast.Position{
+												Column: 43,
+												Line:   73,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 49,
+													Line:   73,
+												},
+												File:   "interval_test.flux",
+												Source: "offset",
+												Start: ast.Position{
+													Column: 43,
+													Line:   73,
+												},
+											},
+										},
+										Name: "offset",
+									},
+									Value: &ast.DurationLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 53,
+													Line:   73,
+												},
+												File:   "interval_test.flux",
+												Source: "9h",
+												Start: ast.Position{
+													Column: 51,
+													Line:   73,
+												},
+											},
+										},
+										Values: []ast.Duration{ast.Duration{
+											Magnitude: int64(9),
+											Unit:      "h",
+										}},
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 54,
+										Line:   73,
+									},
+									File:   "interval_test.flux",
+									Source: "interval.intervals(every: 1d, period: 8h, offset: 9h)",
+									Start: ast.Position{
+										Column: 1,
+										Line:   73,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 19,
+											Line:   73,
+										},
+										File:   "interval_test.flux",
+										Source: "interval.intervals",
+										Start: ast.Position{
+											Column: 1,
+											Line:   73,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "interval",
+											Start: ast.Position{
+												Column: 1,
+												Line:   73,
+											},
+										},
+									},
+									Name: "interval",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   73,
+											},
+											File:   "interval_test.flux",
+											Source: "intervals",
+											Start: ast.Position{
+												Column: 10,
+												Line:   73,
+											},
+										},
+									},
+									Name: "intervals",
+								},
+							},
+						},
+					},
+					Operator: 17,
+					Right: &ast.ArrayExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 2,
+									Line:   80,
+								},
+								File:   "interval_test.flux",
+								Source: "[\n    {start: 2020-11-04T09:00:00Z, stop: 2020-11-04T17:00:00Z},\n    {start: 2020-11-03T09:00:00Z, stop: 2020-11-03T17:00:00Z},\n    {start: 2020-11-02T09:00:00Z, stop: 2020-11-02T17:00:00Z},\n    {start: 2020-11-01T09:00:00Z, stop: 2020-11-01T17:00:00Z},\n    {start: 2020-10-31T09:00:00Z, stop: 2020-10-31T17:00:00Z},\n    {start: 2020-10-30T09:00:00Z, stop: 2020-10-30T17:00:00Z},\n]",
+								Start: ast.Position{
+									Column: 115,
+									Line:   73,
+								},
+							},
+						},
+						Elements: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   74,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-04T09:00:00Z, stop: 2020-11-04T17:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   74,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   74,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-04T09:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   74,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   74,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   74,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   74,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-04T09:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   74,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-04T09:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   74,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-04T17:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   74,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   74,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   74,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   74,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-04T17:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   74,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-04T17:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   75,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-03T09:00:00Z, stop: 2020-11-03T17:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   75,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   75,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-03T09:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   75,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   75,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   75,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   75,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-03T09:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   75,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-03T09:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   75,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-03T17:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   75,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   75,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   75,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   75,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-03T17:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   75,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-03T17:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   76,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-02T09:00:00Z, stop: 2020-11-02T17:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   76,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   76,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-02T09:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   76,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   76,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   76,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   76,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-02T09:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   76,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-02T09:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   76,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-02T17:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   76,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   76,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   76,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   76,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-02T17:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   76,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-02T17:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   77,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-11-01T09:00:00Z, stop: 2020-11-01T17:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   77,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   77,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-11-01T09:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   77,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   77,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   77,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-01T09:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   77,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-01T09:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   77,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-11-01T17:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   77,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   77,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   77,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   77,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-11-01T17:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   77,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-11-01T17:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   78,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-31T09:00:00Z, stop: 2020-10-31T17:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   78,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   78,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-31T09:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   78,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   78,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   78,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   78,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-31T09:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   78,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-31T09:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   78,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-31T17:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   78,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   78,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   78,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   78,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-31T17:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   78,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-31T17:00:00Z"),
+								},
+							}},
+							With: nil,
+						}, &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 62,
+										Line:   79,
+									},
+									File:   "interval_test.flux",
+									Source: "{start: 2020-10-30T09:00:00Z, stop: 2020-10-30T17:00:00Z}",
+									Start: ast.Position{
+										Column: 5,
+										Line:   79,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   79,
+										},
+										File:   "interval_test.flux",
+										Source: "start: 2020-10-30T09:00:00Z",
+										Start: ast.Position{
+											Column: 6,
+											Line:   79,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   79,
+											},
+											File:   "interval_test.flux",
+											Source: "start",
+											Start: ast.Position{
+												Column: 6,
+												Line:   79,
+											},
+										},
+									},
+									Name: "start",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   79,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T09:00:00Z",
+											Start: ast.Position{
+												Column: 13,
+												Line:   79,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T09:00:00Z"),
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 61,
+											Line:   79,
+										},
+										File:   "interval_test.flux",
+										Source: "stop: 2020-10-30T17:00:00Z",
+										Start: ast.Position{
+											Column: 35,
+											Line:   79,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   79,
+											},
+											File:   "interval_test.flux",
+											Source: "stop",
+											Start: ast.Position{
+												Column: 35,
+												Line:   79,
+											},
+										},
+									},
+									Name: "stop",
+								},
+								Value: &ast.DateTimeLiteral{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 61,
+												Line:   79,
+											},
+											File:   "interval_test.flux",
+											Source: "2020-10-30T17:00:00Z",
+											Start: ast.Position{
+												Column: 41,
+												Line:   79,
+											},
+										},
+									},
+									Value: parser.MustParseTime("2020-10-30T17:00:00Z"),
+								},
+							}},
+							With: nil,
+						}},
+					},
+				},
+				Operator: 2,
+				Right: &ast.CallExpression{
+					Arguments: []ast.Expression{&ast.ObjectExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   80,
+								},
+								File:   "interval_test.flux",
+								Source: "msg: \"per day 9AM-5PM intervals\"",
+								Start: ast.Position{
+									Column: 10,
+									Line:   80,
+								},
+							},
+						},
+						Properties: []*ast.Property{&ast.Property{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 42,
+										Line:   80,
+									},
+									File:   "interval_test.flux",
+									Source: "msg: \"per day 9AM-5PM intervals\"",
+									Start: ast.Position{
+										Column: 10,
+										Line:   80,
+									},
+								},
+							},
+							Key: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 13,
+											Line:   80,
+										},
+										File:   "interval_test.flux",
+										Source: "msg",
+										Start: ast.Position{
+											Column: 10,
+											Line:   80,
+										},
+									},
+								},
+								Name: "msg",
+							},
+							Value: &ast.StringLiteral{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   80,
+										},
+										File:   "interval_test.flux",
+										Source: "\"per day 9AM-5PM intervals\"",
+										Start: ast.Position{
+											Column: 15,
+											Line:   80,
+										},
+									},
+								},
+								Value: "per day 9AM-5PM intervals",
+							},
+						}},
+						With: nil,
+					}},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 43,
+								Line:   80,
+							},
+							File:   "interval_test.flux",
+							Source: "die(msg: \"per day 9AM-5PM intervals\")",
+							Start: ast.Position{
+								Column: 6,
+								Line:   80,
+							},
+						},
+					},
+					Callee: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 9,
+									Line:   80,
+								},
+								File:   "interval_test.flux",
+								Source: "die",
+								Start: ast.Position{
+									Column: 6,
+									Line:   80,
+								},
+							},
+						},
+						Name: "die",
+					},
 				},
 			},
 		}},
@@ -2544,13 +5918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 22,
-						Line:   4,
+						Line:   38,
 					},
 					File:   "interval_test.flux",
 					Source: "import \"experimental\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   38,
 					},
 				},
 			},
@@ -2560,13 +5934,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 22,
-							Line:   4,
+							Line:   38,
 						},
 						File:   "interval_test.flux",
 						Source: "\"experimental\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   38,
 						},
 					},
 				},
@@ -2579,13 +5953,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   5,
+						Line:   39,
 					},
 					File:   "interval_test.flux",
 					Source: "import \"interval\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   39,
 					},
 				},
 			},
@@ -2595,13 +5969,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   5,
+							Line:   39,
 						},
 						File:   "interval_test.flux",
 						Source: "\"interval\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   39,
 						},
 					},
 				},
@@ -2616,13 +5990,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 22,
-						Line:   1,
+						Line:   36,
 					},
 					File:   "interval_test.flux",
 					Source: "package interval_test",
 					Start: ast.Position{
 						Column: 1,
-						Line:   1,
+						Line:   36,
 					},
 				},
 			},
@@ -2632,13 +6006,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 22,
-							Line:   1,
+							Line:   36,
 						},
 						File:   "interval_test.flux",
 						Source: "interval_test",
 						Start: ast.Position{
 							Column: 9,
-							Line:   1,
+							Line:   36,
 						},
 					},
 				},

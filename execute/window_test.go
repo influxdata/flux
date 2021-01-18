@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/values"
 )
 
@@ -508,4 +509,266 @@ func errAsString(err error) (s string) {
 		s = err.Error()
 	}
 	return s
+}
+
+func mustWindow(every, period, offset execute.Duration) execute.Window {
+	w, err := execute.NewWindow(every, period, offset)
+	if err != nil {
+		panic(err)
+	}
+	return w
+}
+
+func mustWindowInterval(every, period, offset execute.Duration) interval.Window {
+	w, err := interval.NewWindow(every, period, offset)
+	if err != nil {
+		panic(err)
+	}
+	return w
+}
+
+func mustTime(s string) execute.Time {
+	t, err := time.Parse(time.RFC3339Nano, s)
+	if err != nil {
+		panic(err)
+	}
+	return values.ConvertTime(t)
+}
+
+func BenchmarkNewWindow(b *testing.B) {
+	var testcases = []struct {
+		name string
+		w    execute.Window
+		t    execute.Time
+		want execute.Bounds
+	}{
+		{
+			name: "no interval - simple",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(0)),
+			t: execute.Time(6 * time.Minute),
+			want: execute.Bounds{
+				Start: execute.Time(5 * time.Minute),
+				Stop:  execute.Time(10 * time.Minute),
+			},
+		},
+		{
+			name: "no interval - simple with negative period",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-5*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second)),
+			t: execute.Time(5 * time.Minute),
+			want: execute.Bounds{
+				Start: execute.Time(10 * time.Minute + 30 * time.Second),
+				Stop:  execute.Time(5*time.Minute + 30*time.Second),
+			},
+		},
+		{
+			name: "no interval - simple with offset",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second)),
+			t: execute.Time(5 * time.Minute),
+			want: execute.Bounds{
+				Start: execute.Time(30 * time.Second),
+				Stop:  execute.Time(5*time.Minute + 30*time.Second),
+			},
+		},
+		{
+			name: "no interval - simple with negative offset",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-30*time.Second)),
+			t: execute.Time(5 * time.Minute),
+			want: execute.Bounds{
+				Start: execute.Time(4*time.Minute + 30*time.Second),
+				Stop:  execute.Time(9*time.Minute + 30*time.Second),
+			},
+		},
+		{
+			name: "no interval - simple with equal offset before",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute)),
+			t: execute.Time(0),
+			want: execute.Bounds{
+				Start: execute.Time(0 * time.Minute),
+				Stop:  execute.Time(5 * time.Minute),
+			},
+		},
+		{
+			name: "no interval - simple with equal offset after",
+			w: mustWindow(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute)),
+			t: execute.Time(7 * time.Minute),
+			want: execute.Bounds{
+				Start: execute.Time(5 * time.Minute),
+				Stop:  execute.Time(10 * time.Minute),
+			},
+		},
+		{
+			name: "no interval - simple months",
+			w: mustWindow(
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(0)),
+			t: mustTime("1970-01-01T00:00:00Z"),
+			want: execute.Bounds{
+				Start: mustTime("1970-01-01T00:00:00Z"),
+				Stop:  mustTime("1970-06-01T00:00:00Z"),
+			},
+		},
+		{
+			name: "no interval - simple months with offset",
+			w: mustWindow(
+				values.ConvertDurationMonths(3),
+				values.ConvertDurationMonths(3),
+				values.ConvertDurationMonths(1)),
+			t: mustTime("1970-01-01T00:00:00Z"),
+			want: execute.Bounds{
+				Start: mustTime("1969-11-01T00:00:00Z"),
+				Stop:  mustTime("1970-02-01T00:00:00Z"),
+			},
+		},
+	}
+	for _, tc := range testcases {
+		b.Run(tc.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				got := tc.w.GetEarliestBounds(tc.t)
+				if got != tc.want {
+					b.Errorf("unexpected boundary: got %s want %s", got, tc.want)
+				}
+			}
+		})
+
+	}
+}
+
+type testBounds struct {
+	Start values.Time
+	Stop  values.Time
+}
+
+func BenchmarkNewWindowInterval(b *testing.B) {
+	var testcases = []struct {
+		name string
+		w    interval.Window
+		t    execute.Time
+		want testBounds
+	}{
+		{
+			name: "interval - simple",
+			w: mustWindowInterval(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(0)),
+			t: execute.Time(6 * time.Minute),
+			want: testBounds{
+				Start: execute.Time(5 * time.Minute),
+				Stop:  execute.Time(10 * time.Minute),
+			},
+		},
+		{
+			name: "interval - simple with negative period",
+			w: mustWindowInterval(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-5*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second)),
+			t: execute.Time(5 * time.Minute),
+			want: testBounds{
+				Start: execute.Time(30 * time.Second),
+				Stop:  execute.Time(5*time.Minute + 30*time.Second),
+			},
+		},
+		{
+			name: "interval - simple with offset",
+			w: mustWindowInterval(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(30*time.Second)),
+			t: execute.Time(5 * time.Minute),
+			want: testBounds{
+				Start: execute.Time(30 * time.Second),
+				Stop:  execute.Time(5*time.Minute + 30*time.Second),
+			},
+		},
+		{
+			name: "interal - simple with negative offset",
+			w: mustWindowInterval(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(-30*time.Second)),
+			t: execute.Time(5 * time.Minute),
+			want: testBounds{
+				Start: execute.Time(4*time.Minute + 30*time.Second),
+				Stop:  execute.Time(9*time.Minute + 30*time.Second),
+			},
+		},
+		{
+			name: "interval - simple with equal offset before",
+			w: mustWindowInterval(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute)),
+			t: execute.Time(0),
+			want: testBounds{
+				Start: execute.Time(0 * time.Minute),
+				Stop:  execute.Time(5 * time.Minute),
+			},
+		},
+		{
+			name: "interval - simple with equal offset after",
+			w: mustWindowInterval(
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute),
+				values.ConvertDurationNsecs(5*time.Minute)),
+			t: execute.Time(7 * time.Minute),
+			want: testBounds{
+				Start: execute.Time(5 * time.Minute),
+				Stop:  execute.Time(10 * time.Minute),
+			},
+		},
+		{
+			name: "interval - simple months",
+			w: mustWindowInterval(
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(5),
+				values.ConvertDurationMonths(0)),
+			t: mustTime("1970-01-01T00:00:00Z"),
+			want: testBounds{
+				Start: mustTime("1970-01-01T00:00:00Z"),
+				Stop:  mustTime("1970-06-01T00:00:00Z"),
+			},
+		},
+		{
+			name: "interval - simple months with offset",
+			w: mustWindowInterval(
+				values.ConvertDurationMonths(3),
+				values.ConvertDurationMonths(3),
+				values.ConvertDurationMonths(1)),
+			t: mustTime("1970-01-01T00:00:00Z"),
+			want: testBounds{
+				Start: mustTime("1969-11-01T00:00:00Z"),
+				Stop:  mustTime("1970-02-01T00:00:00Z"),
+			},
+		},
+	}
+	for _, tc := range testcases {
+		b.Run(tc.name, func(b *testing.B) {
+			for i := 0; i < b.N; i++ {
+				got := tc.w.GetLatestBounds(tc.t)
+				if got.Start() != tc.want.Start {
+					b.Errorf("unexpected start boundary: got %s want %s", got.Start(), tc.want.Start)
+				}
+			}
+		})
+	}
 }

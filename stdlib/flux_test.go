@@ -34,10 +34,13 @@ var skip = map[string]map[string]string{
 		"drop_referenced":             "need to support known errors in new test framework (https://github.com/influxdata/flux/issues/536)",
 		"yield":                       "yield requires special test case (https://github.com/influxdata/flux/issues/535)",
 		"task_per_line":               "join produces inconsistent/racy results when table schemas do not match (https://github.com/influxdata/flux/issues/855)",
-		"integral_columns":            "aggregates changed to operate on just a single columnm.",
+		"integral_columns":            "aggregates changed to operate on just a single column",
 	},
 	"http": {
 		"http_endpoint": "need ability to test side effects in e2e tests: https://github.com/influxdata/flux/issues/1723)",
+	},
+	"interval": {
+		"interval": "switch these tests cases to produce a non-table stream once that is supported (https://github.com/influxdata/flux/issues/535)",
 	},
 	"testing/chronograf": {
 		"measurement_tag_keys":   "unskip chronograf flux tests once filter is refactored (https://github.com/influxdata/flux/issues/1289)",
