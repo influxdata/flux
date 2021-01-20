@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 )
 
@@ -45,7 +44,7 @@ func (a *ArrowBuilder) Cols() []flux.ColMeta {
 // AddCol will add a column with the given metadata.
 // If the column exists, an error is returned.
 func (a *ArrowBuilder) AddCol(c flux.ColMeta) (int, error) {
-	if execute.ColIdx(c.Label, a.Columns) >= 0 {
+	if colIdx(c.Label, a.Columns) >= 0 {
 		return -1, errors.Newf(codes.Invalid, "table builder already has a column with label %s", c.Label)
 	}
 
@@ -83,7 +82,7 @@ func (a *ArrowBuilder) AddCol(c flux.ColMeta) (int, error) {
 // and the same type. This will return an error if the column
 // does not exist or has an incompatible type.
 func (a *ArrowBuilder) CheckCol(c flux.ColMeta) (int, error) {
-	idx := execute.ColIdx(c.Label, a.Columns)
+	idx := colIdx(c.Label, a.Columns)
 	if idx < 0 {
 		return -1, errors.Newf(codes.NotFound, "table builder is missing a column with label %s", c.Label)
 	} else if ec := a.Columns[idx]; ec.Type != c.Type {
@@ -92,21 +91,30 @@ func (a *ArrowBuilder) CheckCol(c flux.ColMeta) (int, error) {
 	return idx, nil
 }
 
-// Table constructs a flux.Table from the current builders.
-func (a *ArrowBuilder) Table() (flux.Table, error) {
+// Buffer constructs an arrow.TableBuffer from the current builders.
+func (a *ArrowBuilder) Buffer() (arrow.TableBuffer, error) {
 	values := make([]array.Interface, len(a.Builders))
 	for j, b := range a.Builders {
 		values[j] = b.NewArray()
 	}
-	buffer := &arrow.TableBuffer{
+	buffer := arrow.TableBuffer{
 		GroupKey: a.GroupKey,
 		Columns:  a.Columns,
 		Values:   values,
 	}
 	if err := buffer.Validate(); err != nil {
+		return arrow.TableBuffer{}, err
+	}
+	return buffer, nil
+}
+
+// Table constructs a flux.Table from the current builders.
+func (a *ArrowBuilder) Table() (flux.Table, error) {
+	buffer, err := a.Buffer()
+	if err != nil {
 		return nil, err
 	}
-	return FromBuffer(buffer), nil
+	return FromBuffer(&buffer), nil
 }
 
 func (a *ArrowBuilder) Release() {

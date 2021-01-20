@@ -3,7 +3,7 @@ package table
 import (
 	"github.com/apache/arrow/go/arrow/array"
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/execute/groupkey"
 	"github.com/influxdata/flux/values"
 )
 
@@ -21,7 +21,7 @@ func Mask(tbl flux.Table, columns []string) flux.Table {
 	keyCols := make([]flux.ColMeta, 0, len(key.Cols()))
 	keyValues := make([]values.Value, 0, cap(keyCols))
 	for j, c := range key.Cols() {
-		if execute.ContainsStr(columns, c.Label) {
+		if containsStr(columns, c.Label) {
 			continue
 		}
 		keyCols = append(keyCols, c)
@@ -31,14 +31,14 @@ func Mask(tbl flux.Table, columns []string) flux.Table {
 	offsets := make([]int, 0, len(tbl.Cols()))
 	cols := make([]flux.ColMeta, 0, cap(offsets))
 	for j, c := range tbl.Cols() {
-		if execute.ContainsStr(columns, c.Label) {
+		if containsStr(columns, c.Label) {
 			continue
 		}
 		cols = append(cols, c)
 		offsets = append(offsets, j-len(offsets))
 	}
 	return &maskTable{
-		key:     execute.NewGroupKey(keyCols, keyValues),
+		key:     groupkey.New(keyCols, keyValues),
 		cols:    cols,
 		table:   tbl,
 		offsets: offsets,
@@ -104,3 +104,12 @@ func (m *maskTableView) Strings(j int) *array.Binary { return m.reader.Strings(j
 func (m *maskTableView) Times(j int) *array.Int64    { return m.reader.Times(j + m.offsets[j]) }
 func (m *maskTableView) Retain()                     { m.reader.Retain() }
 func (m *maskTableView) Release()                    { m.reader.Release() }
+
+func containsStr(strs []string, str string) bool {
+	for _, s := range strs {
+		if str == s {
+			return true
+		}
+	}
+	return false
+}

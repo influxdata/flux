@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/dataset"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
@@ -160,7 +161,7 @@ func NewGroupTransformation(spec *GroupProcedureSpec, id execute.DatasetID, mem 
 		mode: spec.GroupMode,
 		keys: spec.GroupKeys,
 	}
-	t.d = table.NewDataset(id, &t.cache)
+	t.d = dataset.New(id, &t.cache)
 	sort.Strings(t.keys)
 	return t, t.d
 }

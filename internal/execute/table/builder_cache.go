@@ -5,8 +5,8 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/groupkey"
 )
 
 // Builder is the minimum interface for constructing a Table.
@@ -79,7 +79,7 @@ func (d *BuilderCache) Get(key flux.GroupKey, b interface{}) bool {
 	builder, ok := d.lookupState(key)
 	if !ok {
 		if d.Tables == nil {
-			d.Tables = execute.NewGroupLookup()
+			d.Tables = groupkey.NewLookup()
 		}
 		builder = d.New(key)
 		d.Tables.Set(key, builder)

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -53,7 +52,7 @@ func stringifyKey(sb *strings.Builder, table flux.Table) {
 		nkeys := 0
 		for _, idx := range indices {
 			c := cols[idx]
-			kidx := execute.ColIdx(c.Label, key.Cols())
+			kidx := colIdx(c.Label, key.Cols())
 			if kidx < 0 {
 				continue
 			}
@@ -110,10 +109,49 @@ func stringifyRows(sb *strings.Builder, cr flux.ColReader) {
 			sb.WriteString(cols[idx].Label)
 			sb.WriteString("=")
 
-			v := execute.ValueForRow(cr, i, idx)
+			v := valueForRow(cr, i, idx)
 			stringifyValue(sb, v)
 		}
 		sb.WriteString("\n")
+	}
+}
+
+// valueForRow retrieves a value from an arrow column reader at the given index.
+func valueForRow(cr flux.ColReader, i, j int) values.Value {
+	t := cr.Cols()[j].Type
+	switch t {
+	case flux.TString:
+		if cr.Strings(j).IsNull(i) {
+			return values.NewNull(semantic.BasicString)
+		}
+		return values.NewString(cr.Strings(j).ValueString(i))
+	case flux.TInt:
+		if cr.Ints(j).IsNull(i) {
+			return values.NewNull(semantic.BasicInt)
+		}
+		return values.NewInt(cr.Ints(j).Value(i))
+	case flux.TUInt:
+		if cr.UInts(j).IsNull(i) {
+			return values.NewNull(semantic.BasicUint)
+		}
+		return values.NewUInt(cr.UInts(j).Value(i))
+	case flux.TFloat:
+		if cr.Floats(j).IsNull(i) {
+			return values.NewNull(semantic.BasicFloat)
+		}
+		return values.NewFloat(cr.Floats(j).Value(i))
+	case flux.TBool:
+		if cr.Bools(j).IsNull(i) {
+			return values.NewNull(semantic.BasicBool)
+		}
+		return values.NewBool(cr.Bools(j).Value(i))
+	case flux.TTime:
+		if cr.Times(j).IsNull(i) {
+			return values.NewNull(semantic.BasicTime)
+		}
+		return values.NewTime(values.Time(cr.Times(j).Value(i)))
+	default:
+		panic(fmt.Errorf("unknown type %v", t))
 	}
 }
 
@@ -148,4 +186,13 @@ func stringifyValue(sb *strings.Builder, v values.Value) {
 	default:
 		sb.WriteString("!(invalid)")
 	}
+}
+
+func colIdx(label string, cols []flux.ColMeta) int {
+	for j, c := range cols {
+		if c.Label == label {
+			return j
+		}
+	}
+	return -1
 }

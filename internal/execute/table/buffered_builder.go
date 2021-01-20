@@ -6,7 +6,6 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
-	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 )
 
@@ -68,7 +67,7 @@ func (b *BufferedBuilder) appendBuffer(cr flux.ColReader, mem memory.Allocator) 
 		Values:   make([]array.Interface, len(b.Columns)),
 	}
 	for j, c := range b.Columns {
-		idx := execute.ColIdx(c.Label, cr.Cols())
+		idx := colIdx(c.Label, cr.Cols())
 		if idx < 0 {
 			// This column existed in a previous table, but
 			// doesn't exist in this one so we need to generate
@@ -96,7 +95,7 @@ func (b *BufferedBuilder) normalizeTableSchema(cols []flux.ColMeta, mem memory.A
 	}
 
 	for _, c := range cols {
-		idx := execute.ColIdx(c.Label, b.Columns)
+		idx := colIdx(c.Label, b.Columns)
 		if idx < 0 {
 			// New column. Add the column and backfill the previous
 			// buffers with null values.
@@ -153,4 +152,13 @@ func (b *BufferedBuilder) Release() {
 	for _, buf := range b.Buffers {
 		buf.Release()
 	}
+}
+
+func colIdx(label string, cols []flux.ColMeta) int {
+	for j, c := range cols {
+		if c.Label == label {
+			return j
+		}
+	}
+	return -1
 }

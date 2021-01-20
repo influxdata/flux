@@ -9,6 +9,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/dataset"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
@@ -452,7 +453,7 @@ func NewSchemaMutationTransformation(ctx context.Context, spec *SchemaMutationPr
 		mutators: mutators,
 		ctx:      ctx,
 	}
-	t.d = table.NewDataset(id, &t.cache)
+	t.d = dataset.New(id, &t.cache)
 	return t, t.d, nil
 }
 
