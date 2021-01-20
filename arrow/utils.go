@@ -135,3 +135,25 @@ func Slice(arr array.Interface, i, j int64) array.Interface {
 	}
 	return array.MakeFromData(data)
 }
+
+// Empty constructs an empty array for the given type.
+func Empty(typ flux.ColType) array.Interface {
+	// Empty arrays do not actually use memory and they do not
+	// use the allocator so we safely use the default allocator
+	// here instead of requiring a memory allocator to be passed in.
+	b := NewBuilder(typ, memory.DefaultAllocator)
+	return b.NewArray()
+}
+
+// EmptyBuffer properly constructs an empty TableBuffer.
+func EmptyBuffer(key flux.GroupKey, cols []flux.ColMeta) TableBuffer {
+	buffer := TableBuffer{
+		GroupKey: key,
+		Columns:  cols,
+		Values:   make([]array.Interface, len(cols)),
+	}
+	for i, col := range buffer.Columns {
+		buffer.Values[i] = Empty(col.Type)
+	}
+	return buffer
+}

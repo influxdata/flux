@@ -257,6 +257,7 @@ PROCESS:
 // The return value is true if the message was a FinishMsg.
 func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (finished bool, err error) {
 	if _, span := StartSpanFromContext(ctx, t.op, t.label); span != nil {
+		setMessageTags(span, m)
 		defer span.Finish()
 	}
 	if err := t.t.ProcessMessage(m); err != nil {
@@ -266,9 +267,28 @@ func (t *consecutiveTransport) processMessage(ctx context.Context, m Message) (f
 	return finished, nil
 }
 
+// Message is a message sent from one Dataset to another.
 type Message interface {
+	// Type returns the MessageType for this Message.
 	Type() MessageType
+
+	// SrcDatasetID is the DatasetID that produced this Message.
 	SrcDatasetID() DatasetID
+
+	// Ack is used to acknowledge that the Message was received
+	// and terminated. A Message may be passed between various
+	// Transport implementations. When the Ack is received,
+	// this signals to the Message to release any memory it may
+	// have retained.
+	Ack()
+
+	// Dup is used to duplicate the Message.
+	// This is useful when the Message has to be sent to multiple
+	// receivers from a single sender.
+	Dup() Message
+
+	// SetTags will set the tags on the span.
+	SetTags(span opentracing.Span)
 }
 
 type MessageType int
@@ -293,12 +313,59 @@ const (
 	// the upstream Dataset or an upstream error occurred that
 	// caused the execution to abort.
 	FinishType
+
+	// ProcessViewType is sent when a new table.View is ready to
+	// be processed from the upstream Dataset.
+	ProcessViewType
+
+	// FlushKeyType is sent when the upstream Dataset wishes
+	// to flush the data associated with a key presently stored
+	// in the Dataset.
+	FlushKeyType
+
+	// WatermarkKeyType is sent when the upstream Dataset will send
+	// no more rows with a time older than the time in the watermark
+	// for the given key.
+	WatermarkKeyType
 )
+
+func (m MessageType) String() string {
+	switch m {
+	case RetractTableType:
+		return "RetractTableType"
+	case ProcessType:
+		return "ProcessType"
+	case UpdateWatermarkType:
+		return "UpdateWatermarkType"
+	case UpdateProcessingTimeType:
+		return "UpdateProcessingTimeType"
+	case FinishType:
+		return "FinishType"
+	case ProcessViewType:
+		return "ProcessViewType"
+	case FlushKeyType:
+		return "FlushKeyType"
+	case WatermarkKeyType:
+		return "WatermarkKeyType"
+	default:
+		return "UnknownMessageType"
+	}
+}
+
+// setMessageTags sets the tags from a Message on the opentracing.Span.
+func setMessageTags(span opentracing.Span, m Message) {
+	span.SetTag("messageType", m.Type().String())
+	m.SetTags(span)
+}
 
 type srcMessage DatasetID
 
 func (m srcMessage) SrcDatasetID() DatasetID {
 	return DatasetID(m)
+}
+func (m srcMessage) Ack() {}
+func (m srcMessage) SetTags(span opentracing.Span) {
+	span.SetTag("dataset", DatasetID(m).String())
 }
 
 type RetractTableMsg interface {
@@ -317,6 +384,13 @@ func (m *retractTableMsg) Type() MessageType {
 func (m *retractTableMsg) Key() flux.GroupKey {
 	return m.key
 }
+func (m *retractTableMsg) Dup() Message {
+	return m
+}
+func (m *retractTableMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("key", m.key.String())
+}
 
 type ProcessMsg interface {
 	Message
@@ -333,6 +407,21 @@ func (m *processMsg) Type() MessageType {
 }
 func (m *processMsg) Table() flux.Table {
 	return m.table
+}
+func (m *processMsg) Ack() {
+	m.table.Done()
+}
+func (m *processMsg) Dup() Message {
+	cpy, _ := table.Copy(m.table)
+	m.table = cpy.Copy()
+
+	dup := *m
+	dup.table = cpy
+	return &dup
+}
+func (m *processMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("key", m.table.Key().String())
 }
 
 type UpdateWatermarkMsg interface {
@@ -351,6 +440,13 @@ func (m *updateWatermarkMsg) Type() MessageType {
 func (m *updateWatermarkMsg) WatermarkTime() Time {
 	return m.time
 }
+func (m *updateWatermarkMsg) Dup() Message {
+	return m
+}
+func (m *updateWatermarkMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("time", int64(m.time))
+}
 
 type UpdateProcessingTimeMsg interface {
 	Message
@@ -368,6 +464,13 @@ func (m *updateProcessingTimeMsg) Type() MessageType {
 func (m *updateProcessingTimeMsg) ProcessingTime() Time {
 	return m.time
 }
+func (m *updateProcessingTimeMsg) Dup() Message {
+	return m
+}
+func (m *updateProcessingTimeMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	span.SetTag("time", int64(m.time))
+}
 
 type FinishMsg interface {
 	Message
@@ -384,6 +487,32 @@ func (m *finishMsg) Type() MessageType {
 }
 func (m *finishMsg) Error() error {
 	return m.err
+}
+func (m *finishMsg) Dup() Message {
+	return m
+}
+func (m *finishMsg) SetTags(span opentracing.Span) {
+	m.srcMessage.SetTags(span)
+	if m.err != nil {
+		span.SetTag("error", m.err.Error())
+	}
+}
+
+type ProcessViewMsg interface {
+	Message
+	View() table.View
+}
+
+type FlushKeyMsg interface {
+	Message
+	Key() flux.GroupKey
+}
+
+type WatermarkKeyMsg interface {
+	Message
+	ColumnName() string
+	Time() int64
+	Key() flux.GroupKey
 }
 
 // transformationTransportAdapter will translate Message values sent to
@@ -412,21 +541,61 @@ func WrapTransformationInTransport(t Transformation, mem memory.Allocator) Trans
 }
 
 func (t *transformationTransportAdapter) ProcessMessage(m Message) error {
-	switch m := m.(type) {
-	case RetractTableMsg:
+	switch m.Type() {
+	case RetractTableType:
+		m := m.(RetractTableMsg)
 		return t.t.RetractTable(m.SrcDatasetID(), m.Key())
-	case ProcessMsg:
-		b := m.Table()
-		return t.t.Process(m.SrcDatasetID(), b)
-	case UpdateWatermarkMsg:
+	case ProcessType:
+		m := m.(ProcessMsg)
+		return t.t.Process(m.SrcDatasetID(), m.Table())
+	case UpdateWatermarkType:
+		m := m.(UpdateWatermarkMsg)
 		return t.t.UpdateWatermark(m.SrcDatasetID(), m.WatermarkTime())
-	case UpdateProcessingTimeMsg:
+	case UpdateProcessingTimeType:
+		m := m.(UpdateProcessingTimeMsg)
 		return t.t.UpdateProcessingTime(m.SrcDatasetID(), m.ProcessingTime())
-	case FinishMsg:
+	case FinishType:
+		m := m.(FinishMsg)
+
+		// If there are pending buffers that were never flushed,
+		// do that here.
+		if err := t.cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
+			table, err := builder.Table()
+			if err != nil {
+				return err
+			}
+			return t.t.Process(m.SrcDatasetID(), table)
+		}); err != nil {
+			return err
+		}
 		t.t.Finish(m.SrcDatasetID(), m.Error())
 		return nil
+	case ProcessViewType:
+		defer m.Ack()
+		m := m.(ProcessViewMsg)
+
+		// Retrieve the buffered builder and append the
+		// table view to it. The view is implemented using
+		// arrow.TableBuffer which is compatible with
+		// flux.ColReader so we can append it directly.
+		b, _ := table.GetBufferedBuilder(m.View().Key(), &t.cache)
+		buffer := m.View().Buffer()
+		return b.AppendBuffer(&buffer)
+	case FlushKeyType:
+		defer m.Ack()
+		m := m.(FlushKeyMsg)
+
+		// Retrieve the buffered builder for the given key
+		// and send the data to the next transformation.
+		tbl, err := t.cache.Table(m.Key())
+		if err != nil {
+			return err
+		}
+		t.cache.ExpireTable(m.Key())
+		return t.t.Process(m.SrcDatasetID(), tbl)
 	default:
 		// Message is not handled by older Transformation implementations.
+		m.Ack()
 		return nil
 	}
 }
