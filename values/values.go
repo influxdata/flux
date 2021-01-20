@@ -299,7 +299,7 @@ func NewRegexp(v *regexp.Regexp) Value {
 }
 
 func UnexpectedKind(got, exp semantic.Nature) error {
-	return errors.Newf(codes.Internal, "unexpected kind: got %q expected %q, trace: %s", got, exp, string(debug.Stack()))
+	return unexpectedKind{got: got, want: exp}
 }
 
 // CheckKind panics if got != exp.
@@ -307,6 +307,26 @@ func CheckKind(got, exp semantic.Nature) {
 	if got != exp {
 		panic(UnexpectedKind(got, exp))
 	}
+}
+
+type unexpectedKind struct {
+	got, want semantic.Nature
+}
+
+func (e unexpectedKind) Error() string {
+	// Reuse the Error method from flux.Error by converting
+	// this to a flux.Error type and then calling Error.
+	var err *errors.Error
+	e.As(&err)
+	return err.Error()
+}
+
+func (e unexpectedKind) As(target interface{}) bool {
+	if err, ok := target.(**errors.Error); ok {
+		*err = errors.Newf(codes.Internal, "unexpected kind: got %q expected %q, trace: %s", e.got, e.want, string(debug.Stack()))
+		return true
+	}
+	return false
 }
 
 // IsTimeable checks if value v is Timeable.
