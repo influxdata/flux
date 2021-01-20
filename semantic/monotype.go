@@ -21,6 +21,7 @@ type fbTabler interface {
 type MonoType struct {
 	mt  fbsemantic.MonoType
 	tbl fbTabler
+	n   Nature
 }
 
 // NewMonoType constructs a new monotype from a FlatBuffers table and the given kind of monotype.
@@ -45,14 +46,23 @@ func NewMonoType(tbl flatbuffers.Table, t fbsemantic.MonoType) (MonoType, error)
 		return MonoType{}, errors.Newf(codes.Internal, "unknown type (%v)", t)
 	}
 	tbler.Init(tbl.Bytes, tbl.Pos)
-	return MonoType{mt: t, tbl: tbler}, nil
+	return MonoType{
+		mt:  t,
+		tbl: tbler,
+		n:   nature(tbl, t),
+	}, nil
 }
 
 func (mt MonoType) Nature() Nature {
-	switch mt.mt {
+	return mt.n
+}
+
+func nature(tbl flatbuffers.Table, t fbsemantic.MonoType) Nature {
+	switch t {
 	case fbsemantic.MonoTypeBasic:
-		t, _ := mt.Basic()
-		switch t {
+		var basic fbsemantic.Basic
+		basic.Init(tbl.Bytes, tbl.Pos)
+		switch basic.T() {
 		case fbsemantic.TypeBool:
 			return Bool
 		case fbsemantic.TypeInt:
