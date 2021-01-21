@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"sync/atomic"
 
+	"github.com/apache/arrow/go/arrow"
+	"github.com/cespare/xxhash/v2"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/values"
 )
@@ -12,7 +15,8 @@ import (
 type groupKey struct {
 	cols   []flux.ColMeta
 	values []values.Value
-	sorted []int // maintains a list of the sorted indexes
+	sorted []int  // maintains a list of the sorted indexes
+	hash   uint64 // hash of the key for easy comparison
 }
 
 func NewGroupKey(cols []flux.ColMeta, values []values.Value) flux.GroupKey {
@@ -96,6 +100,58 @@ func (k *groupKey) String() string {
 	}
 	b.WriteRune('}')
 	return b.String()
+}
+
+func (k *groupKey) hash64() (h uint64) {
+	if h = atomic.LoadUint64(&k.hash); h != 0 {
+		return h
+	}
+
+	var (
+		hash = xxhash.New()
+		data [8]byte
+	)
+	for _, i := range k.sorted {
+		c := k.cols[i]
+		_, _ = hash.WriteString(c.Label)
+		_, _ = hash.WriteString(c.Label)
+		_, _ = hash.Write([]byte{0, byte(c.Type)})
+
+		v := k.values[i]
+		if !v.IsNull() {
+			switch c.Type {
+			case flux.TInt:
+				arrow.Int64Traits.PutValue(data[:], v.Int())
+				_, _ = hash.Write(data[:arrow.Int64SizeBytes])
+			case flux.TUInt:
+				arrow.Uint64Traits.PutValue(data[:], v.UInt())
+				_, _ = hash.Write(data[:arrow.Uint64SizeBytes])
+			case flux.TFloat:
+				arrow.Float64Traits.PutValue(data[:], v.Float())
+				_, _ = hash.Write(data[:arrow.Float64SizeBytes])
+			case flux.TString:
+				_, _ = hash.WriteString(v.Str())
+			case flux.TBool:
+				if v.Bool() {
+					_, _ = hash.Write([]byte{1})
+				} else {
+					_, _ = hash.Write([]byte{0})
+				}
+			case flux.TTime:
+				arrow.Int64Traits.PutValue(data[:], int64(v.Time()))
+				_, _ = hash.Write(data[:arrow.Int64SizeBytes])
+			}
+		} else {
+			// Write an invalid byte if there is a null value
+			// so that we differentiate between an empty string
+			// and a null value.
+			_, _ = hash.Write([]byte{^byte(0)})
+		}
+		_, _ = hash.Write([]byte{0})
+	}
+	h = hash.Sum64()
+	atomic.StoreUint64(&k.hash, h)
+	return h
 }
 
 func groupKeyEqual(a *groupKey, other flux.GroupKey) bool {
