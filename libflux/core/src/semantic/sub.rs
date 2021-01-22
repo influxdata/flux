@@ -49,6 +49,12 @@ impl Substitution {
             .collect();
         Substitution(applied.into_iter().chain(with.0.into_iter()).collect())
     }
+    pub fn get(&self) -> SubstitutionMap {
+        self.0.clone()
+    }
+    pub fn new(map: SubstitutionMap) -> Substitution {
+        Substitution(map)
+    }
 }
 
 // A type is substitutable if a substitution can be applied to it.

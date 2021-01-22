@@ -170,7 +170,7 @@ impl From<fb::Dict<'_>> for Option<Dictionary> {
 impl From<fb::Record<'_>> for Option<MonoType> {
     fn from(t: fb::Record) -> Option<MonoType> {
         let mut r = match t.extends() {
-            None => MonoType::Record(Box::new(Record::Empty)),
+            None => MonoType::Record(Box::new(Record::Empty{typ: None})),
             Some(tv) => MonoType::Var(tv.into()),
         };
         let p = t.props()?;
@@ -474,7 +474,7 @@ fn build_record<'a>(
     let mut props = Vec::new();
     let extends = loop {
         match record {
-            Record::Empty => {
+            Record::Empty{typ} => {
                 break None;
             }
             Record::Extension {

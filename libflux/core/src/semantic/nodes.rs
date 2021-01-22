@@ -12,6 +12,7 @@ extern crate derivative;
 
 use crate::ast;
 use crate::semantic::infer;
+use crate::semantic::sub;
 use crate::semantic::types;
 use crate::semantic::{
     env::Environment,
@@ -21,7 +22,7 @@ use crate::semantic::{
     sub::{Substitutable, Substitution},
     types::{
         Array, Dictionary, Function, Kind, MonoType, MonoTypeMap, PolyType, PolyTypeMap, Tvar,
-        TvarKinds,
+        TvarKinds, SemanticMap,
     },
 };
 
@@ -150,401 +151,9 @@ pub enum Expression {
     Regexp(RegexpLit),
 }
 
-impl Expression {
-    pub fn type_of(&self) -> MonoType {
-        match self {
-            Expression::Identifier(e) => e.typ.clone(),
-            Expression::Array(e) => e.typ.clone(),
-            Expression::Dict(e) => e.typ.clone(),
-            Expression::Function(e) => e.typ.clone(),
-            Expression::Logical(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        })), 
-            Expression::Object(e) => e.typ.clone(),
-            Expression::Member(e) => e.typ.clone(),
-            Expression::Index(e) => e.typ.clone(),
-            Expression::Binary(e) => e.typ.clone(),
-            Expression::Unary(e) => e.typ.clone(),
-            Expression::Call(e) => e.typ.clone(),
-            Expression::Conditional(e) => e.alternate.type_of(),
-            Expression::StringExpr(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">=".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<=".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "=~".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!~".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                    })),
-            Expression::Integer(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "-".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "*".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "/".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "^".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "%".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<=".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">=".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "@Num".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                    })),
-            Expression::Float(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "-".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "*".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "/".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "^".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "%".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<=".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">=".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "@Num".to_string(),
-                            v: MonoType::Float,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                    })),
-            Expression::StringLit(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">=".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<=".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "=~".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!~".to_string(),
-                            v: MonoType::String,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                    })),
-            Expression::Duration(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: MonoType::Duration,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "-".to_string(),
-                            v: MonoType::Duration,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "@Tim".to_string(),
-                            v: MonoType::Duration,
-                        },
 
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                    })),
-            Expression::Uint(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "-".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "*".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "/".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "^".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "%".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<=".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">=".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "@Num".to_string(),
-                            v: MonoType::Uint,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                    })),
-            Expression::Boolean(_) => MonoType::Record(Box::new(types::Record::Extension {
+pub fn type_bool() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "!=".to_string(),
                             v: MonoType::Bool,
@@ -559,72 +168,478 @@ impl Expression {
                             k: "@E".to_string(),
                             v: MonoType::Bool,
                         },
-						tail: MonoType::Record(Box::new(types::Record::Extension {
+						tail:  MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::Bool)}))
+						}))
+						}))
+                    }))
+}
+
+
+pub fn type_int() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
-                            k: "~".to_string(),
-                            v: MonoType::Bool,
+                            k: "+".to_string(),
+                            v: MonoType::Int,
                         },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-						}))
-						}))
-                    })),
-            Expression::DateTime(_) => MonoType::Record(Box::new(types::Record::Extension {
+                        tail: MonoType::Record(Box::new(types::Record::Extension {
+                        head: types::Property {
+                            k: "-".to_string(),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Record(Box::new(types::Record::Extension {
+                        head: types::Property {
+                            k: "*".to_string(),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Record(Box::new(types::Record::Extension {
+                        head: types::Property {
+                            k: "/".to_string(),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Record(Box::new(types::Record::Extension {
+                        head: types::Property {
+                            k: "^".to_string(),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Record(Box::new(types::Record::Extension {
+                        head: types::Property {
+                            k: "%".to_string(),
+                            v: MonoType::Int,
+                        },
+                        tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "<".to_string(),
-                            v: MonoType::Time,
+                            v: MonoType::Int,
                         },
                         tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">".to_string(),
-                            v: MonoType::Time,
+                            v: MonoType::Int,
                         },
                         tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "<=".to_string(),
-                            v: MonoType::Time,
+                            v: MonoType::Int,
                         },
                         tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">=".to_string(),
-                            v: MonoType::Time,
+                            v: MonoType::Int,
                         },
                         tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "!=".to_string(),
-                            v: MonoType::Time,
+                            v: MonoType::Int,
                         },
                         tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "==".to_string(),
-                            v: MonoType::Time,
+                            v: MonoType::Int,
                         },
                         tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
-                            k: "@Tim".to_string(),
-                            v: MonoType::Time,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                    })),
-            Expression::Regexp(_) => MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "=~".to_string(),
-                            v: MonoType::Regexp,
+                            k: "@Neg".to_string(),
+                            v: MonoType::Int,
                         },
                         tail: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
-                            k: "!~".to_string(),
-                            v: MonoType::Regexp,
+                            k: "@Num".to_string(),
+                            v: MonoType::Int,
                         },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
+                        tail: MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::Int)}))
                         }))
-                    })),
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                        }))
+                    }))
+
+
+
+}
+
+pub fn type_string() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "+".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">=".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<=".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "==".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "!=".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "=~".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "!~".to_string(),
+                    v: MonoType::String,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::String)}))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+            }))
+}
+
+pub fn type_float() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "+".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "-".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "*".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "/".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "^".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "%".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "<".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: ">".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "<=".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: ">=".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "!=".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "==".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "@Neg".to_string(),
+                   v: MonoType::Float,
+               },
+               tail:MonoType::Record(Box::new(types::Record::Extension {
+               head: types::Property {
+                   k: "@Num".to_string(),
+                   v: MonoType::Float,
+               },
+               tail: MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::Float)}))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+               }))
+           }))
+}
+
+pub fn type_uint() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "+".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "-".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "*".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "/".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "^".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "%".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<=".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">=".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "!=".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "==".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "@Neg".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "@Num".to_string(),
+                    v: MonoType::Uint,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::Uint)}))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+            }))
+}
+
+pub fn type_duration() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<=".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">=".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "!=".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "==".to_string(),
+                    v: MonoType::Time,
+                },
+                tail:MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "@Neg".to_string(),
+                    v: MonoType::Duration,
+                },
+
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "@Tim".to_string(),
+                    v: MonoType::Duration,
+                },
+
+                tail: MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::Duration)}))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+    }))
+}
+
+pub fn type_datetime() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "<=".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: ">=".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "!=".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "==".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "@Tim".to_string(),
+                    v: MonoType::Time,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::Time)}))
+                }))
+                }))
+                }))
+                }))
+                }))
+                }))
+            }))
+}
+
+pub fn type_regexp() -> MonoType {
+    MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "=~".to_string(),
+                    v: MonoType::Regexp,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Extension {
+                head: types::Property {
+                    k: "!~".to_string(),
+                    v: MonoType::Regexp,
+                },
+                tail: MonoType::Record(Box::new(types::Record::Empty{typ: Some(MonoType::Regexp)}))
+                }))
+            }))
+}
+
+impl Expression {
+    pub fn type_of(&self) -> MonoType {
+        match self {
+            Expression::Identifier(e) => e.typ.clone(),
+            Expression::Array(e) => e.typ.clone(),
+            Expression::Dict(e) => e.typ.clone(),
+            Expression::Function(e) => e.typ.clone(),
+            Expression::Logical(_) => type_bool(),
+            Expression::Object(e) => e.typ.clone(),
+            Expression::Member(e) => e.typ.clone(),
+            Expression::Index(e) => e.typ.clone(),
+            Expression::Binary(e) => e.typ.clone(),
+            Expression::Unary(e) => e.typ.clone(),
+            Expression::Call(e) => e.typ.clone(),
+            Expression::Conditional(e) => e.alternate.type_of(),
+            Expression::StringExpr(_) => type_string(),
+            Expression::Integer(_) => type_int(),
+            Expression::Float(_) => type_float(),
+            Expression::StringLit(_) => type_string(),
+            Expression::Duration(_) => type_duration(),
+            Expression::Uint(_) => type_uint(),
+            Expression::Boolean(_) => type_bool(),
+            Expression::DateTime(_) => type_datetime(),
+            Expression::Regexp(_) => type_regexp(),
         }
     }
     pub fn loc(&self) -> &ast::SourceLocation {
@@ -714,6 +729,7 @@ pub fn infer_pkg_types<T>(
 where
     T: Importer,
 {
+
     let (env, cons) = pkg.infer(env, f, importer)?;
     Ok((env, infer::solve(&cons, &mut TvarKinds::new(), f)?))
 }
@@ -725,8 +741,24 @@ where
     file.infer(env, f, importer)
 }
 
+
+pub fn convert_substitution(sub: &Substitution) -> Substitution {
+    let sub_map = Substitution::get(sub);
+    let mut conv_map = SemanticMap::new();
+    for (tvar, typ) in sub_map.iter() {
+        let converted_typ = types::is_monotype(typ.clone(), None);
+        match converted_typ {
+            Some(new_typ) => {conv_map.insert(tvar.clone(), new_typ);},
+            None => {conv_map.insert(tvar.clone(), typ.clone());},
+        }
+    }
+    let conv_sub = Substitution::new(conv_map);
+    conv_sub
+}
+
 pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
-    pkg.apply(&sub)
+    let conv_sub = convert_substitution(sub);   
+    pkg.apply(&conv_sub)
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1080,7 +1112,7 @@ impl StringExpr {
                 let (e, cons) = ip.expression.infer(env, f)?;
                 constraints.append(&mut Vec::from(cons));
                 constraints.push(Constraint::Equal {
-                    exp: MonoType::String,
+                    exp: type_string(),
                     act: ip.expression.type_of(),
                     loc: ip.expression.loc().clone(),
                 });
@@ -1226,12 +1258,19 @@ impl DictExpr {
             act: self.typ.clone(),
             loc: self.loc.clone(),
         };
-        let tc = Constraint::Kind {
-            exp: Kind::Comparable,
-            act: key,
-            loc: self.loc.clone(),
-        };
-
+        let u = MonoType::Var(f.fresh());
+        let v = MonoType::Var(f.fresh());
+        let tc = Constraint::Equal {
+                    exp: MonoType::Record(Box::new(types::Record::Extension {
+                        head: types::Property {
+                            k: "!=".to_string(),
+                            v: u.clone(),
+                        },
+                        tail: v.clone(),
+                    })),
+                    act: key.clone(),
+                    loc: self.loc.clone(),
+                };
         Ok((env, cons + vec![eq, tc].into()))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -1460,13 +1499,16 @@ impl BinaryExpr {
         // Do this first so that we can return an error if one occurs.
         let (env, lcons) = self.left.infer(env, f)?;
         let (env, rcons) = self.right.infer(env, f)?;
-        
+
         let u = MonoType::Var(f.fresh());
         let v = MonoType::Var(f.fresh());
+        let s = MonoType::Var(f.fresh());
+        let t = MonoType::Var(f.fresh());
+
         let cons = match self.operator {
             // The following operators require both sides to be equal.
             ast::Operator::AdditionOperator => Constraints::from(vec![
-            	Constraint::Equal {
+                Constraint::Equal {
                     exp: self.left.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
@@ -1478,16 +1520,16 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
-                    exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    exp: self.typ.clone(),
+                    act: self.left.type_of(),
                     loc: self.loc.clone(),
                 },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
+                },
+
 			]),
             ast::Operator::SubtractionOperator => Constraints::from(vec![
 				Constraint::Equal {
@@ -1502,22 +1544,21 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
-                    exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "-".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    exp: self.typ.clone(),
+                    act: self.left.type_of(),
                     loc: self.loc.clone(),
+                },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
                 },
             ]),
             ast::Operator::MultiplicationOperator => Constraints::from(vec![
 				Constraint::Equal {
                     exp: self.left.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
+                        head: types::Property { 
                             k: "*".to_string(),
                             v: u.clone(),
                         },
@@ -1526,15 +1567,14 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
-                    exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "*".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    exp: self.typ.clone(),
+                    act: self.left.type_of(),
                     loc: self.loc.clone(),
+                },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
                 },
             ]),
             ast::Operator::DivisionOperator => Constraints::from(vec![
@@ -1550,15 +1590,14 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
-                    exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "/".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    exp: self.typ.clone(),
+                    act: self.left.type_of(),
                     loc: self.loc.clone(),
+                },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
                 },
             ]),
             ast::Operator::PowerOperator => Constraints::from(vec![
@@ -1574,15 +1613,14 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
-                    exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "^".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    exp: self.typ.clone(),
+                    act: self.left.type_of(),
                     loc: self.loc.clone(),
+                },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
                 },
             ]),
             ast::Operator::ModuloOperator => Constraints::from(vec![
@@ -1598,20 +1636,19 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
-                    exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "%".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    exp: self.typ.clone(),
+                    act: self.left.type_of(),
                     loc: self.loc.clone(),
+                },
+                Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: self.right.type_of(),
+                    loc: self.right.loc().clone(),
                 },
             ]),
             ast::Operator::GreaterThanOperator => Constraints::from(vec![
                 // https://github.com/influxdata/flux/issues/2393
-                // Constraint::Equal{self.left.type_of(), self.right.type_of()),
+                // Constraint::Equal{self.left.type_of()A person has a bee in his hand. What’s in their eye? , self.right.type_of()),
 				Constraint::Equal {
                     exp: self.left.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
@@ -1624,13 +1661,18 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
+                    exp: self.typ.clone(),
+                    act: type_bool(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Equal {
                     exp: self.right.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">".to_string(),
-                            v: u.clone(),
+                            v: s.clone(),
                         },
-                        tail: v.clone(),
+                        tail: t.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1650,13 +1692,18 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
+                    exp: self.typ.clone(),
+                    act: type_bool(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Equal {
                     exp: self.right.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "<".to_string(),
-                            v: u.clone(),
+                            v: s.clone(),
                         },
-                        tail: v.clone(),
+                        tail: t.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1676,13 +1723,18 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
+                    exp: self.typ.clone(),
+                    act: type_bool(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Equal {
                     exp: self.right.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "==".to_string(),
-                            v: u.clone(),
+                            v: s.clone(),
                         },
-                        tail: v.clone(),
+                        tail: t.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1702,13 +1754,18 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
+                    exp: self.typ.clone(),
+                    act: type_bool(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Equal {
                     exp: self.right.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "!=".to_string(),
-                            v: u.clone(), 
+                            v: s.clone(),
                         },
-                        tail: v.clone(),
+                        tail: t.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1728,13 +1785,18 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
+                    exp: self.typ.clone(),
+                    act: type_bool(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Equal {
                     exp: self.right.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">=".to_string(),
-                            v: u.clone(),
+                            v: s.clone(),
                         },
-                        tail: v.clone(),
+                        tail: t.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1754,66 +1816,60 @@ impl BinaryExpr {
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
-                    exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<=".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
-                    loc: self.loc.clone(),
-                },
-            ]),
-            // Regular expression operators.
-            ast::Operator::RegexpMatchOperator => Constraints::from(vec![
-				Constraint::Equal {
-                    exp: self.left.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "=~".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    exp: self.typ.clone(),
+                    act: type_bool(),
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
                     exp: self.right.type_of(),
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
-                            k: "=~".to_string(),
-                            v: u.clone(),
+                            k: "<=".to_string(),
+                            v: s.clone(),
                         },
-                        tail: v.clone(),
+                        tail: t.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
 
             ]),
-            ast::Operator::NotRegexpMatchOperator => Constraints::from(vec![
+            // Regular expression operators.
+            ast::Operator::RegexpMatchOperator => Constraints::from(vec![
 				Constraint::Equal {
                     exp: self.left.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!~".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    act: type_string(),
                     loc: self.loc.clone(),
                 },
                 Constraint::Equal {
                     exp: self.right.type_of(),
-                    act: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!~".to_string(),
-                            v: u.clone(),
-                        },
-                        tail: v.clone(),
-                    })),
+                    act: type_regexp(),
                     loc: self.loc.clone(),
                 },
+                Constraint::Equal {
+                    exp: self.typ.clone(),
+                    act: type_bool(),
+                    loc: self.loc.clone(),
+                },
+
+
+            ]),
+            ast::Operator::NotRegexpMatchOperator => Constraints::from(vec![
+				Constraint::Equal {
+                    exp: self.left.type_of(),
+                    act: type_string(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Equal {
+                    exp: self.right.type_of(),
+                    act: type_regexp(),
+                    loc: self.loc.clone(),
+                },
+                Constraint::Equal {
+                    exp: self.typ.clone(),
+                    act: type_bool(),
+                    loc: self.loc.clone(),
+                },
+
             ]),
             _ => return Err(Error::InvalidBinOp(self.operator.clone(), self.loc.clone())),
         };
@@ -1825,6 +1881,7 @@ impl BinaryExpr {
         self.typ = self.typ.apply(&sub);
         self.left = self.left.apply(&sub);
         self.right = self.right.apply(&sub);
+
         self
     }
 }
@@ -1929,19 +1986,7 @@ impl ConditionalExpr {
             + acons
             + Constraints::from(vec![
                 Constraint::Equal {
-                    exp: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        })),
+                    exp: type_bool(),
                     act: self.test.type_of(),
                     loc: self.test.loc().clone(),
                 },
@@ -1978,36 +2023,12 @@ impl LogicalExpr {
             + rcons
             + Constraints::from(vec![
                 Constraint::Equal {
-                    exp: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        })),
+                    exp: type_bool(),
                     act: self.left.type_of(),
                     loc: self.left.loc().clone(),
                 },
                 Constraint::Equal {
-                    exp: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Bool,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        })),
+                    exp: type_bool(),
                     act: self.right.type_of(),
                     loc: self.right.loc().clone(),
                 },
@@ -2087,85 +2108,7 @@ impl IndexExpr {
             + Constraints::from(vec![
                 Constraint::Equal {
                     act: self.index.type_of(),
-                    exp: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "+".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "-".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "*".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "/".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "^".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "%".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "<=".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: ">=".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "!=".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "==".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "@Num".to_string(),
-                            v: MonoType::Int,
-                        },
-                        tail: MonoType::Record(Box::new(types::Record::Empty))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                        }))
-                    })),
+                    exp: type_int(),
                     loc: self.index.loc().clone(),
                 },
                 Constraint::Equal {
@@ -2205,7 +2148,7 @@ impl ObjectExpr {
                 (expr.typ.to_owned(), cons)
             }
             None => (
-                MonoType::Record(Box::new(types::Record::Empty)),
+                MonoType::Record(Box::new(types::Record::Empty{typ: None})),
                 Constraints::empty(),
             ),
         };
@@ -2259,33 +2202,29 @@ pub struct UnaryExpr {
 
 impl UnaryExpr {
     fn infer(&mut self, env: Environment, f: &mut Fresher) -> Result {
+        let u = MonoType::Var(f.fresh());
+        let v = MonoType::Var(f.fresh());
+
         let (env, acons) = self.argument.infer(env, f)?;
         let cons = match self.operator {
             ast::Operator::NotOperator => Constraints::from(vec![
                 Constraint::Equal {
                     act: self.argument.type_of(),
-                    exp: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "~".to_string(),
-                            v: MonoType::Var(f.fresh()),
-                        },
-                        tail: MonoType::Var(f.fresh()),
-                    })),
+                    exp: type_bool(),
                     loc: self.argument.loc().clone(),
                 },
+                Constraint::Equal {
+                    act: self.typ.clone(),
+                    exp: type_bool(),
+                    loc: self.loc.clone(),
+                },
+
             ]),
             ast::Operator::ExistsOperator => Constraints::from(Constraint::Equal {
                 act: self.typ.clone(),
-                exp: MonoType::Record(Box::new(types::Record::Extension {
-                        head: types::Property {
-                            k: "@E".to_string(),
-                            v: MonoType::Var(f.fresh()),
-                        },
-                        tail: MonoType::Var(f.fresh()),
-                    })),
+                exp: type_bool(),
                 loc: self.loc.clone(),
             }),
-			//TODO: Finish adding Unary Operator Constraints
             ast::Operator::AdditionOperator | ast::Operator::SubtractionOperator => {
                 Constraints::from(vec![
                     Constraint::Equal {
@@ -2297,16 +2236,10 @@ impl UnaryExpr {
                         act: self.argument.type_of(),
                         exp: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
-                            k: "~".to_string(),
-                            v: MonoType::Var(f.fresh()),
+                            k: "@Neg".to_string(),
+                            v: u.clone(),
                         },
-                        tail: MonoType::Var(f.fresh()),
-                    })),
-                        loc: self.loc.clone(),
-                    },
-                    Constraint::Kind {
-                        act: self.argument.type_of(),
-                        exp: Kind::Negatable,
+                        tail: v.clone()})),
                         loc: self.argument.loc().clone(),
                     },
                 ])
@@ -2813,14 +2746,14 @@ mod tests {
             }],
         };
         let sub: Substitution = semantic_map! {
-            Tvar(0) => MonoType::Int,
-            Tvar(1) => MonoType::Int,
-            Tvar(2) => MonoType::Int,
-            Tvar(3) => MonoType::Int,
-            Tvar(4) => MonoType::Int,
-            Tvar(5) => MonoType::Int,
-            Tvar(6) => MonoType::Int,
-            Tvar(7) => MonoType::Int,
+            Tvar(0) => type_int(),
+            Tvar(1) => type_int(),
+            Tvar(2) => type_int(),
+            Tvar(3) => type_int(),
+            Tvar(4) => type_int(),
+            Tvar(5) => type_int(),
+            Tvar(6) => type_int(),
+            Tvar(7) => type_int(),
         }
         .into();
         let pkg = inject_pkg_types(pkg, &sub);
@@ -2829,8 +2762,16 @@ mod tests {
             &mut |node: Rc<Node>| {
                 let typ = node.type_of();
                 if let Some(typ) = typ {
-                    assert_eq!(typ, MonoType::Int);
-                    no_types_checked += 1;
+                    let new_typ = types::is_monotype(typ.clone(), None);
+                    if let Some(new_typ) = new_typ {
+                        assert_eq!(new_typ, MonoType::Int);
+                        no_types_checked += 1;
+                    }
+                    if typ == MonoType::Int {
+                        assert_eq!(typ, MonoType::Int);
+                        no_types_checked += 1;
+
+                    }
                 }
             },
             Rc::new(Node::Package(&pkg)),

@@ -234,7 +234,7 @@ pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Er
 }
 
 fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
-    let mut r = Record::Empty;
+    let mut r = Record::Empty{typ: None};
     let mut cons = Constraints::empty();
 
     for (name, poly) in from {
@@ -408,6 +408,8 @@ mod tests {
                     convert_polytype(typ_expr, &mut Fresher::default())?
             },
         };
+        //println!("want: {:#?}", want);
+        println!("got: {:#?}", imports);
         if want != imports {
             return Err(Error {
                 msg: format!(

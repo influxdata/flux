@@ -115,7 +115,7 @@ impl Fresh for Record {
         let mut tv = Tvar(0);
         loop {
             match self {
-                Record::Empty => {
+                Record::Empty{typ} => {
                     break;
                 }
                 Record::Extension {
@@ -144,7 +144,7 @@ impl Fresh for Record {
         let mut r: MonoType = if extends {
             MonoType::Var(tv.fresh(f, sub))
         } else {
-            MonoType::Record(Box::new(Record::Empty))
+            MonoType::Record(Box::new(Record::Empty{typ: None}))
         };
         // Freshen record properties in deterministic order
         props = props.fresh(f, sub);
@@ -163,7 +163,7 @@ impl Fresh for Record {
         }
         match r {
             MonoType::Record(b) => *b,
-            _ => Record::Empty,
+            _ => Record::Empty{typ: None},
         }
     }
 }

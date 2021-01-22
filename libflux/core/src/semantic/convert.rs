@@ -1,6 +1,7 @@
 use crate::ast;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
+use crate::semantic::nodes::{type_int, type_bool, type_string, type_float, type_duration, type_uint, type_datetime, type_regexp};
 use crate::semantic::types;
 use crate::semantic::types::MonoType;
 use crate::semantic::types::MonoTypeMap;
@@ -157,14 +158,14 @@ fn convert_monotype(
             Ok(MonoType::Var(*tvar))
         }
         ast::MonoType::Basic(basic) => match basic.name.name.as_str() {
-            "bool" => Ok(MonoType::Bool),
-            "int" => Ok(MonoType::Int),
-            "uint" => Ok(MonoType::Uint),
-            "float" => Ok(MonoType::Float),
-            "string" => Ok(MonoType::String),
-            "duration" => Ok(MonoType::Duration),
-            "time" => Ok(MonoType::Time),
-            "regexp" => Ok(MonoType::Regexp),
+            "bool" => Ok(type_bool()),
+            "int" => Ok(type_int()),
+            "uint" => Ok(type_uint()),
+            "float" => Ok(type_float()),
+            "string" => Ok(type_string()),
+            "duration" => Ok(type_duration()),
+            "time" => Ok(type_datetime()),
+            "regexp" => Ok(type_regexp()),
             "bytes" => Ok(MonoType::Bytes),
             _ => Err(format!("invalid named type {}", basic.name.name)),
         },
@@ -218,7 +219,7 @@ fn convert_monotype(
         }
         ast::MonoType::Record(rec) => {
             let mut r = match rec.tvar {
-                None => MonoType::Record(Box::new(types::Record::Empty)),
+                None => MonoType::Record(Box::new(types::Record::Empty{typ: None})),
                 Some(id) => {
                     let tv = ast::MonoType::Tvar(ast::TvarType {
                         base: id.clone().base,
@@ -242,25 +243,18 @@ fn convert_monotype(
     }
 }
 
-fn convert_polytype_record_constraints(
+fn substitute_record_constraints(
     ty: MonoType,
-    tvars_mapped: HashMap<types::Tvar, types::Tvar>,
     recs: HashMap<types::Tvar, MonoType>,
 ) -> MonoType {
     match ty {
         MonoType::Var(tv) => {
-            let tmpvar = tvars_mapped.get(&tv);
-            match tmpvar {
-                Some(vr) => {
-                    let res = recs.get(&vr);
-                    match res {
-                        Some(rs) => {rs.clone()},
-                        _ => {MonoType::Var(tv)},
-                    }
-                },
+            let res = recs.get(&tv);
+            match res {
+                Some(rs) => {rs.clone()},
                 _ => {MonoType::Var(tv)},
             }
-        }
+        },
         MonoType::Bool => {
             MonoType::Bool
         },
@@ -288,14 +282,13 @@ fn convert_polytype_record_constraints(
         MonoType::Bytes => {
             MonoType::Bytes
         },
-        MonoType::Arr(arr) => MonoType::Arr(Box::new(types::Array(convert_polytype_record_constraints(
+        MonoType::Arr(arr) => MonoType::Arr(Box::new(types::Array(substitute_record_constraints(
             arr.0,
-            tvars_mapped,
             recs,
         )))),
         MonoType::Dict(dict) => {
-            let key = convert_polytype_record_constraints(dict.key, tvars_mapped.clone(), recs.clone());
-            let val = convert_polytype_record_constraints(dict.val, tvars_mapped.clone(), recs.clone());
+            let key = substitute_record_constraints(dict.key, recs.clone());
+            let val = substitute_record_constraints(dict.val, recs.clone());
             MonoType::Dict(Box::new(types::Dictionary { key, val }))
         }
         MonoType::Fun(func) => {
@@ -303,46 +296,39 @@ fn convert_polytype_record_constraints(
             let mut opt = MonoTypeMap::new();
             let mut pipe = None;
             for param in func.req {
+                
                 match param.1 {
                     MonoType::Var(e) =>  {
-                        let tmpvar = tvars_mapped.get(&e);
-                        match tmpvar {
-                            Some(vr) => {
-                                let res = recs.get(&vr);
-                                match res {
-                                    Some(rs) => {req.insert(param.0, rs.clone());},
-                                    _ => {},
-                                }
-                            },
-                            _ => {},
+                        let res = recs.get(&e);
+                        match res {
+                            Some(rs) => {req.insert(param.0, rs.clone());},
+                            _ => {req.insert(param.0, MonoType::Var(e));},
                         }
-                    }
-                    _ => {},
+                    },
+                    _ => {
+                        req.insert(param.0, substitute_record_constraints(param.1.clone(), recs.clone()));
+                    },
                 }
             }
             for param in func.opt {
                 match param.1 {
                     MonoType::Var(e) =>  {
-                        let tmpvar = tvars_mapped.get(&e);
-                        match tmpvar {
-                            Some(vr) => {
-                                let res = recs.get(&vr);
-                                match res {
-                                    Some(rs) => {opt.insert(param.0, rs.clone());},
-                                    _ => {},
-                                }
-                            },
-                            _ => {},
+                        let res = recs.get(&e);
+                        match res {
+                            Some(rs) => {opt.insert(param.0, rs.clone());},
+                            _ => {opt.insert(param.0, MonoType::Var(e));},
                         }
-                    }
-                    _ => {},
+                    },
+                    _ => {
+                        opt.insert(param.0, substitute_record_constraints(param.1.clone(), recs.clone()));
+                    },
                 }
             }
             match func.pipe {
                 Some(prop) => {
                     pipe = Some(types::Property {
                         k: prop.k,
-                        v: convert_polytype_record_constraints(prop.v, tvars_mapped.clone(), recs.clone()),
+                        v: substitute_record_constraints(prop.v, recs.clone()),
                     })
                 },
                 None => {},
@@ -351,21 +337,21 @@ fn convert_polytype_record_constraints(
                 req,
                 opt,
                 pipe: pipe,
-                retn: convert_polytype_record_constraints(func.retn, tvars_mapped.clone(), recs.clone()),
+                retn: substitute_record_constraints(func.retn, recs.clone()),
             }))
         }
         MonoType::Record(rec) => {
-            let mut r = MonoType::Record(Box::new(types::Record::Empty));
+            let mut r = MonoType::Record(Box::new(types::Record::Empty{typ: None}));
             match *rec {
-                types::Record::Empty => {}, 
+                types::Record::Empty{typ} => {}, 
                 types::Record::Extension{head: h, tail: t} => {
                     let new_property = types::Property {
                         k: h.k, 
-                        v: convert_polytype_record_constraints(h.v, tvars_mapped.clone(), recs.clone())
+                        v: substitute_record_constraints(h.v, recs.clone())
                     };
                     r = MonoType::Record(Box::new(types::Record::Extension {
                         head: new_property,
-                        tail: convert_polytype_record_constraints(t, tvars_mapped.clone(), recs.clone()),
+                        tail: substitute_record_constraints(t, recs.clone()),
                     }))
                 }
             }
@@ -379,20 +365,22 @@ pub fn convert_polytype(
     f: &mut Fresher,
 ) -> Result<types::PolyType> {
     let mut tvars = HashMap::<String, types::Tvar>::new();
-    let mut tvars_mapped = HashMap::<types::Tvar, types::Tvar>::new();
     let mut expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
     let mut vars = Vec::<types::Tvar>::new();
     let mut recs = HashMap::<types::Tvar, MonoType>::new();
     
-    let row_tvar = f.fresh();
-    vars.push(row_tvar);
     for (name, tvar) in &tvars {
-        let mut rec = MonoType::Var(row_tvar);
+        let mut rec = MonoType::Var(tvar.clone());
+        vars.push(tvar.clone());
+
         let new_tvar = f.fresh();
-        tvars_mapped.insert(tvar.clone(), new_tvar);
-        vars.push(new_tvar);
+        
+
         for con in &type_expression.constraints {
             if con.tvar.name == *name {
+                if con.kinds.len() != 0 {
+                    vars.push(new_tvar);
+                }        
                 for k in &con.kinds {
                     match k.name.as_str() {
                         "Addable" => {
@@ -416,28 +404,10 @@ pub fn convert_polytype(
                         "Divisible" => {
                             rec = MonoType::Record(Box::new(types::Record::Extension {
                                 head: types::Property {
-                                    k: "*".to_string(),
-                                    v: MonoType::Var(new_tvar),
-                                },
-                                tail: MonoType::Record(Box::new(types::Record::Extension {
-                                head: types::Property {
                                     k: "/".to_string(),
                                     v: MonoType::Var(new_tvar),
                                 },
-                                tail: MonoType::Record(Box::new(types::Record::Extension {
-                                head: types::Property {
-                                    k: "^".to_string(),
-                                    v: MonoType::Var(new_tvar),
-                                },
-                                tail: MonoType::Record(Box::new(types::Record::Extension {
-                                head: types::Property {
-                                    k: "%".to_string(),
-                                    v: MonoType::Var(new_tvar),
-                                },
-                                tail: rec
-                            }))
-                            }))
-                            }))
+                                tail:  rec
                             }))
                         }
                         "Numeric" => {
@@ -482,34 +452,13 @@ pub fn convert_polytype(
                                     k: "==".to_string(),
                                     v: MonoType::Var(new_tvar),
                                 },
-                                tail: MonoType::Record(Box::new(types::Record::Extension {
-                                head: types::Property {
-                                    k: "!=".to_string(),
-                                    v: MonoType::Var(new_tvar),
-                                },
-                                tail: rec
-                            }))
-                            }))
-                        },
-                        "Nullable" => {
-                            rec = MonoType::Record(Box::new(types::Record::Extension {
-                                head: types::Property {
-                                    k: "==".to_string(),
-                                    v: MonoType::Var(new_tvar),
-                                },
-                                tail: MonoType::Record(Box::new(types::Record::Extension {
-                                head: types::Property {
-                                    k: "!=".to_string(),
-                                    v: MonoType::Var(new_tvar),
-                                },
-                                tail: rec
-                            }))
+                                tail:  rec
                             }))
                         },
                         "Negatable" => {
                             rec = MonoType::Record(Box::new(types::Record::Extension {
                                 head: types::Property {
-                                    k: "~".to_string(),
+                                    k: "@Neg".to_string(),
                                     v: MonoType::Var(new_tvar),
                                 },
                                 tail: rec
@@ -525,27 +474,26 @@ pub fn convert_polytype(
                                 tail: rec
                             }))
                         },
+                        "Nullable" => {},
                         "Record" => {
-                            rec = MonoType::Record(Box::new(types::Record::Extension {
+                            /*rec = MonoType::Record(Box::new(types::Record::Extension {
                                 head: types::Property {
                                     k: ".".to_string(),
                                     v: MonoType::Var(new_tvar),
                                 },
                                 tail: rec
-                            }))
-
-
+                            }))*/
                         },
                         _ => {
                             return Err(format!("Constraint not found {} ", &k.name.as_str()));
                         }
                     }
-                    recs.insert(new_tvar, rec.clone());
+                    recs.insert(tvar.clone(), rec.clone());
                 }
             }
         }
     }
-    let expr = convert_polytype_record_constraints(expr, tvars_mapped, recs);
+    let expr = substitute_record_constraints(expr, recs);
     Ok(types::PolyType { expr, vars })
 }
 
@@ -3195,7 +3143,7 @@ mod tests {
         });
         let mut m = HashMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
-        let want = MonoType::Int;
+        let want = type_int();
         assert_eq!(want, got);
     }
 
@@ -3228,7 +3176,7 @@ mod tests {
         let want = MonoType::Record(Box::new(types::Record::Extension {
             head: types::Property {
                 k: "B".to_string(),
-                v: MonoType::Int,
+                v: type_int(),
             },
             tail: MonoType::Var(Tvar(0)),
         }));
@@ -3264,12 +3212,12 @@ mod tests {
         let mut m = HashMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype_ex, &mut m, &mut fresh::Fresher::default()).unwrap();
         let mut opt = MonoTypeMap::new();
-        opt.insert(String::from("A"), MonoType::Int);
+        opt.insert(String::from("A"), type_int());
         let want = MonoType::Fun(Box::new(types::Function {
             req: MonoTypeMap::new(),
             opt,
             pipe: None,
-            retn: MonoType::Int,
+            retn: type_int(),
         }));
         assert_eq!(want, got);
     }
@@ -3349,6 +3297,8 @@ mod tests {
         let mut vars = Vec::<types::Tvar>::new();
         vars.push(types::Tvar(0));
         vars.push(types::Tvar(1));
+        vars.push(types::Tvar(2));
+        vars.push(types::Tvar(3));
         let mut cons = types::TvarKinds::new();
         let mut kind_vector_1 = Vec::<types::Kind>::new();
         kind_vector_1.push(types::Kind::Addable);
@@ -3359,14 +3309,32 @@ mod tests {
         cons.insert(types::Tvar(1), kind_vector_2);
 
         let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        req.insert("A".to_string(), MonoType::Record(Box::new(types::Record::Extension{
+                        head: types::Property{
+                            k: "+".to_string(),
+                            v: MonoType::Var(Tvar(3))
+                        },
+                        tail: MonoType::Var(Tvar(0)),
+                })));
+        req.insert("B".to_string(), MonoType::Record(Box::new(types::Record::Extension{
+                        head: types::Property{
+                            k: "/".to_string(),
+                            v: MonoType::Var(Tvar(2))
+                        },
+                        tail: MonoType::Var(Tvar(1)),
+                })));
         let expr = MonoType::Fun(Box::new({
             types::Function {
                 req,
                 opt: MonoTypeMap::new(),
                 pipe: None,
-                retn: MonoType::Var(Tvar(0)),
+                retn: MonoType::Record(Box::new(types::Record::Extension{
+                        head: types::Property{
+                            k: "+".to_string(),
+                            v: MonoType::Var(Tvar(3))
+                        },
+                        tail: MonoType::Var(Tvar(0)),
+                })),
             }
         }));
         let want = types::PolyType { vars, expr };
@@ -3433,22 +3401,36 @@ mod tests {
         };
         let got = convert_polytype(type_exp, &mut fresh::Fresher::default()).unwrap();
         let mut vars = Vec::<types::Tvar>::new();
-        vars.push(types::Tvar(0));
-        vars.push(types::Tvar(1));
+        vars.push(types::Tvar(2));
+        vars.push(types::Tvar(3));
+        vars.push(types::Tvar(4));
         let mut cons = types::TvarKinds::new();
         let mut kind_vector_1 = Vec::<types::Kind>::new();
         kind_vector_1.push(types::Kind::Addable);
         cons.insert(types::Tvar(0), kind_vector_1);
 
         let mut req = MonoTypeMap::new();
-        req.insert("A".to_string(), MonoType::Var(Tvar(0)));
-        req.insert("B".to_string(), MonoType::Var(Tvar(1)));
+        req.insert("A".to_string(), MonoType::Record(Box::new(types::Record::Extension{
+                        head: types::Property{
+                            k: "+".to_string(),
+                            v: MonoType::Var(Tvar(4))
+                        },
+                        tail: MonoType::Var(Tvar(2)),
+                }))
+);
+        req.insert("B".to_string(), MonoType::Var(Tvar(3)));
         let expr = MonoType::Fun(Box::new({
             types::Function {
                 req,
                 opt: MonoTypeMap::new(),
                 pipe: None,
-                retn: MonoType::Var(Tvar(0)),
+                retn: MonoType::Record(Box::new(types::Record::Extension{
+                        head: types::Property{
+                            k: "+".to_string(),
+                            v: MonoType::Var(Tvar(4))
+                        },
+                        tail: MonoType::Var(Tvar(2)),
+                })),
             }
         }));
         let want = types::PolyType { vars, expr };

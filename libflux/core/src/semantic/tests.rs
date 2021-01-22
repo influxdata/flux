@@ -81,113 +81,6 @@ impl Importer for HashMap<&str, PolyType> {
     }
 }
 
-fn is_monotype (
-    ty: types::Record,
-    ret: Option<MonoType>
-) -> Option<MonoType> {
-    match ty {
-        types::Record::Empty => {ret},
-        types::Record::Extension{head: h, tail: t} => {
-        match ret {
-            Some(mono) => {
-                if mono == h.v {
-                    match t {
-                        MonoType::Record(rect) => is_monotype(*rect, Some(h.v)),
-                        _ => None,
-                    }
-                } else {
-                    None
-                }
-            },
-            None => {
-                match t {
-                    MonoType::Record(rect) => is_monotype(*rect, Some(h.v)),
-                    _ => None,
-                }
-			},
-		}
-    }
-}
-}
-
-fn convert_record_constraints (
-    ty: MonoType
-) -> MonoType {
-    match ty {
-        MonoType::Var(tv) => MonoType::Var(tv),
-        MonoType::Bool => MonoType::Bool,
-        MonoType::Int => MonoType::Int,
-        MonoType::Uint => MonoType::Uint, 
-        MonoType::Float => MonoType::Float, 
-        MonoType::String => MonoType::String, 
-        MonoType::Duration => MonoType::Duration, 
-        MonoType::Time => MonoType::Time, 
-        MonoType::Regexp => MonoType::Regexp, 
-        MonoType::Bytes => MonoType::Bytes,         
-        MonoType::Arr(arr) => MonoType::Arr(Box::new(types::Array(convert_record_constraints(arr.0)))),
-        MonoType::Dict(dict) => {
-            let key = convert_record_constraints(dict.key);
-            let val = convert_record_constraints(dict.val);
-            MonoType::Dict(Box::new(types::Dictionary { key, val }))
-        }
-		MonoType::Fun(func) => {
-            let mut req = MonoTypeMap::new();
-            let mut opt = MonoTypeMap::new();
-            let mut pipe = None;
-            for param in func.req {
-            	req.insert(param.0, convert_record_constraints(param.1));
-			}
-			for param in func.opt {
-            	opt.insert(param.0, convert_record_constraints(param.1));
-            }
-			match func.pipe {
-                Some(prop) => {
-                    pipe = Some(types::Property {
-                        k: prop.k,
-                        v: convert_record_constraints(prop.v),
-                    })
-                },
-                None => {},
-            }
-            MonoType::Fun(Box::new(types::Function {
-                req,
-                opt,
-                pipe: pipe,
-                retn: convert_record_constraints(func.retn),
-            }))
-        }        
-        MonoType::Record(rec) => {
-            match (*rec.clone()) {
-                types::Record::Extension{head: h, tail: t} => {
-                    if h.k.chars().next().unwrap().is_alphabetic() {
-                        let mut new_type = None;
-                        match h.v.clone() {
-                            MonoType::Record(reco) => {
-                                new_type = is_monotype(*reco.clone(), None);
-                                match new_type {
-                                    Some(ret) => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: ret}, tail: t})),
-                                    None => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: h.v}, tail: t})), 
-                                }
-                            }
-                            _ => MonoType::Record(Box::new(types::Record::Extension{head: types::Property {k: h.k, v: convert_record_constraints(h.v.clone())}, tail: t})),                       
-                        }
-                              
-                    } else {
-                        let new_type = is_monotype(*rec.clone(), None);
-                        match new_type {
-                            Some(ret) => ret,
-                            None => MonoType::Record(rec.clone()), 
-                        }
-                    }
-                }
-                _ => {MonoType::Record(rec.clone())},
-            }
-            	
-        }
-    }
-}
-
-
 fn infer_types(
     src: &str,
     env: HashMap<&str, &str>,
@@ -244,19 +137,18 @@ fn infer_types(
         Ok((env, _)) => env.values,
         Err(e) => return Err(e),
     };
-
-    let mut new_got = BTreeMap::new();
+    /*let mut new_got = BTreeMap::new();
     for elem in got {
         new_got.insert(elem.0.clone(), types::PolyType{vars: elem.1.vars.clone(),  expr: convert_record_constraints(elem.1.expr.clone())});
         
-    }
+    }*/
 
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
     if let Some(env) = want {
         let want = parse_map(env);
-        if want != new_got {
+        if want != got {
             panic!(
                 "\n\n{}\n\n{}\n{}\n{}\n{}\n",
                 "unexpected types:".red().bold(),
@@ -264,12 +156,12 @@ fn infer_types(
                 want.iter().fold(String::new(), |acc, (name, poly)| acc
                     + &format!("\t{}: {}\n", name, poly)),
                 "got:".red().bold(),
-                new_got.iter().fold(String::new(), |acc, (name, poly)| acc
+                got.iter().fold(String::new(), |acc, (name, poly)| acc
                     + &format!("\t{}: {}\n", name, poly)),
             );
         }
     }
-    return Ok(new_got.into());
+    return Ok(got.into());
 }
 
 /// The test_infer! macro generates test cases for type inference.
@@ -1665,15 +1557,12 @@ fn binary_expr_comparison() {
             ],
             src: &src,
         }
-        test_infer! {
+        test_infer_err! {
             env: map![
                 "a" => "{a: int , b: float}",
                 "b" => "{a: int , b: float}",
             ],
             src: &src,
-            exp: map![
-                "c" => "bool",
-            ],
         }
         test_infer_err! {
             env: map![
@@ -1682,15 +1571,12 @@ fn binary_expr_comparison() {
             ],
             src: &src,
         }
-        test_infer! {
+        test_infer_err! {
             env: map![
                 "a" => "[int]",
                 "b" => "[int]",
             ],
             src: &src,
-            exp: map![
-                "c" => "bool",
-            ],
         }
         test_infer_err! {
             env: map![
@@ -2998,14 +2884,15 @@ fn constrain_tvars() {
 #[test]
 fn constrained_generics_addable() {
     test_infer! {
+        env: map![
+            "f" => "(a: A, b: A) => A where A: Addable ",
+        ],
         src: r#"
-            f = (a, b) => a + b
             a = f(a: 100, b: 200)
             b = f(a: 0.1, b: 0.2)
             c = f(a: "0", b: "1")
         "#,
         exp: map![
-            "f" => "(a: A, b: A) => A where A: Addable ",
             "a" => "int",
             "b" => "float",
             "c" => "string",
@@ -3059,13 +2946,9 @@ fn constrained_generics_subtractable() {
     test_infer! {
         src: r#"
             f = (a, b) => a - b
-            a = f(a: 100, b: 200)
-            b = f(a: 0.1, b: 0.2)
         "#,
         exp: map![
             "f" => "(a: A, b: A) => A where A: Subtractable ",
-            "a" => "int",
-            "b" => "float",
         ],
     }
     test_infer_err! {
@@ -3108,13 +2991,14 @@ fn constrained_generics_subtractable() {
 #[test]
 fn constrained_generics_divisible() {
     test_infer! {
+        env: map![
+            "f" => "(a: A, b: A) => A where A: Divisible ",
+        ],
         src: r#"
-            f = (a, b) => a / b
             a = f(a: 100, b: 200)
             b = f(a: 0.1, b: 0.2)
         "#,
         exp: map![
-            "f" => "(a: A, b: A) => A where A: Divisible ",
             "a" => "int",
             "b" => "float",
         ],
@@ -3161,8 +3045,10 @@ fn constrained_generics_comparable() {
     // TODO(algow): re-introduce equality constraints for binary comparison operators
     // https://github.com/influxdata/flux/issues/2466
     test_infer! {
+        env: map![
+            "f" => "(a: A, b: B) => bool where A: Comparable, B: Comparable ",
+        ],
         src: r#"
-            f = (a, b) => a < b
             a = f(a: 100, b: 200)
             b = f(a: 0.1, b: 0.2)
             c = f(a: "0", b: "1")
@@ -3170,7 +3056,6 @@ fn constrained_generics_comparable() {
             e = f(a: 2019-10-30T00:00:00Z, b: 2019-10-31T00:00:00Z)
         "#,
         exp: map![
-            "f" => "(a: A, b: B) => bool where A: Comparable, B: Comparable ",
             "a" => "bool",
             "b" => "bool",
             "c" => "bool",
@@ -3215,9 +3100,9 @@ fn constrained_generics_equatable() {
         env: map![
             "true" => "bool",
             "false" => "bool",
+            "f" => "(a: A, b: B) => bool where A: Equatable, B: Equatable ",
         ],
         src: r#"
-            f = (a, b) => a == b
             a = f(a: 100, b: 200)
             b = f(a: 0.1, b: 0.2)
             c = f(a: "0", b: "1")
@@ -3226,7 +3111,6 @@ fn constrained_generics_equatable() {
             g = f(a: true, b: false)
         "#,
         exp: map![
-            "f" => "(a: A, b: B) => bool where A: Equatable, B: Equatable ",
             "a" => "bool",
             "b" => "bool",
             "c" => "bool",
@@ -3259,8 +3143,10 @@ fn multiple_constraints() {
     // TODO(algow): re-introduce equality constraints for binary comparison operators
     // https://github.com/influxdata/flux/issues/2466
     test_infer! {
+        env: map![
+            "f" => "(a: A, b: B) => bool where A: Comparable + Equatable, B: Comparable + Equatable ",
+        ],
         src: r#"
-            f = (a, b) => a <= b
             a = f(a: 100, b: 200)
             b = f(a: 0.1, b: 0.2)
             c = f(a: "0", b: "1")
@@ -3268,7 +3154,6 @@ fn multiple_constraints() {
             e = f(a: 2019-10-30T00:00:00Z, b: 2019-10-31T00:00:00Z)
         "#,
         exp: map![
-            "f" => "(a: A, b: B) => bool where A: Comparable + Equatable, B: Comparable + Equatable ",
             "a" => "bool",
             "b" => "bool",
             "c" => "bool",
@@ -3513,14 +3398,14 @@ fn test_error_messages() {
             -"s"
         "#,
         // Location points to argument of unary expression
-        err: "type error @2:14-2:17: string is not Negatable",
+        err: "type error @2:14-2:17: string does not support `not` operator",
     }
     test_error_msg! {
         src: r#"
             1h + 2h
         "#,
         // Location points to entire binary expression
-        err: "type error @2:13-2:20: duration is not Addable",
+        err: "type error @2:13-2:20: duration does not support `+` operator",
     }
     test_error_msg! {
         src: r#"
@@ -3590,7 +3475,7 @@ fn test_error_messages() {
             f(x: "x", y: "y")
         "#,
         // Location points to entire call expression
-        err: "type error @3:13-3:30: string is not Subtractable (argument x)",
+        err: "type error @3:13-3:30: string does not support `-` operator (argument x)",
     }
     test_error_msg! {
         src: r#"
