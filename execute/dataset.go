@@ -61,8 +61,20 @@ func (id DatasetID) IsZero() bool {
 	return id == ZeroDatasetID
 }
 
+// DatasetIDFromNodeID constructs a DatasetID from
+// the plan.NodeID.
+//
+// This method is used to create **consistent** DatasetID
+// values from a plan.NodeID. If two nodes have the same id,
+// they will have the same DatasetID.
 func DatasetIDFromNodeID(id plan.NodeID) DatasetID {
 	return DatasetID(uuid.NewV5(uuid.UUID{}, string(id)))
+}
+
+// RandomDatasetID will construct a new random DatasetID.
+func RandomDatasetID() (DatasetID, error) {
+	did, err := uuid.NewV4()
+	return DatasetID(did), err
 }
 
 type dataset struct {
@@ -83,6 +95,10 @@ func NewDataset(id DatasetID, accMode AccumulationMode, cache DataCache) *datase
 		accMode: accMode,
 		cache:   cache,
 	}
+}
+
+func (d *dataset) ID() DatasetID {
+	return d.id
 }
 
 func (d *dataset) AddTransformation(t Transformation) {
@@ -182,6 +198,10 @@ type PassthroughDataset struct {
 // NewPassthroughDataset constructs a new PassthroughDataset.
 func NewPassthroughDataset(id DatasetID) *PassthroughDataset {
 	return &PassthroughDataset{id: id}
+}
+
+func (d *PassthroughDataset) ID() DatasetID {
+	return d.id
 }
 
 func (d *PassthroughDataset) AddTransformation(t Transformation) {

@@ -10,8 +10,13 @@ import (
 // By default it does nothing.
 type Source struct {
 	execute.ExecutionNode
+	id                  execute.DatasetID
 	AddTransformationFn func(transformation execute.Transformation)
 	RunFn               func(ctx context.Context)
+}
+
+func (s *Source) ID() execute.DatasetID {
+	return s.id
 }
 
 func (s *Source) AddTransformation(t execute.Transformation) {
@@ -30,5 +35,5 @@ func (s *Source) Run(ctx context.Context) {
 // of your test:
 //    execute.RegisterSource(influxdb.FromKind, mock.CreateMockFromSource)
 func CreateMockFromSource(spec plan.ProcedureSpec, id execute.DatasetID, ctx execute.Administration) (execute.Source, error) {
-	return &Source{}, nil
+	return &Source{id: id}, nil
 }

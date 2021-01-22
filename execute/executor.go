@@ -153,7 +153,10 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	}
 	spec := node.ProcedureSpec()
 	kind := spec.Kind()
-	id := DatasetIDFromNodeID(node.ID())
+	id, err := RandomDatasetID()
+	if err != nil {
+		return err
+	}
 
 	if yieldSpec, ok := spec.(plan.YieldProcedureSpec); ok {
 		r := newResult(yieldSpec.YieldName())
@@ -180,7 +183,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 	}
 
 	for i, pred := range nonYieldPredecessors(node) {
-		ec.parents[i] = DatasetIDFromNodeID(pred.ID())
+		ec.parents[i] = v.nodes[pred].ID()
 	}
 
 	// If node is a leaf, create a source

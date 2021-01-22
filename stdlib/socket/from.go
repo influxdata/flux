@@ -189,6 +189,10 @@ type socketSource struct {
 	ts      []execute.Transformation
 }
 
+func (ss *socketSource) ID() execute.DatasetID {
+	return ss.d
+}
+
 func (ss *socketSource) AddTransformation(t execute.Transformation) {
 	ss.ts = append(ss.ts, t)
 }

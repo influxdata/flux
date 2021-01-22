@@ -131,6 +131,10 @@ type CSVSource struct {
 	alloc *memory.Allocator
 }
 
+func (c *CSVSource) ID() execute.DatasetID {
+	return c.id
+}
+
 func (c *CSVSource) AddTransformation(t execute.Transformation) {
 	c.ts = append(c.ts, t)
 }

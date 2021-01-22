@@ -74,6 +74,10 @@ type EmptyTableSource struct {
 	ts []execute.Transformation
 }
 
+func (s *EmptyTableSource) ID() execute.DatasetID {
+	return s.id
+}
+
 func (s *EmptyTableSource) AddTransformation(t execute.Transformation) {
 	s.ts = append(s.ts, t)
 }

@@ -37,6 +37,10 @@ type sourceDecoder struct {
 	ts      []Transformation
 }
 
+func (c *sourceDecoder) ID() DatasetID {
+	return c.id
+}
+
 func (c *sourceDecoder) Do(ctx context.Context, f func(flux.Table) error) error {
 	err := c.decoder.Connect(ctx)
 	if err != nil {
@@ -108,6 +112,10 @@ type sourceIterator struct {
 	id       DatasetID
 	ts       []Transformation
 	iterator SourceIterator
+}
+
+func (s *sourceIterator) ID() DatasetID {
+	return s.id
 }
 
 func (s *sourceIterator) AddTransformation(t Transformation) {

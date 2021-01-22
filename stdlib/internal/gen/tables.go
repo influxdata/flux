@@ -161,6 +161,10 @@ type Source struct {
 	alloc  *memory.Allocator
 }
 
+func (s *Source) ID() execute.DatasetID {
+	return s.id
+}
+
 func (s *Source) AddTransformation(t execute.Transformation) {
 	s.ts = append(s.ts, t)
 }

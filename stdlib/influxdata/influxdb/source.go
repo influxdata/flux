@@ -60,6 +60,10 @@ func CreateSource(id execute.DatasetID, spec RemoteProcedureSpec, a execute.Admi
 	return s, nil
 }
 
+func (s *source) ID() execute.DatasetID {
+	return s.id
+}
+
 func (s *source) AddTransformation(t execute.Transformation) {
 	s.ts = append(s.ts, t)
 }
