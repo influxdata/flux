@@ -401,8 +401,8 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			),
 			t: mustTime("1970-07-10T00:00:00Z"),
 			want: testBounds{
-				Start: mustTime("1970-05-31T00:00:00Z"),
-				Stop:  mustTime("1970-07-31T00:00:00Z"),
+				Start: mustTime("1970-05-30T00:00:00Z"),
+				Stop:  mustTime("1970-07-30T00:00:00Z"),
 			},
 		},
 		{
@@ -415,7 +415,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			t: mustTime("1970-07-31T21:00:00Z"),
 			want: testBounds{
 				Start: mustTime("1970-06-30T22:00:00Z"),
-				Stop:  mustTime("1970-07-31T22:00:00Z"),
+				Stop:  mustTime("1970-07-30T22:00:00Z"),
 			},
 		},
 		{
@@ -441,7 +441,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			t: mustTime("1970-07-31T23:57:00Z"),
 			want: testBounds{
 				Start: mustTime("1970-06-30T23:58:00Z"),
-				Stop:  mustTime("1970-07-31T23:58:00Z"),
+				Stop:  mustTime("1970-07-30T23:58:00Z"),
 			},
 		},
 		{
@@ -467,7 +467,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			t: mustTime("1970-07-31T23:59:57Z"),
 			want: testBounds{
 				Start: mustTime("1970-06-30T23:59:58Z"),
-				Stop:  mustTime("1970-07-31T23:59:58Z"),
+				Stop:  mustTime("1970-07-30T23:59:58Z"),
 			},
 		},
 		{
@@ -493,7 +493,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 			t: mustTime("1970-07-31T23:59:59.999999997Z"),
 			want: testBounds{
 				Start: mustTime("1970-06-30T23:59:59.999999998Z"),
-				Stop:  mustTime("1970-07-31T23:59:59.999999998Z"),
+				Stop:  mustTime("1970-07-30T23:59:59.999999998Z"),
 			},
 		},
 		{
@@ -823,18 +823,18 @@ func TestWindow_NextBounds(t *testing.T) {
 			),
 			t: mustTime("2020-10-01T00:00:00Z"),
 			want: []testBounds{
-				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-31T00:00:00Z")},
+				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-30T00:00:00Z")},
 				{Start: mustTime("2020-10-31T00:00:00Z"), Stop: mustTime("2020-11-30T00:00:00Z")},
-				{Start: mustTime("2020-11-30T00:00:00Z"), Stop: mustTime("2020-12-31T00:00:00Z")},
+				{Start: mustTime("2020-11-30T00:00:00Z"), Stop: mustTime("2020-12-30T00:00:00Z")},
 				{Start: mustTime("2020-12-31T00:00:00Z"), Stop: mustTime("2021-01-31T00:00:00Z")},
 				{Start: mustTime("2021-01-31T00:00:00Z"), Stop: mustTime("2021-02-28T00:00:00Z")},
-				{Start: mustTime("2021-02-28T00:00:00Z"), Stop: mustTime("2021-03-31T00:00:00Z")},
+				{Start: mustTime("2021-02-28T00:00:00Z"), Stop: mustTime("2021-03-28T00:00:00Z")},
 				// This is the case that is fixed by adding index.
 				// If we were to simply add a month to 2-28 the next window would start on 3-28 instead of 3-31.
 				{Start: mustTime("2021-03-31T00:00:00Z"), Stop: mustTime("2021-04-30T00:00:00Z")},
-				{Start: mustTime("2021-04-30T00:00:00Z"), Stop: mustTime("2021-05-31T00:00:00Z")},
+				{Start: mustTime("2021-04-30T00:00:00Z"), Stop: mustTime("2021-05-30T00:00:00Z")},
 				{Start: mustTime("2021-05-31T00:00:00Z"), Stop: mustTime("2021-06-30T00:00:00Z")},
-				{Start: mustTime("2021-06-30T00:00:00Z"), Stop: mustTime("2021-07-31T00:00:00Z")},
+				{Start: mustTime("2021-06-30T00:00:00Z"), Stop: mustTime("2021-07-30T00:00:00Z")},
 				{Start: mustTime("2021-07-31T00:00:00Z"), Stop: mustTime("2021-08-31T00:00:00Z")},
 				{Start: mustTime("2021-08-31T00:00:00Z"), Stop: mustTime("2021-09-30T00:00:00Z")},
 			},
@@ -848,16 +848,16 @@ func TestWindow_NextBounds(t *testing.T) {
 			),
 			t: mustTime("2121-10-01T00:00:00Z"),
 			want: []testBounds{
-				{Start: mustTime("2121-09-30T00:00:00Z"), Stop: mustTime("2121-10-31T00:00:00Z")},
+				{Start: mustTime("2121-09-30T00:00:00Z"), Stop: mustTime("2121-10-30T00:00:00Z")},
 				{Start: mustTime("2121-10-31T00:00:00Z"), Stop: mustTime("2121-11-30T00:00:00Z")},
-				{Start: mustTime("2121-11-30T00:00:00Z"), Stop: mustTime("2121-12-31T00:00:00Z")},
+				{Start: mustTime("2121-11-30T00:00:00Z"), Stop: mustTime("2121-12-30T00:00:00Z")},
 				{Start: mustTime("2121-12-31T00:00:00Z"), Stop: mustTime("2122-01-31T00:00:00Z")},
 				{Start: mustTime("2122-01-31T00:00:00Z"), Stop: mustTime("2122-02-28T00:00:00Z")},
-				{Start: mustTime("2122-02-28T00:00:00Z"), Stop: mustTime("2122-03-31T00:00:00Z")},
+				{Start: mustTime("2122-02-28T00:00:00Z"), Stop: mustTime("2122-03-28T00:00:00Z")},
 				{Start: mustTime("2122-03-31T00:00:00Z"), Stop: mustTime("2122-04-30T00:00:00Z")},
-				{Start: mustTime("2122-04-30T00:00:00Z"), Stop: mustTime("2122-05-31T00:00:00Z")},
+				{Start: mustTime("2122-04-30T00:00:00Z"), Stop: mustTime("2122-05-30T00:00:00Z")},
 				{Start: mustTime("2122-05-31T00:00:00Z"), Stop: mustTime("2122-06-30T00:00:00Z")},
-				{Start: mustTime("2122-06-30T00:00:00Z"), Stop: mustTime("2122-07-31T00:00:00Z")},
+				{Start: mustTime("2122-06-30T00:00:00Z"), Stop: mustTime("2122-07-30T00:00:00Z")},
 				{Start: mustTime("2122-07-31T00:00:00Z"), Stop: mustTime("2122-08-31T00:00:00Z")},
 				{Start: mustTime("2122-08-31T00:00:00Z"), Stop: mustTime("2122-09-30T00:00:00Z")},
 			},
@@ -953,14 +953,14 @@ func TestWindow_PrevBounds(t *testing.T) {
 			),
 			t: mustTime("2020-10-01T00:00:00Z"),
 			want: []testBounds{
-				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-31T00:00:00Z")},
+				{Start: mustTime("2020-09-30T00:00:00Z"), Stop: mustTime("2020-10-30T00:00:00Z")},
 				{Start: mustTime("2020-08-31T00:00:00Z"), Stop: mustTime("2020-09-30T00:00:00Z")},
 				{Start: mustTime("2020-07-31T00:00:00Z"), Stop: mustTime("2020-08-31T00:00:00Z")},
-				{Start: mustTime("2020-06-30T00:00:00Z"), Stop: mustTime("2020-07-31T00:00:00Z")},
+				{Start: mustTime("2020-06-30T00:00:00Z"), Stop: mustTime("2020-07-30T00:00:00Z")},
 				{Start: mustTime("2020-05-31T00:00:00Z"), Stop: mustTime("2020-06-30T00:00:00Z")},
-				{Start: mustTime("2020-04-30T00:00:00Z"), Stop: mustTime("2020-05-31T00:00:00Z")},
+				{Start: mustTime("2020-04-30T00:00:00Z"), Stop: mustTime("2020-05-30T00:00:00Z")},
 				{Start: mustTime("2020-03-31T00:00:00Z"), Stop: mustTime("2020-04-30T00:00:00Z")},
-				{Start: mustTime("2020-02-29T00:00:00Z"), Stop: mustTime("2020-03-31T00:00:00Z")},
+				{Start: mustTime("2020-02-29T00:00:00Z"), Stop: mustTime("2020-03-29T00:00:00Z")},
 				{Start: mustTime("2020-01-31T00:00:00Z"), Stop: mustTime("2020-02-29T00:00:00Z")},
 				{Start: mustTime("2019-12-31T00:00:00Z"), Stop: mustTime("2020-01-31T00:00:00Z")},
 			},

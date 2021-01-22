@@ -562,7 +562,7 @@ func BenchmarkNewWindow(b *testing.B) {
 				values.ConvertDurationNsecs(30*time.Second)),
 			t: execute.Time(5 * time.Minute),
 			want: execute.Bounds{
-				Start: execute.Time(10 * time.Minute + 30 * time.Second),
+				Start: execute.Time(10*time.Minute + 30*time.Second),
 				Stop:  execute.Time(5*time.Minute + 30*time.Second),
 			},
 		},
