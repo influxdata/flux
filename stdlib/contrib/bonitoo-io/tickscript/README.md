@@ -19,24 +19,46 @@ To learn more about monitoring and alerting in InfluxDB 2.x and Flux, please see
 - `join`
 - `alert`
 - `topic`
+- `deadman`
 
 ## Conversion guidelines
-
-* Both `batch` and `stream` translates to `from(bucket: ...)` in Flux.
 
 * Variable conversions  
   `var realm = 'qa'` becomes `realm = "qa"` in Flux  
   `var warnLevel = lambda: "device_count" > 2000` is a function `warnLevel = (r) => r["device_count"] > 2000` in Flux
+
+* Both `batch` and `stream` translates to `from(bucket: ...)` in Flux.
+
+* Every `batch`, `stream` and `deadman` must be separate task.
 
 * `every(duration)` and `offset(duration)` property maps to `every` and `offset` fields in task's option record.
   For better control or aligned scheduling, use `cron` option instead.
 
 * `period(duration)` property maps to `range(start: -duration)` in Flux pipeline.
 
+* `deadman()`'s `interval` maps to task option `every` field.
+
 * `groupBy(columns)` maps to `group(columns)`.  
   Columns must include internal `_measurement` column.
   For convenience, function `groupBy` is provided in this package.  
   Flux results are grouped by all tags by default. To ungroup, call `group()` without argument.
+
+```js
+    query('''
+        SELECT mean("counter") AS "total_mean" WHERE ...
+        ''')
+        .groupBy('host')
+        .period(1m)
+```
+can be rewritten to Flux as
+```js
+    from(bucket: ...)
+       |> range(start: -1m)
+       |> filter(fn: (r) => ... )
+       |> schema.fieldsAsCols()
+       |> ts.groupBy(columns: ["host"])
+       |> ts.select(column: "counter", fn: mean, as: "total_mean")
+```
 
 * `groupBy(time(t), columns)` maps to `group(columns)` and `aggregateWindow(..., every: t, ...)`  
   The package provides convenience functions `groupBy(columns)` and `selectWindow(..., every(t), ...)` to achieve the same.
@@ -55,9 +77,11 @@ can be rewritten to Flux as
        |> range(start: -1m)
        |> filter(fn: (r) => ... )
        |> schema.fieldsAsCols()
-       |> ts.grouBy(columns: ["host"])
+       |> ts.groupBy(columns: ["host"])
        |> ts.selectWindow(column: "counter", fn: sum, as: "total_sum", every: 10s, defaultValue: 0)
 ```
+
+* `eval(expression)` corresponds to `map(fn: (r) = > ({ r with ...}))` in Flux
 
 * TICKscript `alert` provides property methods to send alerts to event handlers or a topic.
   In Flux, use `tickscript.topic()` pipeline function.
@@ -186,7 +210,8 @@ ts.join(tables: { requests: requests, failures: failures }, measurement: "xte")
 ### tickscript.alert
 
 `tickscript.alert()` checks input data and create alerts.
-It requires pivoted data (just call `schema.fieldsAsCols()` before `tickscript.alert()`).
+
+_It requires pivoted data (call `schema.fieldsAsCols()` before `tickscript.alert()`)._
 
 Parameters:
 - `check` - Check description. It is a record required by the underlying `monitor` package with the following required fields:  
@@ -195,7 +220,7 @@ Parameters:
    `_type` - check type (string value, must be `"custom"`)  
    `tags` - record with additional tags
 - `id` - Function that constructs alert ID. Default is `(r) => "${r._check_id}"`.
-- `message` - Function that constructs alert message. Default is `Check: ${r._check_name} is: ${r._level}"`.
+- `message` - Function that constructs alert message. Default is `Threshold Check: ${r._check_name} is: ${r._level}"`.
 - `details` - Function that constructs detailed alert message. Default is `(r) => ""`.
 - `crit` - Predicate function that determines `crit` status. Default is `(r) => false`.
 - `warn` - Predicate function that determines `warn` status. Default is `(r) => false`.
@@ -213,9 +238,29 @@ Parameters:
 
 _See Examples._
 
+### tickscript.deadman
+
+`tickscript.deadman()` creates an alert on low throughput.
+Triggers critical alert if thoughput drops bellow `threshold` value.
+
+_It requires pivoted data (call `schema.fieldsAsCols()` before `tickscript.deadman()`)._
+
+Parameters:
+- `check` - Check description. It is a record required by the underlying `monitor` package with the following required fields:  
+   `_check_id` - check unique identifier. Checks created via InfluxDB UI have GUID generated value, but the value can be arbitrary (but unique).  
+   `_check_name` - check name  
+   `_type` - check type (string value, must be `"deadman"`)  
+   `tags` - record with additional tags
+- `measurement` - measurement name
+- `threshold` - threshold value (integer)
+- `id` - Function that constructs alert ID. Default is `(r) => "${r._check_id}"`.
+- `message` - Function that constructs alert message. Default is `Deadman Check: ${r._check_name} is: ${r._level}"`.
+
+_See Examples._
+
 ## Examples
 
-### Using topic
+### Batch node
 
 ##### Original TICKscript
 ```js
@@ -239,7 +284,7 @@ batch
         .topic('TESTING')
 ```
 
-##### InfluxDB alert task
+##### InfluxDB task
 
 ```js
 import ts "contrib/bonitoo-io/tickscript"
@@ -287,3 +332,61 @@ from(bucket: db)
 ##### Topic handler
 
 Use notification rule as topic handler with additional filter for `_topic` tag value `"TESTING"`.
+
+### Batch node
+
+##### Original TICKscript
+```js
+stream
+  |from()
+    .measurement('cpu')
+    .groupBy('host')
+    .where(lambda: "realm" != 'build')
+  |deadman(10, 10m)
+    .id('Deadman for system metrics')
+    .message('{{ .ID }} is {{ .Level }} on {{ index .Tags "host" }}')
+    .stateChangesOnly()
+    .topic('DEADMEN')
+ ```
+
+##### InfluxDB task
+
+```js
+import ts "contrib/bonitoo-io/tickscript"
+import "influxdata/influxdb/schema"
+
+// required task option
+option task = {
+  name: "System Metrics Deadman",
+  every: 10m
+}
+
+// custom check info
+check = {
+  _check_id: "${task.name}-check",
+  _check_name: "${task.name} Check",
+  _type: "deadman",
+  tags: {}
+}
+
+// converted TICKscript
+
+from(bucket: db)
+    |> range(start: -10m)
+    |> filter(fn: (r) => r.measurement == "cpu")
+    |> filter(fn: (r) => r.realm == "build")
+    |> schema.fieldsAsCols()
+    |> ts.groupBy(columns: ["host"])
+    |> ts.deadman(
+        check: check,
+        measurement: "cpu",
+        threshold: 10,
+        id: (r) => "Deadman for system metrics",
+        message: (r) => "${r.id} is ${r._level} on ${r.host}"
+    )
+    |> ts.topic(name: "DEADMEN")
+```
+
+##### Topic handler
+
+Use notification rule as topic handler with additional filter for `_topic` tag value `"DEADMEN"`.
