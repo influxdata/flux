@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	FromKind = "experimental/array.from"
+	FromKind = "array.from"
 )
 
 type FromOpSpec struct {
@@ -25,8 +25,8 @@ type FromOpSpec struct {
 }
 
 func init() {
-	fromSignature := runtime.MustLookupBuiltinType("experimental/array", "from")
-	runtime.RegisterPackageValue("experimental/array", "from", flux.MustValue(flux.FunctionValue(FromKind, createFromOpSpec, fromSignature)))
+	fromSignature := runtime.MustLookupBuiltinType("array", "from")
+	runtime.RegisterPackageValue("array", "from", flux.MustValue(flux.FunctionValue(FromKind, createFromOpSpec, fromSignature)))
 	plan.RegisterProcedureSpec(FromKind, newFromProcedure, FromKind)
 	execute.RegisterSource(FromKind, createFromSource)
 }

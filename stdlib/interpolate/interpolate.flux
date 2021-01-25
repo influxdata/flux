@@ -7,7 +7,7 @@ package interpolate
 // Example
 //
 //    import "interpolate"
-//    import "experimental/array"
+//    import "array"
 //    
 //    array.from(
 //        rows: [

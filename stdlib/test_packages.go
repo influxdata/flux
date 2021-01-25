@@ -4,6 +4,7 @@ package stdlib
 
 import (
 	ast "github.com/influxdata/flux/ast"
+	array "github.com/influxdata/flux/stdlib/array"
 	naivebayesclassifier "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
 	anomalydetection "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
 	statsmodels "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
@@ -14,7 +15,6 @@ import (
 	dict "github.com/influxdata/flux/stdlib/dict"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
 	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
-	array "github.com/influxdata/flux/stdlib/experimental/array"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
 	http "github.com/influxdata/flux/stdlib/http"

@@ -175,7 +175,7 @@ csv.from(csv: data) |> map(fn: (r) => r.nonexistent)`
 // functions or chain()
 func TestPlanNodeUniqueness(t *testing.T) {
 	prelude := `
-import "experimental/array"
+import "array"
 import "experimental"
 
 data = array.from(rows: [{
@@ -229,24 +229,24 @@ guild = data
 experimental.chain(first: id, second: guild)
 `,
 			want: `[digraph {
-  experimental/array.from0
+  array.from0
   range1
   filter2
   // r._field == "id"
   generated_yield
 
-  experimental/array.from0 -> range1
+  array.from0 -> range1
   range1 -> filter2
   filter2 -> generated_yield
 }
  digraph {
-  experimental/array.from3
+  array.from3
   range4
   filter5
   // r._field == "guild"
   generated_yield
 
-  experimental/array.from3 -> range4
+  array.from3 -> range4
   range4 -> filter5
   filter5 -> generated_yield
 }
@@ -269,26 +269,26 @@ data
 |> filter(fn: (r) => r["_field"] == id)
 `,
 			want: `[digraph {
-  experimental/array.from0
+  array.from0
   range1
   filter2
   // r._field == "id"
   sort3
   generated_yield
 
-  experimental/array.from0 -> range1
+  array.from0 -> range1
   range1 -> filter2
   filter2 -> sort3
   sort3 -> generated_yield
 }
  digraph {
-  experimental/array.from4
+  array.from4
   range5
   filter6
   // r._field == "id"
   generated_yield
 
-  experimental/array.from4 -> range5
+  array.from4 -> range5
   range5 -> filter6
   filter6 -> generated_yield
 }

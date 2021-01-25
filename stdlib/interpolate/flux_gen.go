@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   23,
 				},
 				File:   "interpolate.flux",
-				Source: "package interpolate\n\n\n// Linear inserts rows at regular intervals using linear interpolation\n// to determine the value of any missing rows.\n//\n// Example\n//\n//    import \"interpolate\"\n//    import \"experimental/array\"\n//    \n//    array.from(\n//        rows: [\n//            {_time: 2021-01-01T00:00:00Z, _value: 10.0},\n//            {_time: 2021-01-02T00:00:00Z, _value: 20.0},\n//            {_time: 2021-01-04T00:00:00Z, _value: 40.0},\n//            {_time: 2021-01-05T00:00:00Z, _value: 50.0},\n//            {_time: 2021-01-08T00:00:00Z, _value: 80.0},\n//            {_time: 2021-01-09T00:00:00Z, _value: 90.0},\n//        ],\n//    )\n//        |> interpolate.linear(every: 1d)\nbuiltin linear",
+				Source: "package interpolate\n\n\n// Linear inserts rows at regular intervals using linear interpolation\n// to determine the value of any missing rows.\n//\n// Example\n//\n//    import \"interpolate\"\n//    import \"array\"\n//    \n//    array.from(\n//        rows: [\n//            {_time: 2021-01-01T00:00:00Z, _value: 10.0},\n//            {_time: 2021-01-02T00:00:00Z, _value: 20.0},\n//            {_time: 2021-01-04T00:00:00Z, _value: 40.0},\n//            {_time: 2021-01-05T00:00:00Z, _value: 50.0},\n//            {_time: 2021-01-08T00:00:00Z, _value: 80.0},\n//            {_time: 2021-01-09T00:00:00Z, _value: 90.0},\n//        ],\n//    )\n//        |> interpolate.linear(every: 1d)\nbuiltin linear",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,

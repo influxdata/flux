@@ -25,7 +25,7 @@ var pkgAST = &ast.Package{
 					Line:   16,
 				},
 				File:   "array.flux",
-				Source: "package array\n\n\n// from will construct a table from the input rows.\n//\n// This function takes the `rows` parameter. The rows\n// parameter is an array of records that will be constructed.\n// All of the records must have the same keys and the same types\n// for the values.\n//\n// Example:\n//\n//    import \"experimental/array\"\n//    array.from(rows:[{a:1, b: false, c: \"hi\"}, {a:2, b: true, c: \"bye\"}])\n//\nbuiltin from",
+				Source: "package array\n\n\n// from will construct a table from the input rows.\n//\n// This function takes the `rows` parameter. The rows\n// parameter is an array of records that will be constructed.\n// All of the records must have the same keys and the same types\n// for the values.\n//\n// Example:\n//\n//    import \"array\"\n//    array.from(rows:[{a:1, b: false, c: \"hi\"}, {a:2, b: true, c: \"bye\"}])\n//\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -334,5 +334,5 @@ var pkgAST = &ast.Package{
 		},
 	}},
 	Package: "array",
-	Path:    "experimental/array",
+	Path:    "array",
 }

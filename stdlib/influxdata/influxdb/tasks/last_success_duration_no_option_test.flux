@@ -1,7 +1,7 @@
 package tasks_test
 
 import "testing"
-import "experimental/array"
+import "array"
 import "influxdata/influxdb/tasks"
 
 option now = () => 2020-09-08T09:00:00Z

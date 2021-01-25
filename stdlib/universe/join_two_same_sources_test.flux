@@ -1,7 +1,7 @@
 package universe_test
 
 import "testing"
-import "experimental/array"
+import "array"
 
 inData = array.from(rows: [
     {

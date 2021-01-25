@@ -1,7 +1,7 @@
 package array_test
 
 import "testing"
-import "experimental/array"
+import "array"
 
 option now = () => 2018-12-19T22:14:30Z
 

@@ -10,7 +10,7 @@ package array
 //
 // Example:
 //
-//    import "experimental/array"
+//    import "array"
 //    array.from(rows:[{a:1, b: false, c: "hi"}, {a:2, b: true, c: "bye"}])
 //
 builtin from : (rows: [A]) => [A] where A: Record
