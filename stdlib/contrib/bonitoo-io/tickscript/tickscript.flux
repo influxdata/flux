@@ -7,7 +7,7 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/schema"
 import "universe"
 
-// alert
+// alert is a helper function similar to TICKscript alert.
 alert = (
     check,
     id=(r)=>"${r._check_id}",
@@ -17,8 +17,18 @@ alert = (
     warn=(r) => false,
     info=(r) => false,
     ok=(r) => true,
-    tables=<-) =>
-  tables
+    topic="",
+    tables=<-) => {
+
+  _addTopic =
+    if topic != "" then
+      (tables=<-) => tables
+        |> set(key: "_topic", value: topic )
+        |> experimental.group(mode: "extend", columns: ["_topic"])
+    else
+      (tables=<-) => tables
+
+  return tables
     |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)
     |> map(fn: (r) => ({r with
         _check_id: check._check_id,
@@ -26,6 +36,7 @@ alert = (
     }))
     |> map(fn: (r) => ({ r with id: id(r: r) }))
     |> map(fn: (r) => ({ r with details: details(r: r) }))
+    |> _addTopic()
     |> monitor.check(
         crit: crit,
         warn: warn,
@@ -34,24 +45,32 @@ alert = (
         messageFn: message,
         data: check
     )
+}
 
-// deadman
+// deadman is a helper function similar to TICKscript deadman.
 deadman = (
     check,
     measurement, threshold=0,
     id=(r)=>"${r._check_id}",
     message=(r)=>"Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"),
+    topic="",
     tables=<-) => {
+
+   // In order to detect empty stream (without tables), it merges input with dummy stream and counts the result,
+   // because count() returns nothing for empty input.
+
   _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: "unknown", _value: 0}])
     |> map(fn: (r) => ({ r with _measurement: measurement }))
     |> experimental.group(columns: ["_measurement"], mode: "extend") // required by monitor.check
+
   _counts = union(tables: [_dummy, tables])
     |> keep(columns: ["_time"])
     |> map(fn: (r) => ({ r with __value__: 0 }))
     |> count(column: "__value__")
     |> findColumn(fn: (key) => true, column: "__value__")
+
   _tables =
-    if _counts[0] == 1 then // only dummy record is in the unioned stream
+    if _counts[0] == 1 then // only dummy record is in the merged stream
       _dummy
         |> limit(n: 0) // need empty table
     else
@@ -67,23 +86,13 @@ deadman = (
       check: check,
       id: id,
       message: message,
-      crit: (r) => r.dead
+      crit: (r) => r.dead,
+      topic: topic
     )
 }
 
-// routes alerts to topic
-topic = (name, tables=<-) =>
-  tables
-    |> set(key: "_topic", value: name )
-    |> experimental.group(mode: "extend", columns: ["_topic"])
-    |> monitor.write()
-
-//
-// TICKscript -> Flux helper functions
-//
-
-// selects a column and optionally computes aggregated value
-// it is meant to be a convenience function to be used for:
+// select selects a column and optionally computes aggregated value.
+// It is meant to be a convenience function to be used for:
 //
 //   query("SELECT x AS y")
 //   query("SELECT f(x) AS y") without time grouping
@@ -97,8 +106,8 @@ select = (column="_value", fn=(column, tables=<-) => tables, as, tables=<-) => {
       |> rename(fn: (column) => if column == _column then _as else column)
 }
 
-// selects column with time grouping and computes aggregated values
-// it is meant to be a convenience function to be used for:
+// selectWindow selects a column with time grouping and computes aggregated values.
+// It is a convenience function to be used as
 //
 //   query("SELECT f(x) AS y")
 //     .groupBy(time(t), ...)
@@ -113,23 +122,23 @@ selectWindow = (column="_value", fn, as, every, defaultValue, tables=<-) => {
       |> rename(fn: (column) => if column == _column then _as else column)
 }
 
-// computes aggregated value of tha data
-// it is meant to be a convenience function to be used for:
+// compute computes aggregated value of the input data.
+// It is a convenience function to be used as
 //
 //   |median('x)'
 //      .as(y)
 //
 compute = select
 
-// groups by specified columns
-// it is meant to be a convenience function, it adds _measurement column which is required by monitor.check() (in alert())
+// groupBy groups by specified columns.
+// It is a convenience function, it adds _measurement column which is required by monitor.check().
 groupBy = (columns, tables=<-) =>
   tables
     |> group(columns: columns)
     |> experimental.group(columns: ["_measurement"], mode:"extend") // required by monitor.check
 
-// joins the streams using standard join()
-// it is meant to be a convenience function, it ensures _measurement column exists and is in the group key
+// join merges two streams using standard join().
+// It is meant a convenience function, it ensures _measurement column exists and is in the group key.
 join = (tables, on=["_time"], measurement) =>
     universe.join(tables: tables, on: on)
       |> map(fn: (r) => ({ r with _measurement: measurement }))
