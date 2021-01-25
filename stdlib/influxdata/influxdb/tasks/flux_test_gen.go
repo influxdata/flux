@@ -1085,7 +1085,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_duration_no_option_test.flux",
@@ -1101,7 +1101,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_duration_no_option_test.flux",
@@ -2364,7 +2364,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_duration_option_test.flux",
@@ -2380,7 +2380,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_duration_option_test.flux",
@@ -3640,7 +3640,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_with_option_test.flux",
@@ -3656,7 +3656,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_with_option_test.flux",
@@ -4812,7 +4812,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_without_option_test.flux",
@@ -4828,7 +4828,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_without_option_test.flux",

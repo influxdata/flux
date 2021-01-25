@@ -40,6 +40,7 @@ import (
 
 var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
+	pkgs = append(pkgs, array.FluxTestPackages...)
 	pkgs = append(pkgs, naivebayesclassifier.FluxTestPackages...)
 	pkgs = append(pkgs, anomalydetection.FluxTestPackages...)
 	pkgs = append(pkgs, statsmodels.FluxTestPackages...)
@@ -50,7 +51,6 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, dict.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate1.FluxTestPackages...)
-	pkgs = append(pkgs, array.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)

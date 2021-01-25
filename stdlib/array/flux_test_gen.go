@@ -2729,7 +2729,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "from_group_test.flux",
@@ -2745,7 +2745,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "from_group_test.flux",
@@ -5339,7 +5339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "from_test.flux",
@@ -5355,7 +5355,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "from_test.flux",
