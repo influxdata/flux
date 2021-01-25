@@ -18,7 +18,6 @@ To learn more about monitoring and alerting in InfluxDB 2.x and Flux, please see
 - `compute`
 - `join`
 - `alert`
-- `topic`
 - `deadman`
 
 ## Conversion guidelines
@@ -36,7 +35,7 @@ To learn more about monitoring and alerting in InfluxDB 2.x and Flux, please see
 
 * `period(duration)` property maps to `range(start: -duration)` in Flux pipeline.
 
-* `deadman()`'s `interval` maps to task option `every` field.
+* `deadman()`'s `interval` maps to task's `every` scheduling value.
 
 * `groupBy(columns)` maps to `group(columns)`.  
   Columns must include internal `_measurement` column.
@@ -84,7 +83,7 @@ can be rewritten to Flux as
 * `eval(expression)` corresponds to `map(fn: (r) = > ({ r with ...}))` in Flux
 
 * TICKscript `alert` provides property methods to send alerts to event handlers or a topic.
-  In Flux, use `tickscript.topic()` pipeline function.
+  In Flux, use `topic` parameter in `alert()` to route the alert to topic.
 
 * `stateChangesOnly` is a filter available in InfluxDB notification rule.
 
@@ -94,9 +93,9 @@ can be rewritten to Flux as
 var data = batch
     | query(...)
 data
-    | alert()
+    | alert(...)
         .topic('A')
-    | alert()
+    | alert(...)
         .topic('B')
 ```
 
@@ -107,11 +106,9 @@ data = from(bucket: ...)
     |> range(start: -duration)
     ...
 data
-    |> alert()
-    |> topic('A')
+    |> alert(..., topic: "A")
 data
-    |> alert()
-    |> topic('B')
+    |> alert(..., topic: "B")
 ```
 
 ## Functions
@@ -226,15 +223,7 @@ Parameters:
 - `warn` - Predicate function that determines `warn` status. Default is `(r) => false`.
 - `info` - Predicate function that determines `info` status. Default is `(r) => false`.
 - `ok` - Predicate function that determines `info` status. Default is `(r) => true`.
-
-_See Examples._
-
-### tickscript.topic
-
-`tickscript.topic()` sends alerts to a topic.
-
-Parameters:
-- `name` - Topic name.
+- `topic` - Topic name.
 
 _See Examples._
 
@@ -255,6 +244,7 @@ Parameters:
 - `threshold` - threshold value (integer)
 - `id` - Function that constructs alert ID. Default is `(r) => "${r._check_id}"`.
 - `message` - Function that constructs alert message. Default is `Deadman Check: ${r._check_name} is: ${r._level}"`.
+- `topic` - Topic name.
 
 _See Examples._
 
@@ -273,15 +263,15 @@ h_threshold = 5000
 
 batch
     |query('SELECT mean(' + metric_type + ') AS "KafkaMsgRate" FROM ' +  db  + ' WHERE realm = \'' + tier + '\' AND "host" =~ /^kafka.+.m02/')
-    .period(duration)
-    .every(frequency)
-    .groupBy('host','realm')
+      .period(duration)
+      .every(frequency)
+      .groupBy('host','realm')
    |alert()
-        .id('Realm: {{index .Tags "realm"}} - Hostname: {{index .Tags "host"}} / Metric: ' + metric_type + ' threshold alert' )
-        .message('{{.ID }}: {{ .Level }} - {{ index .Fields "KafkaMsgRate" | printf "%0.2f"}}')
-        .crit(lambda: "KafkaMsgRate" > h_threshold)
-        .stateChangesOnly()
-        .topic('TESTING')
+      .id('Realm: {{index .Tags "realm"}} - Hostname: {{index .Tags "host"}} / Metric: ' + metric_type + ' threshold alert' )
+      .message('{{.ID }}: {{ .Level }} - {{ index .Fields "KafkaMsgRate" | printf "%0.2f"}}')
+      .crit(lambda: "KafkaMsgRate" > h_threshold)
+      .stateChangesOnly()
+      .topic('TESTING')
 ```
 
 ##### InfluxDB task
@@ -307,6 +297,7 @@ check = {
 // converted TICKscript
 
 duration = 5m
+every = 1m
 db = "gw"
 tier = "qa"
 metric_type = "kafka_message_in_rate"
@@ -324,9 +315,9 @@ from(bucket: db)
         check: check,
         id: (r) => "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert",
         message: (r) => "${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}",
-        crit: (r) => r.KafkaMsgRate > h_threshold
+        crit: (r) => r.KafkaMsgRate > h_threshold,
+        topic: "TESTING"
     )
-    |> ts.topic(name: "TESTING")
 ```
 
 ##### Topic handler
@@ -372,7 +363,7 @@ check = {
 // converted TICKscript
 
 from(bucket: db)
-    |> range(start: -10m)
+    |> range(start: -task.every)
     |> filter(fn: (r) => r.measurement == "cpu")
     |> filter(fn: (r) => r.realm == "build")
     |> schema.fieldsAsCols()
@@ -382,9 +373,9 @@ from(bucket: db)
         measurement: "cpu",
         threshold: 10,
         id: (r) => "Deadman for system metrics",
-        message: (r) => "${r.id} is ${r._level} on ${r.host}"
+        message: (r) => "${r.id} is ${r._level} on ${if exists r.host then r.host else "uknown"}",
+        topic: "DEADMEN"
     )
-    |> ts.topic(name: "DEADMEN")
 ```
 
 ##### Topic handler
