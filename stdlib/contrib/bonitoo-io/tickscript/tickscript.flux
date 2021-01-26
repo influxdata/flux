@@ -57,17 +57,18 @@ deadman = (
     tables=<-) => {
 
    // In order to detect empty stream (without tables), it merges input with dummy stream and counts the result,
-   // because count() returns nothing for empty input.
+   // because count() returns nothing for empty input. If the input stream is empty, then dummy stream with empty
+   // table is used in order for count() to return 0.
 
   _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: "unknown", _value: 0}])
-    |> map(fn: (r) => ({ r with _measurement: measurement }))
+    |> set(key: "_measurement", value: measurement)
     |> experimental.group(columns: ["_measurement"], mode: "extend") // required by monitor.check
 
   _counts = union(tables: [_dummy, tables])
-    |> keep(columns: ["_time"])
-    |> map(fn: (r) => ({ r with __value__: 0 }))
+    |> keep(columns: ["_measurement", "_time"])
+    |> duplicate(column: "_measurement", as: "__value__")        // _measurement column is always present
     |> count(column: "__value__")
-    |> findColumn(fn: (key) => true, column: "__value__")
+    |> findColumn(fn: (key) => key._measurement == measurement, column: "__value__")
 
   _tables =
     if _counts[0] == 1 then // only dummy record is in the merged stream
@@ -81,7 +82,7 @@ deadman = (
     |> count(column: "__value__")
     |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation
     |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds
-    |> drop(columns: ["__value__"])
+    |> drop(columns: ["__value__"])                              // drop dummy field
     |> alert(
       check: check,
       id: id,
