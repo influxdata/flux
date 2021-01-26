@@ -45,7 +45,7 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 			runFluxTests(setup, flags)
 		},
 	}
-	testCommand.Flags().StringVarP(&flags.path, "path", "p", "./stdlib", "The root level directory for all packages.")
+	testCommand.Flags().StringVarP(&flags.path, "path", "p", ".", "The root level directory for all packages.")
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, or -vv)")
 	return testCommand
