@@ -50,6 +50,11 @@ func NewWindow(every, period, offset values.Duration) (Window, error) {
 	return w, nil
 }
 
+// IsZero checks if the window's every duration is zero
+func (w Window) IsZero() bool {
+	return w.every.IsZero()
+}
+
 func (w Window) isValid() error {
 	if w.every.IsZero() {
 		return errors.New(codes.Invalid, "duration used as an interval cannot be zero")
