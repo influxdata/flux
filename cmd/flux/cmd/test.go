@@ -17,6 +17,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/fluxinit"
@@ -326,8 +327,8 @@ func (t *TestReporter) ReportTestRun(test *Test) {
 			fmt.Print(".")
 		}
 	} else {
-		if test.Error() != nil {
-			fmt.Printf("%s...fail\n", test.Name())
+		if err := test.Error(); err != nil {
+			fmt.Printf("%s...fail: %s\n", test.Name(), err)
 		} else {
 			fmt.Printf("%s...success\n", test.Name())
 		}
@@ -366,6 +367,7 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	c := lang.ASTCompiler{AST: jsonAST}
 
 	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	ctx = testing.Inject(ctx)
 	program, err := c.Compile(ctx, runtime.Default)
 	if err != nil {
 		return errors.Wrap(err, codes.Invalid, "failed to compile")
@@ -392,7 +394,8 @@ func (testExecutor) Run(pkg *ast.Package) error {
 			return err
 		}
 	}
-	return nil
+	results.Release()
+	return results.Err()
 }
 
 func (testExecutor) Close() error { return nil }

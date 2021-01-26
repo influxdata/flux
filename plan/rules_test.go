@@ -8,6 +8,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/dependencies/dependenciestest"
+	dtesting "github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/lang"
 	"github.com/influxdata/flux/plan"
@@ -214,5 +215,45 @@ func TestMultiRootMatch(t *testing.T) {
 	wantSeenNodes := []plan.NodeID{"mean4", "max3", "min2"}
 	if !cmp.Equal(wantSeenNodes, multiRootRule.SeenNodes) {
 		t.Errorf("did not find expected seen nodes, -want/+got:\n%v", cmp.Diff(wantSeenNodes, multiRootRule.SeenNodes))
+	}
+}
+
+func TestExpectPlannerRule(t *testing.T) {
+	plan.ClearRegisteredRules()
+
+	rewritten := false
+	plan.RegisterLogicalRules(&plantest.FunctionRule{
+		RewriteFn: func(ctx context.Context, node plan.Node) (plan.Node, bool, error) {
+			if rewritten {
+				return node, false, nil
+			}
+			rewritten = true
+			return node, true, nil
+		},
+	})
+
+	now := time.Now().UTC()
+	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
+		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
+	if err != nil {
+		t.Fatalf("could not compile very simple Flux query: %v", err)
+	}
+
+	logicalPlanner := plan.NewLogicalPlanner()
+	initPlan, err := logicalPlanner.CreateInitialPlan(fluxSpec)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := dtesting.Inject(context.Background())
+	if err := dtesting.ExpectPlannerRule(ctx, "function", 1); err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	if _, err := logicalPlanner.Plan(ctx, initPlan); err != nil {
+		t.Fatalf("could not do logical planning: %s", err)
+	}
+
+	if err := dtesting.Check(ctx); err != nil {
+		t.Fatalf("unexpected error: %s", err)
 	}
 }

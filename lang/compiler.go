@@ -9,6 +9,7 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
@@ -325,6 +326,9 @@ func (p *Program) processResults(ctx context.Context, q *query, resultMap map[st
 			return
 		}
 	}
+
+	// If the testing framework was configured, verify all expectations.
+	q.err = testing.Check(ctx)
 }
 
 func (p *Program) readMetadata(q *query, metaCh <-chan metadata.Metadata) {
