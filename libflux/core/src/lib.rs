@@ -3,6 +3,7 @@
 //! The flux crate handles the parsing and semantic analysis of flux source
 //! code.
 extern crate chrono;
+extern crate derive_more;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_aux;
@@ -14,22 +15,19 @@ pub mod scanner;
 pub mod semantic;
 
 use std::error;
-use std::fmt;
+pub use std::fmt;
+
+use derive_more::Display;
 
 pub use ast::DEFAULT_PACKAGE_NAME;
 
 /// An error that can occur due to problems in ast generation or semantic
 /// analysis.
-#[derive(Debug, Clone)]
+#[derive(Debug, Display, Clone)]
+#[display(fmt = "{}", msg)]
 pub struct Error {
     /// Message.
     pub msg: String,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.msg)
-    }
 }
 
 impl error::Error for Error {

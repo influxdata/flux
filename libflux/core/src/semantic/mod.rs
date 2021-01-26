@@ -29,17 +29,12 @@ use crate::semantic::fresh::Fresher;
 // This needs to be public so libstd can access it.
 // Once we merge libstd and flux this can be made private again.
 pub use crate::semantic::import::Importer;
-use std::fmt;
+use derive_more::Display;
 
-#[derive(Debug)]
+#[derive(Debug, Display)]
+#[display(fmt = "{}", msg)]
 pub struct Error {
     msg: String,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.msg)
-    }
 }
 
 impl From<nodes::Error> for Error {

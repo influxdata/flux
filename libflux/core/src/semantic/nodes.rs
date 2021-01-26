@@ -28,54 +28,32 @@ use crate::semantic::{
 use chrono::prelude::DateTime;
 use chrono::FixedOffset;
 use derivative::Derivative;
-use std::fmt;
 use std::fmt::Debug;
 use std::vec::Vec;
+
+use derive_more::Display;
 
 // Result returned from the various 'infer' methods defined in this
 // module. The result of inferring an expression or statment is an
 // updated type environment and a set of type constraints to be solved.
 pub type Result = std::result::Result<(Environment, Constraints), Error>;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Display, PartialEq)]
 pub enum Error {
+    #[display(fmt = "{}", _0)]
     Inference(infer::Error),
+    #[display(fmt = "error {}: undefined builtin identifier {}", _1, _0)]
     UndefinedBuiltin(String, ast::SourceLocation),
+    #[display(fmt = "error {}: undefined identifier {}", _1, _0)]
     UndefinedIdentifier(String, ast::SourceLocation),
+    #[display(fmt = "error {}: invalid binary operator {}", _1, _0)]
     InvalidBinOp(ast::Operator, ast::SourceLocation),
+    #[display(fmt = "error {}: invalid unary operator {}", _1, _0)]
     InvalidUnaryOp(ast::Operator, ast::SourceLocation),
+    #[display(fmt = "error {}: invalid import path {}", _1, _0)]
     InvalidImportPath(String, ast::SourceLocation),
+    #[display(fmt = "error {}: return not valid in file block", _0)]
     InvalidReturn(ast::SourceLocation),
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::Inference(err) => std::fmt::Display::fmt(err, f),
-            Error::UndefinedBuiltin(x, loc) => {
-                write!(f, "error {}: undefined builtin identifier {}", loc, x)
-            }
-            Error::UndefinedIdentifier(x, loc) => {
-                write!(f, "error {}: undefined identifier {}", loc, x)
-            }
-            Error::InvalidBinOp(op, loc) => write!(
-                f,
-                "error {}: invalid binary operator {}",
-                loc,
-                op.to_string()
-            ),
-            Error::InvalidUnaryOp(op, loc) => write!(
-                f,
-                "error {}: invalid unary operator {}",
-                loc,
-                op.to_string()
-            ),
-            Error::InvalidImportPath(path, loc) => {
-                write!(f, "error {}: invalid import path {}", loc, path)
-            }
-            Error::InvalidReturn(loc) => write!(f, "error {}: return not valid in file block", loc),
-        }
-    }
 }
 
 impl From<infer::Error> for Error {

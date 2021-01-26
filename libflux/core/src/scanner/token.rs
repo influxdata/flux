@@ -1,135 +1,128 @@
-use std::fmt;
+use derive_more::Display;
 
-#[derive(Clone, Copy, Debug, Hash, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Display, Hash, Eq, PartialEq)]
 pub enum TokenType {
+    #[display(fmt = "ILLEGAL")]
     Illegal,
+    #[display(fmt = "EOF")]
     Eof,
+    #[display(fmt = "COMMENT")]
     Comment,
 
     // Reserved keywords->
+    #[display(fmt = "AND")]
     And,
+    #[display(fmt = "OR")]
     Or,
+    #[display(fmt = "NOT")]
     Not,
+    #[display(fmt = "EMPTY")]
     Empty,
+    #[display(fmt = "IN")]
     In,
+    #[display(fmt = "IMPORT")]
     Import,
+    #[display(fmt = "PACKAGE")]
     Package,
+    #[display(fmt = "RETURN")]
     Return,
+    #[display(fmt = "OPTION")]
     Option,
+    #[display(fmt = "BUILTIN")]
     Builtin,
+    #[display(fmt = "TEST")]
     Test,
+    #[display(fmt = "TESTCASE")]
     TestCase,
+    #[display(fmt = "IF")]
     If,
+    #[display(fmt = "THEN")]
     Then,
+    #[display(fmt = "ELSE")]
     Else,
 
     // Identifiers and literals->
+    #[display(fmt = "IDENT")]
     Ident,
+    #[display(fmt = "INT")]
     Int,
+    #[display(fmt = "FLOAT")]
     Float,
+    #[display(fmt = "STRING")]
     String,
+    #[display(fmt = "REGEX")]
     Regex,
+    #[display(fmt = "TIME")]
     Time,
+    #[display(fmt = "DURATION")]
     Duration,
 
     // Operators->
+    #[display(fmt = "ADD")]
     Add,
+    #[display(fmt = "SUB")]
     Sub,
+    #[display(fmt = "MUL")]
     Mul,
+    #[display(fmt = "DIV")]
     Div,
+    #[display(fmt = "MOD")]
     Mod,
+    #[display(fmt = "POW")]
     Pow,
+    #[display(fmt = "EQ")]
     Eq,
+    #[display(fmt = "LT")]
     Lt,
+    #[display(fmt = "GT")]
     Gt,
+    #[display(fmt = "LTE")]
     Lte,
+    #[display(fmt = "GTE")]
     Gte,
+    #[display(fmt = "NEQ")]
     Neq,
+    #[display(fmt = "REGEXEQ")]
     RegexEq,
+    #[display(fmt = "REGEXNEQ")]
     RegexNeq,
+    #[display(fmt = "ASSIGN")]
     Assign,
+    #[display(fmt = "ARROW")]
     Arrow,
+    #[display(fmt = "LPAREN")]
     LParen,
+    #[display(fmt = "RPAREN")]
     RParen,
+    #[display(fmt = "LBRACK")]
     LBrack,
+    #[display(fmt = "RBRACK")]
     RBrack,
+    #[display(fmt = "LBRACE")]
     LBrace,
+    #[display(fmt = "RBRACE")]
     RBrace,
+    #[display(fmt = "COMMA")]
     Comma,
+    #[display(fmt = "DOT")]
     Dot,
+    #[display(fmt = "COLON")]
     Colon,
+    #[display(fmt = "PIPE_FORWARD")]
     PipeForward,
+    #[display(fmt = "PIPE_RECEIVE")]
     PipeReceive,
+    #[display(fmt = "EXISTS")]
     Exists,
 
     // String expression tokens->
+    #[display(fmt = "QUOTE")]
     Quote,
+    #[display(fmt = "STRINGEXPR")]
     StringExpr,
+    #[display(fmt = "TEXT")]
     Text,
 
+    #[display(fmt = "QUESTION_MARK")]
     QuestionMark,
-}
-
-impl fmt::Display for TokenType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            TokenType::Illegal => write!(f, "ILLEGAL"),
-            TokenType::Eof => write!(f, "EOF"),
-            TokenType::Comment => write!(f, "COMMENT"),
-            TokenType::And => write!(f, "AND"),
-            TokenType::Or => write!(f, "OR"),
-            TokenType::Not => write!(f, "NOT"),
-            TokenType::Empty => write!(f, "EMPTY"),
-            TokenType::In => write!(f, "IN"),
-            TokenType::Import => write!(f, "IMPORT"),
-            TokenType::Package => write!(f, "PACKAGE"),
-            TokenType::Return => write!(f, "RETURN"),
-            TokenType::Option => write!(f, "OPTION"),
-            TokenType::Builtin => write!(f, "BUILTIN"),
-            TokenType::Test => write!(f, "TEST"),
-            TokenType::TestCase => write!(f, "TESTCASE"),
-            TokenType::If => write!(f, "IF"),
-            TokenType::Then => write!(f, "THEN"),
-            TokenType::Else => write!(f, "ELSE"),
-            TokenType::Ident => write!(f, "IDENT"),
-            TokenType::Int => write!(f, "INT"),
-            TokenType::Float => write!(f, "FLOAT"),
-            TokenType::String => write!(f, "STRING"),
-            TokenType::Regex => write!(f, "REGEX"),
-            TokenType::Time => write!(f, "TIME"),
-            TokenType::Duration => write!(f, "DURATION"),
-            TokenType::Add => write!(f, "ADD"),
-            TokenType::Sub => write!(f, "SUB"),
-            TokenType::Mul => write!(f, "MUL"),
-            TokenType::Div => write!(f, "DIV"),
-            TokenType::Mod => write!(f, "MOD"),
-            TokenType::Pow => write!(f, "POW"),
-            TokenType::Eq => write!(f, "EQ"),
-            TokenType::Lt => write!(f, "LT"),
-            TokenType::Gt => write!(f, "GT"),
-            TokenType::Lte => write!(f, "LTE"),
-            TokenType::Gte => write!(f, "GTE"),
-            TokenType::Neq => write!(f, "NEQ"),
-            TokenType::RegexEq => write!(f, "REGEXEQ"),
-            TokenType::RegexNeq => write!(f, "REGEXNEQ"),
-            TokenType::Assign => write!(f, "ASSIGN"),
-            TokenType::Arrow => write!(f, "ARROW"),
-            TokenType::LParen => write!(f, "LPAREN"),
-            TokenType::RParen => write!(f, "RPAREN"),
-            TokenType::LBrack => write!(f, "LBRACK"),
-            TokenType::RBrack => write!(f, "RBRACK"),
-            TokenType::LBrace => write!(f, "LBRACE"),
-            TokenType::RBrace => write!(f, "RBRACE"),
-            TokenType::Comma => write!(f, "COMMA"),
-            TokenType::Dot => write!(f, "DOT"),
-            TokenType::Colon => write!(f, "COLON"),
-            TokenType::QuestionMark => write!(f, "QUESTION_MARK"),
-            TokenType::PipeForward => write!(f, "PIPE_FORWARD"),
-            TokenType::PipeReceive => write!(f, "PIPE_RECEIVE"),
-            TokenType::Exists => write!(f, "EXISTS"),
-            TokenType::Quote => write!(f, "QUOTE"),
-            TokenType::StringExpr => write!(f, "STRINGEXPR"),
-            TokenType::Text => write!(f, "TEXT"),
-        }
-    }
 }
