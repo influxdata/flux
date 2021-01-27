@@ -4,6 +4,7 @@ package stdlib
 
 import (
 	ast "github.com/influxdata/flux/ast"
+	array "github.com/influxdata/flux/stdlib/array"
 	naivebayesclassifier "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
 	anomalydetection "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
 	statsmodels "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
@@ -14,7 +15,6 @@ import (
 	dict "github.com/influxdata/flux/stdlib/dict"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
 	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
-	array "github.com/influxdata/flux/stdlib/experimental/array"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
 	http "github.com/influxdata/flux/stdlib/http"
@@ -40,6 +40,7 @@ import (
 
 var FluxTestPackages = func() []*ast.Package {
 	var pkgs []*ast.Package
+	pkgs = append(pkgs, array.FluxTestPackages...)
 	pkgs = append(pkgs, naivebayesclassifier.FluxTestPackages...)
 	pkgs = append(pkgs, anomalydetection.FluxTestPackages...)
 	pkgs = append(pkgs, statsmodels.FluxTestPackages...)
@@ -50,7 +51,6 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, dict.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)
 	pkgs = append(pkgs, aggregate1.FluxTestPackages...)
-	pkgs = append(pkgs, array.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)

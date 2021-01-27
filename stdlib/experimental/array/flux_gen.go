@@ -21,30 +21,30 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 13,
-					Line:   16,
+					Column: 18,
+					Line:   4,
 				},
 				File:   "array.flux",
-				Source: "package array\n\n\n// from will construct a table from the input rows.\n//\n// This function takes the `rows` parameter. The rows\n// parameter is an array of records that will be constructed.\n// All of the records must have the same keys and the same types\n// for the values.\n//\n// Example:\n//\n//    import \"experimental/array\"\n//    array.from(rows:[{a:1, b: false, c: \"hi\"}, {a:2, b: true, c: \"bye\"}])\n//\nbuiltin from",
+				Source: "package array\n\nimport \"array\"\nfrom = array.from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body: []ast.Statement{&ast.BuiltinStatement{
+		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 13,
-						Line:   16,
+						Column: 18,
+						Line:   4,
 					},
 					File:   "array.flux",
-					Source: "builtin from",
+					Source: "from = array.from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   16,
+						Line:   4,
 					},
 				},
 			},
@@ -53,248 +53,109 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 13,
-							Line:   16,
+							Column: 5,
+							Line:   4,
 						},
 						File:   "array.flux",
 						Source: "from",
 						Start: ast.Position{
-							Column: 9,
-							Line:   16,
+							Column: 1,
+							Line:   4,
 						},
 					},
 				},
 				Name: "from",
 			},
-			Ty: ast.TypeExpression{
+			Init: &ast.MemberExpression{
 				BaseNode: ast.BaseNode{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 50,
-							Line:   16,
+							Column: 18,
+							Line:   4,
 						},
 						File:   "array.flux",
-						Source: "(rows: [A]) => [A] where A: Record",
+						Source: "array.from",
 						Start: ast.Position{
-							Column: 16,
-							Line:   16,
+							Column: 8,
+							Line:   4,
 						},
 					},
 				},
-				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 50,
-								Line:   16,
+								Column: 13,
+								Line:   4,
 							},
 							File:   "array.flux",
-							Source: "A: Record",
+							Source: "array",
 							Start: ast.Position{
-								Column: 41,
-								Line:   16,
+								Column: 8,
+								Line:   4,
 							},
 						},
 					},
-					Kinds: []*ast.Identifier{&ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 50,
-									Line:   16,
-								},
-								File:   "array.flux",
-								Source: "Record",
-								Start: ast.Position{
-									Column: 44,
-									Line:   16,
-								},
-							},
-						},
-						Name: "Record",
-					}},
-					Tvar: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 42,
-									Line:   16,
-								},
-								File:   "array.flux",
-								Source: "A",
-								Start: ast.Position{
-									Column: 41,
-									Line:   16,
-								},
-							},
-						},
-						Name: "A",
-					},
-				}},
-				Ty: &ast.FunctionType{
+					Name: "array",
+				},
+				Property: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 34,
-								Line:   16,
+								Column: 18,
+								Line:   4,
 							},
 							File:   "array.flux",
-							Source: "(rows: [A]) => [A]",
+							Source: "from",
 							Start: ast.Position{
-								Column: 16,
-								Line:   16,
+								Column: 14,
+								Line:   4,
 							},
 						},
 					},
-					Parameters: []*ast.ParameterType{&ast.ParameterType{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 26,
-									Line:   16,
-								},
-								File:   "array.flux",
-								Source: "rows: [A]",
-								Start: ast.Position{
-									Column: 17,
-									Line:   16,
-								},
-							},
-						},
-						Kind: "Required",
-						Name: &ast.Identifier{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 21,
-										Line:   16,
-									},
-									File:   "array.flux",
-									Source: "rows",
-									Start: ast.Position{
-										Column: 17,
-										Line:   16,
-									},
-								},
-							},
-							Name: "rows",
-						},
-						Ty: &ast.ArrayType{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 26,
-										Line:   16,
-									},
-									File:   "array.flux",
-									Source: "[A]",
-									Start: ast.Position{
-										Column: 23,
-										Line:   16,
-									},
-								},
-							},
-							ElementType: &ast.TvarType{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 25,
-											Line:   16,
-										},
-										File:   "array.flux",
-										Source: "A",
-										Start: ast.Position{
-											Column: 24,
-											Line:   16,
-										},
-									},
-								},
-								ID: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 25,
-												Line:   16,
-											},
-											File:   "array.flux",
-											Source: "A",
-											Start: ast.Position{
-												Column: 24,
-												Line:   16,
-											},
-										},
-									},
-									Name: "A",
-								},
-							},
-						},
-					}},
-					Return: &ast.ArrayType{
-						BaseNode: ast.BaseNode{
-							Errors: nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 34,
-									Line:   16,
-								},
-								File:   "array.flux",
-								Source: "[A]",
-								Start: ast.Position{
-									Column: 31,
-									Line:   16,
-								},
-							},
-						},
-						ElementType: &ast.TvarType{
-							BaseNode: ast.BaseNode{
-								Errors: nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 33,
-										Line:   16,
-									},
-									File:   "array.flux",
-									Source: "A",
-									Start: ast.Position{
-										Column: 32,
-										Line:   16,
-									},
-								},
-							},
-							ID: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 33,
-											Line:   16,
-										},
-										File:   "array.flux",
-										Source: "A",
-										Start: ast.Position{
-											Column: 32,
-											Line:   16,
-										},
-									},
-								},
-								Name: "A",
-							},
-						},
-					},
+					Name: "from",
 				},
 			},
 		}},
-		Imports:  nil,
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 15,
+						Line:   3,
+					},
+					File:   "array.flux",
+					Source: "import \"array\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 15,
+							Line:   3,
+						},
+						File:   "array.flux",
+						Source: "\"array\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "array",
+			},
+		}},
 		Metadata: "parser-type=rust",
 		Name:     "array.flux",
 		Package: &ast.PackageClause{

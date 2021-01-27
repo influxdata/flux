@@ -3,6 +3,7 @@
 package stdlib
 
 import (
+	_ "github.com/influxdata/flux/stdlib/array"
 	_ "github.com/influxdata/flux/stdlib/contrib/RohanSreerama5/naiveBayesClassifier"
 	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
 	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"

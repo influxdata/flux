@@ -21,7 +21,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   26,
 				},
 				File:   "last_success_duration_no_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"experimental/array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-07T09:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-07T09:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1085,11 +1085,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_duration_no_option_test.flux",
-					Source: "import \"experimental/array\"",
+					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -1101,18 +1101,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_duration_no_option_test.flux",
-						Source: "\"experimental/array\"",
+						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
 						},
 					},
 				},
-				Value: "experimental/array",
+				Value: "array",
 			},
 		}, &ast.ImportDeclaration{
 			As: nil,
@@ -1196,7 +1196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   27,
 				},
 				File:   "last_success_duration_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"experimental/array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2364,11 +2364,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_duration_option_test.flux",
-					Source: "import \"experimental/array\"",
+					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -2380,18 +2380,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_duration_option_test.flux",
-						Source: "\"experimental/array\"",
+						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
 						},
 					},
 				},
-				Value: "experimental/array",
+				Value: "array",
 			},
 		}, &ast.ImportDeclaration{
 			As: nil,
@@ -2475,7 +2475,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   27,
 				},
 				File:   "last_success_with_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"experimental/array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -3640,11 +3640,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_with_option_test.flux",
-					Source: "import \"experimental/array\"",
+					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -3656,18 +3656,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_with_option_test.flux",
-						Source: "\"experimental/array\"",
+						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
 						},
 					},
 				},
-				Value: "experimental/array",
+				Value: "array",
 			},
 		}, &ast.ImportDeclaration{
 			As: nil,
@@ -3751,7 +3751,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   26,
 				},
 				File:   "last_success_without_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"experimental/array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T09:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T09:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -4812,11 +4812,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors: nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 28,
+						Column: 15,
 						Line:   4,
 					},
 					File:   "last_success_without_option_test.flux",
-					Source: "import \"experimental/array\"",
+					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
 						Line:   4,
@@ -4828,18 +4828,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 28,
+							Column: 15,
 							Line:   4,
 						},
 						File:   "last_success_without_option_test.flux",
-						Source: "\"experimental/array\"",
+						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
 							Line:   4,
 						},
 					},
 				},
-				Value: "experimental/array",
+				Value: "array",
 			},
 		}, &ast.ImportDeclaration{
 			As: nil,

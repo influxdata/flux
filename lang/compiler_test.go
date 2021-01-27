@@ -873,7 +873,7 @@ func TestQueryTracing(t *testing.T) {
 			// Run a query
 			c := lang.FluxCompiler{
 				Query: `
-					import "experimental/array"
+					import "array"
 					array.from(rows: [{key: 1, value: 2}, {key: 3, value: 4}])
 					  |> filter(fn: (r) => r.value == 2)
 					  |> map(fn: (r) => ({r with foo: "hi"}))`,
