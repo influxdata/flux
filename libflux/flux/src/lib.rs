@@ -18,7 +18,7 @@ pub use core::semantic;
 pub use core::*;
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use core::semantic::types::{MonoType, PolyType, Tvar, Record, Property};
+use core::semantic::types::{MonoType, PolyType, Tvar};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
@@ -525,8 +525,7 @@ pub fn infer_with_env(
     };
 
     let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports)?;
-    let conv_sub = core::semantic::nodes::convert_substitution(&sub);
-    Ok((sem_pkg, env, conv_sub))
+    Ok((sem_pkg, env, sub))
 }
 
 /// Given a Flux source and a variable name, find out the type of that variable in the Flux source code.
@@ -579,7 +578,7 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 }
 
 
-pub fn monotype_record_conversion(
+/*pub fn monotype_record_conversion(
     rec: MonoType,
 ) -> MonoType {
     if let MonoType::Record(e) = rec {
@@ -600,12 +599,12 @@ pub fn monotype_record_conversion(
         rec
     }
 
-}
+}*/
 
 #[cfg(test)]
 mod tests {
     use crate::parser;
-    use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages, monotype_record_conversion};
+    use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages};
     use core::ast;
     use core::ast::get_err_type_expression;
     use core::parser::Parser;
@@ -613,7 +612,7 @@ mod tests {
     use core::semantic::convert::convert_polytype;
     use core::semantic::env::Environment;
     use core::semantic::fresh::Fresher;
-    use core::semantic::nodes::infer_file;
+    use core::semantic::nodes::{infer_file, type_int, type_string};
     use core::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
 
     pub struct MonoTypeNormalizer {
@@ -720,139 +719,28 @@ vstr = v.str + "hello"
         let pkg: ast::Package = p.parse_file("".to_string()).into();
         let mut t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
         let mut v = MonoTypeNormalizer::new();
-        t = monotype_record_conversion(t.clone());
         v.normalize(&mut t);
-        assert_eq!(format!("{}", t), "{B with int:int, sweet:A, str:string}");
-
-        assert_eq!(
-            serde_json::to_string_pretty(&t).unwrap(),
-            r#"{
-  "Record": {
-    "type": "Extension",
-    "head": {
-      "k": "int",
-      "v": "Int"
-    },
-    "tail": {
-      "Record": {
-        "type": "Extension",
-        "head": {
-          "k": "sweet",
-          "v": {
-            "Var": 0
-          }
-        },
-        "tail": {
-          "Record": {
-            "type": "Extension",
-            "head": {
-              "k": "str",
-              "v": "String"
+        let exp = MonoType::Record(Box::new(Record::Extension{
+            head: Property{
+                k: "int".to_string(),
+                v: type_int(),
             },
-            "tail": {
-              "Var": 1
-            }
-          }
-        }
-      }
-    }
-  }
-}"#
-        );
-    }
+            tail: MonoType::Record(Box::new(Record::Extension{
+            head: Property{
+                k: "sweet".to_string(),
+                v: MonoType::Var(Tvar(0)),
+            },
+            tail: MonoType::Record(Box::new(Record::Extension{
+            head: Property{
+                k: "str".to_string(),
+                v: type_string(),
+            },
+            tail: MonoType::Var(Tvar(1)),
+        }))
+        }))
+        }));
 
-    #[test]
-    fn find_var_ref_non_row_type() {
-        let source = r#"
-vint = v + 2
-"#;
-        let mut p = Parser::new(&source);
-        let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-       
-        if let Some(conv_t) = core::semantic::types::is_monotype(t.clone(), None)  {
-            assert_eq!(conv_t, MonoType::Int);
-            assert_eq!(serde_json::to_string_pretty(&conv_t).unwrap(), "\"Int\"");
-        } else {
-            assert_eq!(t, MonoType::Int);
-            assert_eq!(serde_json::to_string_pretty(&t).unwrap(), "\"Int\"");
-        }
-    }
-
-    #[test]
-    fn find_var_ref_obj_with() {
-        let source = r#"
-vint = v.int + 2
-o = {v with x: 256}
-p = o.ethan
-"#;
-        let mut p = Parser::new(&source);
-        let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let t = find_var_type(pkg, "v".into()).expect("Should be able to get a MonoType.");
-        let mut new_t = t.clone();
-        if let MonoType::Record(rec_t) = t {
-            if let Record::Extension{head: h, tail: old_tail} = *rec_t {
-                if let Some(new_typ) = core::semantic::types::is_monotype(h.v, None) {
-                    let new_property = Property {
-                        k: h.k,
-                        v: new_typ,
-                    };
-                    new_t = MonoType::Record(Box::new(Record::Extension{head: new_property, tail: old_tail}))
-                }
-            }
-        }
-        let mut v = MonoTypeNormalizer::new();
-        v.normalize(&mut new_t);
-        assert_eq!(format!("{}", new_t), "{B with int:int, ethan:A}");
-
-        assert_eq!(
-            serde_json::to_string_pretty(&new_t.clone()).unwrap(),
-            r#"{
-  "Record": {
-    "type": "Extension",
-    "head": {
-      "k": "int",
-      "v": "Int"
-    },
-    "tail": {
-      "Record": {
-        "type": "Extension",
-        "head": {
-          "k": "ethan",
-          "v": {
-            "Var": 0
-          }
-        },
-        "tail": {
-          "Var": 1
-        }
-      }
-    }
-  }
-}"#
-        );
-    }
-
-    #[test]
-    fn find_var_ref_query() {
-        // Test the find_var_type() function with some calls to stdlib functions.
-        let source = r#"
-from(bucket: v.bucket)
-|> range(start: v.timeRangeStart, stop: v.timeRangeStop)
-|> filter(fn: (r) => r._measurement == v.measurement or r._measurement == "cpu")
-|> filter(fn: (r) => r.host == "host.local")
-|> aggregateWindow(every: 30s, fn: count)
-"#;
-        let mut p = Parser::new(&source);
-        let pkg: ast::Package = p.parse_file("".to_string()).into();
-        let mut ty = find_var_type(pkg, "v".to_string()).expect("should be able to find var type");
-        let mut v = MonoTypeNormalizer::new();
-        ty = monotype_record_conversion(ty);
-        v.normalize(&mut ty);
-        assert_eq!(
-            format!("{}", ty),
-            "{E with measurement:{B with ==:A}, timeRangeStart:C, timeRangeStop:D, bucket:string}"
-        );
+        assert_eq!(format!("{}", t), format!("{}", exp));
     }
 
     #[test]

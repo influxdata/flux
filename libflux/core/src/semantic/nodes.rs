@@ -504,32 +504,32 @@ pub fn type_duration() -> MonoType {
     MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
                     k: "<".to_string(),
-                    v: MonoType::Time,
+                    v: MonoType::Duration,
                 },
                 tail: MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
                     k: ">".to_string(),
-                    v: MonoType::Time,
+                    v: MonoType::Duration,
                 },
                 tail: MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
                     k: "<=".to_string(),
-                    v: MonoType::Time,
+                    v: MonoType::Duration,
                 },
                 tail: MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
                     k: ">=".to_string(),
-                    v: MonoType::Time,
+                    v: MonoType::Duration,
                 },
                 tail: MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
                     k: "!=".to_string(),
-                    v: MonoType::Time,
+                    v: MonoType::Duration,
                 },
                 tail: MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
                     k: "==".to_string(),
-                    v: MonoType::Time,
+                    v: MonoType::Duration,
                 },
                 tail:MonoType::Record(Box::new(types::Record::Extension {
                 head: types::Property {
@@ -631,15 +631,15 @@ impl Expression {
             Expression::Unary(e) => e.typ.clone(),
             Expression::Call(e) => e.typ.clone(),
             Expression::Conditional(e) => e.alternate.type_of(),
-            Expression::StringExpr(_) => type_string(),
-            Expression::Integer(_) => type_int(),
-            Expression::Float(_) => type_float(),
-            Expression::StringLit(_) => type_string(),
-            Expression::Duration(_) => type_duration(),
-            Expression::Uint(_) => type_uint(),
-            Expression::Boolean(_) => type_bool(),
-            Expression::DateTime(_) => type_datetime(),
-            Expression::Regexp(_) => type_regexp(),
+            Expression::StringExpr(e) => e.typ.clone(),
+            Expression::Integer(e) => e.typ.clone(),
+            Expression::Float(e) => e.typ.clone(),
+            Expression::StringLit(e) => e.typ.clone(),
+            Expression::Duration(e) => e.typ.clone(),
+            Expression::Uint(e) => e.typ.clone(),
+            Expression::Boolean(e) => e.typ.clone(),
+            Expression::DateTime(e) => e.typ.clone(),
+            Expression::Regexp(e) => e.typ.clone(),
         }
     }
     pub fn loc(&self) -> &ast::SourceLocation {
@@ -741,24 +741,8 @@ where
     file.infer(env, f, importer)
 }
 
-
-pub fn convert_substitution(sub: &Substitution) -> Substitution {
-    let sub_map = Substitution::get(sub);
-    let mut conv_map = SemanticMap::new();
-    for (tvar, typ) in sub_map.iter() {
-        let converted_typ = types::is_monotype(typ.clone(), None);
-        match converted_typ {
-            Some(new_typ) => {conv_map.insert(tvar.clone(), new_typ);},
-            None => {conv_map.insert(tvar.clone(), typ.clone());},
-        }
-    }
-    let conv_sub = Substitution::new(conv_map);
-    conv_sub
-}
-
 pub fn inject_pkg_types(pkg: Package, sub: &Substitution) -> Package {
-    let conv_sub = convert_substitution(sub);   
-    pkg.apply(&conv_sub)
+    pkg.apply(&sub)
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -1101,6 +1085,8 @@ impl MemberAssgn {
 pub struct StringExpr {
     pub loc: ast::SourceLocation,
     pub parts: Vec<StringExprPart>,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl StringExpr {
@@ -1119,6 +1105,12 @@ impl StringExpr {
                 env = e
             }
         }
+        constraints.push(Constraint::Equal {
+                        act: type_string(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    });
+
         Ok((env, Constraints::from(constraints)))
     }
     fn apply(mut self, sub: &Substitution) -> Self {
@@ -1127,6 +1119,7 @@ impl StringExpr {
             .into_iter()
             .map(|part| part.apply(&sub))
             .collect();
+        self.typ = MonoType::String;
         self
     }
 }
@@ -1500,10 +1493,10 @@ impl BinaryExpr {
         let (env, lcons) = self.left.infer(env, f)?;
         let (env, rcons) = self.right.infer(env, f)?;
 
-        let u = MonoType::Var(f.fresh());
-        let v = MonoType::Var(f.fresh());
-        let s = MonoType::Var(f.fresh());
-        let t = MonoType::Var(f.fresh());
+        let u_var = MonoType::Var(f.fresh());
+        let v_var = MonoType::Var(f.fresh());
+        let s_var = MonoType::Var(f.fresh());
+        let t_var = MonoType::Var(f.fresh());
 
         let cons = match self.operator {
             // The following operators require both sides to be equal.
@@ -1513,9 +1506,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "+".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1537,9 +1530,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "-".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1560,9 +1553,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property { 
                             k: "*".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1583,9 +1576,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "/".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1606,9 +1599,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "^".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1629,9 +1622,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "%".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1654,9 +1647,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1670,9 +1663,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">".to_string(),
-                            v: s.clone(),
+                            v: s_var.clone(),
                         },
-                        tail: t.clone(),
+                        tail: t_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1685,9 +1678,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "<".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1701,9 +1694,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "<".to_string(),
-                            v: s.clone(),
+                            v: s_var.clone(),
                         },
-                        tail: t.clone(),
+                        tail: t_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1716,9 +1709,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "==".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1732,9 +1725,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "==".to_string(),
-                            v: s.clone(),
+                            v: s_var.clone(),
                         },
-                        tail: t.clone(),
+                        tail: t_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1747,9 +1740,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "!=".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1763,9 +1756,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "!=".to_string(),
-                            v: s.clone(),
+                            v: s_var.clone(),
                         },
-                        tail: t.clone(),
+                        tail: t_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1778,9 +1771,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">=".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1794,9 +1787,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: ">=".to_string(),
-                            v: s.clone(),
+                            v: s_var.clone(),
                         },
-                        tail: t.clone(),
+                        tail: t_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1809,9 +1802,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "<=".to_string(),
-                            v: u.clone(),
+                            v: u_var.clone(),
                         },
-                        tail: v.clone(),
+                        tail: v_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -1825,9 +1818,9 @@ impl BinaryExpr {
                     act: MonoType::Record(Box::new(types::Record::Extension {
                         head: types::Property {
                             k: "<=".to_string(),
-                            v: s.clone(),
+                            v: s_var.clone(),
                         },
-                        tail: t.clone(),
+                        tail: t_var.clone(),
                     })),
                     loc: self.loc.clone(),
                 },
@@ -2323,13 +2316,20 @@ pub struct Identifier {
 pub struct BooleanLit {
     pub loc: ast::SourceLocation,
     pub value: bool,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl BooleanLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_bool(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::Bool;
         self
     }
 }
@@ -2339,13 +2339,20 @@ impl BooleanLit {
 pub struct IntegerLit {
     pub loc: ast::SourceLocation,
     pub value: i64,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType
 }
 
 impl IntegerLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_int(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::Int;
         self
     }
 }
@@ -2355,13 +2362,21 @@ impl IntegerLit {
 pub struct FloatLit {
     pub loc: ast::SourceLocation,
     pub value: f64,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl FloatLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_float(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
+
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::Float;
         self
     }
 }
@@ -2371,13 +2386,20 @@ impl FloatLit {
 pub struct RegexpLit {
     pub loc: ast::SourceLocation,
     pub value: String,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl RegexpLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_regexp(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::Regexp;;
         self
     }
 }
@@ -2387,13 +2409,20 @@ impl RegexpLit {
 pub struct StringLit {
     pub loc: ast::SourceLocation,
     pub value: String,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl StringLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_string(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::String; 
         self
     }
 }
@@ -2403,13 +2432,20 @@ impl StringLit {
 pub struct UintLit {
     pub loc: ast::SourceLocation,
     pub value: u64,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl UintLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_uint(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::Uint;
         self
     }
 }
@@ -2419,13 +2455,21 @@ impl UintLit {
 pub struct DateTimeLit {
     pub loc: ast::SourceLocation,
     pub value: DateTime<FixedOffset>,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl DateTimeLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_datetime(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
+
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::Time;
         self
     }
 }
@@ -2450,13 +2494,20 @@ pub struct DurationLit {
     pub loc: ast::SourceLocation,
     #[derivative(PartialEq = "ignore")]
     pub value: Duration,
+    #[derivative(PartialEq = "ignore")]
+    pub typ: MonoType,
 }
 
 impl DurationLit {
     fn infer(&self, env: Environment) -> Result {
-        Ok((env, Constraints::empty()))
+        Ok((env, Constraints::from(vec![Constraint::Equal {
+                        act: type_duration(),
+                        exp: self.typ.clone(),
+                        loc: self.loc.clone(),
+                    }])))
     }
-    fn apply(self, _: &Substitution) -> Self {
+    fn apply(mut self, _: &Substitution) -> Self {
+        self.typ = MonoType::Duration;
         self
     }
 }
@@ -2723,6 +2774,7 @@ mod tests {
                             pipe: Some(Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
                                 value: 3,
+                                typ: MonoType::Int,
                             })),
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
@@ -2738,6 +2790,7 @@ mod tests {
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
                                     value: 2,
+                                    typ: MonoType::Int,
                                 }),
                             }],
                         })),
@@ -2762,16 +2815,13 @@ mod tests {
             &mut |node: Rc<Node>| {
                 let typ = node.type_of();
                 if let Some(typ) = typ {
-                    let new_typ = types::is_monotype(typ.clone(), None);
-                    if let Some(new_typ) = new_typ {
-                        assert_eq!(new_typ, MonoType::Int);
-                        no_types_checked += 1;
-                    }
                     if typ == MonoType::Int {
                         assert_eq!(typ, MonoType::Int);
-                        no_types_checked += 1;
-
+                    } else {
+                        assert_eq!(typ, type_int());
                     }
+                    no_types_checked += 1;
+
                 }
             },
             Rc::new(Node::Package(&pkg)),

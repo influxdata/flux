@@ -1,5 +1,6 @@
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
+use crate::semantic::nodes;
 use std::fmt::Write;
 
 use std::{
@@ -162,19 +163,18 @@ pub fn is_monotype (
                                 } else {
                                     None
                                 }
-                            } else {
-                                if curr_mono == h.v {
+                            } else if curr_mono == h.v {
                                     is_monotype(t, Some(h.v))
-                                } else {
+                            } else {
                                     None
-                                }
                             }
-                            
+
                         },
                         None => {
                             match h.v {
                                 MonoType::Int |
                                 MonoType::Float |
+                                MonoType::Bool |
                                 MonoType::Uint |
                                 MonoType::String |
                                 MonoType::Regexp |
@@ -190,7 +190,45 @@ pub fn is_monotype (
         _ => None,
         }
 }
-fn convert_record_monotypes(
+
+fn satisfy_property_monotypes(
+    ty: MonoType,
+) -> MonoType {
+    if let MonoType::Record(rec) = ty {
+        match *rec {
+            Record::Extension{head: h, tail:t} => {
+                if let Some(mono) = is_monotype(h.v.clone(), None) {
+                    let new_property = Property {
+                        k: h.k,
+                        v: mono,
+                    };
+                    MonoType::Record(Box::new(Record::Extension {
+                        head: new_property,
+                        tail: satisfy_property_monotypes(t),
+                    }))
+
+                } else {
+                    let new_property = Property {
+                        k: h.k,
+                        v: h.v,
+                    };
+                    MonoType::Record(Box::new(Record::Extension {
+                        head: new_property,
+                        tail: satisfy_property_monotypes(t),
+                    }))
+                }
+
+            },
+            Record::Empty{typ: t} => {
+                MonoType::Record(Box::new(Record::Empty{typ: t}))
+            }
+        }
+    } else {
+        ty
+    }
+}
+
+pub fn normalize_record_constraints(
     ty: MonoType,
 ) -> MonoType {
     match ty {
@@ -224,29 +262,29 @@ fn convert_record_monotypes(
         MonoType::Bytes => {
             MonoType::Bytes
         },
-        MonoType::Arr(arr) => MonoType::Arr(Box::new(Array(convert_record_monotypes(
+        MonoType::Arr(arr) => MonoType::Arr(Box::new(Array(normalize_record_constraints(
             arr.0,
         )))),
         MonoType::Dict(dict) => {
-            let key = convert_record_monotypes(dict.key);
-            let val = convert_record_monotypes(dict.val);
+            let key = normalize_record_constraints(dict.key);
+            let val = normalize_record_constraints(dict.val);
             MonoType::Dict(Box::new(Dictionary { key, val }))
         }
         MonoType::Fun(func) => {
             let mut req = MonoTypeMap::new();
             let mut opt = MonoTypeMap::new();
-            let mut pipe = None;
+            let mut pipe_ = None;
             for param in func.req {
-                req.insert(param.0, convert_record_monotypes(param.1.clone()));
+                req.insert(param.0, normalize_record_constraints(param.1.clone()));
             }
             for param in func.opt {
-                opt.insert(param.0, convert_record_monotypes(param.1.clone()));
+                opt.insert(param.0, normalize_record_constraints(param.1.clone()));
             }
             match func.pipe {
                 Some(prop) => {
-                    pipe = Some(Property {
+                    pipe_ = Some(Property {
                         k: prop.k,
-                        v: convert_record_monotypes(prop.v),
+                        v: normalize_record_constraints(prop.v),
                     })
                 },
                 None => {},
@@ -254,15 +292,17 @@ fn convert_record_monotypes(
             MonoType::Fun(Box::new(Function {
                 req,
                 opt,
-                pipe: pipe,
-                retn: convert_record_monotypes(func.retn),
+                pipe: pipe_,
+                retn: normalize_record_constraints(func.retn),
             }))
         }
         MonoType::Record(rec) => {
             let res = is_monotype(MonoType::Record(rec.clone()), None);
             match res {
                 Some(mono) => mono,
-                None => MonoType::Record(rec.clone()),
+                None => {
+                    satisfy_property_monotypes(MonoType::Record(rec.clone()))
+                }
             }
         }
     }
@@ -298,12 +338,12 @@ impl fmt::Display for Error {
         let mut fresh = Fresher::from(0);
         match self {
             Error::CannotUnify { exp, act } => {
-                let new_act = convert_record_monotypes(act.clone());
+                let normalized_act = normalize_record_constraints(act.clone());
                 write!(
                 f,
                 "expected {} but found {}",
                 exp.clone().fresh(&mut fresh, &mut TvarMap::new()),
-                new_act.fresh(&mut fresh, &mut TvarMap::new()),
+                normalized_act.fresh(&mut fresh, &mut TvarMap::new()),
             )
             },
             Error::CannotConstrain { exp, act } => write!(
@@ -1088,8 +1128,8 @@ impl Record {
                     ..
                 },
             ) => Err(Error::ExtraLabel(a, b)),
-            (    
-            Record::Extension {
+            (
+                Record::Extension {
                     head: Property { k: a, v },
                     ..
                 },
@@ -1821,78 +1861,6 @@ mod tests {
             }
             .to_string(),
         );
-        /*assert_eq!(
-            "(a:A, b:A) => A where A: Addable",
-            PolyType {
-                vars: vec![Tvar(0)],
-                expr: MonoType::Fun(Box::new(Function {
-                    req: semantic_map! {
-                        String::from("a") => MonoType::Var(Tvar(0)),
-                        String::from("b") => MonoType::Var(Tvar(0)),
-                    },
-                    opt: MonoTypeMap::new(),
-                    pipe: None,
-                    retn: MonoType::Var(Tvar(0)),
-                })),
-            }
-            .to_string(),
-        );
-        assert_eq!(
-            "(x:A, y:B) => {x:A, y:B} where A: Addable, B: Divisible",
-            PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
-                expr: MonoType::Fun(Box::new(Function {
-                    req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
-                    },
-                    opt: MonoTypeMap::new(),
-                    pipe: None,
-                    retn: MonoType::Record(Box::new(Record::Extension {
-                        head: Property {
-                            k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
-                        },
-                        tail: MonoType::Record(Box::new(Record::Extension {
-                            head: Property {
-                                k: String::from("y"),
-                                v: MonoType::Var(Tvar(1)),
-                            },
-                            tail: MonoType::Record(Box::new(Record::Empty)),
-                        })),
-                    })),
-                })),
-            }
-            .to_string(),
-        );
-        assert_eq!(
-            "(x:A, y:B) => {x:A, y:B} where A: Comparable + Equatable, B: Addable + Divisible",
-            PolyType {
-                vars: vec![Tvar(0), Tvar(1)],
-                expr: MonoType::Fun(Box::new(Function {
-                    req: semantic_map! {
-                        String::from("x") => MonoType::Var(Tvar(0)),
-                        String::from("y") => MonoType::Var(Tvar(1)),
-                    },
-                    opt: MonoTypeMap::new(),
-                    pipe: None,
-                    retn: MonoType::Record(Box::new(Record::Extension {
-                        head: Property {
-                            k: String::from("x"),
-                            v: MonoType::Var(Tvar(0)),
-                        },
-                        tail: MonoType::Record(Box::new(Record::Extension {
-                            head: Property {
-                                k: String::from("y"),
-                                v: MonoType::Var(Tvar(1)),
-                            },
-                            tail: MonoType::Record(Box::new(Record::Empty)),
-                        })),
-                    })),
-                })),
-            }
-            .to_string(),
-        );*/
     }
 
     #[test]
@@ -2205,133 +2173,5 @@ mod tests {
             cons,
             semantic_map! {Tvar(1) => vec![Kind::Addable, Kind::Divisible]},
         );
-    }
-    #[test]
-    fn cannot_unify_functions() {
-        // g-required and g-optional arguments do not contain a f-required argument (and viceversa).
-        /*let f = polytype("(a: A, b: A, ?c: B) => A where A: Addable, B: Divisible ");
-        let g = polytype("(d: C, ?e: C) => C where C: Addable ");
-        if let (
-            PolyType {
-                vars: _,
-                cons: f_cons,
-                expr: MonoType::Fun(f),
-            },
-            PolyType {
-                vars: _,
-                cons: g_cons,
-                expr: MonoType::Fun(g),
-            },
-        ) = (f, g)
-        {
-            // this extends the first map with the second by generating a new one.
-            let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let res = f
-                .clone()
-                .unify(*g.clone(), &mut cons, &mut Fresher::default());
-            assert!(res.is_err());
-            let res = g
-                .clone()
-                .unify(*f.clone(), &mut cons, &mut Fresher::default());
-            assert!(res.is_err());
-        } else {
-            panic!("the monotypes under examination are not functions");
-        }*/
-        // f has a pipe argument, but g does not (and viceversa).
-        /*let f = polytype("(<-pip:A, a: B) => A where A: Addable, B: Divisible ");
-        let g = polytype("(a: C) => C where C: Addable ");
-        if let (
-            PolyType {
-                vars: _,
-                cons: f_cons,
-                expr: MonoType::Fun(f),
-            },
-            PolyType {
-                vars: _,
-                cons: g_cons,
-                expr: MonoType::Fun(g),
-            },
-        ) = (f, g)
-        {
-            let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let res = f
-                .clone()
-                .unify(*g.clone(), &mut cons, &mut Fresher::default());
-            assert!(res.is_err());
-            let res = g
-                .clone()
-                .unify(*f.clone(), &mut cons, &mut Fresher::default());
-            assert!(res.is_err());
-        } else {
-            panic!("the monotypes under examination are not functions");
-        }*/
-    }
-    #[test]
-    fn unify_function_with_function_call() {
-        /*let fn_type = polytype("(a: A, b: A, ?c: B) => A where A: Addable, B: Divisible ");
-        // (a: int, b: int) => int
-        let call_type = Function {
-            // all arguments are required in a function call.
-            req: semantic_map! {
-                "a".to_string() => MonoType::Int,
-                "b".to_string() => MonoType::Int,
-            },
-            opt: semantic_map! {},
-            pipe: None,
-            retn: MonoType::Int,
-        };
-        if let PolyType {
-            vars: _,
-            mut cons,
-            expr: MonoType::Fun(f),
-        } = fn_type
-        {
-            let sub = f
-                .unify(call_type, &mut cons, &mut Fresher::default())
-                .unwrap();
-            assert_eq!(
-                sub,
-                Substitution::from(semantic_map! {Tvar(0) => MonoType::Int})
-            );
-            // the constraint on A gets removed.
-            assert_eq!(cons, semantic_map! {Tvar(1) => vec![Kind::Divisible]});
-        } else {
-            panic!("the monotype under examination is not a function");
-        }*/
-    }
-    #[test]
-    fn unify_higher_order_functions() {
-        /*let f = polytype(
-            "(a: A, b: A, ?c: (a: A) => B) => (d:  string) => A where A: Addable, B: Divisible ",
-        );
-        let g = polytype("(a: int, b: int, c: (a: int) => float) => (d: string) => int");
-        if let (
-            PolyType {
-                vars: _,
-                cons: f_cons,
-                expr: MonoType::Fun(f),
-            },
-            PolyType {
-                vars: _,
-                cons: g_cons,
-                expr: MonoType::Fun(g),
-            },
-        ) = (f, g)
-        {
-            // this extends the first map with the second by generating a new one.
-            let mut cons = f_cons.into_iter().chain(g_cons).collect();
-            let sub = f.unify(*g, &mut cons, &mut Fresher::default()).unwrap();
-            assert_eq!(
-                sub,
-                Substitution::from(semantic_map! {
-                    Tvar(0) => MonoType::Int,
-                    Tvar(1) => MonoType::Float,
-                })
-            );
-            // we know everything about tvars, there is no constraint.
-            assert_eq!(cons, semantic_map! {});
-        } else {
-            panic!("the monotypes under examination are not functions");
-        }*/
     }
 }

@@ -294,7 +294,7 @@ fn substitute_record_constraints(
         MonoType::Fun(func) => {
             let mut req = MonoTypeMap::new();
             let mut opt = MonoTypeMap::new();
-            let mut pipe = None;
+            let mut pipe_ = None;
             for param in func.req {
                 
                 match param.1 {
@@ -326,7 +326,7 @@ fn substitute_record_constraints(
             }
             match func.pipe {
                 Some(prop) => {
-                    pipe = Some(types::Property {
+                    pipe_ = Some(types::Property {
                         k: prop.k,
                         v: substitute_record_constraints(prop.v, recs.clone()),
                     })
@@ -336,7 +336,7 @@ fn substitute_record_constraints(
             MonoType::Fun(Box::new(types::Function {
                 req,
                 opt,
-                pipe: pipe,
+                pipe: pipe_,
                 retn: substitute_record_constraints(func.retn, recs.clone()),
             }))
         }
@@ -865,6 +865,7 @@ fn convert_string_expression(expr: ast::StringExpr, fresher: &mut Fresher) -> Re
     Ok(StringExpr {
         loc: expr.base.location,
         parts,
+        typ: MonoType::Var(fresher.fresh()),
     })
 }
 
@@ -886,59 +887,73 @@ fn convert_string_expression_part(
     }
 }
 
-fn convert_string_literal(lit: ast::StringLit, _: &mut Fresher) -> Result<StringLit> {
+fn convert_string_literal(lit: ast::StringLit, f: &mut Fresher) -> Result<StringLit> {
     Ok(StringLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(f.fresh()),
+
     })
 }
 
-fn convert_boolean_literal(lit: ast::BooleanLit, _: &mut Fresher) -> Result<BooleanLit> {
+fn convert_boolean_literal(lit: ast::BooleanLit, f: &mut Fresher) -> Result<BooleanLit> {
     Ok(BooleanLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(f.fresh()),
+
     })
 }
 
-fn convert_float_literal(lit: ast::FloatLit, _: &mut Fresher) -> Result<FloatLit> {
+fn convert_float_literal(lit: ast::FloatLit, f: &mut Fresher) -> Result<FloatLit> {
     Ok(FloatLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(f.fresh()),
+
     })
 }
 
-fn convert_integer_literal(lit: ast::IntegerLit, _: &mut Fresher) -> Result<IntegerLit> {
+fn convert_integer_literal(lit: ast::IntegerLit, f: &mut Fresher) -> Result<IntegerLit> {
     Ok(IntegerLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(f.fresh()),
     })
 }
 
-fn convert_unsigned_integer_literal(lit: ast::UintLit, _: &mut Fresher) -> Result<UintLit> {
+fn convert_unsigned_integer_literal(lit: ast::UintLit, f: &mut Fresher) -> Result<UintLit> {
     Ok(UintLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(f.fresh()),
+
     })
 }
 
-fn convert_regexp_literal(lit: ast::RegexpLit, _: &mut Fresher) -> Result<RegexpLit> {
+fn convert_regexp_literal(lit: ast::RegexpLit, f: &mut Fresher) -> Result<RegexpLit> {
     Ok(RegexpLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(f.fresh()),
+
     })
 }
 
-fn convert_duration_literal(lit: ast::DurationLit, _: &mut Fresher) -> Result<DurationLit> {
+fn convert_duration_literal(lit: ast::DurationLit, f: &mut Fresher) -> Result<DurationLit> {
     Ok(DurationLit {
         loc: lit.base.location,
         value: convert_duration(&lit.values)?,
+        typ: MonoType::Var(f.fresh()),
+
     })
 }
 
-fn convert_date_time_literal(lit: ast::DateTimeLit, _: &mut Fresher) -> Result<DateTimeLit> {
+fn convert_date_time_literal(lit: ast::DateTimeLit, f: &mut Fresher) -> Result<DateTimeLit> {
     Ok(DateTimeLit {
         loc: lit.base.location,
         value: lit.value,
+        typ: MonoType::Var(f.fresh()),
     })
 }
 
@@ -1084,6 +1099,7 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/foo".to_string(),
+                            typ: MonoType::Var(Tvar(0)),
                         },
                         alias: None,
                     },
@@ -1092,6 +1108,7 @@ mod tests {
                         path: StringLit {
                             loc: b.location.clone(),
                             value: "path/bar".to_string(),
+                            typ: MonoType::Var(Tvar(0)),
                         },
                         alias: Some(Identifier {
                             loc: b.location.clone(),
@@ -1158,6 +1175,7 @@ mod tests {
                         Expression::Boolean(BooleanLit {
                             loc: b.location.clone(),
                             value: true,
+                            typ: MonoType::Var(Tvar(0)),
                         }),
                         b.location.clone(),
                     ))),
@@ -1236,6 +1254,7 @@ mod tests {
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
                                 value: 10,
+                                typ: MonoType::Var(Tvar(0)),
                             }),
                         }],
                     })),
@@ -1306,6 +1325,7 @@ mod tests {
                             value: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
                                 value: 10,
+                                typ: MonoType::Var(Tvar(0)),
                             }),
                         }],
                     })),
@@ -1392,6 +1412,7 @@ mod tests {
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
                                     value: 10,
+                                    typ: MonoType::Var(Tvar(0)),
                                 }),
                             },
                             Property {
@@ -1403,6 +1424,7 @@ mod tests {
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
                                     value: 11,
+                                    typ: MonoType::Var(Tvar(0)),
                                 }),
                             },
                         ],
@@ -1641,6 +1663,7 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "foo".to_string(),
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                                 Property {
@@ -1656,6 +1679,7 @@ mod tests {
                                             nanoseconds: 5000,
                                             negative: false,
                                         },
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                                 Property {
@@ -1671,6 +1695,7 @@ mod tests {
                                             nanoseconds: 50,
                                             negative: true,
                                         },
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                                 Property {
@@ -1682,6 +1707,7 @@ mod tests {
                                     value: Expression::StringLit(StringLit {
                                         loc: b.location.clone(),
                                         value: "0 2 * * *".to_string(),
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                                 Property {
@@ -1693,6 +1719,7 @@ mod tests {
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
                                         value: 5,
+                                        typ: MonoType::Var(Tvar(0)),
                                     }),
                                 },
                             ],
@@ -1769,6 +1796,7 @@ mod tests {
                         init: Expression::StringLit(StringLit {
                             loc: b.location.clone(),
                             value: "Warning".to_string(),
+                            typ: MonoType::Var(Tvar(0)),
                         }),
                     }),
                 }))],
@@ -1969,6 +1997,7 @@ mod tests {
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
                                         value: 2,
+                                        typ: MonoType::Var(Tvar(5)),
                                     }),
                                 },
                                 Property {
@@ -1980,6 +2009,7 @@ mod tests {
                                     value: Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
                                         value: 3,
+                                        typ: MonoType::Var(Tvar(6)),
                                     }),
                                 },
                             ],
@@ -2141,6 +2171,7 @@ mod tests {
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
                                         value: 0,
+                                        typ: MonoType::Var(Tvar(1)),
                                     })),
                                 },
                                 FunctionParameter {
@@ -2153,6 +2184,7 @@ mod tests {
                                     default: Some(Expression::Integer(IntegerLit {
                                         loc: b.location.clone(),
                                         value: 0,
+                                        typ: MonoType::Var(Tvar(1)),
                                     })),
                                 },
                                 FunctionParameter {
@@ -2216,6 +2248,7 @@ mod tests {
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
                                     value: 42,
+                                    typ: MonoType::Var(Tvar(9)),
                                 }),
                             }],
                         })),
@@ -2553,6 +2586,7 @@ mod tests {
                             pipe: Some(Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
                                 value: 3,
+                                typ: MonoType::Var(Tvar(0)),
                             })),
                             callee: Expression::Identifier(IdentifierExpr {
                                 loc: b.location.clone(),
@@ -2568,6 +2602,7 @@ mod tests {
                                 value: Expression::Integer(IntegerLit {
                                     loc: b.location.clone(),
                                     value: 2,
+                                    typ: MonoType::Var(Tvar(0)),
                                 }),
                             }],
                         })),
@@ -2641,6 +2676,7 @@ mod tests {
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
                 value: 0,
+                typ: MonoType::Var(Tvar(0)),
             })),
         };
         let default1 = FunctionParameter {
@@ -2653,6 +2689,7 @@ mod tests {
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
                 value: 1,
+                typ: MonoType::Var(Tvar(0)),
             })),
         };
         let default2 = FunctionParameter {
@@ -2665,6 +2702,7 @@ mod tests {
             default: Some(Expression::Integer(IntegerLit {
                 loc: b.location.clone(),
                 value: 2,
+                typ: MonoType::Var(Tvar(0)),
             })),
         };
         let no_default = FunctionParameter {
@@ -2761,6 +2799,7 @@ mod tests {
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
                             value: 3,
+                            typ: MonoType::Var(Tvar(0)),
                         }),
                     })),
                 })],
@@ -2834,11 +2873,13 @@ mod tests {
                             index: Expression::Integer(IntegerLit {
                                 loc: b.location.clone(),
                                 value: 3,
+                                typ: MonoType::Var(Tvar(0)),
                             }),
                         })),
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
                             value: 5,
+                            typ: MonoType::Var(Tvar(0)),
                         }),
                     })),
                 })],
@@ -2912,6 +2953,7 @@ mod tests {
                         index: Expression::Integer(IntegerLit {
                             loc: b.location.clone(),
                             value: 3,
+                            typ: MonoType::Var(Tvar(2)),
                         }),
                     })),
                 })],

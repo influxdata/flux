@@ -137,12 +137,6 @@ fn infer_types(
         Ok((env, _)) => env.values,
         Err(e) => return Err(e),
     };
-    /*let mut new_got = BTreeMap::new();
-    for elem in got {
-        new_got.insert(elem.0.clone(), types::PolyType{vars: elem.1.vars.clone(),  expr: convert_record_constraints(elem.1.expr.clone())});
-        
-    }*/
-
 
     // Parse polytype expressions in expected environment.
     // Only perform this step if a map of wanted types exists.
