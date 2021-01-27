@@ -245,7 +245,7 @@ fn convert_monotype(
 
 fn substitute_record_constraints(
     ty: MonoType,
-    recs: HashMap<types::Tvar, MonoType>,
+    recs: &HashMap<types::Tvar, MonoType>,
 ) -> MonoType {
     match ty {
         MonoType::Var(tv) => {
@@ -287,8 +287,8 @@ fn substitute_record_constraints(
             recs,
         )))),
         MonoType::Dict(dict) => {
-            let key = substitute_record_constraints(dict.key, recs.clone());
-            let val = substitute_record_constraints(dict.val, recs.clone());
+            let key = substitute_record_constraints(dict.key, recs);
+            let val = substitute_record_constraints(dict.val, recs);
             MonoType::Dict(Box::new(types::Dictionary { key, val }))
         }
         MonoType::Fun(func) => {
@@ -306,7 +306,7 @@ fn substitute_record_constraints(
                         }
                     },
                     _ => {
-                        req.insert(param.0, substitute_record_constraints(param.1.clone(), recs.clone()));
+                        req.insert(param.0, substitute_record_constraints(param.1.clone(), recs));
                     },
                 }
             }
@@ -320,7 +320,7 @@ fn substitute_record_constraints(
                         }
                     },
                     _ => {
-                        opt.insert(param.0, substitute_record_constraints(param.1.clone(), recs.clone()));
+                        opt.insert(param.0, substitute_record_constraints(param.1.clone(), recs));
                     },
                 }
             }
@@ -328,7 +328,7 @@ fn substitute_record_constraints(
                 Some(prop) => {
                     pipe_ = Some(types::Property {
                         k: prop.k,
-                        v: substitute_record_constraints(prop.v, recs.clone()),
+                        v: substitute_record_constraints(prop.v, recs),
                     })
                 },
                 None => {},
@@ -337,7 +337,7 @@ fn substitute_record_constraints(
                 req,
                 opt,
                 pipe: pipe_,
-                retn: substitute_record_constraints(func.retn, recs.clone()),
+                retn: substitute_record_constraints(func.retn, recs),
             }))
         }
         MonoType::Record(rec) => {
@@ -347,11 +347,11 @@ fn substitute_record_constraints(
                 types::Record::Extension{head: h, tail: t} => {
                     let new_property = types::Property {
                         k: h.k, 
-                        v: substitute_record_constraints(h.v, recs.clone())
+                        v: substitute_record_constraints(h.v, recs)
                     };
                     r = MonoType::Record(Box::new(types::Record::Extension {
                         head: new_property,
-                        tail: substitute_record_constraints(t, recs.clone()),
+                        tail: substitute_record_constraints(t, recs),
                     }))
                 }
             }
@@ -493,7 +493,7 @@ pub fn convert_polytype(
             }
         }
     }
-    let expr = substitute_record_constraints(expr, recs);
+    let expr = substitute_record_constraints(expr, &recs);
     Ok(types::PolyType { expr, vars })
 }
 

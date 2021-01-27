@@ -408,8 +408,6 @@ mod tests {
                     convert_polytype(typ_expr, &mut Fresher::default())?
             },
         };
-        //println!("want: {:#?}", want);
-        println!("got: {:#?}", imports);
         if want != imports {
             return Err(Error {
                 msg: format!(
