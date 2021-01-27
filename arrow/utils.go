@@ -136,6 +136,13 @@ func Slice(arr array.Interface, i, j int64) array.Interface {
 	return array.MakeFromData(data)
 }
 
+// Copy will construct a copy of the given array.Interface.
+// This is a shallow copy and is the equivalent of calling Retain on the array.
+func Copy(arr array.Interface) array.Interface {
+	arr.Retain()
+	return arr
+}
+
 // Empty constructs an empty array for the given type.
 func Empty(typ flux.ColType) array.Interface {
 	// Empty arrays do not actually use memory and they do not

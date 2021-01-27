@@ -3,6 +3,7 @@ package execkit
 import (
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/plan"
@@ -79,6 +80,10 @@ func (d *Dataset) Process(view table.View) error {
 		view:       view,
 	}
 	return d.sendMessage(m)
+}
+
+func (d *Dataset) ProcessFromBuffer(b arrow.TableBuffer) error {
+	return d.Process(table.ViewFromBuffer(b))
 }
 
 func (d *Dataset) FlushKey(key flux.GroupKey) error {
