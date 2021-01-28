@@ -1,5 +1,6 @@
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
+use derive_more::Display;
 use std::fmt::Write;
 
 use std::{
@@ -212,7 +213,7 @@ impl fmt::Display for Error {
 }
 
 // Kind represents a class or family of types
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Kind {
     Addable,
     Subtractable,
@@ -224,23 +225,6 @@ pub enum Kind {
     Record,
     Negatable,
     Timeable,
-}
-
-impl fmt::Display for Kind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Kind::Addable => f.write_str("Addable"),
-            Kind::Subtractable => f.write_str("Subtractable"),
-            Kind::Divisible => f.write_str("Divisible"),
-            Kind::Numeric => f.write_str("Numeric"),
-            Kind::Comparable => f.write_str("Comparable"),
-            Kind::Equatable => f.write_str("Equatable"),
-            Kind::Nullable => f.write_str("Nullable"),
-            Kind::Record => f.write_str("Record"),
-            Kind::Negatable => f.write_str("Negatable"),
-            Kind::Timeable => f.write_str("Timeable"),
-        }
-    }
 }
 
 // Kinds are ordered by name so that polytypes are displayed deterministically
@@ -258,48 +242,41 @@ impl cmp::PartialOrd for Kind {
 }
 
 // MonoType represents a specific named type
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Display, Clone, PartialEq, Serialize)]
 pub enum MonoType {
+    #[display(fmt = "bool")]
     Bool,
+    #[display(fmt = "int")]
     Int,
+    #[display(fmt = "uint")]
     Uint,
+    #[display(fmt = "float")]
     Float,
+    #[display(fmt = "string")]
     String,
+    #[display(fmt = "duration")]
     Duration,
+    #[display(fmt = "time")]
     Time,
+    #[display(fmt = "regexp")]
     Regexp,
+    #[display(fmt = "bytes")]
     Bytes,
+    #[display(fmt = "{}", _0)]
     Var(Tvar),
+    #[display(fmt = "{}", _0)]
     Arr(Box<Array>),
+    #[display(fmt = "{}", _0)]
     Dict(Box<Dictionary>),
+    #[display(fmt = "{}", _0)]
     Record(Box<Record>),
+    #[display(fmt = "{}", _0)]
     Fun(Box<Function>),
 }
 
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
 pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
 type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
-
-impl fmt::Display for MonoType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            MonoType::Bool => f.write_str("bool"),
-            MonoType::Int => f.write_str("int"),
-            MonoType::Uint => f.write_str("uint"),
-            MonoType::Float => f.write_str("float"),
-            MonoType::String => f.write_str("string"),
-            MonoType::Duration => f.write_str("duration"),
-            MonoType::Time => f.write_str("time"),
-            MonoType::Regexp => f.write_str("regexp"),
-            MonoType::Bytes => f.write_str("bytes"),
-            MonoType::Var(var) => var.fmt(f),
-            MonoType::Arr(arr) => arr.fmt(f),
-            MonoType::Dict(dict) => dict.fmt(f),
-            MonoType::Record(obj) => obj.fmt(f),
-            MonoType::Fun(fun) => fun.fmt(f),
-        }
-    }
-}
 
 impl Substitutable for MonoType {
     fn apply(self, sub: &Substitution) -> Self {
@@ -625,14 +602,9 @@ impl Tvar {
 }
 
 // Array is a homogeneous list type
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[display(fmt = "[{}]", _0)]
 pub struct Array(pub MonoType);
-
-impl fmt::Display for Array {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{}]", self.0)
-    }
-}
 
 impl Substitutable for Array {
     fn apply(self, sub: &Substitution) -> Self {
@@ -675,16 +647,11 @@ impl Array {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[display(fmt = "[{}:{}]", key, val)]
 pub struct Dictionary {
     pub key: MonoType,
     pub val: MonoType,
-}
-
-impl fmt::Display for Dictionary {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{}:{}]", self.key, self.val)
-    }
 }
 
 impl Substitutable for Dictionary {
@@ -1017,16 +984,11 @@ fn apply_then_unify(
 }
 
 // A key value pair representing a property type in a record
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[display(fmt = "{}:{}", k, v)]
 pub struct Property {
     pub k: String,
     pub v: MonoType,
-}
-
-impl fmt::Display for Property {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}:{}", self.k, self.v)
-    }
 }
 
 impl Substitutable for Property {

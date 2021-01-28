@@ -11,6 +11,7 @@ use std::str::FromStr;
 use std::vec::Vec;
 
 use chrono::FixedOffset;
+use derive_more::Display;
 
 use serde::de::{Deserialize, Deserializer, Error, Visitor};
 use serde::ser::{Serialize, SerializeSeq, Serializer};
@@ -1028,59 +1029,52 @@ pub struct FunctionExpr {
 // comparison is true.
 // Arithmetic operators take numerical values (either literals or variables) as their operands
 // and return a single numerical value.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
 pub enum Operator {
+    #[display(fmt = "*")]
     MultiplicationOperator,
+    #[display(fmt = "/")]
     DivisionOperator,
+    #[display(fmt = "%")]
     ModuloOperator,
+    #[display(fmt = "^")]
     PowerOperator,
+    #[display(fmt = "+")]
     AdditionOperator,
+    #[display(fmt = "-")]
     SubtractionOperator,
+    #[display(fmt = "<=")]
     LessThanEqualOperator,
+    #[display(fmt = "<")]
     LessThanOperator,
+    #[display(fmt = ">=")]
     GreaterThanEqualOperator,
+    #[display(fmt = ">")]
     GreaterThanOperator,
+    #[display(fmt = "startswith")]
     StartsWithOperator,
+    #[display(fmt = "in")]
     InOperator,
+    #[display(fmt = "not")]
     NotOperator,
+    #[display(fmt = "exists")]
     ExistsOperator,
+    #[display(fmt = "not empty")]
     NotEmptyOperator,
+    #[display(fmt = "empty")]
     EmptyOperator,
+    #[display(fmt = "==")]
     EqualOperator,
+    #[display(fmt = "!=")]
     NotEqualOperator,
+    #[display(fmt = "=~")]
     RegexpMatchOperator,
+    #[display(fmt = "!~")]
     NotRegexpMatchOperator,
 
     // this is necessary for bad binary expressions.
+    #[display(fmt = "<INVALID_OP>")]
     InvalidOperator,
-}
-
-impl ToString for Operator {
-    fn to_string(&self) -> String {
-        match self {
-            Operator::MultiplicationOperator => "*".to_string(),
-            Operator::DivisionOperator => "/".to_string(),
-            Operator::ModuloOperator => "%".to_string(),
-            Operator::PowerOperator => "^".to_string(),
-            Operator::AdditionOperator => "+".to_string(),
-            Operator::SubtractionOperator => "-".to_string(),
-            Operator::LessThanEqualOperator => "<=".to_string(),
-            Operator::LessThanOperator => "<".to_string(),
-            Operator::GreaterThanEqualOperator => ">=".to_string(),
-            Operator::GreaterThanOperator => ">".to_string(),
-            Operator::StartsWithOperator => "startswith".to_string(),
-            Operator::InOperator => "in".to_string(),
-            Operator::NotOperator => "not".to_string(),
-            Operator::ExistsOperator => "exists".to_string(),
-            Operator::NotEmptyOperator => "not empty".to_string(),
-            Operator::EmptyOperator => "empty".to_string(),
-            Operator::EqualOperator => "==".to_string(),
-            Operator::NotEqualOperator => "!=".to_string(),
-            Operator::RegexpMatchOperator => "=~".to_string(),
-            Operator::NotRegexpMatchOperator => "!~".to_string(),
-            Operator::InvalidOperator => "<INVALID_OP>".to_string(),
-        }
-    }
 }
 
 impl Serialize for Operator {

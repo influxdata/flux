@@ -1,9 +1,10 @@
 #![allow(missing_docs)]
 
-use crate::fmt;
 use std::collections::HashMap;
 use std::str;
 use std::vec::Vec;
+
+use derive_more::Display;
 
 #[rustfmt::skip]
 mod scanner_generated;
@@ -39,7 +40,8 @@ pub struct Position {
 
 impl std::cmp::Eq for Position {}
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, Display, PartialEq, Clone)]
+#[display(fmt = "{}", lit)]
 pub struct Token {
     pub tok: TokenType,
     pub lit: String,
@@ -48,19 +50,6 @@ pub struct Token {
     pub start_pos: Position,
     pub end_pos: Position,
     pub comments: Option<Box<Token>>,
-}
-
-// To use the `{}` marker, the trait `fmt::Display` must be implemented
-// manually for the type.
-impl fmt::Display for Token {
-    // This trait requires `fmt` with this exact signature.
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // Write strictly the first element into the supplied output
-        // stream: `f`. Returns `fmt::Result` which indicates whether the
-        // operation succeeded or failed. Note that `write!` uses syntax which
-        // is very similar to `println!`.
-        write!(f, "{}", self.lit)
-    }
 }
 
 impl Scanner {

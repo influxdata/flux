@@ -1,11 +1,13 @@
+use std::ops;
+
+use derive_more::Display;
+
 use crate::ast::SourceLocation;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::sub::{Substitutable, Substitution};
 use crate::semantic::types;
 use crate::semantic::types::{minus, Kind, MonoType, PolyType, SubstitutionMap, TvarKinds};
-use std::fmt;
-use std::ops;
 
 // Type constraints are produced during type inference and come
 // in two flavors.
@@ -74,16 +76,11 @@ impl From<Constraint> for Constraints {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Display, PartialEq)]
+#[display(fmt = "type error {}: {}", loc, err)]
 pub struct Error {
     loc: SourceLocation,
     err: types::Error,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "type error {}: {}", self.loc, self.err)
-    }
 }
 
 // Solve a set of type constraints

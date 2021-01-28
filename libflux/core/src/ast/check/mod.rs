@@ -1,5 +1,6 @@
+use derive_more::Display;
+
 use crate::ast::{walk, PropertyKey, SourceLocation};
-use std::fmt;
 
 // check() inspects an AST node and returns a list of found AST errors plus
 // any errors existed before ast.check() is performed.
@@ -63,16 +64,11 @@ pub fn check(node: walk::Node) -> Vec<Error> {
     errors
 }
 
-#[derive(Debug, PartialEq)] // derive std::fmt::Debug on AppError
+#[derive(Debug, Display, PartialEq)] // derive std::fmt::Debug on AppError
+#[display(fmt = "error at {}: {}", location, message)]
 pub struct Error {
     pub location: SourceLocation,
     pub message: String,
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "error at {}: {}", self.location, self.message)
-    }
 }
 
 impl std::error::Error for Error {}

@@ -1,120 +1,117 @@
 #[cfg(test)]
 mod tests;
 
-use crate::ast::*;
 use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 
+use derive_more::Display;
+
+use crate::ast::*;
+
 /// Node represents any structure that can appear in the AST
-#[derive(Debug)]
+#[derive(Debug, Display)]
 pub enum Node<'a> {
+    #[display(fmt = "Package")]
     Package(&'a Package),
+    #[display(fmt = "File")]
     File(&'a File),
+    #[display(fmt = "PackageClause")]
     PackageClause(&'a PackageClause),
+    #[display(fmt = "ImportDeclaration")]
     ImportDeclaration(&'a ImportDeclaration),
 
     // Expressions
+    #[display(fmt = "Identifier")]
     Identifier(&'a Identifier),
 
+    #[display(fmt = "ArrayExpr")]
     ArrayExpr(&'a ArrayExpr),
+    #[display(fmt = "DictExpr")]
     DictExpr(&'a DictExpr),
+    #[display(fmt = "FunctionExpr")]
     FunctionExpr(&'a FunctionExpr),
+    #[display(fmt = "LogicalExpr")]
     LogicalExpr(&'a LogicalExpr),
+    #[display(fmt = "ObjectExpr")]
     ObjectExpr(&'a ObjectExpr),
+    #[display(fmt = "MemberExpr")]
     MemberExpr(&'a MemberExpr),
+    #[display(fmt = "IndexExpr")]
     IndexExpr(&'a IndexExpr),
+    #[display(fmt = "BinaryExpr")]
     BinaryExpr(&'a BinaryExpr),
+    #[display(fmt = "UnaryExpr")]
     UnaryExpr(&'a UnaryExpr),
+    #[display(fmt = "PipeExpr")]
     PipeExpr(&'a PipeExpr),
+    #[display(fmt = "CallExpr")]
     CallExpr(&'a CallExpr),
+    #[display(fmt = "ConditionalExpr")]
     ConditionalExpr(&'a ConditionalExpr),
+    #[display(fmt = "StringExpr")]
     StringExpr(&'a StringExpr),
+    #[display(fmt = "ParenExpr")]
     ParenExpr(&'a ParenExpr),
 
+    #[display(fmt = "IntegerLit")]
     IntegerLit(&'a IntegerLit),
+    #[display(fmt = "FloatLit")]
     FloatLit(&'a FloatLit),
+    #[display(fmt = "StringLit")]
     StringLit(&'a StringLit),
+    #[display(fmt = "DurationLit")]
     DurationLit(&'a DurationLit),
+    #[display(fmt = "UintLit")]
     UintLit(&'a UintLit),
+    #[display(fmt = "BooleanLit")]
     BooleanLit(&'a BooleanLit),
+    #[display(fmt = "DateTimeLit")]
     DateTimeLit(&'a DateTimeLit),
+    #[display(fmt = "RegexpLit")]
     RegexpLit(&'a RegexpLit),
+    #[display(fmt = "PipeLit")]
     PipeLit(&'a PipeLit),
 
+    #[display(fmt = "BadExpr")]
     BadExpr(&'a BadExpr),
 
     // Statements
+    #[display(fmt = "ExprStmt")]
     ExprStmt(&'a ExprStmt),
+    #[display(fmt = "OptionStmt")]
     OptionStmt(&'a OptionStmt),
+    #[display(fmt = "ReturnStmt")]
     ReturnStmt(&'a ReturnStmt),
+    #[display(fmt = "BadStmt")]
     BadStmt(&'a BadStmt),
+    #[display(fmt = "TestStmt")]
     TestStmt(&'a TestStmt),
+    #[display(fmt = "TestCaseStmt")]
     TestCaseStmt(&'a TestCaseStmt),
+    #[display(fmt = "BuiltinStmt")]
     BuiltinStmt(&'a BuiltinStmt),
 
     // FunctionBlock
+    #[display(fmt = "Block")]
     Block(&'a Block),
 
     // Property
+    #[display(fmt = "Property")]
     Property(&'a Property),
 
     // StringExprPart
+    #[display(fmt = "TextPart")]
     TextPart(&'a TextPart),
+    #[display(fmt = "InterpolatedPart")]
     InterpolatedPart(&'a InterpolatedPart),
 
     // Assignment
+    #[display(fmt = "VariableAssgn")]
     VariableAssgn(&'a VariableAssgn),
+    #[display(fmt = "MemberAssgn")]
     MemberAssgn(&'a MemberAssgn),
 }
 
-impl<'a> fmt::Display for Node<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Node::Package(_) => write!(f, "Package"),
-            Node::File(_) => write!(f, "File"),
-            Node::PackageClause(_) => write!(f, "PackageClause"),
-            Node::ImportDeclaration(_) => write!(f, "ImportDeclaration"),
-            Node::Identifier(_) => write!(f, "Identifier"),
-            Node::ArrayExpr(_) => write!(f, "ArrayExpr"),
-            Node::DictExpr(_) => write!(f, "DictExpr"),
-            Node::FunctionExpr(_) => write!(f, "FunctionExpr"),
-            Node::LogicalExpr(_) => write!(f, "LogicalExpr"),
-            Node::ObjectExpr(_) => write!(f, "ObjectExpr"),
-            Node::MemberExpr(_) => write!(f, "MemberExpr"),
-            Node::IndexExpr(_) => write!(f, "IndexExpr"),
-            Node::BinaryExpr(_) => write!(f, "BinaryExpr"),
-            Node::UnaryExpr(_) => write!(f, "UnaryExpr"),
-            Node::PipeExpr(_) => write!(f, "PipeExpr"),
-            Node::CallExpr(_) => write!(f, "CallExpr"),
-            Node::ConditionalExpr(_) => write!(f, "ConditionalExpr"),
-            Node::StringExpr(_) => write!(f, "StringExpr"),
-            Node::ParenExpr(_) => write!(f, "ParenExpr"),
-            Node::IntegerLit(_) => write!(f, "IntegerLit"),
-            Node::FloatLit(_) => write!(f, "FloatLit"),
-            Node::StringLit(_) => write!(f, "StringLit"),
-            Node::DurationLit(_) => write!(f, "DurationLit"),
-            Node::UintLit(_) => write!(f, "UintLit"),
-            Node::BooleanLit(_) => write!(f, "BooleanLit"),
-            Node::DateTimeLit(_) => write!(f, "DateTimeLit"),
-            Node::RegexpLit(_) => write!(f, "RegexpLit"),
-            Node::PipeLit(_) => write!(f, "PipeLit"),
-            Node::BadExpr(_) => write!(f, "BadExpr"),
-            Node::ExprStmt(_) => write!(f, "ExprStmt"),
-            Node::OptionStmt(_) => write!(f, "OptionStmt"),
-            Node::ReturnStmt(_) => write!(f, "ReturnStmt"),
-            Node::BadStmt(_) => write!(f, "BadStmt"),
-            Node::TestStmt(_) => write!(f, "TestStmt"),
-            Node::TestCaseStmt(_) => write!(f, "TestCaseStmt"),
-            Node::BuiltinStmt(_) => write!(f, "BuiltinStmt"),
-            Node::Block(_) => write!(f, "Block"),
-            Node::Property(_) => write!(f, "Property"),
-            Node::TextPart(_) => write!(f, "TextPart"),
-            Node::InterpolatedPart(_) => write!(f, "InterpolatedPart"),
-            Node::VariableAssgn(_) => write!(f, "VariableAssgn"),
-            Node::MemberAssgn(_) => write!(f, "MemberAssgn"),
-        }
-    }
-}
 impl<'a> Node<'a> {
     pub fn base(&self) -> &BaseNode {
         match self {
