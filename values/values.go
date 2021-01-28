@@ -153,6 +153,9 @@ var (
 
 	// Null is an untyped nil value.
 	Null = null{}
+
+	// Void is an empty record used to represent a void value.
+	Void = NewObject(semantic.NewObjectType(nil))
 )
 
 // Unwrap will extract the primitive value from the Value interface.
