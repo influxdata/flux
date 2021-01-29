@@ -2,7 +2,7 @@ package table
 
 import (
 	"github.com/influxdata/flux"
-	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/execute/groupkey"
 )
 
 // Sort will read a TableIterator and produce another TableIterator
@@ -12,9 +12,9 @@ import (
 // all of the tables are read to avoid any deadlocks. Be careful
 // using this method in performance sensitive areas.
 func Sort(tables flux.TableIterator) (flux.TableIterator, error) {
-	groups := execute.NewGroupLookup()
+	groups := groupkey.NewLookup()
 	if err := tables.Do(func(table flux.Table) error {
-		buffered, err := execute.CopyTable(table)
+		buffered, err := Copy(table)
 		if err != nil {
 			return err
 		}

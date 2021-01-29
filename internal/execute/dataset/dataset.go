@@ -1,23 +1,24 @@
-package table
+package dataset
 
 import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/plan"
 )
 
 type dataset struct {
 	id    execute.DatasetID
 	ts    execute.TransformationSet
-	cache *BuilderCache
+	cache *table.BuilderCache
 }
 
-// NewDataset constructs an execute.Dataset that is compatible with
-// the BuilderCache.
+// New constructs an execute.Dataset that is compatible with
+// the table.BuilderCache.
 //
 // This dataset does not support triggers and will only flush tables
 // when the dataset is finished.
-func NewDataset(id execute.DatasetID, cache *BuilderCache) execute.Dataset {
+func New(id execute.DatasetID, cache *table.BuilderCache) execute.Dataset {
 	return &dataset{
 		id:    id,
 		cache: cache,
@@ -46,7 +47,7 @@ func (d *dataset) RetractTable(key flux.GroupKey) error {
 
 func (d *dataset) Finish(err error) {
 	if err == nil {
-		err = d.cache.ForEach(func(key flux.GroupKey, builder Builder) error {
+		err = d.cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
 			tbl, err := builder.Table()
 			if err != nil {
 				return err
