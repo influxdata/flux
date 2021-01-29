@@ -107,8 +107,8 @@ func init() {
 		r.Register()
 	}
 
-	plan.RegisterProcedureSpec(SchemaMutationKind, newDualImplSpec(newSchemaMutationProcedure), SchemaMutationOps...)
-	execute.RegisterTransformation(SchemaMutationKind, createDualImplTf(createSchemaMutationTransformation, createDeprecatedSchemaMutationTransformation))
+	plan.RegisterProcedureSpec(SchemaMutationKind, newSchemaMutationProcedure, SchemaMutationOps...)
+	execute.RegisterTransformation(SchemaMutationKind, createSchemaMutationTransformation)
 }
 
 func createRenameOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
