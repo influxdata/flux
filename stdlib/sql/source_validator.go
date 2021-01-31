@@ -38,7 +38,7 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 			User:   neturl.UserPassword(cfg.User, cfg.Passwd),
 			Host:   cfg.Addr,
 		}
-	case "postgres", "sqlmock":
+	case "postgres", "sqlmock", "vertica", "vertigo":
 		// an example for postgres data source is: postgres://pqgotest:password@localhost/pqgotest?sslmode=verify-full
 		// this follows the URI semantics
 		u, err = neturl.Parse(dataSourceName)

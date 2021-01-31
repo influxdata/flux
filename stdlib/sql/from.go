@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
+	_ "github.com/vertica/vertica-sql-go"
 	_ "github.com/lib/pq"
 )
 
@@ -117,7 +118,7 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewMySQLRowReader
 	case "sqlite3":
 		newRowReader = NewSqliteRowReader
-	case "postgres", "sqlmock":
+	case "postgres", "sqlmock", "vertica", "vertigo":
 		newRowReader = NewPostgresRowReader
 	case "snowflake":
 		newRowReader = NewSnowflakeRowReader

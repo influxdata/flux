@@ -21,3 +21,8 @@ cmake-build-debug
 # include any directories that share the same name.
 **/flux
 !**/flux/
+
+# exclude editor backup files
+*~
+*.bak
+*.sum
