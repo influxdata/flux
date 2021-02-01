@@ -299,7 +299,7 @@ func TestCompileAndEval(t *testing.T) {
 			inType: semantic.NewObjectType(nil),
 			input:  values.NewObjectWithValues(nil),
 			want: func() values.Value {
-				builder := values.NewDictBuilder(semantic.NewDictType(semantic.BasicString, semantic.BasicString))
+				builder := values.NewDictBuilder(semantic.NewDictType(semantic.BasicStringMonoType, semantic.BasicStringMonoType))
 				builder.Insert(values.NewString("a"), values.NewString("a"))
 				builder.Insert(values.NewString("b"), values.NewString("b"))
 				return builder.Dict()

@@ -4,11 +4,11 @@ import "github.com/influxdata/flux/semantic"
 
 var (
 	trueValue Value = value{
-		t: semantic.BasicBool,
+		t: semantic.BasicBoolMonoType,
 		v: true,
 	}
 	falseValue Value = value{
-		t: semantic.BasicBool,
+		t: semantic.BasicBoolMonoType,
 		v: false,
 	}
 )

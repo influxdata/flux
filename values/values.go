@@ -251,7 +251,7 @@ func NewNull(t semantic.MonoType) Value {
 
 func NewString(v string) Value {
 	return value{
-		t: semantic.BasicString,
+		t: semantic.BasicStringMonoType,
 		v: v,
 	}
 }
@@ -263,37 +263,37 @@ func NewBytes(v []byte) Value {
 }
 func NewInt(v int64) Value {
 	return value{
-		t: semantic.BasicInt,
+		t: semantic.BasicIntMonoType,
 		v: v,
 	}
 }
 func NewUInt(v uint64) Value {
 	return value{
-		t: semantic.BasicUint,
+		t: semantic.BasicUintMonoType,
 		v: v,
 	}
 }
 func NewFloat(v float64) Value {
 	return value{
-		t: semantic.BasicFloat,
+		t: semantic.BasicFloatMonoType,
 		v: v,
 	}
 }
 func NewTime(v Time) Value {
 	return value{
-		t: semantic.BasicTime,
+		t: semantic.BasicTimeMonoType,
 		v: v,
 	}
 }
 func NewDuration(v Duration) Value {
 	return value{
-		t: semantic.BasicDuration,
+		t: semantic.BasicDurationMonoType,
 		v: v,
 	}
 }
 func NewRegexp(v *regexp.Regexp) Value {
 	return value{
-		t: semantic.BasicRegexp,
+		t: semantic.BasicRegexpMonoType,
 		v: v,
 	}
 }

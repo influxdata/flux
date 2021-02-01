@@ -109,15 +109,331 @@ func (mt MonoType) Kind() Kind {
 }
 
 var (
-	BasicBool     = newBasicType(fbsemantic.TypeBool)
-	BasicInt      = newBasicType(fbsemantic.TypeInt)
-	BasicUint     = newBasicType(fbsemantic.TypeUint)
-	BasicFloat    = newBasicType(fbsemantic.TypeFloat)
-	BasicString   = newBasicType(fbsemantic.TypeString)
-	BasicDuration = newBasicType(fbsemantic.TypeDuration)
-	BasicTime     = newBasicType(fbsemantic.TypeTime)
-	BasicRegexp   = newBasicType(fbsemantic.TypeRegexp)
-	BasicBytes    = newBasicType(fbsemantic.TypeBytes)
+	
+  basicbool             = newBasicType(fbsemantic.TypeBool)
+  BasicBoolMonoType     = newBasicType(fbsemantic.TypeBool)
+  BasicBool             = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("!="),
+                            Value: basicbool,
+                          },
+                          PropertyType {
+                            Key: []byte("=="),
+                            Value: basicbool,
+                          },
+                          PropertyType {
+                            Key: []byte("@E"),
+                            Value: basicbool,
+                          },
+                        })
+  basicint              = newBasicType(fbsemantic.TypeInt)
+  BasicIntMonoType      = newBasicType(fbsemantic.TypeInt)
+  BasicInt              = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("+"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("-"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("*"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("/"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("^"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("%"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("<"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte(">"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("<="),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte(">="),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("!="),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("=="),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("@Neg"),
+                            Value: basicint,
+                          },
+                          PropertyType {
+                            Key: []byte("@Num"),
+                            Value: basicint,
+                          },
+
+                        })
+  basicuint             = newBasicType(fbsemantic.TypeUint)
+  BasicUintMonoType     = newBasicType(fbsemantic.TypeUint)
+  BasicUint             = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("+"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("-"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("*"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("/"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("^"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("%"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("<"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte(">"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("<="),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte(">="),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("!="),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("=="),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("@Neg"),
+                            Value: basicuint,
+                          },
+                          PropertyType {
+                            Key: []byte("@Num"),
+                            Value: basicuint,
+                          },
+
+                        })
+  basicfloat            = newBasicType(fbsemantic.TypeFloat)
+  BasicFloatMonoType    = newBasicType(fbsemantic.TypeFloat)
+  BasicFloat            = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("+"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("-"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("*"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("/"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("^"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("%"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("<"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte(">"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("<="),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte(">="),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("!="),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("=="),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("@Neg"),
+                            Value: basicfloat,
+                          },
+                          PropertyType {
+                            Key: []byte("@Num"),
+                            Value: basicfloat,
+                          },
+
+                        })
+  basicstring           = newBasicType(fbsemantic.TypeString)
+  BasicStringMonoType   = newBasicType(fbsemantic.TypeString)
+  BasicString           = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("+"),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte("<"),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte(">"),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte("<="),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte(">="),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte("!="),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte("=="),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte("=~"),
+                            Value: basicstring,
+                          },
+                          PropertyType {
+                            Key: []byte("!~"),
+                            Value: basicstring,
+                          },
+
+                        })
+  basicduration         = newBasicType(fbsemantic.TypeDuration)
+  BasicDurationMonoType = newBasicType(fbsemantic.TypeDuration)
+  BasicDuration         = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("<"),
+                            Value: basicduration,
+                          },
+                          PropertyType {
+                            Key: []byte(">"),
+                            Value: basicduration,
+                          },
+                          PropertyType {
+                            Key: []byte("<="),
+                            Value: basicduration,
+                          },
+                          PropertyType {
+                            Key: []byte(">="),
+                            Value: basicduration,
+                          },
+                          PropertyType {
+                            Key: []byte("!="),
+                            Value: basicduration,
+                          },
+                          PropertyType {
+                            Key: []byte("=="),
+                            Value: basicduration,
+                          },
+                          PropertyType {
+                            Key: []byte("@Neg"),
+                            Value: basicduration,
+                          },
+                          PropertyType {
+                            Key: []byte("@Tim"),
+                            Value: basicduration,
+                          },
+
+                        })
+  basictime             = newBasicType(fbsemantic.TypeTime)
+  BasicTimeMonoType     = newBasicType(fbsemantic.TypeTime)
+  BasicTime             = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("<"),
+                            Value: basictime,
+                          },
+                          PropertyType {
+                            Key: []byte(">"),
+                            Value: basictime,
+                          },
+                          PropertyType {
+                            Key: []byte("<="),
+                            Value: basictime,
+                          },
+                          PropertyType {
+                            Key: []byte(">="),
+                            Value: basictime,
+                          },
+                          PropertyType {
+                            Key: []byte("!="),
+                            Value: basictime,
+                          },
+                          PropertyType {
+                            Key: []byte("=="),
+                            Value: basictime,
+                          },
+                          PropertyType {
+                            Key: []byte("@Tim"),
+                            Value: basictime,
+                          },
+
+                        })
+  basicregexp           = newBasicType(fbsemantic.TypeRegexp)
+  BasicRegexpMonoType   = newBasicType(fbsemantic.TypeRegexp)
+  BasicRegexp           = NewObjectType([] PropertyType {
+                          PropertyType {
+                            Key: []byte("=~"),
+                            Value: basicregexp,
+                          },
+                          PropertyType {
+                            Key: []byte("!~"),
+                            Value: basicregexp,
+                          },
+
+                        })
+  BasicBytes    = newBasicType(fbsemantic.TypeBytes)
 )
 
 func getBasic(tbl fbTabler) (*fbsemantic.Basic, error) {
