@@ -79,7 +79,7 @@ fn parse_bad_array_expr() {
                         lbrack: None,
                         elements: vec![
                             ArrayItem {
-                                expression: Expression::StringLit(StringLit{
+                                expression: Expression::StringLit(StringLit {
                                     base: BaseNode {
                                         location: loc.get(1, 2, 1, 11),
                                         ..BaseNode::default()
@@ -89,7 +89,7 @@ fn parse_bad_array_expr() {
                                 comma: None,
                             },
                             ArrayItem {
-                                expression: Expression::Identifier(Identifier{
+                                expression: Expression::Identifier(Identifier {
                                     base: BaseNode {
                                         location: loc.get(1, 13, 1, 17),
                                         ..BaseNode::default()
@@ -99,7 +99,7 @@ fn parse_bad_array_expr() {
                                 comma: None,
                             },
                             ArrayItem {
-                                expression: Expression::Bad(Box::new(BadExpr{
+                                expression: Expression::Bad(Box::new(BadExpr {
                                     base: BaseNode {
                                         location: loc.get(1, 17, 1, 18),
                                         ..BaseNode::default()
@@ -113,7 +113,7 @@ fn parse_bad_array_expr() {
                         rbrack: None,
                     }))
                 })),
-                Statement::Bad(Box::new(BadStmt{
+                Statement::Bad(Box::new(BadStmt {
                     base: BaseNode {
                         location: loc.get(1, 17, 1, 18),
                         ..BaseNode::default()
