@@ -49,6 +49,97 @@ impl<'a> Locator<'a> {
 }
 
 #[test]
+fn parse_bad_array_expr() {
+    let mut p = Parser::new(r#"["_field]", mode: "by""#);
+    let parsed = p.parse_file("".to_string());
+    let loc = Locator::new(&p.source[..]);
+    assert_eq!(
+        parsed,
+        File {
+            base: BaseNode {
+                location: loc.get(1, 1, 1, 23),
+                ..BaseNode::default()
+            },
+            name: "".to_string(),
+            metadata: "parser-type=rust".to_string(),
+            package: None,
+            imports: vec![],
+            body: vec![
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 1, 1, 18),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::Array(Box::new(ArrayExpr {
+                        base: BaseNode {
+                            location: loc.get(1, 1, 1, 18),
+                            errors: vec!["expected RBRACK, got COLON".to_string()],
+                            ..BaseNode::default()
+                        },
+                        lbrack: None,
+                        elements: vec![
+                            ArrayItem {
+                                expression: Expression::StringLit(StringLit{
+                                    base: BaseNode {
+                                        location: loc.get(1, 2, 1, 11),
+                                        ..BaseNode::default()
+                                    },
+                                    value: "_field]".to_string(),
+                                }),
+                                comma: None,
+                            },
+                            ArrayItem {
+                                expression: Expression::Identifier(Identifier{
+                                    base: BaseNode {
+                                        location: loc.get(1, 13, 1, 17),
+                                        ..BaseNode::default()
+                                    },
+                                    name: "mode".to_string(),
+                                }),
+                                comma: None,
+                            },
+                            ArrayItem {
+                                expression: Expression::Bad(Box::new(BadExpr{
+                                    base: BaseNode {
+                                        location: loc.get(1, 17, 1, 18),
+                                        ..BaseNode::default()
+                                    },
+                                    text: "invalid token for primary expression: COLON".to_string(),
+                                    expression: None,
+                                })),
+                                comma: None,
+                            },
+                        ],
+                        rbrack: None,
+                    }))
+                })),
+                Statement::Bad(Box::new(BadStmt{
+                    base: BaseNode {
+                        location: loc.get(1, 17, 1, 18),
+                        ..BaseNode::default()
+                    },
+                    text: ":".to_string(),
+                })),
+                Statement::Expr(Box::new(ExprStmt {
+                    base: BaseNode {
+                        location: loc.get(1, 19, 1, 23),
+                        ..BaseNode::default()
+                    },
+                    expression: Expression::StringLit(StringLit {
+                        base: BaseNode {
+                            location: loc.get(1, 19, 1, 23),
+                            ..BaseNode::default()
+                        },
+                        value: "by".to_string(),
+                    })
+                }))
+            ],
+            eof: None,
+        },
+    )
+}
+
+#[test]
 fn parse_invalid_unicode_bare() {
     let mut p = Parser::new(r#"®some string®"#);
     let parsed = p.parse_file("".to_string());
