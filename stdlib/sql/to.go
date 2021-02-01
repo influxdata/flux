@@ -263,8 +263,10 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 	switch driverName {
 	case "sqlite3":
 		return SqliteColumnTranslateFunc, nil
-	case "postgres", "sqlmock", "vertica", "vertigo":
+	case "postgres", "sqlmock":
 		return PostgresColumnTranslateFunc, nil
+	case "vertica", "vertigo":
+		return VerticaColumnTranslateFunc, nil
 	case "mysql":
 		return MysqlColumnTranslateFunc, nil
 	case "snowflake":

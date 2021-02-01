@@ -118,8 +118,10 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewMySQLRowReader
 	case "sqlite3":
 		newRowReader = NewSqliteRowReader
-	case "postgres", "sqlmock", "vertica", "vertigo":
+	case "postgres", "sqlmock":
 		newRowReader = NewPostgresRowReader
+	case "vertica", "vertigo":
+		newRowReader = NewVerticaRowReader
 	case "snowflake":
 		newRowReader = NewSnowflakeRowReader
 	case "mssql", "sqlserver":
