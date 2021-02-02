@@ -1,11 +1,11 @@
-package interval
+package interval_test
 
 import (
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/values"
 )
 
@@ -54,7 +54,7 @@ func TestNewWindow(t *testing.T) {
 	for _, tc := range testcases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			_, err := NewWindow(tc.every, tc.period, tc.offset)
+			_, err := interval.NewWindow(tc.every, tc.period, tc.offset)
 			hasErr := err != nil
 			if tc.wantErr != hasErr {
 				if tc.wantErr {
@@ -75,8 +75,8 @@ type testBounds struct {
 func TestWindow_GetLatestBounds(t *testing.T) {
 	var testcases = []struct {
 		name string
-		w    Window
-		t    execute.Time
+		w    interval.Window
+		t    values.Time
 		want testBounds
 	}{
 		{
@@ -85,10 +85,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(0)),
-			t: execute.Time(6 * time.Minute),
+			t: values.Time(6 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(5 * time.Minute),
-				Stop:  execute.Time(10 * time.Minute),
+				Start: values.Time(5 * time.Minute),
+				Stop:  values.Time(10 * time.Minute),
 			},
 		},
 		{
@@ -97,10 +97,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(-5*time.Minute),
 				values.ConvertDurationNsecs(30*time.Second)),
-			t: execute.Time(5 * time.Minute),
+			t: values.Time(5 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(30 * time.Second),
-				Stop:  execute.Time(5*time.Minute + 30*time.Second),
+				Start: values.Time(30 * time.Second),
+				Stop:  values.Time(5*time.Minute + 30*time.Second),
 			},
 		},
 		{
@@ -109,10 +109,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(30*time.Second)),
-			t: execute.Time(5 * time.Minute),
+			t: values.Time(5 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(30 * time.Second),
-				Stop:  execute.Time(5*time.Minute + 30*time.Second),
+				Start: values.Time(30 * time.Second),
+				Stop:  values.Time(5*time.Minute + 30*time.Second),
 			},
 		},
 		{
@@ -121,10 +121,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(-30*time.Second)),
-			t: execute.Time(5 * time.Minute),
+			t: values.Time(5 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(4*time.Minute + 30*time.Second),
-				Stop:  execute.Time(9*time.Minute + 30*time.Second),
+				Start: values.Time(4*time.Minute + 30*time.Second),
+				Stop:  values.Time(9*time.Minute + 30*time.Second),
 			},
 		},
 		{
@@ -133,10 +133,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute)),
-			t: execute.Time(0),
+			t: values.Time(0),
 			want: testBounds{
-				Start: execute.Time(0 * time.Minute),
-				Stop:  execute.Time(5 * time.Minute),
+				Start: values.Time(0 * time.Minute),
+				Stop:  values.Time(5 * time.Minute),
 			},
 		},
 		{
@@ -145,10 +145,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(5*time.Minute)),
-			t: execute.Time(7 * time.Minute),
+			t: values.Time(7 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(5 * time.Minute),
-				Stop:  execute.Time(10 * time.Minute),
+				Start: values.Time(5 * time.Minute),
+				Stop:  values.Time(10 * time.Minute),
 			},
 		},
 		{
@@ -193,10 +193,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(2*time.Minute),
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(30*time.Second)),
-			t: execute.Time(3 * time.Minute),
+			t: values.Time(3 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(2*time.Minute + 30*time.Second),
-				Stop:  execute.Time(3*time.Minute + 30*time.Second),
+				Start: values.Time(2*time.Minute + 30*time.Second),
+				Stop:  values.Time(3*time.Minute + 30*time.Second),
 			},
 		},
 		{
@@ -205,10 +205,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(2*time.Minute),
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(30*time.Second)),
-			t: execute.Time(2*time.Minute + 15*time.Second),
+			t: values.Time(2*time.Minute + 15*time.Second),
 			want: testBounds{
-				Start: execute.Time(0*time.Minute + 30*time.Second),
-				Stop:  execute.Time(1*time.Minute + 30*time.Second),
+				Start: values.Time(0*time.Minute + 30*time.Second),
+				Stop:  values.Time(1*time.Minute + 30*time.Second),
 			},
 		},
 		{
@@ -217,10 +217,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(2*time.Minute),
 				values.ConvertDurationNsecs(30*time.Second)),
-			t: execute.Time(30 * time.Second),
+			t: values.Time(30 * time.Second),
 			want: testBounds{
-				Start: execute.Time(30 * time.Second),
-				Stop:  execute.Time(2*time.Minute + 30*time.Second),
+				Start: values.Time(30 * time.Second),
+				Stop:  values.Time(2*time.Minute + 30*time.Second),
 			},
 		},
 		{
@@ -229,10 +229,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(3*time.Minute+30*time.Second),
 				values.ConvertDurationNsecs(30*time.Second)),
-			t: execute.Time(5*time.Minute + 45*time.Second),
+			t: values.Time(5*time.Minute + 45*time.Second),
 			want: testBounds{
-				Start: execute.Time(5*time.Minute + 30*time.Second),
-				Stop:  execute.Time(9 * time.Minute),
+				Start: values.Time(5*time.Minute + 30*time.Second),
+				Stop:  values.Time(9 * time.Minute),
 			},
 		},
 		{
@@ -241,10 +241,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(1*time.Minute),
 				values.ConvertDurationNsecs(3*time.Minute+30*time.Second),
 				values.ConvertDurationNsecs(30*time.Second)),
-			t: execute.Time(5 * time.Minute),
+			t: values.Time(5 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(4*time.Minute + 30*time.Second),
-				Stop:  execute.Time(8 * time.Minute),
+				Start: values.Time(4*time.Minute + 30*time.Second),
+				Stop:  values.Time(8 * time.Minute),
 			},
 		},
 		{
@@ -253,10 +253,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(-15*time.Minute),
 				values.ConvertDurationNsecs(0*time.Second)),
-			t: execute.Time(5 * time.Minute),
+			t: values.Time(5 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(5 * time.Minute),
-				Stop:  execute.Time(20 * time.Minute),
+				Start: values.Time(5 * time.Minute),
+				Stop:  values.Time(20 * time.Minute),
 			},
 		},
 		{
@@ -265,10 +265,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(-15*time.Minute),
 				values.ConvertDurationNsecs(0*time.Second)),
-			t: execute.Time(6 * time.Minute),
+			t: values.Time(6 * time.Minute),
 			want: testBounds{
-				Start: execute.Time(5 * time.Minute),
-				Stop:  execute.Time(20 * time.Minute),
+				Start: values.Time(5 * time.Minute),
+				Stop:  values.Time(20 * time.Minute),
 			},
 		},
 		{
@@ -277,10 +277,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Second),
 				values.ConvertDurationNsecs(5*time.Second),
 				values.ConvertDurationNsecs(2*time.Second)),
-			t: execute.Time(1 * time.Second),
+			t: values.Time(1 * time.Second),
 			want: testBounds{
-				Start: execute.Time(-3 * time.Second),
-				Stop:  execute.Time(2 * time.Second),
+				Start: values.Time(-3 * time.Second),
+				Stop:  values.Time(2 * time.Second),
 			},
 		},
 		{
@@ -289,10 +289,10 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Second),
 				values.ConvertDurationNsecs(5*time.Second),
 				values.ConvertDurationNsecs(2*time.Second)),
-			t: execute.Time(3 * time.Second),
+			t: values.Time(3 * time.Second),
 			want: testBounds{
-				Start: execute.Time(2 * time.Second),
-				Stop:  execute.Time(7 * time.Second),
+				Start: values.Time(2 * time.Second),
+				Stop:  values.Time(7 * time.Second),
 			},
 		},
 		{
@@ -541,7 +541,7 @@ func TestWindow_GetLatestBounds(t *testing.T) {
 func TestWindow_GetOverlappingBounds(t *testing.T) {
 	testcases := []struct {
 		name string
-		w    Window
+		w    interval.Window
 		b    testBounds
 		want []testBounds
 	}{
@@ -553,8 +553,8 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			b: testBounds{
-				Start: execute.Time(5 * time.Minute),
-				Stop:  execute.Time(5 * time.Minute),
+				Start: values.Time(5 * time.Minute),
+				Stop:  values.Time(5 * time.Minute),
 			},
 			want: []testBounds{},
 		},
@@ -566,13 +566,13 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			b: testBounds{
-				Start: execute.Time(5 * time.Minute),
-				Stop:  execute.Time(8 * time.Minute),
+				Start: values.Time(5 * time.Minute),
+				Stop:  values.Time(8 * time.Minute),
 			},
 			want: []testBounds{
-				{Start: execute.Time(7 * time.Minute), Stop: execute.Time(8 * time.Minute)},
-				{Start: execute.Time(6 * time.Minute), Stop: execute.Time(7 * time.Minute)},
-				{Start: execute.Time(5 * time.Minute), Stop: execute.Time(6 * time.Minute)},
+				{Start: values.Time(7 * time.Minute), Stop: values.Time(8 * time.Minute)},
+				{Start: values.Time(6 * time.Minute), Stop: values.Time(7 * time.Minute)},
+				{Start: values.Time(5 * time.Minute), Stop: values.Time(6 * time.Minute)},
 			},
 		},
 		{
@@ -583,21 +583,21 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(15*time.Second),
 			),
 			b: testBounds{
-				Start: execute.Time(5 * time.Minute),
-				Stop:  execute.Time(7 * time.Minute),
+				Start: values.Time(5 * time.Minute),
+				Stop:  values.Time(7 * time.Minute),
 			},
 			want: []testBounds{
 				{
-					Start: execute.Time(6*time.Minute + 15*time.Second),
-					Stop:  execute.Time(7*time.Minute + 15*time.Second),
+					Start: values.Time(6*time.Minute + 15*time.Second),
+					Stop:  values.Time(7*time.Minute + 15*time.Second),
 				},
 				{
-					Start: execute.Time(5*time.Minute + 15*time.Second),
-					Stop:  execute.Time(6*time.Minute + 15*time.Second),
+					Start: values.Time(5*time.Minute + 15*time.Second),
+					Stop:  values.Time(6*time.Minute + 15*time.Second),
 				},
 				{
-					Start: execute.Time(4*time.Minute + 15*time.Second),
-					Stop:  execute.Time(5*time.Minute + 15*time.Second),
+					Start: values.Time(4*time.Minute + 15*time.Second),
+					Stop:  values.Time(5*time.Minute + 15*time.Second),
 				},
 			},
 		},
@@ -609,8 +609,8 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			b: testBounds{
-				Start: execute.Time(1*time.Minute + 30*time.Second),
-				Stop:  execute.Time(1*time.Minute + 45*time.Second),
+				Start: values.Time(1*time.Minute + 30*time.Second),
+				Stop:  values.Time(1*time.Minute + 45*time.Second),
 			},
 			want: []testBounds{},
 		},
@@ -622,17 +622,17 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(30*time.Second),
 			),
 			b: testBounds{
-				Start: execute.Time(1*time.Minute + 45*time.Second),
-				Stop:  execute.Time(4*time.Minute + 35*time.Second),
+				Start: values.Time(1*time.Minute + 45*time.Second),
+				Stop:  values.Time(4*time.Minute + 35*time.Second),
 			},
 			want: []testBounds{
 				{
-					Start: execute.Time(4*time.Minute + 30*time.Second),
-					Stop:  execute.Time(5*time.Minute + 30*time.Second),
+					Start: values.Time(4*time.Minute + 30*time.Second),
+					Stop:  values.Time(5*time.Minute + 30*time.Second),
 				},
 				{
-					Start: execute.Time(2*time.Minute + 30*time.Second),
-					Stop:  execute.Time(3*time.Minute + 30*time.Second),
+					Start: values.Time(2*time.Minute + 30*time.Second),
+					Stop:  values.Time(3*time.Minute + 30*time.Second),
 				},
 			},
 		},
@@ -644,25 +644,25 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 				values.ConvertDurationNsecs(0),
 			),
 			b: testBounds{
-				Start: execute.Time(10 * time.Minute),
-				Stop:  execute.Time(12 * time.Minute),
+				Start: values.Time(10 * time.Minute),
+				Stop:  values.Time(12 * time.Minute),
 			},
 			want: []testBounds{
 				{
-					Start: execute.Time(11 * time.Minute),
-					Stop:  execute.Time(13*time.Minute + 15*time.Second),
+					Start: values.Time(11 * time.Minute),
+					Stop:  values.Time(13*time.Minute + 15*time.Second),
 				},
 				{
-					Start: execute.Time(10 * time.Minute),
-					Stop:  execute.Time(12*time.Minute + 15*time.Second),
+					Start: values.Time(10 * time.Minute),
+					Stop:  values.Time(12*time.Minute + 15*time.Second),
 				},
 				{
-					Start: execute.Time(9 * time.Minute),
-					Stop:  execute.Time(11*time.Minute + 15*time.Second),
+					Start: values.Time(9 * time.Minute),
+					Stop:  values.Time(11*time.Minute + 15*time.Second),
 				},
 				{
-					Start: execute.Time(8 * time.Minute),
-					Stop:  execute.Time(10*time.Minute + 15*time.Second),
+					Start: values.Time(8 * time.Minute),
+					Stop:  values.Time(10*time.Minute + 15*time.Second),
 				},
 			},
 		},
@@ -756,7 +756,7 @@ func TestWindow_GetOverlappingBounds(t *testing.T) {
 func TestWindow_NextBounds(t *testing.T) {
 	testcases := []struct {
 		name string
-		w    Window
+		w    interval.Window
 		t    values.Time
 		want []testBounds
 	}{
@@ -767,14 +767,14 @@ func TestWindow_NextBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(0),
 			),
-			t: execute.Time(10 * time.Minute),
+			t: values.Time(10 * time.Minute),
 			want: []testBounds{
-				{Start: execute.Time(10 * time.Minute), Stop: execute.Time(15 * time.Minute)},
-				{Start: execute.Time(15 * time.Minute), Stop: execute.Time(20 * time.Minute)},
-				{Start: execute.Time(20 * time.Minute), Stop: execute.Time(25 * time.Minute)},
-				{Start: execute.Time(25 * time.Minute), Stop: execute.Time(30 * time.Minute)},
-				{Start: execute.Time(30 * time.Minute), Stop: execute.Time(35 * time.Minute)},
-				{Start: execute.Time(35 * time.Minute), Stop: execute.Time(40 * time.Minute)},
+				{Start: values.Time(10 * time.Minute), Stop: values.Time(15 * time.Minute)},
+				{Start: values.Time(15 * time.Minute), Stop: values.Time(20 * time.Minute)},
+				{Start: values.Time(20 * time.Minute), Stop: values.Time(25 * time.Minute)},
+				{Start: values.Time(25 * time.Minute), Stop: values.Time(30 * time.Minute)},
+				{Start: values.Time(30 * time.Minute), Stop: values.Time(35 * time.Minute)},
+				{Start: values.Time(35 * time.Minute), Stop: values.Time(40 * time.Minute)},
 			},
 		},
 		{
@@ -784,14 +784,14 @@ func TestWindow_NextBounds(t *testing.T) {
 				values.ConvertDurationNsecs(-5*time.Minute),
 				values.ConvertDurationNsecs(0),
 			),
-			t: execute.Time(10 * time.Minute),
+			t: values.Time(10 * time.Minute),
 			want: []testBounds{
-				{Start: execute.Time(10 * time.Minute), Stop: execute.Time(15 * time.Minute)},
-				{Start: execute.Time(15 * time.Minute), Stop: execute.Time(20 * time.Minute)},
-				{Start: execute.Time(20 * time.Minute), Stop: execute.Time(25 * time.Minute)},
-				{Start: execute.Time(25 * time.Minute), Stop: execute.Time(30 * time.Minute)},
-				{Start: execute.Time(30 * time.Minute), Stop: execute.Time(35 * time.Minute)},
-				{Start: execute.Time(35 * time.Minute), Stop: execute.Time(40 * time.Minute)},
+				{Start: values.Time(10 * time.Minute), Stop: values.Time(15 * time.Minute)},
+				{Start: values.Time(15 * time.Minute), Stop: values.Time(20 * time.Minute)},
+				{Start: values.Time(20 * time.Minute), Stop: values.Time(25 * time.Minute)},
+				{Start: values.Time(25 * time.Minute), Stop: values.Time(30 * time.Minute)},
+				{Start: values.Time(30 * time.Minute), Stop: values.Time(35 * time.Minute)},
+				{Start: values.Time(35 * time.Minute), Stop: values.Time(40 * time.Minute)},
 			},
 		},
 		{
@@ -884,7 +884,7 @@ func TestWindow_NextBounds(t *testing.T) {
 func TestWindow_PrevBounds(t *testing.T) {
 	testcases := []struct {
 		name string
-		w    Window
+		w    interval.Window
 		t    values.Time
 		want []testBounds
 	}{
@@ -895,14 +895,14 @@ func TestWindow_PrevBounds(t *testing.T) {
 				values.ConvertDurationNsecs(5*time.Minute),
 				values.ConvertDurationNsecs(0),
 			),
-			t: execute.Time(36 * time.Minute),
+			t: values.Time(36 * time.Minute),
 			want: []testBounds{
-				{Start: execute.Time(35 * time.Minute), Stop: execute.Time(40 * time.Minute)},
-				{Start: execute.Time(30 * time.Minute), Stop: execute.Time(35 * time.Minute)},
-				{Start: execute.Time(25 * time.Minute), Stop: execute.Time(30 * time.Minute)},
-				{Start: execute.Time(20 * time.Minute), Stop: execute.Time(25 * time.Minute)},
-				{Start: execute.Time(15 * time.Minute), Stop: execute.Time(20 * time.Minute)},
-				{Start: execute.Time(10 * time.Minute), Stop: execute.Time(15 * time.Minute)},
+				{Start: values.Time(35 * time.Minute), Stop: values.Time(40 * time.Minute)},
+				{Start: values.Time(30 * time.Minute), Stop: values.Time(35 * time.Minute)},
+				{Start: values.Time(25 * time.Minute), Stop: values.Time(30 * time.Minute)},
+				{Start: values.Time(20 * time.Minute), Stop: values.Time(25 * time.Minute)},
+				{Start: values.Time(15 * time.Minute), Stop: values.Time(20 * time.Minute)},
+				{Start: values.Time(10 * time.Minute), Stop: values.Time(15 * time.Minute)},
 			},
 		},
 		{
@@ -912,14 +912,14 @@ func TestWindow_PrevBounds(t *testing.T) {
 				values.ConvertDurationNsecs(-5*time.Minute),
 				values.ConvertDurationNsecs(0),
 			),
-			t: execute.Time(36 * time.Minute),
+			t: values.Time(36 * time.Minute),
 			want: []testBounds{
-				{Start: execute.Time(35 * time.Minute), Stop: execute.Time(40 * time.Minute)},
-				{Start: execute.Time(30 * time.Minute), Stop: execute.Time(35 * time.Minute)},
-				{Start: execute.Time(25 * time.Minute), Stop: execute.Time(30 * time.Minute)},
-				{Start: execute.Time(20 * time.Minute), Stop: execute.Time(25 * time.Minute)},
-				{Start: execute.Time(15 * time.Minute), Stop: execute.Time(20 * time.Minute)},
-				{Start: execute.Time(10 * time.Minute), Stop: execute.Time(15 * time.Minute)},
+				{Start: values.Time(35 * time.Minute), Stop: values.Time(40 * time.Minute)},
+				{Start: values.Time(30 * time.Minute), Stop: values.Time(35 * time.Minute)},
+				{Start: values.Time(25 * time.Minute), Stop: values.Time(30 * time.Minute)},
+				{Start: values.Time(20 * time.Minute), Stop: values.Time(25 * time.Minute)},
+				{Start: values.Time(15 * time.Minute), Stop: values.Time(20 * time.Minute)},
+				{Start: values.Time(10 * time.Minute), Stop: values.Time(15 * time.Minute)},
 			},
 		},
 		{
@@ -1007,15 +1007,15 @@ func TestWindow_PrevBounds(t *testing.T) {
 	}
 }
 
-func mustWindow(every, period, offset execute.Duration) Window {
-	w, err := NewWindow(every, period, offset)
+func mustWindow(every, period, offset values.Duration) interval.Window {
+	w, err := interval.NewWindow(every, period, offset)
 	if err != nil {
 		panic(err)
 	}
 	return w
 }
 
-func mustTime(s string) execute.Time {
+func mustTime(s string) values.Time {
 	t, err := time.Parse(time.RFC3339Nano, s)
 	if err != nil {
 		panic(err)
@@ -1023,7 +1023,7 @@ func mustTime(s string) execute.Time {
 	return values.ConvertTime(t)
 }
 
-func mustDuration(s string) execute.Duration {
+func mustDuration(s string) values.Duration {
 	d, err := values.ParseDuration(s)
 	if err != nil {
 		panic(err)
@@ -1031,7 +1031,7 @@ func mustDuration(s string) execute.Duration {
 	return d
 }
 
-func transformBounds(b []Bounds) []testBounds {
+func transformBounds(b []interval.Bounds) []testBounds {
 	bs := make([]testBounds, 0, len(b))
 	for i := range b {
 		bs = append(bs, testBounds{

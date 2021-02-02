@@ -11,6 +11,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
+	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/plan/plantest"
 	"github.com/influxdata/flux/querytest"
@@ -84,15 +85,13 @@ func TestWindowOperation_Marshaling(t *testing.T) {
 }
 
 func TestFixedWindow_PassThrough(t *testing.T) {
+	w, _ := interval.NewWindow(values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Minute), values.MakeDuration(0, 0, false))
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-		fw := universe.NewFixedWindowTransformation(
+		fw := universe.NewIntervalFixedWindowTransformation(
 			d,
 			c,
-			execute.Bounds{},
-			execute.Window{
-				Every:  values.ConvertDurationNsecs(time.Minute),
-				Period: values.ConvertDurationNsecs(time.Minute),
-			},
+			interval.Bounds{},
+			w,
 			execute.DefaultTimeColLabel,
 			execute.DefaultStartColLabel,
 			execute.DefaultStopColLabel,
@@ -102,7 +101,7 @@ func TestFixedWindow_PassThrough(t *testing.T) {
 	})
 }
 
-func newEmptyWindowTable(start execute.Time, stop execute.Time, cols []flux.ColMeta) *executetest.Table {
+func newEmptyWindowTable(start values.Time, stop values.Time, cols []flux.ColMeta) *executetest.Table {
 	return &executetest.Table{
 		KeyCols:   []string{"_start", "_stop"},
 		KeyValues: []interface{}{start, stop},
@@ -122,14 +121,12 @@ func newEmptyWindowTable(start execute.Time, stop execute.Time, cols []flux.ColM
 }
 
 func TestFixedWindow_Process(t *testing.T) {
-	alignedBounds := execute.Bounds{
-		Start: execute.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
-		Stop:  execute.Time(time.Date(2017, 10, 10, 0, 10, 0, 0, time.UTC).UnixNano()),
-	}
-	nonalignedBounds := execute.Bounds{
-		Start: execute.Time(time.Date(2017, 10, 10, 10, 10, 10, 10, time.UTC).UnixNano()),
-		Stop:  execute.Time(time.Date(2017, 10, 10, 10, 20, 10, 10, time.UTC).UnixNano()),
-	}
+	alignedBounds := interval.NewBounds(
+		values.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
+		values.Time(time.Date(2017, 10, 10, 0, 10, 0, 0, time.UTC).UnixNano()))
+	nonalignedBounds := interval.NewBounds(
+		values.Time(time.Date(2017, 10, 10, 10, 10, 10, 10, time.UTC).UnixNano()),
+		values.Time(time.Date(2017, 10, 10, 10, 20, 10, 10, time.UTC).UnixNano()))
 
 	// test columns which all expected data will use
 	testCols := []flux.ColMeta{
@@ -141,11 +138,11 @@ func TestFixedWindow_Process(t *testing.T) {
 	testCases := []struct {
 		name                  string
 		valueCol              flux.ColMeta
-		bounds                execute.Bounds
+		bounds                interval.Bounds
 		every, period, offset execute.Duration
 		createEmpty           bool
 		num                   int
-		want                  func(start execute.Time) []*executetest.Table
+		want                  func(start values.Time) []*executetest.Table
 	}{
 		{
 			name:     "nonoverlapping_nonaligned",
@@ -157,7 +154,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			period:      values.ConvertDurationNsecs(time.Minute),
 			createEmpty: true,
 			num:         15,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
@@ -168,12 +165,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(time.Minute), start, 0.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(10*time.Second), 1.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(20*time.Second), 2.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(30*time.Second), 3.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(40*time.Second), 4.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(50*time.Second), 5.0},
+							{start, start + values.Time(time.Minute), start, 0.0},
+							{start, start + values.Time(time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + values.Time(time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + values.Time(time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + values.Time(time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + values.Time(time.Minute), start + values.Time(50*time.Second), 5.0},
 						},
 					},
 					{
@@ -185,12 +182,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(110*time.Second), 11.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(60*time.Second), 6.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(70*time.Second), 7.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(80*time.Second), 8.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(90*time.Second), 9.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(100*time.Second), 10.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(110*time.Second), 11.0},
 						},
 					},
 					{
@@ -202,18 +199,18 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), 12.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(130*time.Second), 13.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(140*time.Second), 14.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), 14.0},
 						},
 					},
-					newEmptyWindowTable(start+execute.Time(3*time.Minute), start+execute.Time(4*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(4*time.Minute), start+execute.Time(5*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(5*time.Minute), start+execute.Time(6*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(6*time.Minute), start+execute.Time(7*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute), start+execute.Time(8*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(8*time.Minute), start+execute.Time(9*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(9*time.Minute), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(3*time.Minute), start+values.Time(4*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute), start+values.Time(5*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(5*time.Minute), start+values.Time(6*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute), start+values.Time(7*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(7*time.Minute), start+values.Time(8*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute), start+values.Time(9*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(9*time.Minute), start+values.Time(10*time.Minute), testCols),
 				}
 			},
 		},
@@ -226,7 +223,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			period:      values.ConvertDurationNsecs(time.Minute),
 			createEmpty: true,
 			num:         15,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
@@ -237,12 +234,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(time.Minute), start, 0.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(10*time.Second), 1.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(20*time.Second), 2.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(30*time.Second), 3.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(40*time.Second), 4.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(50*time.Second), 5.0},
+							{start, start + values.Time(time.Minute), start, 0.0},
+							{start, start + values.Time(time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + values.Time(time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + values.Time(time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + values.Time(time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + values.Time(time.Minute), start + values.Time(50*time.Second), 5.0},
 						},
 					},
 					{
@@ -254,12 +251,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(110*time.Second), 11.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(60*time.Second), 6.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(70*time.Second), 7.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(80*time.Second), 8.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(90*time.Second), 9.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(100*time.Second), 10.0},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(110*time.Second), 11.0},
 						},
 					},
 					{
@@ -271,14 +268,14 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), 12.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(130*time.Second), 13.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(140*time.Second), 14.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), 14.0},
 						},
 					},
 					{
 						KeyCols:   []string{"_start", "_stop"},
-						KeyValues: []interface{}{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute)},
+						KeyValues: []interface{}{start + values.Time(3*time.Minute), start + values.Time(4*time.Minute)},
 						ColMeta: []flux.ColMeta{
 							{Label: "_start", Type: flux.TTime},
 							{Label: "_stop", Type: flux.TTime},
@@ -291,17 +288,17 @@ func TestFixedWindow_Process(t *testing.T) {
 								{Label: "_stop", Type: flux.TTime},
 							},
 							[]values.Value{
-								values.NewTime(start + execute.Time(3*time.Minute)),
-								values.NewTime(start + execute.Time(4*time.Minute)),
+								values.NewTime(start + values.Time(3*time.Minute)),
+								values.NewTime(start + values.Time(4*time.Minute)),
 							},
 						),
 					},
-					newEmptyWindowTable(start+execute.Time(4*time.Minute), start+execute.Time(5*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(5*time.Minute), start+execute.Time(6*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(6*time.Minute), start+execute.Time(7*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute), start+execute.Time(8*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(8*time.Minute), start+execute.Time(9*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(9*time.Minute), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute), start+values.Time(5*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(5*time.Minute), start+values.Time(6*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute), start+values.Time(7*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(7*time.Minute), start+values.Time(8*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute), start+values.Time(9*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(9*time.Minute), start+values.Time(10*time.Minute), testCols),
 				}
 			},
 		},
@@ -315,7 +312,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			period:      values.ConvertDurationNsecs(2 * time.Minute),
 			createEmpty: true,
 			num:         15,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
@@ -326,12 +323,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(time.Minute), start, 0.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(10*time.Second), 1.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(20*time.Second), 2.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(30*time.Second), 3.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(40*time.Second), 4.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(50*time.Second), 5.0},
+							{start, start + values.Time(time.Minute), start, 0.0},
+							{start, start + values.Time(time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + values.Time(time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + values.Time(time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + values.Time(time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + values.Time(time.Minute), start + values.Time(50*time.Second), 5.0},
 						},
 					},
 					{
@@ -343,18 +340,18 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(2*time.Minute), start, 0.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(10*time.Second), 1.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(20*time.Second), 2.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(30*time.Second), 3.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(40*time.Second), 4.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(50*time.Second), 5.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(110*time.Second), 11.0},
+							{start, start + values.Time(2*time.Minute), start, 0.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(50*time.Second), 5.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(60*time.Second), 6.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(70*time.Second), 7.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(80*time.Second), 8.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(90*time.Second), 9.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(100*time.Second), 10.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(110*time.Second), 11.0},
 						},
 					},
 					{
@@ -366,15 +363,15 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(110*time.Second), 11.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), 12.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(130*time.Second), 13.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(140*time.Second), 14.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(60*time.Second), 6.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(70*time.Second), 7.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(80*time.Second), 8.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(90*time.Second), 9.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(100*time.Second), 10.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(110*time.Second), 11.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), 14.0},
 						},
 					},
 					{
@@ -386,18 +383,18 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(120*time.Second), 12.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(130*time.Second), 13.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(140*time.Second), 14.0},
+							{start + values.Time(2*time.Minute), start + values.Time(4*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(2*time.Minute), start + values.Time(4*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(2*time.Minute), start + values.Time(4*time.Minute), start + values.Time(140*time.Second), 14.0},
 						},
 					},
-					newEmptyWindowTable(start+execute.Time(3*time.Minute), start+execute.Time(5*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(4*time.Minute), start+execute.Time(6*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(5*time.Minute), start+execute.Time(7*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(6*time.Minute), start+execute.Time(8*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute), start+execute.Time(9*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(8*time.Minute), start+execute.Time(10*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(9*time.Minute), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(3*time.Minute), start+values.Time(5*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute), start+values.Time(6*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(5*time.Minute), start+values.Time(7*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute), start+values.Time(8*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(7*time.Minute), start+values.Time(9*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute), start+values.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(9*time.Minute), start+values.Time(10*time.Minute), testCols),
 				}
 			},
 		},
@@ -410,7 +407,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			period:      values.ConvertDurationNsecs(2 * time.Minute),
 			createEmpty: true,
 			num:         15,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
@@ -421,12 +418,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(time.Minute), start, 0.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(10*time.Second), 1.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(20*time.Second), 2.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(30*time.Second), 3.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(40*time.Second), 4.0},
-							{start, start + execute.Time(time.Minute), start + execute.Time(50*time.Second), 5.0},
+							{start, start + values.Time(time.Minute), start, 0.0},
+							{start, start + values.Time(time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + values.Time(time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + values.Time(time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + values.Time(time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + values.Time(time.Minute), start + values.Time(50*time.Second), 5.0},
 						},
 					},
 					{
@@ -438,18 +435,18 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(2*time.Minute), start, 0.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(10*time.Second), 1.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(20*time.Second), 2.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(30*time.Second), 3.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(40*time.Second), 4.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(50*time.Second), 5.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start, start + execute.Time(2*time.Minute), start + execute.Time(110*time.Second), 11.0},
+							{start, start + values.Time(2*time.Minute), start, 0.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(50*time.Second), 5.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(60*time.Second), 6.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(70*time.Second), 7.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(80*time.Second), 8.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(90*time.Second), 9.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(100*time.Second), 10.0},
+							{start, start + values.Time(2*time.Minute), start + values.Time(110*time.Second), 11.0},
 						},
 					},
 					{
@@ -461,15 +458,15 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(110*time.Second), 11.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), 12.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(130*time.Second), 13.0},
-							{start + execute.Time(1*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(140*time.Second), 14.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(60*time.Second), 6.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(70*time.Second), 7.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(80*time.Second), 8.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(90*time.Second), 9.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(100*time.Second), 10.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(110*time.Second), 11.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(1*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), 14.0},
 						},
 					},
 					{
@@ -481,18 +478,18 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(120*time.Second), 12.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(130*time.Second), 13.0},
-							{start + execute.Time(2*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(140*time.Second), 14.0},
+							{start + values.Time(2*time.Minute), start + values.Time(4*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(2*time.Minute), start + values.Time(4*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(2*time.Minute), start + values.Time(4*time.Minute), start + values.Time(140*time.Second), 14.0},
 						},
 					},
-					newEmptyWindowTable(start+execute.Time(3*time.Minute), start+execute.Time(5*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(4*time.Minute), start+execute.Time(6*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(5*time.Minute), start+execute.Time(7*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(6*time.Minute), start+execute.Time(8*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute), start+execute.Time(9*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(8*time.Minute), start+execute.Time(10*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(9*time.Minute), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(3*time.Minute), start+values.Time(5*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute), start+values.Time(6*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(5*time.Minute), start+values.Time(7*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute), start+values.Time(8*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(7*time.Minute), start+values.Time(9*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute), start+values.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(9*time.Minute), start+values.Time(10*time.Minute), testCols),
 				}
 			},
 		},
@@ -506,7 +503,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			offset:      values.ConvertDurationNsecs(10*time.Second + 10*time.Nanosecond),
 			createEmpty: true,
 			num:         24,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
@@ -517,12 +514,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(110*time.Second), 11.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(0*time.Second), 0.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(50*time.Second), 5.0},
 						},
 					},
 					{
@@ -534,17 +531,17 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(180*time.Second), 18.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(190*time.Second), 19.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(200*time.Second), 20.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(210*time.Second), 21.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(220*time.Second), 22.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(230*time.Second), 23.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), 14.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(150*time.Second), 15.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(160*time.Second), 16.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(170*time.Second), 17.0},
 						},
 					},
-					newEmptyWindowTable(start+execute.Time(5*time.Minute), start+execute.Time(6*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute), start+execute.Time(8*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(9*time.Minute), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute), start+values.Time(5*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute), start+values.Time(7*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute), start+values.Time(9*time.Minute), testCols),
 				}
 			},
 		},
@@ -557,7 +554,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			period:      values.ConvertDurationNsecs(time.Minute),
 			createEmpty: true,
 			num:         24,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				return []*executetest.Table{
 					{
 						KeyCols: []string{"_start", "_stop"},
@@ -568,12 +565,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(60*time.Second), 6.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(70*time.Second), 7.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(80*time.Second), 8.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(90*time.Second), 9.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(100*time.Second), 10.0},
-							{start + 1*execute.Time(time.Minute), start + 2*execute.Time(time.Minute), start + execute.Time(110*time.Second), 11.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(0*time.Second), 0.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(10*time.Second), 1.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(20*time.Second), 2.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(30*time.Second), 3.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(40*time.Second), 4.0},
+							{start, start + 1*values.Time(time.Minute), start + values.Time(50*time.Second), 5.0},
 						},
 					},
 					{
@@ -585,17 +582,17 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(180*time.Second), 18.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(190*time.Second), 19.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(200*time.Second), 20.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(210*time.Second), 21.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(220*time.Second), 22.0},
-							{start + execute.Time(3*time.Minute), start + execute.Time(4*time.Minute), start + execute.Time(230*time.Second), 23.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), 14.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(150*time.Second), 15.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(160*time.Second), 16.0},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(170*time.Second), 17.0},
 						},
 					},
-					newEmptyWindowTable(start+execute.Time(5*time.Minute), start+execute.Time(6*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute), start+execute.Time(8*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(9*time.Minute), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute), start+values.Time(5*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute), start+values.Time(7*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute), start+values.Time(9*time.Minute), testCols),
 				}
 			},
 		},
@@ -608,7 +605,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			period:      values.ConvertDurationNsecs(time.Minute),
 			createEmpty: true,
 			num:         15,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				testCols := testCols
 				testCols[3].Type = flux.TInt
 				return []*executetest.Table{
@@ -621,12 +618,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(time.Minute), start, int64(0.0)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(10*time.Second), int64(1)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(20*time.Second), int64(2)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(30*time.Second), int64(3)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(40*time.Second), int64(4)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(50*time.Second), int64(5)},
+							{start, start + values.Time(time.Minute), start, int64(0.0)},
+							{start, start + values.Time(time.Minute), start + values.Time(10*time.Second), int64(1)},
+							{start, start + values.Time(time.Minute), start + values.Time(20*time.Second), int64(2)},
+							{start, start + values.Time(time.Minute), start + values.Time(30*time.Second), int64(3)},
+							{start, start + values.Time(time.Minute), start + values.Time(40*time.Second), int64(4)},
+							{start, start + values.Time(time.Minute), start + values.Time(50*time.Second), int64(5)},
 						},
 					},
 					{
@@ -638,12 +635,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), int64(6)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(70*time.Second), int64(7)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(80*time.Second), int64(8)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(90*time.Second), int64(9)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(100*time.Second), int64(10)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(110*time.Second), int64(11)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(60*time.Second), int64(6)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(70*time.Second), int64(7)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(80*time.Second), int64(8)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(90*time.Second), int64(9)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(100*time.Second), int64(10)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(110*time.Second), int64(11)},
 						},
 					},
 					{
@@ -655,18 +652,18 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), int64(12)},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(130*time.Second), int64(13)},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(140*time.Second), int64(14)},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), int64(12)},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), int64(13)},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), int64(14)},
 						},
 					},
-					newEmptyWindowTable(start+execute.Time(3*time.Minute), start+execute.Time(4*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(4*time.Minute), start+execute.Time(5*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(5*time.Minute), start+execute.Time(6*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(6*time.Minute), start+execute.Time(7*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute), start+execute.Time(8*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(8*time.Minute), start+execute.Time(9*time.Minute), testCols),
-					newEmptyWindowTable(start+execute.Time(9*time.Minute), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(3*time.Minute), start+values.Time(4*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute), start+values.Time(5*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(5*time.Minute), start+values.Time(6*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute), start+values.Time(7*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(7*time.Minute), start+values.Time(8*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute), start+values.Time(9*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(9*time.Minute), start+values.Time(10*time.Minute), testCols),
 				}
 			},
 		},
@@ -679,7 +676,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			period:      values.ConvertDurationNsecs(time.Minute),
 			createEmpty: false,
 			num:         15,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				testCols := testCols
 				testCols[3].Type = flux.TInt
 				return []*executetest.Table{
@@ -692,12 +689,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
-							{start, start + execute.Time(time.Minute), start, int64(0.0)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(10*time.Second), int64(1)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(20*time.Second), int64(2)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(30*time.Second), int64(3)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(40*time.Second), int64(4)},
-							{start, start + execute.Time(time.Minute), start + execute.Time(50*time.Second), int64(5)},
+							{start, start + values.Time(time.Minute), start, int64(0.0)},
+							{start, start + values.Time(time.Minute), start + values.Time(10*time.Second), int64(1)},
+							{start, start + values.Time(time.Minute), start + values.Time(20*time.Second), int64(2)},
+							{start, start + values.Time(time.Minute), start + values.Time(30*time.Second), int64(3)},
+							{start, start + values.Time(time.Minute), start + values.Time(40*time.Second), int64(4)},
+							{start, start + values.Time(time.Minute), start + values.Time(50*time.Second), int64(5)},
 						},
 					},
 					{
@@ -709,12 +706,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(60*time.Second), int64(6)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(70*time.Second), int64(7)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(80*time.Second), int64(8)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(90*time.Second), int64(9)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(100*time.Second), int64(10)},
-							{start + execute.Time(1*time.Minute), start + execute.Time(2*time.Minute), start + execute.Time(110*time.Second), int64(11)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(60*time.Second), int64(6)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(70*time.Second), int64(7)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(80*time.Second), int64(8)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(90*time.Second), int64(9)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(100*time.Second), int64(10)},
+							{start + values.Time(1*time.Minute), start + values.Time(2*time.Minute), start + values.Time(110*time.Second), int64(11)},
 						},
 					},
 					{
@@ -726,9 +723,9 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TInt},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(120*time.Second), int64(12)},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(130*time.Second), int64(13)},
-							{start + execute.Time(2*time.Minute), start + execute.Time(3*time.Minute), start + execute.Time(140*time.Second), int64(14)},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(120*time.Second), int64(12)},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(130*time.Second), int64(13)},
+							{start + values.Time(2*time.Minute), start + values.Time(3*time.Minute), start + values.Time(140*time.Second), int64(14)},
 						},
 					},
 				}
@@ -740,11 +737,10 @@ func TestFixedWindow_Process(t *testing.T) {
 			every:    values.ConvertDurationNsecs(time.Minute),
 			period:   values.ConvertDurationNsecs(time.Minute),
 			num:      15,
-			bounds: execute.Bounds{
-				Start: execute.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
-				Stop:  execute.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
-			},
-			want: func(start execute.Time) []*executetest.Table {
+			bounds: interval.NewBounds(
+				values.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
+				values.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano())),
+			want: func(start values.Time) []*executetest.Table {
 				return nil
 			},
 		},
@@ -758,7 +754,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			offset:      values.ConvertDurationNsecs(-15 * time.Second),
 			createEmpty: true,
 			num:         15,
-			want: func(start execute.Time) []*executetest.Table {
+			want: func(start values.Time) []*executetest.Table {
 				testCols := testCols
 				testCols[3].Type = flux.TFloat
 				return []*executetest.Table{
@@ -772,11 +768,11 @@ func TestFixedWindow_Process(t *testing.T) {
 						},
 						Data: [][]interface{}{
 							// truncated initial window due to unaligned offset
-							{start, start + execute.Time(45*time.Second), start, 0.0},
-							{start, start + execute.Time(45*time.Second), start + execute.Time(10*time.Second), 1.0},
-							{start, start + execute.Time(45*time.Second), start + execute.Time(20*time.Second), 2.0},
-							{start, start + execute.Time(45*time.Second), start + execute.Time(30*time.Second), 3.0},
-							{start, start + execute.Time(45*time.Second), start + execute.Time(40*time.Second), 4.0},
+							{start, start + values.Time(45*time.Second), start, 0.0},
+							{start, start + values.Time(45*time.Second), start + values.Time(10*time.Second), 1.0},
+							{start, start + values.Time(45*time.Second), start + values.Time(20*time.Second), 2.0},
+							{start, start + values.Time(45*time.Second), start + values.Time(30*time.Second), 3.0},
+							{start, start + values.Time(45*time.Second), start + values.Time(40*time.Second), 4.0},
 						},
 					},
 					{
@@ -788,12 +784,12 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(45*time.Second), start + execute.Time(time.Minute+45*time.Second), start + execute.Time(50*time.Second), 5.0},
-							{start + execute.Time(45*time.Second), start + execute.Time(time.Minute+45*time.Second), start + execute.Time(60*time.Second), 6.0},
-							{start + execute.Time(45*time.Second), start + execute.Time(time.Minute+45*time.Second), start + execute.Time(70*time.Second), 7.0},
-							{start + execute.Time(45*time.Second), start + execute.Time(time.Minute+45*time.Second), start + execute.Time(80*time.Second), 8.0},
-							{start + execute.Time(45*time.Second), start + execute.Time(time.Minute+45*time.Second), start + execute.Time(90*time.Second), 9.0},
-							{start + execute.Time(45*time.Second), start + execute.Time(time.Minute+45*time.Second), start + execute.Time(100*time.Second), 10.0},
+							{start + values.Time(45*time.Second), start + values.Time(time.Minute+45*time.Second), start + values.Time(50*time.Second), 5.0},
+							{start + values.Time(45*time.Second), start + values.Time(time.Minute+45*time.Second), start + values.Time(60*time.Second), 6.0},
+							{start + values.Time(45*time.Second), start + values.Time(time.Minute+45*time.Second), start + values.Time(70*time.Second), 7.0},
+							{start + values.Time(45*time.Second), start + values.Time(time.Minute+45*time.Second), start + values.Time(80*time.Second), 8.0},
+							{start + values.Time(45*time.Second), start + values.Time(time.Minute+45*time.Second), start + values.Time(90*time.Second), 9.0},
+							{start + values.Time(45*time.Second), start + values.Time(time.Minute+45*time.Second), start + values.Time(100*time.Second), 10.0},
 						},
 					},
 					{
@@ -805,21 +801,21 @@ func TestFixedWindow_Process(t *testing.T) {
 							{Label: "_value", Type: flux.TFloat},
 						},
 						Data: [][]interface{}{
-							{start + execute.Time(time.Minute+45*time.Second), start + execute.Time(2*time.Minute+45*time.Second), start + execute.Time(110*time.Second), 11.0},
-							{start + execute.Time(time.Minute+45*time.Second), start + execute.Time(2*time.Minute+45*time.Second), start + execute.Time(120*time.Second), 12.0},
-							{start + execute.Time(time.Minute+45*time.Second), start + execute.Time(2*time.Minute+45*time.Second), start + execute.Time(130*time.Second), 13.0},
-							{start + execute.Time(time.Minute+45*time.Second), start + execute.Time(2*time.Minute+45*time.Second), start + execute.Time(140*time.Second), 14.0},
+							{start + values.Time(time.Minute+45*time.Second), start + values.Time(2*time.Minute+45*time.Second), start + values.Time(110*time.Second), 11.0},
+							{start + values.Time(time.Minute+45*time.Second), start + values.Time(2*time.Minute+45*time.Second), start + values.Time(120*time.Second), 12.0},
+							{start + values.Time(time.Minute+45*time.Second), start + values.Time(2*time.Minute+45*time.Second), start + values.Time(130*time.Second), 13.0},
+							{start + values.Time(time.Minute+45*time.Second), start + values.Time(2*time.Minute+45*time.Second), start + values.Time(140*time.Second), 14.0},
 						},
 					},
-					newEmptyWindowTable(start+execute.Time(2*time.Minute+45*time.Second), start+execute.Time(3*time.Minute+45*time.Second), testCols),
-					newEmptyWindowTable(start+execute.Time(3*time.Minute+45*time.Second), start+execute.Time(4*time.Minute+45*time.Second), testCols),
-					newEmptyWindowTable(start+execute.Time(4*time.Minute+45*time.Second), start+execute.Time(5*time.Minute+45*time.Second), testCols),
-					newEmptyWindowTable(start+execute.Time(5*time.Minute+45*time.Second), start+execute.Time(6*time.Minute+45*time.Second), testCols),
-					newEmptyWindowTable(start+execute.Time(6*time.Minute+45*time.Second), start+execute.Time(7*time.Minute+45*time.Second), testCols),
-					newEmptyWindowTable(start+execute.Time(7*time.Minute+45*time.Second), start+execute.Time(8*time.Minute+45*time.Second), testCols),
-					newEmptyWindowTable(start+execute.Time(8*time.Minute+45*time.Second), start+execute.Time(9*time.Minute+45*time.Second), testCols),
+					newEmptyWindowTable(start+values.Time(2*time.Minute+45*time.Second), start+values.Time(3*time.Minute+45*time.Second), testCols),
+					newEmptyWindowTable(start+values.Time(3*time.Minute+45*time.Second), start+values.Time(4*time.Minute+45*time.Second), testCols),
+					newEmptyWindowTable(start+values.Time(4*time.Minute+45*time.Second), start+values.Time(5*time.Minute+45*time.Second), testCols),
+					newEmptyWindowTable(start+values.Time(5*time.Minute+45*time.Second), start+values.Time(6*time.Minute+45*time.Second), testCols),
+					newEmptyWindowTable(start+values.Time(6*time.Minute+45*time.Second), start+values.Time(7*time.Minute+45*time.Second), testCols),
+					newEmptyWindowTable(start+values.Time(7*time.Minute+45*time.Second), start+values.Time(8*time.Minute+45*time.Second), testCols),
+					newEmptyWindowTable(start+values.Time(8*time.Minute+45*time.Second), start+values.Time(9*time.Minute+45*time.Second), testCols),
 					// truncated final window due to unaligned offset
-					newEmptyWindowTable(start+execute.Time(9*time.Minute+45*time.Second), start+execute.Time(10*time.Minute), testCols),
+					newEmptyWindowTable(start+values.Time(9*time.Minute+45*time.Second), start+values.Time(10*time.Minute), testCols),
 				}
 			},
 		},
@@ -829,11 +825,10 @@ func TestFixedWindow_Process(t *testing.T) {
 			every:    values.ConvertDurationNsecs(time.Minute),
 			period:   values.ConvertDurationNsecs(time.Minute),
 			num:      15,
-			bounds: execute.Bounds{
-				Start: execute.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
-				Stop:  execute.Time(time.Date(2017, 9, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
-			},
-			want: func(start execute.Time) []*executetest.Table {
+			bounds: interval.NewBounds(
+				values.Time(time.Date(2017, 10, 10, 0, 0, 0, 0, time.UTC).UnixNano()),
+				values.Time(time.Date(2017, 9, 10, 0, 0, 0, 0, time.UTC).UnixNano())),
+			want: func(start values.Time) []*executetest.Table {
 				return nil
 			},
 		},
@@ -846,11 +841,11 @@ func TestFixedWindow_Process(t *testing.T) {
 			c := execute.NewTableBuilderCache(executetest.UnlimitedAllocator)
 			c.SetTriggerSpec(plan.DefaultTriggerSpec)
 
-			w, err := execute.NewWindow(tc.every, tc.period, tc.offset)
+			w, err := interval.NewWindow(tc.every, tc.period, tc.offset)
 			if err != nil {
-				t.Fatalf("unexpected error: %s", err)
+				t.Fatalf("unexpected error while creating window: %s", err)
 			}
-			fw := universe.NewFixedWindowTransformation(
+			fw := universe.NewIntervalFixedWindowTransformation(
 				d,
 				c,
 				tc.bounds,
@@ -874,7 +869,7 @@ func TestFixedWindow_Process(t *testing.T) {
 				var v interface{}
 				switch tc.valueCol.Type {
 				case flux.TBool:
-					v = bool(i%2 == 0)
+					v = i%2 == 0
 				case flux.TInt:
 					v = int64(i)
 				case flux.TUInt:
@@ -884,10 +879,11 @@ func TestFixedWindow_Process(t *testing.T) {
 				case flux.TString:
 					v = strconv.Itoa(i)
 				}
+
 				table0.Data = append(table0.Data, []interface{}{
-					tc.bounds.Start,
-					tc.bounds.Stop,
-					tc.bounds.Start + execute.Time(time.Duration(i)*10*time.Second),
+					tc.bounds.Start(),
+					tc.bounds.Stop(),
+					tc.bounds.Start() + values.Time(time.Duration(i)*10*time.Second).Add(values.MakeDuration(0, 0, false)),
 					v,
 				})
 			}
@@ -902,7 +898,8 @@ func TestFixedWindow_Process(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			want := tc.want(tc.bounds.Start)
+			start := tc.bounds.Start()
+			want := tc.want(start)
 
 			executetest.NormalizeTables(got)
 			executetest.NormalizeTables(want)
