@@ -21,6 +21,11 @@ func init() {
 // See https://github.com/influxdata/flux/issues/2093
 //
 // Window is a description of an infinite set of boundaries in time.
+//
+// Note the properties of this struct should remain private.
+// Furthermore they should not be exposed via public getter methods.
+// There should never be any need to access a window's properties in order to
+// perform window calculations. The public interface should be sufficient.
 type Window struct {
 	// The ith window start is expressed via this equation:
 	//   window_start_i = zero + every * i
