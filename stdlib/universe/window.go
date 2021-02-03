@@ -52,7 +52,7 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 		}
 
 		if d.IsNegative() {
-			return flux.Duration{}, false, errors.New(codes.Invalid, `parameter "every" must be nonnegative`)
+			return flux.Duration{}, false, errors.New(codes.Invalid, `parameter "every" must be non-negative`)
 		} else if d.IsZero() {
 			return flux.Duration{}, false, errors.New(codes.Invalid, `parameter "every" must be nonzero`)
 		}
@@ -181,11 +181,15 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
-	bounds := a.StreamContext().Bounds()
-	if bounds == nil {
+	if a.StreamContext().Bounds() == nil {
 		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#nil-bounds-passed-to-window"
 		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window; use range to set the window range").
 			WithDocURL(docURL)
+	}
+
+	bounds := execute.Bounds{
+		Start: a.StreamContext().Bounds().Start,
+		Stop:  a.StreamContext().Bounds().Stop,
 	}
 
 	w, err := execute.NewWindow(
@@ -199,7 +203,7 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 	t := NewFixedWindowTransformation(
 		d,
 		cache,
-		*bounds,
+		bounds,
 		w,
 		s.TimeColumn,
 		s.StartColumn,

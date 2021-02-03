@@ -55,6 +55,14 @@ func (w Window) IsZero() bool {
 	return w.every.IsZero()
 }
 
+func (w Window) Every() values.Duration {
+	return w.every
+}
+
+func (w Window) Period() values.Duration {
+	return w.period
+}
+
 func (w Window) isValid() error {
 	if w.every.IsZero() {
 		return errors.New(codes.Invalid, "duration used as an interval cannot be zero")
@@ -309,6 +317,3 @@ func isBeforeWithinMonth(a, b values.Time) bool {
 	}
 	return false
 }
-
-//TODO
-// Add tests very far away from the epoch
