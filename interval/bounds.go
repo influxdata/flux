@@ -22,6 +22,14 @@ type Bounds struct {
 	index int
 }
 
+// NewBounds create a new Bounds given start and stop values
+func NewBounds(start, stop values.Time) Bounds {
+	return Bounds{
+		start: start,
+		stop:  stop,
+	}
+}
+
 func (b Bounds) Start() values.Time {
 	return b.start
 }
@@ -32,6 +40,11 @@ func (b Bounds) Stop() values.Time {
 
 func (b Bounds) IsEmpty() bool {
 	return b.start >= b.stop
+}
+
+// IsZero returns true if the start and stop values are both zero.
+func (b Bounds) IsZero() bool {
+	return b.start == 0 && b.stop == 0
 }
 
 func (b Bounds) String() string {
@@ -55,4 +68,54 @@ func (b Bounds) Length() values.Duration {
 		return values.ConvertDurationNsecs(0)
 	}
 	return b.stop.Sub(b.start)
+}
+
+// Intersect returns the intersection of two bounds.
+// It returns empty bounds if one of the input bounds are empty.
+// TODO: there are several places that implement bounds and related utilities.
+//  consider a central place for them?
+func (b Bounds) Intersect(o Bounds) Bounds {
+	if b.IsEmpty() || o.IsEmpty() || !b.Overlaps(o) {
+		return Bounds{
+			start: b.start,
+			stop:  b.stop,
+		}
+	}
+	i := Bounds{}
+
+	i.start = b.start
+	if o.start > b.start {
+		i.start = o.start
+	}
+
+	i.stop = b.stop
+	if o.stop < b.stop {
+		i.stop = o.stop
+	}
+
+	return i
+}
+
+// Union returns the smallest bounds which contain both input bounds.
+// It returns empty bounds if one of the input bounds are empty.
+func (b Bounds) Union(o Bounds) Bounds {
+	if b.IsEmpty() || o.IsEmpty() {
+		return Bounds{
+			start: values.Time(0),
+			stop:  values.Time(0),
+		}
+	}
+	u := new(Bounds)
+
+	u.start = b.start
+	if o.start < b.start {
+		u.start = o.start
+	}
+
+	u.stop = b.stop
+	if o.stop > b.stop {
+		u.stop = o.stop
+	}
+
+	return *u
 }

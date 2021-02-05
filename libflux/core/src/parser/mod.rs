@@ -1612,7 +1612,15 @@ impl Parser {
                         }
                         _ => None,
                     };
-                    items.push(ArrayItem { expression, comma });
+                    match expression {
+                        Expression::Bad(_) => {
+                            items.push(ArrayItem { expression, comma });
+                            break;
+                        }
+                        _ => {
+                            items.push(ArrayItem { expression, comma });
+                        }
+                    }
                 }
                 let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {

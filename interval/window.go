@@ -21,6 +21,11 @@ func init() {
 // See https://github.com/influxdata/flux/issues/2093
 //
 // Window is a description of an infinite set of boundaries in time.
+//
+// Note the properties of this struct should remain private.
+// Furthermore they should not be exposed via public getter methods.
+// There should never be any need to access a window's properties in order to
+// perform window calculations. The public interface should be sufficient.
 type Window struct {
 	// The ith window start is expressed via this equation:
 	//   window_start_i = zero + every * i
@@ -48,6 +53,19 @@ func NewWindow(every, period, offset values.Duration) (Window, error) {
 		return Window{}, err
 	}
 	return w, nil
+}
+
+// IsZero checks if the window's every duration is zero
+func (w Window) IsZero() bool {
+	return w.every.IsZero()
+}
+
+func (w Window) Every() values.Duration {
+	return w.every
+}
+
+func (w Window) Period() values.Duration {
+	return w.period
 }
 
 func (w Window) isValid() error {
@@ -304,6 +322,3 @@ func isBeforeWithinMonth(a, b values.Time) bool {
 	}
 	return false
 }
-
-//TODO
-// Add tests very far away from the epoch

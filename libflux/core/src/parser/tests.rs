@@ -49,6 +49,22 @@ impl<'a> Locator<'a> {
 }
 
 #[test]
+fn parse_bad_array_expr() {
+    let mut p = Parser::new(r#"["_field]", mode: "by""#);
+    let parsed = p.parse_file("".to_string());
+    match &parsed.body[0] {
+        Statement::Expr(v) => match **v {
+            ExprStmt {
+                expression: Expression::Array(_),
+                ..
+            } => (),
+            _ => panic!("did not parse array expression"),
+        },
+        _ => panic!("did not parse expression statement"),
+    }
+}
+
+#[test]
 fn parse_invalid_unicode_bare() {
     let mut p = Parser::new(r#"®some string®"#);
     let parsed = p.parse_file("".to_string());
