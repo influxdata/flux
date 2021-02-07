@@ -2,6 +2,7 @@
 use std::collections::HashMap;
 use std::str;
 
+use super::DefaultHasher;
 use crate::ast;
 use crate::ast::*;
 use crate::scanner;
@@ -37,7 +38,7 @@ pub struct Parser {
     errs: Vec<String>,
     // blocks maintains a count of the end tokens for nested blocks
     // that we have entered.
-    blocks: HashMap<TokenType, i32>,
+    blocks: HashMap<TokenType, i32, DefaultHasher>,
 
     fname: String,
     source: String,
@@ -50,7 +51,7 @@ impl Parser {
             s,
             t: None,
             errs: Vec::new(),
-            blocks: HashMap::new(),
+            blocks: HashMap::default(),
             fname: "".to_string(),
             source: src.to_string(),
         }

@@ -206,12 +206,12 @@ fn infer_types(
 macro_rules! test_infer {
     ($(env: $env:expr,)? $(imp: $imp:expr,)? src: $src:expr, exp: $exp:expr $(,)? ) => {{
         #[allow(unused_mut, unused_assignments)]
-        let mut env = HashMap::new();
+        let mut env = HashMap::default();
         $(
             env = $env;
         )?
         #[allow(unused_mut, unused_assignments)]
-        let mut imp = HashMap::new();
+        let mut imp = HashMap::default();
         $(
             imp = $imp;
         )?
@@ -243,12 +243,12 @@ macro_rules! test_infer {
 macro_rules! test_infer_err {
     ( $(imp: $imp:expr,)? $(env: $env:expr,)? src: $src:expr $(,)? ) => {{
         #[allow(unused_mut, unused_assignments)]
-        let mut imp = HashMap::new();
+        let mut imp = HashMap::default();
         $(
             imp = $imp;
         )?
         #[allow(unused_mut, unused_assignments)]
-        let mut env = HashMap::new();
+        let mut env = HashMap::default();
         $(
             env = $env;
         )?
@@ -284,7 +284,7 @@ macro_rules! test_infer_err {
 ///
 macro_rules! test_error_msg {
     ( src: $src:expr $(,)?, err: $err:expr $(,)? ) => {{
-        match infer_types($src, HashMap::new(), HashMap::new(), None) {
+        match infer_types($src, HashMap::default(), HashMap::default(), None) {
             Err(e) => {
                 if e.to_string() != $err {
                     panic!("\n\nexpected error:\n\t{}\n\ngot error:\n\t{}\n\n", $err, e)
@@ -297,7 +297,7 @@ macro_rules! test_error_msg {
 
 macro_rules! map {
     ($( $key: expr => $val: expr ),*$(,)?) => {{
-         let mut map = HashMap::new();
+         let mut map = HashMap::default();
          $( map.insert($key, $val); )*
          map
     }}
@@ -305,7 +305,7 @@ macro_rules! map {
 
 macro_rules! package {
     ($( $key: expr => $val: expr ),*$(,)?) => {{
-         let mut map = HashMap::new();
+         let mut map = HashMap::default();
          $( map.insert($key, $val); )*
          map
     }}

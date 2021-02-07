@@ -4,6 +4,7 @@
 //! code.
 extern crate chrono;
 extern crate derive_more;
+extern crate fnv;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_aux;
@@ -18,10 +19,14 @@ pub mod semantic;
 
 use std::error;
 pub use std::fmt;
+use std::hash::BuildHasherDefault;
 
 use derive_more::Display;
+use fnv::FnvHasher;
 
 pub use ast::DEFAULT_PACKAGE_NAME;
+
+type DefaultHasher = BuildHasherDefault<FnvHasher>;
 
 /// An error that can occur due to problems in ast generation or semantic
 /// analysis.
