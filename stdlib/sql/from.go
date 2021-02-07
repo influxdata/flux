@@ -11,8 +11,8 @@ import (
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
-	_ "github.com/lib/pq"
 	_ "github.com/vertica/vertica-sql-go"
+	_ "github.com/lib/pq"
 )
 
 const FromSQLKind = "fromSQL"
