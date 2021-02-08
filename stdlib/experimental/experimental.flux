@@ -39,3 +39,13 @@ alignTime = (tables=<-, alignTo=time(v: 0)) =>
       ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })
     )
     |> drop(columns: ["timeDiff"])
+
+
+// An experimental version of window.
+builtin window : (
+  <-tables: [{T with _start: time, _stop: time, _time: time}]
+  ?every: duration,
+  ?period: duration,
+  ?offset: duration,
+  ?createEmpty: bool
+) => [{T with _start: time, _stop: time, _time: time}]

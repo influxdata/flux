@@ -30,7 +30,7 @@ var infinityVar = values.NewDuration(values.ConvertDurationNsecs(math.MaxInt64))
 func init() {
 	windowSignature := runtime.MustLookupBuiltinType("universe", "window")
 
-	runtime.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, createWindowOpSpec, windowSignature)))
+	runtime.RegisterPackageValue("universe", WindowKind, flux.MustValue(flux.FunctionValue(WindowKind, CreateWindowOpSpec, windowSignature)))
 	flux.RegisterOpSpec(WindowKind, newWindowOp)
 	runtime.RegisterPackageValue("universe", "inf", infinityVar)
 	plan.RegisterProcedureSpec(WindowKind, newWindowProcedure, WindowKind)
@@ -38,7 +38,7 @@ func init() {
 	execute.RegisterTransformation(WindowKind, createWindowTransformation)
 }
 
-func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
