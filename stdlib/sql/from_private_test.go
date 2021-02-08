@@ -26,6 +26,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok vertica",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "vertica",
+				DataSourceName: "vertica://dbadmin:password@localhost:5433/VMart",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "ok snowflake",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "snowflake",
