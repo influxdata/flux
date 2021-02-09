@@ -21,6 +21,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/foxcpp/go-mockdns v0.0.0-20201212160233-ede2f9158d15
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/godror/godror v0.23.1
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect

@@ -394,3 +394,43 @@ func TestHdbTranslation(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestOracleTranslation(t *testing.T) {
+	oracleTypeTranslations := map[string]flux.ColType{
+		"BINARY_DOUBLE":            flux.TFloat,
+		"NUMBER(38)":               flux.TInt,
+		"VARCHAR2(4000)":           flux.TString,
+		"TIMESTAMP WITH TIME ZONE": flux.TTime,
+	}
+
+	columnLabel := "apples"
+	// verify that valid returns expected happiness for bigquery
+	sqlT, err := getTranslationFunc("oracle")
+	if !cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+
+	for dbTypeString, fluxType := range oracleTypeTranslations {
+		v, err := sqlT()(fluxType, columnLabel)
+		if !cmp.Equal(nil, err) {
+			t.Log(cmp.Diff(nil, err))
+			t.Fail()
+		}
+		if !cmp.Equal(columnLabel+" "+dbTypeString, v) {
+			t.Log(cmp.Diff(columnLabel+" "+dbTypeString, v))
+			t.Fail()
+		}
+	}
+
+	// test no match
+	_, err = sqlT()(unsupportedType, columnLabel)
+	if cmp.Equal(nil, err) {
+		t.Log(cmp.Diff(nil, err))
+		t.Fail()
+	}
+	if !cmp.Equal("Oracle does not support column type unknown", err.Error()) {
+		t.Log(cmp.Diff("Oracle does not support column type unknown", err.Error()))
+		t.Fail()
+	}
+}

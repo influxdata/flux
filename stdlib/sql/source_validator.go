@@ -6,6 +6,7 @@ import (
 
 	"github.com/bonitoo-io/go-sql-bigquery"
 	"github.com/go-sql-driver/mysql"
+	"github.com/godror/godror"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/url"
 	"github.com/influxdata/flux/internal/errors"
@@ -107,6 +108,16 @@ func validateDataSource(validator url.Validator, driverName string, dataSourceNa
 		u, err = neturl.Parse(dataSourceName)
 		if err != nil {
 			return errors.Newf(codes.Invalid, "invalid data source url: %v", err)
+		}
+	case "oracle":
+		// an example is: user/password@//server/database
+		params, err := godror.ParseDSN(dataSourceName)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid data source dsn: %v", err)
+		}
+		u, err = neturl.Parse(params.ConnectString)
+		if err != nil {
+			return errors.Newf(codes.Invalid, "invalid connection string: %v", err)
 		}
 	default:
 		return errors.Newf(codes.Invalid, "sql driver %s not supported", driverName)

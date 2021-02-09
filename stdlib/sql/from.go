@@ -129,6 +129,8 @@ func createFromSQLSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 		newRowReader = NewBigQueryRowReader
 	case "hdb":
 		newRowReader = NewHdbRowReader
+	case "oracle":
+		newRowReader = NewOracleRowReader
 	default:
 		return nil, errors.Newf(codes.Invalid, "sql driver %s not supported", spec.DriverName)
 	}
