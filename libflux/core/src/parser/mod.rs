@@ -1584,8 +1584,11 @@ impl Parser {
         }
     }
     fn parse_array_items_rest(&mut self, start: &Token, init: Expression) -> Expression {
-        match self.peek().tok {
-            TokenType::RBrack => {
+        match self.peek() {
+            Token {
+                tok: TokenType::RBrack,
+                ..
+            } => {
                 let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {
                     base: self.base_node_from_tokens(start, &end),
@@ -1597,12 +1600,14 @@ impl Parser {
                     rbrack: self.make_comments(&end),
                 }))
             }
-            _ => {
+            t => {
                 let comma = self.expect(TokenType::Comma);
                 let mut items = vec![ArrayItem {
                     expression: init,
                     comma: self.make_comments(&comma),
                 }];
+                // keep track of the last token's byte offsets
+                let mut last = (t.start_offset, t.end_offset);
                 while self.more() {
                     let expression = self.parse_expression();
                     let comma = match self.peek().tok {
@@ -1612,14 +1617,15 @@ impl Parser {
                         }
                         _ => None,
                     };
-                    match expression {
-                        Expression::Bad(_) => {
-                            items.push(ArrayItem { expression, comma });
+                    items.push(ArrayItem { expression, comma });
+                    if let Some(tok) = &self.t {
+                        // If we parse the same token twice in a row,
+                        // it means we've hit a parse error, and that
+                        // we're now in an infinite loop.
+                        if last == (tok.start_offset, tok.end_offset) {
                             break;
                         }
-                        _ => {
-                            items.push(ArrayItem { expression, comma });
-                        }
+                        last = (tok.start_offset, tok.end_offset);
                     }
                 }
                 let end = self.close(TokenType::RBrack);

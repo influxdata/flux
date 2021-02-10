@@ -49,19 +49,40 @@ impl<'a> Locator<'a> {
 }
 
 #[test]
-fn parse_bad_array_expr() {
-    let mut p = Parser::new(r#"["_field]", mode: "by""#);
+fn parse_array_expr_no_rbrack() {
+    let mut p = Parser::new(r#"group(columns: ["_time", "_field]", mode: "by")"#);
     let parsed = p.parse_file("".to_string());
-    match &parsed.body[0] {
-        Statement::Expr(v) => match **v {
-            ExprStmt {
-                expression: Expression::Array(_),
-                ..
-            } => (),
-            _ => panic!("did not parse array expression"),
-        },
-        _ => panic!("did not parse expression statement"),
-    }
+    let node = ast::walk::Node::File(&parsed);
+    let errs = ast::check::check(node);
+    assert!(!errs.is_empty())
+}
+
+#[test]
+fn parse_illegal_in_array_expr() {
+    let mut p = Parser::new(
+        r#"
+strings.joinStr(arr: [r.unit, ": time", string(v: now()), "InfluxDB Task", $taskName, "last datapoint at:", string(v: r._time)], v: " ")
+    "#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let node = ast::walk::Node::File(&parsed);
+    let errs = ast::check::check(node);
+    println!("{:#?}", errs);
+    assert!(!errs.is_empty())
+}
+
+#[test]
+fn parse_array_expr_no_comma() {
+    let mut p = Parser::new(
+        r#"
+sort(columns: ["_time"], desc: true)|> limit(n: [object Object])
+    "#,
+    );
+    let parsed = p.parse_file("".to_string());
+    let node = ast::walk::Node::File(&parsed);
+    let errs = ast::check::check(node);
+    println!("{:#?}", errs);
+    assert!(!errs.is_empty())
 }
 
 #[test]
