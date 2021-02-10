@@ -1603,6 +1603,8 @@ impl Parser {
                     expression: init,
                     comma: self.make_comments(&comma),
                 }];
+                // keep track of the last token's byte offsets
+                let mut last = self.peek().start_offset;
                 while self.more() {
                     let expression = self.parse_expression();
                     let comma = match self.peek().tok {
@@ -1612,15 +1614,16 @@ impl Parser {
                         }
                         _ => None,
                     };
-                    match expression {
-                        Expression::Bad(_) => {
-                            items.push(ArrayItem { expression, comma });
-                            break;
-                        }
-                        _ => {
-                            items.push(ArrayItem { expression, comma });
-                        }
+                    items.push(ArrayItem { expression, comma });
+
+                    // If we parse the same token twice in a row,
+                    // it means we've hit a parse error, and that
+                    // we're now in an infinite loop.
+                    let this = self.peek().start_offset;
+                    if last == this {
+                        break;
                     }
+                    last = this;
                 }
                 let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {
