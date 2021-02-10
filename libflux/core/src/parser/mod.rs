@@ -1584,11 +1584,8 @@ impl Parser {
         }
     }
     fn parse_array_items_rest(&mut self, start: &Token, init: Expression) -> Expression {
-        match self.peek() {
-            Token {
-                tok: TokenType::RBrack,
-                ..
-            } => {
+        match self.peek().tok {
+            TokenType::RBrack => {
                 let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {
                     base: self.base_node_from_tokens(start, &end),
@@ -1600,14 +1597,14 @@ impl Parser {
                     rbrack: self.make_comments(&end),
                 }))
             }
-            t => {
+            _ => {
                 let comma = self.expect(TokenType::Comma);
                 let mut items = vec![ArrayItem {
                     expression: init,
                     comma: self.make_comments(&comma),
                 }];
                 // keep track of the last token's byte offsets
-                let mut last = (t.start_offset, t.end_offset);
+                let mut last = self.peek().start_offset;
                 while self.more() {
                     let expression = self.parse_expression();
                     let comma = match self.peek().tok {
@@ -1618,15 +1615,15 @@ impl Parser {
                         _ => None,
                     };
                     items.push(ArrayItem { expression, comma });
-                    if let Some(tok) = &self.t {
-                        // If we parse the same token twice in a row,
-                        // it means we've hit a parse error, and that
-                        // we're now in an infinite loop.
-                        if last == (tok.start_offset, tok.end_offset) {
-                            break;
-                        }
-                        last = (tok.start_offset, tok.end_offset);
+
+                    // If we parse the same token twice in a row,
+                    // it means we've hit a parse error, and that
+                    // we're now in an infinite loop.
+                    let this = self.peek().start_offset;
+                    if last == this {
+                        break;
                     }
+                    last = this;
                 }
                 let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {

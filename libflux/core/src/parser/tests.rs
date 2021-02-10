@@ -67,7 +67,6 @@ strings.joinStr(arr: [r.unit, ": time", string(v: now()), "InfluxDB Task", $task
     let parsed = p.parse_file("".to_string());
     let node = ast::walk::Node::File(&parsed);
     let errs = ast::check::check(node);
-    println!("{:#?}", errs);
     assert!(!errs.is_empty())
 }
 
@@ -81,7 +80,6 @@ sort(columns: ["_time"], desc: true)|> limit(n: [object Object])
     let parsed = p.parse_file("".to_string());
     let node = ast::walk::Node::File(&parsed);
     let errs = ast::check::check(node);
-    println!("{:#?}", errs);
     assert!(!errs.is_empty())
 }
 
