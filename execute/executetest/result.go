@@ -69,94 +69,66 @@ func (ti *TableIterator) Do(f func(flux.Table) error) error {
 
 // EqualResults compares two lists of Flux Results for equality
 func EqualResults(want, got []flux.Result) error {
-	if len(want) != len(got) {
-		return fmt.Errorf("unexpected number of results - want %d results, got %d results", len(want), len(got))
-	}
-	for i := range want {
-		err := EqualResult(want[i], got[i])
-		if err != nil {
-			return err
-		}
+	wantTables := convertResults(want)
+	gotTables := convertResults(got)
+	if diff := cmp.Diff(wantTables, gotTables, floatOptions); diff != "" {
+		return fmt.Errorf("unexpected iterator results; -want/+got\n%s", diff)
 	}
 	return nil
 }
 
-// EqualResultIterators compares two ResultIterators for equality
-func EqualResultIterators(want, got flux.ResultIterator) error {
-	for {
-		if w, g := want.More(), got.More(); w != g {
-			var err error
-			if w {
-				drain(want)
-				err = got.Err()
-			} else {
-				drain(got)
-				err = want.Err()
-			}
-			if err != nil {
-				var which string
-				if w {
-					which = "got"
-				} else {
-					which = "want"
-				}
-				return fmt.Errorf("%q iterator terminated early with error: %s", which, err)
-			}
-			return fmt.Errorf("unexpected number of results: want more %t, got more %t", w, g)
-		} else if w {
-			err := EqualResult(want.Next(), got.Next())
-			if err != nil {
-				return err
-			}
-		} else {
-			if w, g := want.Err(), got.Err(); !(w == nil && g == nil || w != nil && g != nil && w.Error() == g.Error()) {
-				return fmt.Errorf("unexpected errors want: %s got: %s", w, g)
-			}
-			return nil
-		}
+func convertResults(rs []flux.Result) []*Result {
+	tables := make([]*Result, len(rs))
+	for i, r := range rs {
+		tables[i] = ConvertResult(r)
 	}
+	return tables
 }
 
-func drain(ri flux.ResultIterator) {
-	for ri.More() {
-		r := ri.Next()
-		r.Tables().Do(func(flux.Table) error { return nil })
+// EqualResultIterators compares two ResultIterators for equality
+func EqualResultIterators(want, got flux.ResultIterator) error {
+	wantResults, wantErr := readAllIterator(want)
+	gotResults, gotErr := readAllIterator(got)
+
+	if diff := cmp.Diff(wantResults, gotResults, floatOptions); diff != "" {
+		return fmt.Errorf("unexpected iterator results; -want/+got\n%s", diff)
 	}
+	if wantErr == nil && gotErr == nil {
+		return nil
+	}
+	if wantErr == nil || gotErr == nil || wantErr.Error() != gotErr.Error() {
+		return fmt.Errorf("unexpected errors got %v; want: %v", gotErr, wantErr)
+	}
+	return nil
+}
+
+func readAllIterator(iter flux.ResultIterator) ([][]*Table, error) {
+	results := [][]*Table{}
+	for iter.More() {
+		tables := []*Table{}
+		err := iter.Next().Tables().Do(func(tbl flux.Table) error {
+			t, err := ConvertTable(tbl)
+			if err != nil {
+				return fmt.Errorf("cannot convert table: %v", err)
+			}
+			tables = append(tables, t)
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		NormalizeTables(tables)
+		results = append(results, tables)
+	}
+	return results, iter.Err()
 }
 
 // EqualResult compares to results for equality
 func EqualResult(w, g flux.Result) error {
-	if w.Name() != g.Name() {
-		return fmt.Errorf("unexpected result name - want %s, got %s", w.Name(), g.Name())
-	}
-	var wt, gt []*Table
-	if err := w.Tables().Do(func(tbl flux.Table) error {
-		t, err := ConvertTable(tbl)
-		if err != nil {
-			return err
-		}
-		wt = append(wt, t)
-		return nil
-	}); err != nil {
-		return err
-	}
-	if err := g.Tables().Do(func(tbl flux.Table) error {
-		t, err := ConvertTable(tbl)
-		if err != nil {
-			return err
-		}
-		gt = append(gt, t)
-		return nil
-	}); err != nil {
-		return err
-	}
-	NormalizeTables(wt)
-	NormalizeTables(gt)
-	if len(wt) != len(gt) {
-		return fmt.Errorf("unexpected size for result %s - want %d tables, got %d tables", w.Name(), len(wt), len(gt))
-	}
-	if !cmp.Equal(wt, gt, floatOptions) {
-		return fmt.Errorf("unexpected tables -want/+got\n%s", cmp.Diff(wt, gt))
+	want := ConvertResult(w)
+	got := ConvertResult(g)
+	if diff := cmp.Diff(want, got, floatOptions); diff != "" {
+		return fmt.Errorf("unexpected tables -want/+got\n%s", diff)
 	}
 	return nil
 }
