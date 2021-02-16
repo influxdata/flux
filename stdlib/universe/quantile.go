@@ -226,6 +226,9 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	return t, d, nil
 }
 
+// This function does not follow normal copy semantics, since it modifies
+// the original. For our purposes, this behavior is fine, but it should be
+// noted that `Copy` is a misnomer.
 func (a *QuantileAgg) Copy() *QuantileAgg {
 	na := new(QuantileAgg)
 	*na = *a
