@@ -217,11 +217,7 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
-	agg := &QuantileAgg{
-		Quantile:    ps.Quantile,
-		Compression: ps.Compression,
-		digest:      tdigest.NewWithCompression(ps.Compression),
-	}
+	agg := NewQuantileAgg(ps.Quantile, ps.Compression)
 	_ = a.Allocator().Account(tdigest.ByteSizeForCompression(agg.Compression))
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, ps.AggregateConfig, a.Allocator())
 	return t, d, nil
