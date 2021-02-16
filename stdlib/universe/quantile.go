@@ -204,6 +204,14 @@ type QuantileAgg struct {
 	ok     bool
 }
 
+func NewQuantileAgg(q, comp float64) *QuantileAgg {
+	return &QuantileAgg{
+		Quantile:    q,
+		Compression: comp,
+		digest:      tdigest.NewWithCompression(comp),
+	}
+}
+
 func createQuantileTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	ps, ok := spec.(*TDigestQuantileProcedureSpec)
 	if !ok {
@@ -212,14 +220,17 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	agg := &QuantileAgg{
 		Quantile:    ps.Quantile,
 		Compression: ps.Compression,
+		digest:      tdigest.NewWithCompression(ps.Compression),
 	}
+	_ = a.Allocator().Account(tdigest.ByteSizeForCompression(agg.Compression))
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, ps.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
+
 func (a *QuantileAgg) Copy() *QuantileAgg {
 	na := new(QuantileAgg)
 	*na = *a
-	na.digest = tdigest.NewWithCompression(na.Compression)
+	na.digest.Reset()
 	return na
 }
 
