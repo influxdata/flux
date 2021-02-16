@@ -204,22 +204,32 @@ type QuantileAgg struct {
 	ok     bool
 }
 
+func NewQuantileAgg(q, comp float64) *QuantileAgg {
+	return &QuantileAgg{
+		Quantile:    q,
+		Compression: comp,
+		digest:      tdigest.NewWithCompression(comp),
+	}
+}
+
 func createQuantileTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
 	ps, ok := spec.(*TDigestQuantileProcedureSpec)
 	if !ok {
 		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", ps)
 	}
-	agg := &QuantileAgg{
-		Quantile:    ps.Quantile,
-		Compression: ps.Compression,
+	agg := NewQuantileAgg(ps.Quantile, ps.Compression)
+	err := a.Allocator().Account(tdigest.ByteSizeForCompression(agg.Compression))
+	if err != nil {
+		return nil, nil, errors.Newf(codes.Internal, "could not allocate memory for tdigest: %s", err)
 	}
 	t, d := execute.NewAggregateTransformationAndDataset(id, mode, agg, ps.AggregateConfig, a.Allocator())
 	return t, d, nil
 }
-func (a *QuantileAgg) Copy() *QuantileAgg {
+
+func (a *QuantileAgg) Recycle() *QuantileAgg {
 	na := new(QuantileAgg)
 	*na = *a
-	na.digest = tdigest.NewWithCompression(na.Compression)
+	na.digest.Reset()
 	return na
 }
 
@@ -236,7 +246,7 @@ func (a *QuantileAgg) NewUIntAgg() execute.DoUIntAgg {
 }
 
 func (a *QuantileAgg) NewFloatAgg() execute.DoFloatAgg {
-	return a.Copy()
+	return a.Recycle()
 }
 
 func (a *QuantileAgg) NewStringAgg() execute.DoStringAgg {
