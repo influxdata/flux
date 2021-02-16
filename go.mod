@@ -2,8 +2,6 @@ module github.com/influxdata/flux
 
 go 1.12
 
-replace github.com/influxdata/tdigest => /home/flux/code/tdigest
-
 require (
 	cloud.google.com/go v0.52.0
 	cloud.google.com/go/bigtable v1.3.0
