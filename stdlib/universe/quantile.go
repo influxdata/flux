@@ -226,10 +226,7 @@ func createQuantileTransformation(id execute.DatasetID, mode execute.Accumulatio
 	return t, d, nil
 }
 
-// This function does not follow normal copy semantics, since it modifies
-// the original. For our purposes, this behavior is fine, but it should be
-// noted that `Copy` is a misnomer.
-func (a *QuantileAgg) Copy() *QuantileAgg {
+func (a *QuantileAgg) Recycle() *QuantileAgg {
 	na := new(QuantileAgg)
 	*na = *a
 	na.digest.Reset()
@@ -249,7 +246,7 @@ func (a *QuantileAgg) NewUIntAgg() execute.DoUIntAgg {
 }
 
 func (a *QuantileAgg) NewFloatAgg() execute.DoFloatAgg {
-	return a.Copy()
+	return a.Recycle()
 }
 
 func (a *QuantileAgg) NewStringAgg() execute.DoStringAgg {
