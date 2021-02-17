@@ -49,3 +49,6 @@ builtin window : (
   ?offset: duration,
   ?createEmpty: bool
 ) => [{T with _start: time, _stop: time, _time: time}]
+
+// An experimental version of integral.
+builtin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]

@@ -24,13 +24,13 @@ type IntegralOpSpec struct {
 func init() {
 	integralSignature := runtime.MustLookupBuiltinType("universe", "integral")
 
-	runtime.RegisterPackageValue("universe", IntegralKind, flux.MustValue(flux.FunctionValue(IntegralKind, createIntegralOpSpec, integralSignature)))
+	runtime.RegisterPackageValue("universe", IntegralKind, flux.MustValue(flux.FunctionValue(IntegralKind, CreateIntegralOpSpec, integralSignature)))
 	flux.RegisterOpSpec(IntegralKind, newIntegralOp)
 	plan.RegisterProcedureSpec(IntegralKind, newIntegralProcedure, IntegralKind)
 	execute.RegisterTransformation(IntegralKind, createIntegralTransformation)
 }
 
-func createIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateIntegralOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
