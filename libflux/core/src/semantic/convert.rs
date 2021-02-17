@@ -5,7 +5,7 @@ use crate::semantic::types;
 use crate::semantic::types::MonoType;
 use crate::semantic::types::MonoTypeMap;
 use crate::semantic::types::SemanticMap;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::result;
 
 pub type SemanticError = String;
@@ -148,7 +148,7 @@ fn convert_builtin_statement(stmt: ast::BuiltinStmt, fresher: &mut Fresher) -> R
 
 fn convert_monotype(
     ty: ast::MonoType,
-    tvars: &mut HashMap<String, types::Tvar>,
+    tvars: &mut BTreeMap<String, types::Tvar>,
     f: &mut Fresher,
 ) -> Result<MonoType> {
     match ty {
@@ -246,7 +246,7 @@ pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     f: &mut Fresher,
 ) -> Result<types::PolyType> {
-    let mut tvars = HashMap::<String, types::Tvar>::new();
+    let mut tvars = BTreeMap::<String, types::Tvar>::new();
     let expr = convert_monotype(type_expression.monotype, &mut tvars, f)?;
     let mut vars = Vec::<types::Tvar>::new();
     let mut cons = SemanticMap::<types::Tvar, Vec<types::Kind>>::new();
@@ -2924,7 +2924,7 @@ mod tests {
                 name: "int".to_string(),
             },
         });
-        let mut m = HashMap::<String, types::Tvar>::new();
+        let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
         let want = MonoType::Int;
         assert_eq!(want, got);
@@ -2954,7 +2954,7 @@ mod tests {
                 }),
             }],
         });
-        let mut m = HashMap::<String, types::Tvar>::new();
+        let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype, &mut m, &mut fresh::Fresher::default()).unwrap();
         let want = MonoType::Record(Box::new(types::Record::Extension {
             head: types::Property {
@@ -2992,7 +2992,7 @@ mod tests {
                 },
             }),
         }));
-        let mut m = HashMap::<String, types::Tvar>::new();
+        let mut m = BTreeMap::<String, types::Tvar>::new();
         let got = convert_monotype(monotype_ex, &mut m, &mut fresh::Fresher::default()).unwrap();
         let mut opt = MonoTypeMap::new();
         opt.insert(String::from("A"), MonoType::Int);
