@@ -3042,6 +3042,1475 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 98,
+					Line:   55,
+				},
+				File:   "integral_test.flux",
+				Source: "package experimental_test\n\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:00Z,_m,FF,1\n,,0,2018-05-22T19:53:10Z,_m,FF,1\n,,0,2018-05-22T19:53:20Z,_m,FF,1\n,,0,2018-05-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-05-22T19:53:50Z,_m,FF,1\n,,1,2018-05-22T19:53:00Z,_m,QQ,1\n,,1,2018-05-22T19:53:10Z,_m,QQ,1\n,,1,2018-05-22T19:53:20Z,_m,QQ,1\n,,1,2018-05-22T19:53:30Z,_m,QQ,1\n,,1,2018-05-22T19:53:40Z,_m,QQ,1\n,,1,2018-05-22T19:53:50Z,_m,QQ,1\n,,1,2018-05-22T19:54:00Z,_m,QQ,1\n,,1,2018-05-22T19:54:10Z,_m,QQ,1\n,,1,2018-05-22T19:54:20Z,_m,QQ,1\n,,2,2018-05-22T19:53:00Z,_m,RR,1\n,,2,2018-05-22T19:53:10Z,_m,RR,1\n,,2,2018-05-22T19:53:20Z,_m,RR,1\n,,2,2018-05-22T19:53:30Z,_m,RR,1\n,,3,2018-05-22T19:53:40Z,_m,SR,1\n,,3,2018-05-22T19:53:50Z,_m,SR,1\n,,3,2018-05-22T19:54:00Z,_m,SR,1\n\"\n\noutData = \"\n#datatype,string,long,string,string,double\n#group,false,false,true,true,false\n#default,_result,,,,\n,result,table,_measurement,_field,_value\n,,0,_m,FF,5\n,,1,_m,QQ,8\n,,2,_m,RR,3\n,,3,_m,SR,2\n\"\n\nt_integral = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)\n\t\t|> experimental.integral(unit: 10s))\n\t\t|> drop(columns: [\"_start\", \"_stop\"])\n\ntest _integral = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "integral_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "integral_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "integral_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "integral_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "integral_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "integral_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   35,
+					},
+					File:   "integral_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:00Z,_m,FF,1\n,,0,2018-05-22T19:53:10Z,_m,FF,1\n,,0,2018-05-22T19:53:20Z,_m,FF,1\n,,0,2018-05-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-05-22T19:53:50Z,_m,FF,1\n,,1,2018-05-22T19:53:00Z,_m,QQ,1\n,,1,2018-05-22T19:53:10Z,_m,QQ,1\n,,1,2018-05-22T19:53:20Z,_m,QQ,1\n,,1,2018-05-22T19:53:30Z,_m,QQ,1\n,,1,2018-05-22T19:53:40Z,_m,QQ,1\n,,1,2018-05-22T19:53:50Z,_m,QQ,1\n,,1,2018-05-22T19:54:00Z,_m,QQ,1\n,,1,2018-05-22T19:54:10Z,_m,QQ,1\n,,1,2018-05-22T19:54:20Z,_m,QQ,1\n,,2,2018-05-22T19:53:00Z,_m,RR,1\n,,2,2018-05-22T19:53:10Z,_m,RR,1\n,,2,2018-05-22T19:53:20Z,_m,RR,1\n,,2,2018-05-22T19:53:30Z,_m,RR,1\n,,3,2018-05-22T19:53:40Z,_m,SR,1\n,,3,2018-05-22T19:53:50Z,_m,SR,1\n,,3,2018-05-22T19:54:00Z,_m,SR,1\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "integral_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   35,
+						},
+						File:   "integral_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:00Z,_m,FF,1\n,,0,2018-05-22T19:53:10Z,_m,FF,1\n,,0,2018-05-22T19:53:20Z,_m,FF,1\n,,0,2018-05-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-05-22T19:53:50Z,_m,FF,1\n,,1,2018-05-22T19:53:00Z,_m,QQ,1\n,,1,2018-05-22T19:53:10Z,_m,QQ,1\n,,1,2018-05-22T19:53:20Z,_m,QQ,1\n,,1,2018-05-22T19:53:30Z,_m,QQ,1\n,,1,2018-05-22T19:53:40Z,_m,QQ,1\n,,1,2018-05-22T19:53:50Z,_m,QQ,1\n,,1,2018-05-22T19:54:00Z,_m,QQ,1\n,,1,2018-05-22T19:54:10Z,_m,QQ,1\n,,1,2018-05-22T19:54:20Z,_m,QQ,1\n,,2,2018-05-22T19:53:00Z,_m,RR,1\n,,2,2018-05-22T19:53:10Z,_m,RR,1\n,,2,2018-05-22T19:53:20Z,_m,RR,1\n,,2,2018-05-22T19:53:30Z,_m,RR,1\n,,3,2018-05-22T19:53:40Z,_m,SR,1\n,,3,2018-05-22T19:53:50Z,_m,SR,1\n,,3,2018-05-22T19:54:00Z,_m,SR,1\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,string,string,double\n#group,false,false,false,true,true,false\n#default,_result,,,,,\n,result,table,_time,_measurement,_field,_value\n,,0,2018-05-22T19:53:00Z,_m,FF,1\n,,0,2018-05-22T19:53:10Z,_m,FF,1\n,,0,2018-05-22T19:53:20Z,_m,FF,1\n,,0,2018-05-22T19:53:30Z,_m,FF,1\n,,0,2018-05-22T19:53:40Z,_m,FF,1\n,,0,2018-05-22T19:53:50Z,_m,FF,1\n,,1,2018-05-22T19:53:00Z,_m,QQ,1\n,,1,2018-05-22T19:53:10Z,_m,QQ,1\n,,1,2018-05-22T19:53:20Z,_m,QQ,1\n,,1,2018-05-22T19:53:30Z,_m,QQ,1\n,,1,2018-05-22T19:53:40Z,_m,QQ,1\n,,1,2018-05-22T19:53:50Z,_m,QQ,1\n,,1,2018-05-22T19:54:00Z,_m,QQ,1\n,,1,2018-05-22T19:54:10Z,_m,QQ,1\n,,1,2018-05-22T19:54:20Z,_m,QQ,1\n,,2,2018-05-22T19:53:00Z,_m,RR,1\n,,2,2018-05-22T19:53:10Z,_m,RR,1\n,,2,2018-05-22T19:53:20Z,_m,RR,1\n,,2,2018-05-22T19:53:30Z,_m,RR,1\n,,3,2018-05-22T19:53:40Z,_m,SR,1\n,,3,2018-05-22T19:53:50Z,_m,SR,1\n,,3,2018-05-22T19:54:00Z,_m,SR,1\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   46,
+					},
+					File:   "integral_test.flux",
+					Source: "outData = \"\n#datatype,string,long,string,string,double\n#group,false,false,true,true,false\n#default,_result,,,,\n,result,table,_measurement,_field,_value\n,,0,_m,FF,5\n,,1,_m,QQ,8\n,,2,_m,RR,3\n,,3,_m,SR,2\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   37,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   37,
+						},
+						File:   "integral_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   37,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   46,
+						},
+						File:   "integral_test.flux",
+						Source: "\"\n#datatype,string,long,string,string,double\n#group,false,false,true,true,false\n#default,_result,,,,\n,result,table,_measurement,_field,_value\n,,0,_m,FF,5\n,,1,_m,QQ,8\n,,2,_m,RR,3\n,,3,_m,SR,2\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   37,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,string,string,double\n#group,false,false,true,true,false\n#default,_result,,,,\n,result,table,_measurement,_field,_value\n,,0,_m,FF,5\n,,1,_m,QQ,8\n,,2,_m,RR,3\n,,3,_m,SR,2\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 40,
+						Line:   52,
+					},
+					File:   "integral_test.flux",
+					Source: "t_integral = (table=<-) =>\n\t(table\n\t\t|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)\n\t\t|> experimental.integral(unit: 10s))\n\t\t|> drop(columns: [\"_start\", \"_stop\"])",
+					Start: ast.Position{
+						Column: 1,
+						Line:   48,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 11,
+							Line:   48,
+						},
+						File:   "integral_test.flux",
+						Source: "t_integral",
+						Start: ast.Position{
+							Column: 1,
+							Line:   48,
+						},
+					},
+				},
+				Name: "t_integral",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 40,
+							Line:   52,
+						},
+						File:   "integral_test.flux",
+						Source: "(table=<-) =>\n\t(table\n\t\t|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)\n\t\t|> experimental.integral(unit: 10s))\n\t\t|> drop(columns: [\"_start\", \"_stop\"])",
+						Start: ast.Position{
+							Column: 14,
+							Line:   48,
+						},
+					},
+				},
+				Body: &ast.PipeExpression{
+					Argument: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   51,
+								},
+								File:   "integral_test.flux",
+								Source: "(table\n\t\t|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)\n\t\t|> experimental.integral(unit: 10s))",
+								Start: ast.Position{
+									Column: 2,
+									Line:   49,
+								},
+							},
+						},
+						Expression: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 8,
+												Line:   49,
+											},
+											File:   "integral_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 3,
+												Line:   49,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 68,
+											Line:   50,
+										},
+										File:   "integral_test.flux",
+										Source: "table\n\t\t|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)",
+										Start: ast.Position{
+											Column: 3,
+											Line:   49,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 67,
+													Line:   50,
+												},
+												File:   "integral_test.flux",
+												Source: "start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z",
+												Start: ast.Position{
+													Column: 12,
+													Line:   50,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 39,
+														Line:   50,
+													},
+													File:   "integral_test.flux",
+													Source: "start: 2018-05-22T19:53:00Z",
+													Start: ast.Position{
+														Column: 12,
+														Line:   50,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 17,
+															Line:   50,
+														},
+														File:   "integral_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 12,
+															Line:   50,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 39,
+															Line:   50,
+														},
+														File:   "integral_test.flux",
+														Source: "2018-05-22T19:53:00Z",
+														Start: ast.Position{
+															Column: 19,
+															Line:   50,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2018-05-22T19:53:00Z"),
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 67,
+														Line:   50,
+													},
+													File:   "integral_test.flux",
+													Source: "stop: 2018-05-22T19:55:00Z",
+													Start: ast.Position{
+														Column: 41,
+														Line:   50,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   50,
+														},
+														File:   "integral_test.flux",
+														Source: "stop",
+														Start: ast.Position{
+															Column: 41,
+															Line:   50,
+														},
+													},
+												},
+												Name: "stop",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 67,
+															Line:   50,
+														},
+														File:   "integral_test.flux",
+														Source: "2018-05-22T19:55:00Z",
+														Start: ast.Position{
+															Column: 47,
+															Line:   50,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2018-05-22T19:55:00Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 68,
+												Line:   50,
+											},
+											File:   "integral_test.flux",
+											Source: "range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)",
+											Start: ast.Position{
+												Column: 6,
+												Line:   50,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   50,
+												},
+												File:   "integral_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 6,
+													Line:   50,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   51,
+									},
+									File:   "integral_test.flux",
+									Source: "table\n\t\t|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)\n\t\t|> experimental.integral(unit: 10s)",
+									Start: ast.Position{
+										Column: 3,
+										Line:   49,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   51,
+											},
+											File:   "integral_test.flux",
+											Source: "unit: 10s",
+											Start: ast.Position{
+												Column: 28,
+												Line:   51,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   51,
+												},
+												File:   "integral_test.flux",
+												Source: "unit: 10s",
+												Start: ast.Position{
+													Column: 28,
+													Line:   51,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 32,
+														Line:   51,
+													},
+													File:   "integral_test.flux",
+													Source: "unit",
+													Start: ast.Position{
+														Column: 28,
+														Line:   51,
+													},
+												},
+											},
+											Name: "unit",
+										},
+										Value: &ast.DurationLiteral{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   51,
+													},
+													File:   "integral_test.flux",
+													Source: "10s",
+													Start: ast.Position{
+														Column: 34,
+														Line:   51,
+													},
+												},
+											},
+											Values: []ast.Duration{ast.Duration{
+												Magnitude: int64(10),
+												Unit:      "s",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   51,
+										},
+										File:   "integral_test.flux",
+										Source: "experimental.integral(unit: 10s)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   51,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 27,
+												Line:   51,
+											},
+											File:   "integral_test.flux",
+											Source: "experimental.integral",
+											Start: ast.Position{
+												Column: 6,
+												Line:   51,
+											},
+										},
+									},
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   51,
+												},
+												File:   "integral_test.flux",
+												Source: "experimental",
+												Start: ast.Position{
+													Column: 6,
+													Line:   51,
+												},
+											},
+										},
+										Name: "experimental",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 27,
+													Line:   51,
+												},
+												File:   "integral_test.flux",
+												Source: "integral",
+												Start: ast.Position{
+													Column: 19,
+													Line:   51,
+												},
+											},
+										},
+										Name: "integral",
+									},
+								},
+							},
+						},
+					},
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 40,
+								Line:   52,
+							},
+							File:   "integral_test.flux",
+							Source: "(table\n\t\t|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)\n\t\t|> experimental.integral(unit: 10s))\n\t\t|> drop(columns: [\"_start\", \"_stop\"])",
+							Start: ast.Position{
+								Column: 2,
+								Line:   49,
+							},
+						},
+					},
+					Call: &ast.CallExpression{
+						Arguments: []ast.Expression{&ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 39,
+										Line:   52,
+									},
+									File:   "integral_test.flux",
+									Source: "columns: [\"_start\", \"_stop\"]",
+									Start: ast.Position{
+										Column: 11,
+										Line:   52,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   52,
+										},
+										File:   "integral_test.flux",
+										Source: "columns: [\"_start\", \"_stop\"]",
+										Start: ast.Position{
+											Column: 11,
+											Line:   52,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 18,
+												Line:   52,
+											},
+											File:   "integral_test.flux",
+											Source: "columns",
+											Start: ast.Position{
+												Column: 11,
+												Line:   52,
+											},
+										},
+									},
+									Name: "columns",
+								},
+								Value: &ast.ArrayExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   52,
+											},
+											File:   "integral_test.flux",
+											Source: "[\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 20,
+												Line:   52,
+											},
+										},
+									},
+									Elements: []ast.Expression{&ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 29,
+													Line:   52,
+												},
+												File:   "integral_test.flux",
+												Source: "\"_start\"",
+												Start: ast.Position{
+													Column: 21,
+													Line:   52,
+												},
+											},
+										},
+										Value: "_start",
+									}, &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 38,
+													Line:   52,
+												},
+												File:   "integral_test.flux",
+												Source: "\"_stop\"",
+												Start: ast.Position{
+													Column: 31,
+													Line:   52,
+												},
+											},
+										},
+										Value: "_stop",
+									}},
+								},
+							}},
+							With: nil,
+						}},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 40,
+									Line:   52,
+								},
+								File:   "integral_test.flux",
+								Source: "drop(columns: [\"_start\", \"_stop\"])",
+								Start: ast.Position{
+									Column: 6,
+									Line:   52,
+								},
+							},
+						},
+						Callee: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   52,
+									},
+									File:   "integral_test.flux",
+									Source: "drop",
+									Start: ast.Position{
+										Column: 6,
+										Line:   52,
+									},
+								},
+							},
+							Name: "drop",
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   48,
+							},
+							File:   "integral_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 15,
+								Line:   48,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   48,
+								},
+								File:   "integral_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 15,
+									Line:   48,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 23,
+								Line:   48,
+							},
+							File:   "integral_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 21,
+								Line:   48,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 98,
+							Line:   55,
+						},
+						File:   "integral_test.flux",
+						Source: "_integral = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   54,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 15,
+								Line:   54,
+							},
+							File:   "integral_test.flux",
+							Source: "_integral",
+							Start: ast.Position{
+								Column: 6,
+								Line:   54,
+							},
+						},
+					},
+					Name: "_integral",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 98,
+								Line:   55,
+							},
+							File:   "integral_test.flux",
+							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})",
+							Start: ast.Position{
+								Column: 18,
+								Line:   54,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 98,
+									Line:   55,
+								},
+								File:   "integral_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})",
+								Start: ast.Position{
+									Column: 2,
+									Line:   55,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 97,
+										Line:   55,
+									},
+									File:   "integral_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral}",
+									Start: ast.Position{
+										Column: 3,
+										Line:   55,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 43,
+											Line:   55,
+										},
+										File:   "integral_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 4,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 9,
+												Line:   55,
+											},
+											File:   "integral_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 4,
+												Line:   55,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   55,
+												},
+												File:   "integral_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 31,
+													Line:   55,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 42,
+														Line:   55,
+													},
+													File:   "integral_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 31,
+														Line:   55,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 34,
+															Line:   55,
+														},
+														File:   "integral_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 31,
+															Line:   55,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 42,
+															Line:   55,
+														},
+														File:   "integral_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 36,
+															Line:   55,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   55,
+											},
+											File:   "integral_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 11,
+												Line:   55,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 30,
+													Line:   55,
+												},
+												File:   "integral_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 11,
+													Line:   55,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   55,
+													},
+													File:   "integral_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 11,
+														Line:   55,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 30,
+														Line:   55,
+													},
+													File:   "integral_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 19,
+														Line:   55,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 80,
+											Line:   55,
+										},
+										File:   "integral_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 49,
+												Line:   55,
+											},
+											File:   "integral_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 45,
+												Line:   55,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 79,
+													Line:   55,
+												},
+												File:   "integral_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 67,
+													Line:   55,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 79,
+														Line:   55,
+													},
+													File:   "integral_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 67,
+														Line:   55,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   55,
+														},
+														File:   "integral_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 67,
+															Line:   55,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 79,
+															Line:   55,
+														},
+														File:   "integral_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 72,
+															Line:   55,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 80,
+												Line:   55,
+											},
+											File:   "integral_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 51,
+												Line:   55,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 66,
+													Line:   55,
+												},
+												File:   "integral_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 51,
+													Line:   55,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 58,
+														Line:   55,
+													},
+													File:   "integral_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 51,
+														Line:   55,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   55,
+													},
+													File:   "integral_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 59,
+														Line:   55,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 96,
+											Line:   55,
+										},
+										File:   "integral_test.flux",
+										Source: "fn: t_integral",
+										Start: ast.Position{
+											Column: 82,
+											Line:   55,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 84,
+												Line:   55,
+											},
+											File:   "integral_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 82,
+												Line:   55,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 96,
+												Line:   55,
+											},
+											File:   "integral_test.flux",
+											Source: "t_integral",
+											Start: ast.Position{
+												Column: 86,
+												Line:   55,
+											},
+										},
+									},
+									Name: "t_integral",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 98,
+						Line:   55,
+					},
+					File:   "integral_test.flux",
+					Source: "test _integral = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   54,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "integral_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "integral_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   4,
+					},
+					File:   "integral_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   4,
+						},
+						File:   "integral_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "integral_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   1,
+					},
+					File:   "integral_test.flux",
+					Source: "package experimental_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   1,
+						},
+						File:   "integral_test.flux",
+						Source: "experimental_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "experimental_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 100,
 					Line:   65,
 				},

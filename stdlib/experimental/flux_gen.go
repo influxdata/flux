@@ -21,11 +21,11 @@ var pkgAST = &ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 15,
-					Line:   45,
+					Column: 17,
+					Line:   54,
 				},
 				File:   "experimental.flux",
-				Source: "package experimental\n\nbuiltin addDuration : (d: duration, to: time) => time\nbuiltin subDuration : (d: duration, from: time) => time\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A: Record\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys : (o: A) => [string] where A: Record\n\n// set adds the values from the object onto each row of a table\nbuiltin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record\n\n// An experimental version of \"to\" that:\n// - Expects pivoted data\n// - Any column in the group key is made a tag in storage\n// - All other columns are fields\n// - An error will be thrown for incompatible data types\nbuiltin to : (<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Record\n\n// An experimental version of join.\nbuiltin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record\n\nbuiltin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record\n\n// Aligns all tables to a common start time by using the same _time value for\n// the first record in each table and incrementing all subsequent _time values\n// using time elapsed between input records.\n// By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.\nalignTime = (tables=<-, alignTo=time(v: 0)) =>\n  tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )\n    |> drop(columns: [\"timeDiff\"])\n\n\n// An experimental version of window.\nbuiltin window",
+				Source: "package experimental\n\nbuiltin addDuration : (d: duration, to: time) => time\nbuiltin subDuration : (d: duration, from: time) => time\n\n// An experimental version of group that has mode: \"extend\"\nbuiltin group : (<-tables: [A], mode: string, columns: [string]) => [A] where A: Record\n\n// objectKeys produces a list of the keys existing on the object\nbuiltin objectKeys : (o: A) => [string] where A: Record\n\n// set adds the values from the object onto each row of a table\nbuiltin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record\n\n// An experimental version of \"to\" that:\n// - Expects pivoted data\n// - Any column in the group key is made a tag in storage\n// - All other columns are fields\n// - An error will be thrown for incompatible data types\nbuiltin to : (<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Record\n\n// An experimental version of join.\nbuiltin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record\n\nbuiltin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record\n\n// Aligns all tables to a common start time by using the same _time value for\n// the first record in each table and incrementing all subsequent _time values\n// using time elapsed between input records.\n// By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.\nalignTime = (tables=<-, alignTo=time(v: 0)) =>\n  tables\n    |> stateDuration(\n      fn: (r) => true,\n      column: \"timeDiff\",\n      unit: 1ns\n    )\n    |> map(fn: (r) =>\n      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })\n    )\n    |> drop(columns: [\"timeDiff\"])\n\n\n// An experimental version of window.\nbuiltin window : (\n  <-tables: [{T with _start: time, _stop: time, _time: time}]\n  ?every: duration,\n  ?period: duration,\n  ?offset: duration,\n  ?createEmpty: bool\n) => [{T with _start: time, _stop: time, _time: time}]\n\n// An experimental version of integral.\nbuiltin integral",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -5485,6 +5485,564 @@ var pkgAST = &ast.Package{
 										Start: ast.Position{
 											Column: 8,
 											Line:   51,
+										},
+									},
+								},
+								Name: "T",
+							},
+						},
+					},
+				},
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   54,
+					},
+					File:   "experimental.flux",
+					Source: "builtin integral",
+					Start: ast.Position{
+						Column: 1,
+						Line:   54,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   54,
+						},
+						File:   "experimental.flux",
+						Source: "integral",
+						Start: ast.Position{
+							Column: 9,
+							Line:   54,
+						},
+					},
+				},
+				Name: "integral",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 128,
+							Line:   54,
+						},
+						File:   "experimental.flux",
+						Source: "(<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]",
+						Start: ast.Position{
+							Column: 20,
+							Line:   54,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 128,
+								Line:   54,
+							},
+							File:   "experimental.flux",
+							Source: "(<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]",
+							Start: ast.Position{
+								Column: 20,
+								Line:   54,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 64,
+									Line:   54,
+								},
+								File:   "experimental.flux",
+								Source: "<-tables: [{T with _time: time, _value: B}]",
+								Start: ast.Position{
+									Column: 21,
+									Line:   54,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 29,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 23,
+										Line:   54,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 64,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "[{T with _time: time, _value: B}]",
+									Start: ast.Position{
+										Column: 31,
+										Line:   54,
+									},
+								},
+							},
+							ElementType: &ast.RecordType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 63,
+											Line:   54,
+										},
+										File:   "experimental.flux",
+										Source: "{T with _time: time, _value: B}",
+										Start: ast.Position{
+											Column: 32,
+											Line:   54,
+										},
+									},
+								},
+								Properties: []*ast.PropertyType{&ast.PropertyType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 51,
+												Line:   54,
+											},
+											File:   "experimental.flux",
+											Source: "_time: time",
+											Start: ast.Position{
+												Column: 40,
+												Line:   54,
+											},
+										},
+									},
+									Name: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   54,
+												},
+												File:   "experimental.flux",
+												Source: "_time",
+												Start: ast.Position{
+													Column: 40,
+													Line:   54,
+												},
+											},
+										},
+										Name: "_time",
+									},
+									Ty: &ast.NamedType{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 51,
+													Line:   54,
+												},
+												File:   "experimental.flux",
+												Source: "time",
+												Start: ast.Position{
+													Column: 47,
+													Line:   54,
+												},
+											},
+										},
+										ID: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 51,
+														Line:   54,
+													},
+													File:   "experimental.flux",
+													Source: "time",
+													Start: ast.Position{
+														Column: 47,
+														Line:   54,
+													},
+												},
+											},
+											Name: "time",
+										},
+									},
+								}, &ast.PropertyType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 62,
+												Line:   54,
+											},
+											File:   "experimental.flux",
+											Source: "_value: B",
+											Start: ast.Position{
+												Column: 53,
+												Line:   54,
+											},
+										},
+									},
+									Name: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 59,
+													Line:   54,
+												},
+												File:   "experimental.flux",
+												Source: "_value",
+												Start: ast.Position{
+													Column: 53,
+													Line:   54,
+												},
+											},
+										},
+										Name: "_value",
+									},
+									Ty: &ast.TvarType{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 62,
+													Line:   54,
+												},
+												File:   "experimental.flux",
+												Source: "B",
+												Start: ast.Position{
+													Column: 61,
+													Line:   54,
+												},
+											},
+										},
+										ID: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 62,
+														Line:   54,
+													},
+													File:   "experimental.flux",
+													Source: "B",
+													Start: ast.Position{
+														Column: 61,
+														Line:   54,
+													},
+												},
+											},
+											Name: "B",
+										},
+									},
+								}},
+								Tvar: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 34,
+												Line:   54,
+											},
+											File:   "experimental.flux",
+											Source: "T",
+											Start: ast.Position{
+												Column: 33,
+												Line:   54,
+											},
+										},
+									},
+									Name: "T",
+								},
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 81,
+									Line:   54,
+								},
+								File:   "experimental.flux",
+								Source: "?unit: duration",
+								Start: ast.Position{
+									Column: 66,
+									Line:   54,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 71,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "unit",
+									Start: ast.Position{
+										Column: 67,
+										Line:   54,
+									},
+								},
+							},
+							Name: "unit",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 81,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "duration",
+									Start: ast.Position{
+										Column: 73,
+										Line:   54,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 81,
+											Line:   54,
+										},
+										File:   "experimental.flux",
+										Source: "duration",
+										Start: ast.Position{
+											Column: 73,
+											Line:   54,
+										},
+									},
+								},
+								Name: "duration",
+							},
+						},
+					}, &ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 103,
+									Line:   54,
+								},
+								File:   "experimental.flux",
+								Source: "?interpolate: string",
+								Start: ast.Position{
+									Column: 83,
+									Line:   54,
+								},
+							},
+						},
+						Kind: "Optional",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 95,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "interpolate",
+									Start: ast.Position{
+										Column: 84,
+										Line:   54,
+									},
+								},
+							},
+							Name: "interpolate",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 103,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 97,
+										Line:   54,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 103,
+											Line:   54,
+										},
+										File:   "experimental.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 97,
+											Line:   54,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 128,
+									Line:   54,
+								},
+								File:   "experimental.flux",
+								Source: "[{T with _value: B}]",
+								Start: ast.Position{
+									Column: 108,
+									Line:   54,
+								},
+							},
+						},
+						ElementType: &ast.RecordType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 127,
+										Line:   54,
+									},
+									File:   "experimental.flux",
+									Source: "{T with _value: B}",
+									Start: ast.Position{
+										Column: 109,
+										Line:   54,
+									},
+								},
+							},
+							Properties: []*ast.PropertyType{&ast.PropertyType{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 126,
+											Line:   54,
+										},
+										File:   "experimental.flux",
+										Source: "_value: B",
+										Start: ast.Position{
+											Column: 117,
+											Line:   54,
+										},
+									},
+								},
+								Name: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 123,
+												Line:   54,
+											},
+											File:   "experimental.flux",
+											Source: "_value",
+											Start: ast.Position{
+												Column: 117,
+												Line:   54,
+											},
+										},
+									},
+									Name: "_value",
+								},
+								Ty: &ast.TvarType{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 126,
+												Line:   54,
+											},
+											File:   "experimental.flux",
+											Source: "B",
+											Start: ast.Position{
+												Column: 125,
+												Line:   54,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 126,
+													Line:   54,
+												},
+												File:   "experimental.flux",
+												Source: "B",
+												Start: ast.Position{
+													Column: 125,
+													Line:   54,
+												},
+											},
+										},
+										Name: "B",
+									},
+								},
+							}},
+							Tvar: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 111,
+											Line:   54,
+										},
+										File:   "experimental.flux",
+										Source: "T",
+										Start: ast.Position{
+											Column: 110,
+											Line:   54,
 										},
 									},
 								},
