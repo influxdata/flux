@@ -296,6 +296,7 @@ func (s TestStatement) FromBuf(buf *fbast.TestStatement) *TestStatement {
 func (s TestCaseStatement) FromBuf(buf *fbast.TestCaseStatement) *TestCaseStatement {
 	s.BaseNode.FromBuf(buf.BaseNode(nil))
 	s.ID = Identifier{}.FromBuf(buf.Id(nil))
+	s.Extends = StringLiteral{}.FromBuf(buf.Extends(nil))
 	s.Block = Block{}.FromBuf(buf.Block(nil))
 	return &s
 }

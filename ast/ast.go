@@ -722,8 +722,9 @@ func (s *TestStatement) Copy() Node {
 // TestCaseStatement declares a Flux test case
 type TestCaseStatement struct {
 	BaseNode
-	ID    *Identifier
-	Block *Block
+	ID      *Identifier
+	Extends *StringLiteral `json:",omitempty"`
+	Block   *Block
 }
 
 // Type is the abstract type
@@ -738,6 +739,9 @@ func (s *TestCaseStatement) Copy() Node {
 	ns.BaseNode = s.BaseNode.Copy()
 
 	ns.ID = s.ID.Copy().(*Identifier)
+	if s.Extends != nil {
+		ns.Extends = s.Extends.Copy().(*StringLiteral)
+	}
 	ns.Block = s.Block.Copy().(*Block)
 	return ns
 }

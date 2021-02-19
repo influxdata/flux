@@ -106,13 +106,7 @@ func CreateSource(spec *FromCSVProcedureSpec, dsid execute.DatasetID, a execute.
 	csvText := spec.CSV
 	// if spec.File non-empty then spec.CSV is empty
 	if spec.File != "" {
-		deps := flux.GetDependencies(a.Context())
-		fs, err := deps.FilesystemService()
-		if err != nil {
-			return nil, err
-		}
-
-		csvBytes, err := filesystem.ReadFile(fs, spec.File)
+		csvBytes, err := filesystem.ReadFile(a.Context(), spec.File)
 		if err != nil {
 			return nil, errors.Wrap(err, codes.Inherit, "csv.from() failed to read file")
 		}

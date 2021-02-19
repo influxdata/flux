@@ -74,7 +74,11 @@ func (d Deps) URLValidator() (url.Validator, error) {
 }
 
 func (d Deps) Inject(ctx context.Context) context.Context {
-	return context.WithValue(ctx, dependenciesKey, d)
+	ctx = context.WithValue(ctx, dependenciesKey, d)
+	if d.Deps.FilesystemService != nil {
+		ctx = filesystem.Inject(ctx, d.Deps.FilesystemService)
+	}
+	return ctx
 }
 
 func GetDependencies(ctx context.Context) Dependencies {
