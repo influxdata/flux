@@ -3,6 +3,7 @@ package cmd
 import (
 	"archive/tar"
 	"archive/zip"
+	"bytes"
 	"compress/gzip"
 	"context"
 	"encoding/json"
@@ -17,6 +18,7 @@ import (
 	"github.com/influxdata/flux/ast"
 	"github.com/influxdata/flux/ast/edit"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/dependencies/filesystem"
 	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/execute/table"
@@ -80,20 +82,22 @@ func runFluxTests(setup TestSetupFunc, flags testFlags) {
 // Test wraps the functionality of a single testcase statement,
 // to handle its execution and its pass/fail state.
 type Test struct {
-	ast *ast.Package
-	err error
+	name string
+	ast  *ast.Package
+	err  error
 }
 
 // NewTest creates a new Test instance from an ast.Package.
-func NewTest(ast *ast.Package) Test {
+func NewTest(name string, ast *ast.Package) Test {
 	return Test{
-		ast: ast,
+		name: name,
+		ast:  ast,
 	}
 }
 
 // Get the name of the Test.
 func (t *Test) Name() string {
-	return t.ast.Files[0].Name
+	return t.name
 }
 
 // Get the error from the test, if one exists.
@@ -130,15 +134,12 @@ func NewTestRunner(reporter TestReporter) TestRunner {
 	}
 }
 
+type gatherFunc func(filename string) ([]string, fs, error)
+
 // Gather gathers all tests from the filesystem and creates Test instances
 // from that info.
-func (t *TestRunner) Gather(rootDir string, names []string) error {
-	root, err := filepath.Abs(rootDir)
-	if err != nil {
-		return err
-	}
-
-	var gatherFrom func(filename string) ([]string, error)
+func (t *TestRunner) Gather(root string, names []string) error {
+	var gatherFrom gatherFunc
 	if strings.HasSuffix(root, ".tar.gz") || strings.HasSuffix(root, ".tar") {
 		gatherFrom = gatherFromTarArchive
 	} else if strings.HasSuffix(root, ".zip") {
@@ -148,22 +149,31 @@ func (t *TestRunner) Gather(rootDir string, names []string) error {
 	} else if st, err := os.Stat(root); err == nil && st.IsDir() {
 		gatherFrom = gatherFromDir
 	} else {
-		return fmt.Errorf("no test runner for file: %s", rootDir)
+		return fmt.Errorf("no test runner for file: %s", root)
 	}
 
-	queries, err := gatherFrom(root)
+	files, fs, err := gatherFrom(root)
 	if err != nil {
 		return err
 	}
+	defer func() { _ = fs.Close() }()
 
-	for _, q := range queries {
-		baseAST := parser.ParseSource(q)
-		asts, err := edit.TestcaseTransform(baseAST)
+	ctx := filesystem.Inject(context.Background(), fs)
+	for _, file := range files {
+		q, err := filesystem.ReadFile(ctx, file)
 		if err != nil {
 			return err
 		}
-		for _, ast := range asts {
-			test := NewTest(ast)
+		baseAST := parser.ParseSource(string(q))
+		if len(baseAST.Files) > 0 {
+			baseAST.Files[0].Name = file
+		}
+		tcnames, asts, err := edit.TestcaseTransform(ctx, baseAST)
+		if err != nil {
+			return err
+		}
+		for i, astf := range asts {
+			test := NewTest(tcnames[i], astf)
 			if len(names) == 0 || contains(names, test.Name()) {
 				t.tests = append(t.tests, &test)
 			}
@@ -172,31 +182,36 @@ func (t *TestRunner) Gather(rootDir string, names []string) error {
 	return nil
 }
 
-func gatherFromTarArchive(filename string) ([]string, error) {
+func gatherFromTarArchive(filename string) ([]string, fs, error) {
 	var f io.ReadCloser
 	f, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer func() { _ = f.Close() }()
 
 	if strings.HasSuffix(filename, ".gz") {
 		r, err := gzip.NewReader(f)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		defer func() { _ = r.Close() }()
 		f = r
 	}
 
-	var queries []string
+	var (
+		files []string
+		tfs   = &tarfs{
+			files: make(map[string]*tarfile),
+		}
+	)
 	archive := tar.NewReader(f)
 	for {
 		hdr, err := archive.Next()
 		if errors.Is(err, io.EOF) {
 			break
 		} else if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		info := hdr.FileInfo()
@@ -206,81 +221,160 @@ func gatherFromTarArchive(filename string) ([]string, error) {
 
 		source, err := ioutil.ReadAll(archive)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		queries = append(queries, string(source))
+		tfs.files[filepath.Clean(hdr.Name)] = &tarfile{
+			data: source,
+			info: info,
+		}
+		files = append(files, hdr.Name)
 	}
-	return queries, nil
+	return files, tfs, nil
 }
 
-func gatherFromZipArchive(filename string) ([]string, error) {
+type tarfs struct {
+	files map[string]*tarfile
+}
+
+func (t *tarfs) Open(fpath string) (filesystem.File, error) {
+	fpath = filepath.Clean(fpath)
+	file, ok := t.files[fpath]
+	if !ok {
+		return nil, os.ErrNotExist
+	}
+	r := bytes.NewReader(file.data)
+	return &tarfile{r: r, info: file.info}, nil
+}
+
+func (t *tarfs) Close() error {
+	t.files = nil
+	return nil
+}
+
+type tarfile struct {
+	data []byte
+	r    io.Reader
+	info os.FileInfo
+}
+
+func (t *tarfile) Read(p []byte) (n int, err error) {
+	return t.r.Read(p)
+}
+
+func (t *tarfile) Close() error {
+	return nil
+}
+
+func (t *tarfile) Stat() (os.FileInfo, error) {
+	return t.info, nil
+}
+
+func gatherFromZipArchive(filename string) ([]string, fs, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	info, err := f.Stat()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	zipf, err := zip.NewReader(f, info.Size())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	var queries []string
+	var files []string
 	for _, file := range zipf.File {
 		info := file.FileInfo()
 		if !isTestFile(info, file.Name) {
 			continue
 		}
+		files = append(files, file.Name)
 
-		if err := func() error {
-			fp, err := file.Open()
-			if err != nil {
-				return err
-			}
-			defer func() { _ = fp.Close() }()
-
-			source, err := ioutil.ReadAll(fp)
-			if err != nil {
-				return err
-			}
-			queries = append(queries, string(source))
-			return nil
-		}(); err != nil {
-			return nil, err
-		}
 	}
-	return queries, nil
+	return files, &zipfs{
+		r:      zipf,
+		Closer: f,
+	}, nil
 }
 
-func gatherFromDir(filename string) ([]string, error) {
-	var queries []string
+type zipfs struct {
+	r *zip.Reader
+	io.Closer
+}
+
+func (z *zipfs) Open(fpath string) (filesystem.File, error) {
+	fpath = filepath.Clean(fpath)
+	for _, f := range z.r.File {
+		if filepath.Clean(f.Name) == fpath {
+			fi := f.FileInfo()
+			if !isTestFile(fi, fpath) {
+				return nil, os.ErrNotExist
+			}
+
+			rc, err := f.Open()
+			if err != nil {
+				return nil, err
+			}
+			return &zipfile{
+				ReadCloser: rc,
+				info:       f.FileInfo(),
+			}, nil
+		}
+	}
+	return nil, os.ErrNotExist
+}
+
+type zipfile struct {
+	io.ReadCloser
+	info os.FileInfo
+}
+
+func (z *zipfile) Stat() (os.FileInfo, error) {
+	return z.info, nil
+}
+
+type systemfs struct{}
+
+func (s systemfs) Open(fpath string) (filesystem.File, error) {
+	f, err := filesystem.SystemFS.Open(fpath)
+	if err != nil {
+		return nil, err
+	}
+
+	st, err := f.Stat()
+	if err != nil {
+		return nil, err
+	} else if !isTestFile(st, fpath) {
+		_ = f.Close()
+		return nil, os.ErrNotExist
+	}
+	return f, nil
+}
+
+func (s systemfs) Close() error {
+	return nil
+}
+
+func gatherFromDir(filename string) ([]string, fs, error) {
+	var files []string
 	if err := filepath.Walk(
 		filename,
 		func(path string, info os.FileInfo, err error) error {
 			if isTestFile(info, path) {
-				source, err := ioutil.ReadFile(path)
-				if err != nil {
-					return err
-				}
-				queries = append(queries, string(source))
+				files = append(files, path)
 			}
 			return nil
 		}); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return queries, nil
+	return files, systemfs{}, nil
 }
 
-func gatherFromFile(filename string) ([]string, error) {
-	query, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return nil, err
-	}
-	return []string{string(query)}, nil
+func gatherFromFile(filename string) ([]string, fs, error) {
+	return []string{filename}, systemfs{}, nil
 }
 
 func isTestFile(fi os.FileInfo, filename string) bool {
@@ -399,3 +493,8 @@ func (testExecutor) Run(pkg *ast.Package) error {
 }
 
 func (testExecutor) Close() error { return nil }
+
+type fs interface {
+	filesystem.Service
+	io.Closer
+}

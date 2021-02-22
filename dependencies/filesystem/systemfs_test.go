@@ -1,6 +1,7 @@
 package filesystem_test
 
 import (
+	"context"
 	"io"
 	"io/ioutil"
 	"os"
@@ -46,39 +47,6 @@ func TestSystemFS_Open(t *testing.T) {
 	}
 }
 
-func TestSystemFS_Create(t *testing.T) {
-	tmpdir, err := ioutil.TempDir("", "flux-systemfs-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = os.RemoveAll(tmpdir) }()
-
-	fullpath := filepath.Join(tmpdir, "hello.txt")
-	fs := filesystem.SystemFS
-	f, err := fs.Create(fullpath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer func() { _ = f.Close() }()
-
-	if _, err := io.WriteString(f, "Hello, World!"); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := f.Close(); err != nil {
-		t.Fatal(err)
-	}
-
-	data, err := ioutil.ReadFile(fullpath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if got, want := string(data), "Hello, World!"; got != want {
-		t.Fatalf("unexpected file contents -want/+got:\n\t- %q\n\t+ %q", want, got)
-	}
-}
-
 func TestSystemFS_Stat(t *testing.T) {
 	tmpfile, err := ioutil.TempFile("", "flux-systemfs-test")
 	if err != nil {
@@ -91,8 +59,8 @@ func TestSystemFS_Stat(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fs := filesystem.SystemFS
-	fi, err := fs.Stat(tmpfile.Name())
+	ctx := filesystem.Inject(context.Background(), filesystem.SystemFS)
+	fi, err := filesystem.Stat(ctx, tmpfile.Name())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -102,7 +70,7 @@ func TestSystemFS_Stat(t *testing.T) {
 	}
 }
 
-func TestReadFile(t *testing.T) {
+func TestSystemFS_ReadFile(t *testing.T) {
 	tmpfile, err := ioutil.TempFile("", "flux-systemfs-test")
 	if err != nil {
 		t.Fatal(err)
@@ -117,8 +85,8 @@ func TestReadFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	fs := filesystem.SystemFS
-	data, err := filesystem.ReadFile(fs, tmpfile.Name())
+	ctx := filesystem.Inject(context.Background(), filesystem.SystemFS)
+	data, err := filesystem.ReadFile(ctx, tmpfile.Name())
 	if err != nil {
 		t.Fatal(err)
 	}

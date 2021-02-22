@@ -347,6 +347,11 @@ func (f *formatter) formatTestStatement(n *TestStatement) {
 func (f *formatter) formatTestCaseStatement(n *TestCaseStatement) {
 	f.writeString("testcase ")
 	f.formatNode(n.ID)
+	if n.Extends != nil {
+		f.writeString(" extends ")
+		f.formatNode(n.Extends)
+	}
+	f.writeRune(' ')
 	f.formatNode(n.Block)
 }
 
@@ -374,6 +379,33 @@ func (f *formatter) formatArrayExpression(n *ArrayExpression) {
 		f.formatNode(c)
 	}
 
+	f.writeRune(']')
+}
+
+func (f *formatter) formatDictExpression(n *DictExpression) {
+	multiline := len(n.Elements) > 3
+
+	f.writeRune('[')
+	if multiline {
+		f.writeString("\n")
+		f.indent()
+	}
+
+	sep := ", "
+	if multiline {
+		sep = ",\n"
+	}
+
+	for _, elem := range n.Elements {
+		f.formatNode(elem.Key)
+		f.writeString(": ")
+		f.formatNode(elem.Val)
+		f.writeString(sep)
+	}
+
+	if multiline {
+		f.unIndent()
+	}
 	f.writeRune(']')
 }
 
@@ -737,6 +769,8 @@ func (f *formatter) formatNode(n Node) {
 		f.formatConditionalExpression(n)
 	case *ArrayExpression:
 		f.formatArrayExpression(n)
+	case *DictExpression:
+		f.formatDictExpression(n)
 	case *Identifier:
 		f.formatIdentifier(n)
 	case *PipeLiteral:

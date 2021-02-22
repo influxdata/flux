@@ -760,10 +760,22 @@ impl Parser {
     fn parse_testcase_statement(&mut self) -> Statement {
         let t = self.expect(TokenType::TestCase);
         let id = self.parse_identifier();
+        let extends = match self.peek() {
+            Token {
+                tok: TokenType::Ident,
+                lit: lit,
+                ..
+            } if lit == "extends" => {
+                self.consume();
+                Some(self.parse_string_literal())
+            }
+            _ => None,
+        };
         let block = self.parse_block();
         Statement::TestCase(Box::new(TestCaseStmt {
             base: self.base_node_from_other_end_c(&t, &block.base, &t),
             id,
+            extends,
             block,
         }))
     }

@@ -678,6 +678,16 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
             walk::Node::TestCaseStmt(stmt) => {
                 let id = v.pop_expr_with_kind(fbast::Expression::Identifier);
 
+                let extends = match &stmt.extends {
+                    Some(sl) => {
+                        let args = fbast::StringLiteralArgs {
+                            base_node: v.create_base_node(&sl.base),
+                            value: Some(v.builder.create_string(&sl.value)),
+                        };
+                        Some(fbast::StringLiteral::create(&mut v.builder, &args))
+                    }
+                    None => None,
+                };
                 let body = {
                     let stmt_vec = v.create_stmt_vector(stmt.block.body.len());
                     Some(v.builder.create_vector(&stmt_vec.as_slice()))
@@ -689,6 +699,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     &fbast::TestCaseStatementArgs {
                         base_node,
                         id,
+                        extends,
                         block: Some(block),
                     },
                 );

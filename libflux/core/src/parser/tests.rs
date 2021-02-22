@@ -14461,6 +14461,7 @@ fn parse_testcase() {
             },
             name: "my_test".to_string(),
         },
+        extends: None,
         block: Block {
             base: BaseNode {
                 location: loc.get(1, 18, 1, 27),
@@ -14482,6 +14483,63 @@ fn parse_testcase() {
                 init: Expression::Integer(IntegerLit {
                     base: BaseNode {
                         location: loc.get(1, 24, 1, 25),
+                        ..BaseNode::default()
+                    },
+                    value: 1,
+                }),
+            }))],
+            rbrace: None,
+        },
+    }))];
+
+    assert_eq!(expected, parsed.body);
+}
+
+#[test]
+fn parse_testcase_extends() {
+    let mut parser = Parser::new(r#"testcase my_test extends "other_test" { a = 1 }"#);
+    let parsed = parser.parse_file("".to_string());
+    let loc = Locator::new(&parser.source[..]);
+    let expected = vec![Statement::TestCase(Box::new(TestCaseStmt {
+        base: BaseNode {
+            location: loc.get(1, 1, 1, 48),
+            ..BaseNode::default()
+        },
+        id: Identifier {
+            base: BaseNode {
+                location: loc.get(1, 10, 1, 17),
+                ..BaseNode::default()
+            },
+            name: "my_test".to_string(),
+        },
+        extends: Some(StringLit {
+            base: BaseNode {
+                location: loc.get(1, 26, 1, 38),
+                ..BaseNode::default()
+            },
+            value: "other_test".to_string(),
+        }),
+        block: Block {
+            base: BaseNode {
+                location: loc.get(1, 39, 1, 48),
+                ..BaseNode::default()
+            },
+            lbrace: None,
+            body: vec![Variable(Box::new(VariableAssgn {
+                base: BaseNode {
+                    location: loc.get(1, 41, 1, 46),
+                    ..BaseNode::default()
+                },
+                id: Identifier {
+                    base: BaseNode {
+                        location: loc.get(1, 41, 1, 42),
+                        ..BaseNode::default()
+                    },
+                    name: "a".to_string(),
+                },
+                init: Expression::Integer(IntegerLit {
+                    base: BaseNode {
+                        location: loc.get(1, 45, 1, 46),
                         ..BaseNode::default()
                     },
                     value: 1,

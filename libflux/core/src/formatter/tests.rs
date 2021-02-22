@@ -968,6 +968,32 @@ fn type_expressions() {
 }
 
 #[test]
+fn testcase() {
+    assert_unchanged(
+        r#"testcase a {
+    assert.equal(want: 4, got: 2 + 2)
+}"#,
+    );
+    assert_unchanged(
+        r#"testcase a extends "other_test" {
+    assert.equal(want: 4, got: 2 + 2)
+}"#,
+    );
+    assert_format(
+        r#"testcase a { assert.equal(want: 4, got: 2 + 2) }"#,
+        r#"testcase a {
+    assert.equal(want: 4, got: 2 + 2)
+}"#,
+    );
+    assert_format(
+        r#"testcase a extends "other_test" { assert.equal(want: 4, got: 2 + 2) }"#,
+        r#"testcase a extends "other_test" {
+    assert.equal(want: 4, got: 2 + 2)
+}"#,
+    );
+}
+
+#[test]
 fn temp_indent() {
     // The formatter uses a temporary indent when it finds a comment where
     // the line would normally be on a single line

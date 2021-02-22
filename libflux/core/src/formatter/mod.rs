@@ -750,9 +750,15 @@ impl Formatter {
     }
 
     fn format_testcase_statement(&mut self, n: &ast::TestCaseStmt) {
+        let sep = '\n';
         self.format_comments(&n.base.comments);
         self.write_string("testcase ");
         self.format_node(&Node::Identifier(&n.id));
+        if let Some(extends) = &n.extends {
+            self.write_string(" extends ");
+            self.format_node(&Node::StringLit(extends));
+        }
+        self.write_rune(' ');
         self.format_node(&Node::Block(&n.block));
     }
 

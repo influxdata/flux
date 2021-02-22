@@ -5710,6 +5710,9 @@ pub mod fbast {
             if let Some(x) = args.block {
                 builder.add_block(x);
             }
+            if let Some(x) = args.extends {
+                builder.add_extends(x);
+            }
             if let Some(x) = args.id {
                 builder.add_id(x);
             }
@@ -5721,7 +5724,8 @@ pub mod fbast {
 
         pub const VT_BASE_NODE: flatbuffers::VOffsetT = 4;
         pub const VT_ID: flatbuffers::VOffsetT = 6;
-        pub const VT_BLOCK: flatbuffers::VOffsetT = 8;
+        pub const VT_EXTENDS: flatbuffers::VOffsetT = 8;
+        pub const VT_BLOCK: flatbuffers::VOffsetT = 10;
 
         #[inline]
         pub fn base_node(&self) -> Option<BaseNode<'a>> {
@@ -5736,6 +5740,14 @@ pub mod fbast {
                 .get::<flatbuffers::ForwardsUOffset<Identifier<'a>>>(TestCaseStatement::VT_ID, None)
         }
         #[inline]
+        pub fn extends(&self) -> Option<StringLiteral<'a>> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<StringLiteral<'a>>>(
+                    TestCaseStatement::VT_EXTENDS,
+                    None,
+                )
+        }
+        #[inline]
         pub fn block(&self) -> Option<Block<'a>> {
             self._tab
                 .get::<flatbuffers::ForwardsUOffset<Block<'a>>>(TestCaseStatement::VT_BLOCK, None)
@@ -5745,6 +5757,7 @@ pub mod fbast {
     pub struct TestCaseStatementArgs<'a> {
         pub base_node: Option<flatbuffers::WIPOffset<BaseNode<'a>>>,
         pub id: Option<flatbuffers::WIPOffset<Identifier<'a>>>,
+        pub extends: Option<flatbuffers::WIPOffset<StringLiteral<'a>>>,
         pub block: Option<flatbuffers::WIPOffset<Block<'a>>>,
     }
     impl<'a> Default for TestCaseStatementArgs<'a> {
@@ -5753,6 +5766,7 @@ pub mod fbast {
             TestCaseStatementArgs {
                 base_node: None,
                 id: None,
+                extends: None,
                 block: None,
             }
         }
@@ -5776,6 +5790,14 @@ pub mod fbast {
                 .push_slot_always::<flatbuffers::WIPOffset<Identifier>>(
                     TestCaseStatement::VT_ID,
                     id,
+                );
+        }
+        #[inline]
+        pub fn add_extends(&mut self, extends: flatbuffers::WIPOffset<StringLiteral<'b>>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<StringLiteral>>(
+                    TestCaseStatement::VT_EXTENDS,
+                    extends,
                 );
         }
         #[inline]

@@ -870,6 +870,8 @@ pub struct TestCaseStmt {
     #[serde(flatten)]
     pub base: BaseNode,
     pub id: Identifier,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extends: Option<StringLit>,
     pub block: Block,
 }
 

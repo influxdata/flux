@@ -2300,8 +2300,21 @@ func (rcv *TestCaseStatement) Id(obj *Identifier) *Identifier {
 	return nil
 }
 
-func (rcv *TestCaseStatement) Block(obj *Block) *Block {
+func (rcv *TestCaseStatement) Extends(obj *StringLiteral) *StringLiteral {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		x := rcv._tab.Indirect(o + rcv._tab.Pos)
+		if obj == nil {
+			obj = new(StringLiteral)
+		}
+		obj.Init(rcv._tab.Bytes, x)
+		return obj
+	}
+	return nil
+}
+
+func (rcv *TestCaseStatement) Block(obj *Block) *Block {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
 		x := rcv._tab.Indirect(o + rcv._tab.Pos)
 		if obj == nil {
@@ -2314,7 +2327,7 @@ func (rcv *TestCaseStatement) Block(obj *Block) *Block {
 }
 
 func TestCaseStatementStart(builder *flatbuffers.Builder) {
-	builder.StartObject(3)
+	builder.StartObject(4)
 }
 func TestCaseStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
@@ -2322,8 +2335,11 @@ func TestCaseStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuf
 func TestCaseStatementAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
 }
+func TestCaseStatementAddExtends(builder *flatbuffers.Builder, extends flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(extends), 0)
+}
 func TestCaseStatementAddBlock(builder *flatbuffers.Builder, block flatbuffers.UOffsetT) {
-	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(block), 0)
+	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(block), 0)
 }
 func TestCaseStatementEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()

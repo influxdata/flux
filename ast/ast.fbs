@@ -217,6 +217,7 @@ table TestStatement {
 table TestCaseStatement {
   base_node:BaseNode;
   id:Identifier;
+  extends:StringLiteral;
   block:Block;
 }
 
