@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   60,
+					Line:   57,
 				},
 				File:   "bigpanda.flux",
-				Source: "package bigpanda\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n//builtin toUnixTime : (v: string) => int\n\n\noption defaultUrl = \"https://api.bigpanda.io/data/v2/alerts\"\noption defaultTokenPrefix = \"Bearer\"\n\n// severity levels on status objects can be one of the following: ok,info,warn,crit,unknown\n// but BigPanda accepts one of [ ok, critical, warning, acknowledged ].\n// statusFromLevel turns a level from the status object into a pagerduty severity\nstatusFromLevel = (level) => {\n    lvl = strings.toLower(v:level)\n    sev = if lvl == \"warn\" then \"warning\"\n        else if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"\n    return sev\n}\n\n// `sendAlert` sends a single alert to BigPanda as described in https://docs.bigpanda.io/reference#alerts API. \n// `token` - string - BigPanda authorization Bearer token\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `appKey` - string - BigPanda App Key.\n// `status` - string - Status of the BigPanda alert. One of [ ok, critical, warning, acknowledged ].\n// `rec` - record - additional data appended to alert\n\nsendAlert = (url, token, appKey, status, rec) => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\" : defaultTokenPrefix + \" \" + token,\n    }\n    data = {rec with app_key: appKey, status: status}\n    return http.post(headers: headers, url: url, data: json.encode(v:data))\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send alert to BigPanda for each table row.\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `token` - string - BigPanda authorization Bearer token\n// `appKey` - string - BigPanda App Key.\n// The returned factory function accepts a `mapFn` parameter.\n// // The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and appKey).\nendpoint = (url=defaultUrl, token, appKey) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
+				Source: "package bigpanda\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\noption defaultUrl = \"https://api.bigpanda.io/data/v2/alerts\"\noption defaultTokenPrefix = \"Bearer\"\n\n// `statusFromLevel` turns a level from the status object into a BigPanda status\n// `level` - string - levels on status objects can be one of the following ok,info,warn,crit,unknown\n// BigPanda accepts one of ok,critical,warning,acknowledged.\nstatusFromLevel = (level) => {\n    lvl = strings.toLower(v:level)\n    sev = if lvl == \"warn\" then \"warning\"\n        else if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"\n    return sev\n}\n\n// `sendAlert` sends a single alert to BigPanda as described in https://docs.bigpanda.io/reference#alerts API. \n// `token` - string - BigPanda authorization Bearer token\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `appKey` - string - BigPanda App Key.\n// `status` - string - Status of the BigPanda alert. One of ok,critical,warning,acknowledged.\n// `rec` - record - additional data appended to alert\n\nsendAlert = (url, token, appKey, status, rec) => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\" : defaultTokenPrefix + \" \" + token,\n    }\n    data = {rec with app_key: appKey, status: status}\n    return http.post(headers: headers, url: url, data: json.encode(v:data))\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send alert to BigPanda for each table row.\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `token` - string - BigPanda authorization Bearer token\n// `appKey` - string - BigPanda App Key.\n// The returned factory function accepts a `mapFn` parameter.\n// // The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and appKey).\nendpoint = (url=defaultUrl, token, appKey) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -39,13 +39,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 61,
-							Line:   10,
+							Line:   7,
 						},
 						File:   "bigpanda.flux",
 						Source: "defaultUrl = \"https://api.bigpanda.io/data/v2/alerts\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   10,
+							Line:   7,
 						},
 					},
 				},
@@ -55,13 +55,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   10,
+								Line:   7,
 							},
 							File:   "bigpanda.flux",
 							Source: "defaultUrl",
 							Start: ast.Position{
 								Column: 8,
-								Line:   10,
+								Line:   7,
 							},
 						},
 					},
@@ -73,13 +73,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 61,
-								Line:   10,
+								Line:   7,
 							},
 							File:   "bigpanda.flux",
 							Source: "\"https://api.bigpanda.io/data/v2/alerts\"",
 							Start: ast.Position{
 								Column: 21,
-								Line:   10,
+								Line:   7,
 							},
 						},
 					},
@@ -91,13 +91,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 61,
-						Line:   10,
+						Line:   7,
 					},
 					File:   "bigpanda.flux",
 					Source: "option defaultUrl = \"https://api.bigpanda.io/data/v2/alerts\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   7,
 					},
 				},
 			},
@@ -108,13 +108,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 37,
-							Line:   11,
+							Line:   8,
 						},
 						File:   "bigpanda.flux",
 						Source: "defaultTokenPrefix = \"Bearer\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   11,
+							Line:   8,
 						},
 					},
 				},
@@ -124,13 +124,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   11,
+								Line:   8,
 							},
 							File:   "bigpanda.flux",
 							Source: "defaultTokenPrefix",
 							Start: ast.Position{
 								Column: 8,
-								Line:   11,
+								Line:   8,
 							},
 						},
 					},
@@ -142,13 +142,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   11,
+								Line:   8,
 							},
 							File:   "bigpanda.flux",
 							Source: "\"Bearer\"",
 							Start: ast.Position{
 								Column: 29,
-								Line:   11,
+								Line:   8,
 							},
 						},
 					},
@@ -160,13 +160,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 37,
-						Line:   11,
+						Line:   8,
 					},
 					File:   "bigpanda.flux",
 					Source: "option defaultTokenPrefix = \"Bearer\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   8,
 					},
 				},
 			},
@@ -176,13 +176,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   24,
+						Line:   21,
 					},
 					File:   "bigpanda.flux",
 					Source: "statusFromLevel = (level) => {\n    lvl = strings.toLower(v:level)\n    sev = if lvl == \"warn\" then \"warning\"\n        else if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"\n    return sev\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   16,
+						Line:   13,
 					},
 				},
 			},
@@ -192,13 +192,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   16,
+							Line:   13,
 						},
 						File:   "bigpanda.flux",
 						Source: "statusFromLevel",
 						Start: ast.Position{
 							Column: 1,
-							Line:   16,
+							Line:   13,
 						},
 					},
 				},
@@ -210,13 +210,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   24,
+							Line:   21,
 						},
 						File:   "bigpanda.flux",
 						Source: "(level) => {\n    lvl = strings.toLower(v:level)\n    sev = if lvl == \"warn\" then \"warning\"\n        else if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"\n    return sev\n}",
 						Start: ast.Position{
 							Column: 19,
-							Line:   16,
+							Line:   13,
 						},
 					},
 				},
@@ -226,13 +226,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   24,
+								Line:   21,
 							},
 							File:   "bigpanda.flux",
 							Source: "{\n    lvl = strings.toLower(v:level)\n    sev = if lvl == \"warn\" then \"warning\"\n        else if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"\n    return sev\n}",
 							Start: ast.Position{
 								Column: 30,
-								Line:   16,
+								Line:   13,
 							},
 						},
 					},
@@ -242,13 +242,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   17,
+									Line:   14,
 								},
 								File:   "bigpanda.flux",
 								Source: "lvl = strings.toLower(v:level)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   17,
+									Line:   14,
 								},
 							},
 						},
@@ -258,13 +258,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   17,
+										Line:   14,
 									},
 									File:   "bigpanda.flux",
 									Source: "lvl",
 									Start: ast.Position{
 										Column: 5,
-										Line:   17,
+										Line:   14,
 									},
 								},
 							},
@@ -277,13 +277,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   17,
+											Line:   14,
 										},
 										File:   "bigpanda.flux",
 										Source: "v:level",
 										Start: ast.Position{
 											Column: 27,
-											Line:   17,
+											Line:   14,
 										},
 									},
 								},
@@ -293,13 +293,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   17,
+												Line:   14,
 											},
 											File:   "bigpanda.flux",
 											Source: "v:level",
 											Start: ast.Position{
 												Column: 27,
-												Line:   17,
+												Line:   14,
 											},
 										},
 									},
@@ -309,13 +309,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   17,
+													Line:   14,
 												},
 												File:   "bigpanda.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 27,
-													Line:   17,
+													Line:   14,
 												},
 											},
 										},
@@ -327,13 +327,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   17,
+													Line:   14,
 												},
 												File:   "bigpanda.flux",
 												Source: "level",
 												Start: ast.Position{
 													Column: 29,
-													Line:   17,
+													Line:   14,
 												},
 											},
 										},
@@ -347,13 +347,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   17,
+										Line:   14,
 									},
 									File:   "bigpanda.flux",
 									Source: "strings.toLower(v:level)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   17,
+										Line:   14,
 									},
 								},
 							},
@@ -363,13 +363,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   17,
+											Line:   14,
 										},
 										File:   "bigpanda.flux",
 										Source: "strings.toLower",
 										Start: ast.Position{
 											Column: 11,
-											Line:   17,
+											Line:   14,
 										},
 									},
 								},
@@ -379,13 +379,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   17,
+												Line:   14,
 											},
 											File:   "bigpanda.flux",
 											Source: "strings",
 											Start: ast.Position{
 												Column: 11,
-												Line:   17,
+												Line:   14,
 											},
 										},
 									},
@@ -397,13 +397,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   17,
+												Line:   14,
 											},
 											File:   "bigpanda.flux",
 											Source: "toLower",
 											Start: ast.Position{
 												Column: 19,
-												Line:   17,
+												Line:   14,
 											},
 										},
 									},
@@ -417,13 +417,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   22,
+									Line:   19,
 								},
 								File:   "bigpanda.flux",
 								Source: "sev = if lvl == \"warn\" then \"warning\"\n        else if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"",
 								Start: ast.Position{
 									Column: 5,
-									Line:   18,
+									Line:   15,
 								},
 							},
 						},
@@ -433,13 +433,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   18,
+										Line:   15,
 									},
 									File:   "bigpanda.flux",
 									Source: "sev",
 									Start: ast.Position{
 										Column: 5,
-										Line:   18,
+										Line:   15,
 									},
 								},
 							},
@@ -455,13 +455,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   22,
+														Line:   19,
 													},
 													File:   "bigpanda.flux",
 													Source: "\"critical\"",
 													Start: ast.Position{
 														Column: 14,
-														Line:   22,
+														Line:   19,
 													},
 												},
 											},
@@ -472,13 +472,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   22,
+													Line:   19,
 												},
 												File:   "bigpanda.flux",
 												Source: "if lvl == \"ok\" then \"ok\"\n        else \"critical\"",
 												Start: ast.Position{
 													Column: 14,
-													Line:   21,
+													Line:   18,
 												},
 											},
 										},
@@ -488,13 +488,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   21,
+														Line:   18,
 													},
 													File:   "bigpanda.flux",
 													Source: "\"ok\"",
 													Start: ast.Position{
 														Column: 34,
-														Line:   21,
+														Line:   18,
 													},
 												},
 											},
@@ -506,13 +506,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 28,
-														Line:   21,
+														Line:   18,
 													},
 													File:   "bigpanda.flux",
 													Source: "lvl == \"ok\"",
 													Start: ast.Position{
 														Column: 17,
-														Line:   21,
+														Line:   18,
 													},
 												},
 											},
@@ -522,13 +522,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   21,
+															Line:   18,
 														},
 														File:   "bigpanda.flux",
 														Source: "lvl",
 														Start: ast.Position{
 															Column: 17,
-															Line:   21,
+															Line:   18,
 														},
 													},
 												},
@@ -541,13 +541,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 28,
-															Line:   21,
+															Line:   18,
 														},
 														File:   "bigpanda.flux",
 														Source: "\"ok\"",
 														Start: ast.Position{
 															Column: 24,
-															Line:   21,
+															Line:   18,
 														},
 													},
 												},
@@ -560,13 +560,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   22,
+												Line:   19,
 											},
 											File:   "bigpanda.flux",
 											Source: "if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"",
 											Start: ast.Position{
 												Column: 14,
-												Line:   20,
+												Line:   17,
 											},
 										},
 									},
@@ -576,13 +576,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
-													Line:   20,
+													Line:   17,
 												},
 												File:   "bigpanda.flux",
 												Source: "\"ok\"",
 												Start: ast.Position{
 													Column: 36,
-													Line:   20,
+													Line:   17,
 												},
 											},
 										},
@@ -594,13 +594,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   20,
+													Line:   17,
 												},
 												File:   "bigpanda.flux",
 												Source: "lvl == \"info\"",
 												Start: ast.Position{
 													Column: 17,
-													Line:   20,
+													Line:   17,
 												},
 											},
 										},
@@ -610,13 +610,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   20,
+														Line:   17,
 													},
 													File:   "bigpanda.flux",
 													Source: "lvl",
 													Start: ast.Position{
 														Column: 17,
-														Line:   20,
+														Line:   17,
 													},
 												},
 											},
@@ -629,13 +629,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   20,
+														Line:   17,
 													},
 													File:   "bigpanda.flux",
 													Source: "\"info\"",
 													Start: ast.Position{
 														Column: 24,
-														Line:   20,
+														Line:   17,
 													},
 												},
 											},
@@ -648,13 +648,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   22,
+											Line:   19,
 										},
 										File:   "bigpanda.flux",
 										Source: "if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"",
 										Start: ast.Position{
 											Column: 14,
-											Line:   19,
+											Line:   16,
 										},
 									},
 								},
@@ -664,13 +664,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   19,
+												Line:   16,
 											},
 											File:   "bigpanda.flux",
 											Source: "\"critical\"",
 											Start: ast.Position{
 												Column: 36,
-												Line:   19,
+												Line:   16,
 											},
 										},
 									},
@@ -682,13 +682,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   19,
+												Line:   16,
 											},
 											File:   "bigpanda.flux",
 											Source: "lvl == \"crit\"",
 											Start: ast.Position{
 												Column: 17,
-												Line:   19,
+												Line:   16,
 											},
 										},
 									},
@@ -698,13 +698,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   19,
+													Line:   16,
 												},
 												File:   "bigpanda.flux",
 												Source: "lvl",
 												Start: ast.Position{
 													Column: 17,
-													Line:   19,
+													Line:   16,
 												},
 											},
 										},
@@ -717,13 +717,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   19,
+													Line:   16,
 												},
 												File:   "bigpanda.flux",
 												Source: "\"crit\"",
 												Start: ast.Position{
 													Column: 24,
-													Line:   19,
+													Line:   16,
 												},
 											},
 										},
@@ -736,13 +736,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   22,
+										Line:   19,
 									},
 									File:   "bigpanda.flux",
 									Source: "if lvl == \"warn\" then \"warning\"\n        else if lvl == \"crit\" then \"critical\"\n        else if lvl == \"info\" then \"ok\"\n        else if lvl == \"ok\" then \"ok\"\n        else \"critical\"",
 									Start: ast.Position{
 										Column: 11,
-										Line:   18,
+										Line:   15,
 									},
 								},
 							},
@@ -752,13 +752,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   18,
+											Line:   15,
 										},
 										File:   "bigpanda.flux",
 										Source: "\"warning\"",
 										Start: ast.Position{
 											Column: 33,
-											Line:   18,
+											Line:   15,
 										},
 									},
 								},
@@ -770,13 +770,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   18,
+											Line:   15,
 										},
 										File:   "bigpanda.flux",
 										Source: "lvl == \"warn\"",
 										Start: ast.Position{
 											Column: 14,
-											Line:   18,
+											Line:   15,
 										},
 									},
 								},
@@ -786,13 +786,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   18,
+												Line:   15,
 											},
 											File:   "bigpanda.flux",
 											Source: "lvl",
 											Start: ast.Position{
 												Column: 14,
-												Line:   18,
+												Line:   15,
 											},
 										},
 									},
@@ -805,13 +805,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   18,
+												Line:   15,
 											},
 											File:   "bigpanda.flux",
 											Source: "\"warn\"",
 											Start: ast.Position{
 												Column: 21,
-												Line:   18,
+												Line:   15,
 											},
 										},
 									},
@@ -826,13 +826,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   23,
+										Line:   20,
 									},
 									File:   "bigpanda.flux",
 									Source: "sev",
 									Start: ast.Position{
 										Column: 12,
-										Line:   23,
+										Line:   20,
 									},
 								},
 							},
@@ -843,13 +843,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   23,
+									Line:   20,
 								},
 								File:   "bigpanda.flux",
 								Source: "return sev",
 								Start: ast.Position{
 									Column: 5,
-									Line:   23,
+									Line:   20,
 								},
 							},
 						},
@@ -861,13 +861,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   16,
+								Line:   13,
 							},
 							File:   "bigpanda.flux",
 							Source: "level",
 							Start: ast.Position{
 								Column: 20,
-								Line:   16,
+								Line:   13,
 							},
 						},
 					},
@@ -877,13 +877,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   16,
+									Line:   13,
 								},
 								File:   "bigpanda.flux",
 								Source: "level",
 								Start: ast.Position{
 									Column: 20,
-									Line:   16,
+									Line:   13,
 								},
 							},
 						},
@@ -898,13 +898,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   40,
+						Line:   37,
 					},
 					File:   "bigpanda.flux",
 					Source: "sendAlert = (url, token, appKey, status, rec) => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\" : defaultTokenPrefix + \" \" + token,\n    }\n    data = {rec with app_key: appKey, status: status}\n    return http.post(headers: headers, url: url, data: json.encode(v:data))\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   33,
+						Line:   30,
 					},
 				},
 			},
@@ -914,13 +914,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   33,
+							Line:   30,
 						},
 						File:   "bigpanda.flux",
 						Source: "sendAlert",
 						Start: ast.Position{
 							Column: 1,
-							Line:   33,
+							Line:   30,
 						},
 					},
 				},
@@ -932,13 +932,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   40,
+							Line:   37,
 						},
 						File:   "bigpanda.flux",
 						Source: "(url, token, appKey, status, rec) => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\" : defaultTokenPrefix + \" \" + token,\n    }\n    data = {rec with app_key: appKey, status: status}\n    return http.post(headers: headers, url: url, data: json.encode(v:data))\n}",
 						Start: ast.Position{
 							Column: 13,
-							Line:   33,
+							Line:   30,
 						},
 					},
 				},
@@ -948,13 +948,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   40,
+								Line:   37,
 							},
 							File:   "bigpanda.flux",
 							Source: "{\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\" : defaultTokenPrefix + \" \" + token,\n    }\n    data = {rec with app_key: appKey, status: status}\n    return http.post(headers: headers, url: url, data: json.encode(v:data))\n}",
 							Start: ast.Position{
 								Column: 50,
-								Line:   33,
+								Line:   30,
 							},
 						},
 					},
@@ -964,13 +964,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   37,
+									Line:   34,
 								},
 								File:   "bigpanda.flux",
 								Source: "headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\" : defaultTokenPrefix + \" \" + token,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   34,
+									Line:   31,
 								},
 							},
 						},
@@ -980,13 +980,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   34,
+										Line:   31,
 									},
 									File:   "bigpanda.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   34,
+										Line:   31,
 									},
 								},
 							},
@@ -998,13 +998,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   37,
+										Line:   34,
 									},
 									File:   "bigpanda.flux",
 									Source: "{\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\" : defaultTokenPrefix + \" \" + token,\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   34,
+										Line:   31,
 									},
 								},
 							},
@@ -1014,13 +1014,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   35,
+											Line:   32,
 										},
 										File:   "bigpanda.flux",
 										Source: "\"Content-Type\": \"application/json; charset=utf-8\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   35,
+											Line:   32,
 										},
 									},
 								},
@@ -1030,13 +1030,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   35,
+												Line:   32,
 											},
 											File:   "bigpanda.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   35,
+												Line:   32,
 											},
 										},
 									},
@@ -1048,13 +1048,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   35,
+												Line:   32,
 											},
 											File:   "bigpanda.flux",
 											Source: "\"application/json; charset=utf-8\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   35,
+												Line:   32,
 											},
 										},
 									},
@@ -1066,13 +1066,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   36,
+											Line:   33,
 										},
 										File:   "bigpanda.flux",
 										Source: "\"Authorization\" : defaultTokenPrefix + \" \" + token",
 										Start: ast.Position{
 											Column: 9,
-											Line:   36,
+											Line:   33,
 										},
 									},
 								},
@@ -1082,13 +1082,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   36,
+												Line:   33,
 											},
 											File:   "bigpanda.flux",
 											Source: "\"Authorization\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   36,
+												Line:   33,
 											},
 										},
 									},
@@ -1100,13 +1100,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 59,
-												Line:   36,
+												Line:   33,
 											},
 											File:   "bigpanda.flux",
 											Source: "defaultTokenPrefix + \" \" + token",
 											Start: ast.Position{
 												Column: 27,
-												Line:   36,
+												Line:   33,
 											},
 										},
 									},
@@ -1116,13 +1116,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
-													Line:   36,
+													Line:   33,
 												},
 												File:   "bigpanda.flux",
 												Source: "defaultTokenPrefix + \" \"",
 												Start: ast.Position{
 													Column: 27,
-													Line:   36,
+													Line:   33,
 												},
 											},
 										},
@@ -1132,13 +1132,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   36,
+														Line:   33,
 													},
 													File:   "bigpanda.flux",
 													Source: "defaultTokenPrefix",
 													Start: ast.Position{
 														Column: 27,
-														Line:   36,
+														Line:   33,
 													},
 												},
 											},
@@ -1151,13 +1151,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 51,
-														Line:   36,
+														Line:   33,
 													},
 													File:   "bigpanda.flux",
 													Source: "\" \"",
 													Start: ast.Position{
 														Column: 48,
-														Line:   36,
+														Line:   33,
 													},
 												},
 											},
@@ -1171,13 +1171,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   36,
+													Line:   33,
 												},
 												File:   "bigpanda.flux",
 												Source: "token",
 												Start: ast.Position{
 													Column: 54,
-													Line:   36,
+													Line:   33,
 												},
 											},
 										},
@@ -1193,13 +1193,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   38,
+									Line:   35,
 								},
 								File:   "bigpanda.flux",
 								Source: "data = {rec with app_key: appKey, status: status}",
 								Start: ast.Position{
 									Column: 5,
-									Line:   38,
+									Line:   35,
 								},
 							},
 						},
@@ -1209,13 +1209,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   38,
+										Line:   35,
 									},
 									File:   "bigpanda.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 5,
-										Line:   38,
+										Line:   35,
 									},
 								},
 							},
@@ -1227,13 +1227,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   38,
+										Line:   35,
 									},
 									File:   "bigpanda.flux",
 									Source: "{rec with app_key: appKey, status: status}",
 									Start: ast.Position{
 										Column: 12,
-										Line:   38,
+										Line:   35,
 									},
 								},
 							},
@@ -1243,13 +1243,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   38,
+											Line:   35,
 										},
 										File:   "bigpanda.flux",
 										Source: "app_key: appKey",
 										Start: ast.Position{
 											Column: 22,
-											Line:   38,
+											Line:   35,
 										},
 									},
 								},
@@ -1259,13 +1259,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   38,
+												Line:   35,
 											},
 											File:   "bigpanda.flux",
 											Source: "app_key",
 											Start: ast.Position{
 												Column: 22,
-												Line:   38,
+												Line:   35,
 											},
 										},
 									},
@@ -1277,13 +1277,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   38,
+												Line:   35,
 											},
 											File:   "bigpanda.flux",
 											Source: "appKey",
 											Start: ast.Position{
 												Column: 31,
-												Line:   38,
+												Line:   35,
 											},
 										},
 									},
@@ -1295,13 +1295,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
-											Line:   38,
+											Line:   35,
 										},
 										File:   "bigpanda.flux",
 										Source: "status: status",
 										Start: ast.Position{
 											Column: 39,
-											Line:   38,
+											Line:   35,
 										},
 									},
 								},
@@ -1311,13 +1311,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
-												Line:   38,
+												Line:   35,
 											},
 											File:   "bigpanda.flux",
 											Source: "status",
 											Start: ast.Position{
 												Column: 39,
-												Line:   38,
+												Line:   35,
 											},
 										},
 									},
@@ -1329,13 +1329,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 53,
-												Line:   38,
+												Line:   35,
 											},
 											File:   "bigpanda.flux",
 											Source: "status",
 											Start: ast.Position{
 												Column: 47,
-												Line:   38,
+												Line:   35,
 											},
 										},
 									},
@@ -1348,13 +1348,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   38,
+											Line:   35,
 										},
 										File:   "bigpanda.flux",
 										Source: "rec",
 										Start: ast.Position{
 											Column: 13,
-											Line:   38,
+											Line:   35,
 										},
 									},
 								},
@@ -1369,13 +1369,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 75,
-											Line:   39,
+											Line:   36,
 										},
 										File:   "bigpanda.flux",
 										Source: "headers: headers, url: url, data: json.encode(v:data)",
 										Start: ast.Position{
 											Column: 22,
-											Line:   39,
+											Line:   36,
 										},
 									},
 								},
@@ -1385,13 +1385,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   39,
+												Line:   36,
 											},
 											File:   "bigpanda.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   39,
+												Line:   36,
 											},
 										},
 									},
@@ -1401,13 +1401,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   39,
+													Line:   36,
 												},
 												File:   "bigpanda.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   39,
+													Line:   36,
 												},
 											},
 										},
@@ -1419,13 +1419,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   39,
+													Line:   36,
 												},
 												File:   "bigpanda.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   39,
+													Line:   36,
 												},
 											},
 										},
@@ -1437,13 +1437,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   39,
+												Line:   36,
 											},
 											File:   "bigpanda.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   39,
+												Line:   36,
 											},
 										},
 									},
@@ -1453,13 +1453,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   39,
+													Line:   36,
 												},
 												File:   "bigpanda.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   39,
+													Line:   36,
 												},
 											},
 										},
@@ -1471,13 +1471,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   39,
+													Line:   36,
 												},
 												File:   "bigpanda.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   39,
+													Line:   36,
 												},
 											},
 										},
@@ -1489,13 +1489,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 75,
-												Line:   39,
+												Line:   36,
 											},
 											File:   "bigpanda.flux",
 											Source: "data: json.encode(v:data)",
 											Start: ast.Position{
 												Column: 50,
-												Line:   39,
+												Line:   36,
 											},
 										},
 									},
@@ -1505,13 +1505,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   39,
+													Line:   36,
 												},
 												File:   "bigpanda.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   39,
+													Line:   36,
 												},
 											},
 										},
@@ -1524,13 +1524,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 74,
-														Line:   39,
+														Line:   36,
 													},
 													File:   "bigpanda.flux",
 													Source: "v:data",
 													Start: ast.Position{
 														Column: 68,
-														Line:   39,
+														Line:   36,
 													},
 												},
 											},
@@ -1540,13 +1540,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 74,
-															Line:   39,
+															Line:   36,
 														},
 														File:   "bigpanda.flux",
 														Source: "v:data",
 														Start: ast.Position{
 															Column: 68,
-															Line:   39,
+															Line:   36,
 														},
 													},
 												},
@@ -1556,13 +1556,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
-																Line:   39,
+																Line:   36,
 															},
 															File:   "bigpanda.flux",
 															Source: "v",
 															Start: ast.Position{
 																Column: 68,
-																Line:   39,
+																Line:   36,
 															},
 														},
 													},
@@ -1574,13 +1574,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 74,
-																Line:   39,
+																Line:   36,
 															},
 															File:   "bigpanda.flux",
 															Source: "data",
 															Start: ast.Position{
 																Column: 70,
-																Line:   39,
+																Line:   36,
 															},
 														},
 													},
@@ -1594,13 +1594,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 75,
-													Line:   39,
+													Line:   36,
 												},
 												File:   "bigpanda.flux",
 												Source: "json.encode(v:data)",
 												Start: ast.Position{
 													Column: 56,
-													Line:   39,
+													Line:   36,
 												},
 											},
 										},
@@ -1610,13 +1610,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 67,
-														Line:   39,
+														Line:   36,
 													},
 													File:   "bigpanda.flux",
 													Source: "json.encode",
 													Start: ast.Position{
 														Column: 56,
-														Line:   39,
+														Line:   36,
 													},
 												},
 											},
@@ -1626,13 +1626,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   39,
+															Line:   36,
 														},
 														File:   "bigpanda.flux",
 														Source: "json",
 														Start: ast.Position{
 															Column: 56,
-															Line:   39,
+															Line:   36,
 														},
 													},
 												},
@@ -1644,13 +1644,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 67,
-															Line:   39,
+															Line:   36,
 														},
 														File:   "bigpanda.flux",
 														Source: "encode",
 														Start: ast.Position{
 															Column: 61,
-															Line:   39,
+															Line:   36,
 														},
 													},
 												},
@@ -1666,13 +1666,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 76,
-										Line:   39,
+										Line:   36,
 									},
 									File:   "bigpanda.flux",
 									Source: "http.post(headers: headers, url: url, data: json.encode(v:data))",
 									Start: ast.Position{
 										Column: 12,
-										Line:   39,
+										Line:   36,
 									},
 								},
 							},
@@ -1682,13 +1682,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   39,
+											Line:   36,
 										},
 										File:   "bigpanda.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   39,
+											Line:   36,
 										},
 									},
 								},
@@ -1698,13 +1698,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   39,
+												Line:   36,
 											},
 											File:   "bigpanda.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   39,
+												Line:   36,
 											},
 										},
 									},
@@ -1716,13 +1716,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   39,
+												Line:   36,
 											},
 											File:   "bigpanda.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   39,
+												Line:   36,
 											},
 										},
 									},
@@ -1735,13 +1735,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 76,
-									Line:   39,
+									Line:   36,
 								},
 								File:   "bigpanda.flux",
 								Source: "return http.post(headers: headers, url: url, data: json.encode(v:data))",
 								Start: ast.Position{
 									Column: 5,
-									Line:   39,
+									Line:   36,
 								},
 							},
 						},
@@ -1753,13 +1753,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   33,
+								Line:   30,
 							},
 							File:   "bigpanda.flux",
 							Source: "url",
 							Start: ast.Position{
 								Column: 14,
-								Line:   33,
+								Line:   30,
 							},
 						},
 					},
@@ -1769,13 +1769,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   33,
+									Line:   30,
 								},
 								File:   "bigpanda.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 14,
-									Line:   33,
+									Line:   30,
 								},
 							},
 						},
@@ -1788,13 +1788,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   33,
+								Line:   30,
 							},
 							File:   "bigpanda.flux",
 							Source: "token",
 							Start: ast.Position{
 								Column: 19,
-								Line:   33,
+								Line:   30,
 							},
 						},
 					},
@@ -1804,13 +1804,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   33,
+									Line:   30,
 								},
 								File:   "bigpanda.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 19,
-									Line:   33,
+									Line:   30,
 								},
 							},
 						},
@@ -1823,13 +1823,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   33,
+								Line:   30,
 							},
 							File:   "bigpanda.flux",
 							Source: "appKey",
 							Start: ast.Position{
 								Column: 26,
-								Line:   33,
+								Line:   30,
 							},
 						},
 					},
@@ -1839,13 +1839,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   33,
+									Line:   30,
 								},
 								File:   "bigpanda.flux",
 								Source: "appKey",
 								Start: ast.Position{
 									Column: 26,
-									Line:   33,
+									Line:   30,
 								},
 							},
 						},
@@ -1858,13 +1858,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   33,
+								Line:   30,
 							},
 							File:   "bigpanda.flux",
 							Source: "status",
 							Start: ast.Position{
 								Column: 34,
-								Line:   33,
+								Line:   30,
 							},
 						},
 					},
@@ -1874,13 +1874,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   33,
+									Line:   30,
 								},
 								File:   "bigpanda.flux",
 								Source: "status",
 								Start: ast.Position{
 									Column: 34,
-									Line:   33,
+									Line:   30,
 								},
 							},
 						},
@@ -1893,13 +1893,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 45,
-								Line:   33,
+								Line:   30,
 							},
 							File:   "bigpanda.flux",
 							Source: "rec",
 							Start: ast.Position{
 								Column: 42,
-								Line:   33,
+								Line:   30,
 							},
 						},
 					},
@@ -1909,13 +1909,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   33,
+									Line:   30,
 								},
 								File:   "bigpanda.flux",
 								Source: "rec",
 								Start: ast.Position{
 									Column: 42,
-									Line:   33,
+									Line:   30,
 								},
 							},
 						},
@@ -1930,13 +1930,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   60,
+						Line:   57,
 					},
 					File:   "bigpanda.flux",
 					Source: "endpoint = (url=defaultUrl, token, appKey) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
 					Start: ast.Position{
 						Column: 1,
-						Line:   48,
+						Line:   45,
 					},
 				},
 			},
@@ -1946,13 +1946,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   48,
+							Line:   45,
 						},
 						File:   "bigpanda.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   48,
+							Line:   45,
 						},
 					},
 				},
@@ -1964,13 +1964,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   60,
+							Line:   57,
 						},
 						File:   "bigpanda.flux",
 						Source: "(url=defaultUrl, token, appKey) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
 						Start: ast.Position{
 							Column: 12,
-							Line:   48,
+							Line:   45,
 						},
 					},
 				},
@@ -1980,13 +1980,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   60,
+								Line:   57,
 							},
 							File:   "bigpanda.flux",
 							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
 							Start: ast.Position{
 								Column: 5,
-								Line:   49,
+								Line:   46,
 							},
 						},
 					},
@@ -1996,13 +1996,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   60,
+									Line:   57,
 								},
 								File:   "bigpanda.flux",
 								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
 								Start: ast.Position{
 									Column: 9,
-									Line:   50,
+									Line:   47,
 								},
 							},
 						},
@@ -2013,13 +2013,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   50,
+											Line:   47,
 										},
 										File:   "bigpanda.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 24,
-											Line:   50,
+											Line:   47,
 										},
 									},
 								},
@@ -2030,13 +2030,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   60,
+										Line:   57,
 									},
 									File:   "bigpanda.flux",
 									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
 									Start: ast.Position{
 										Column: 24,
-										Line:   50,
+										Line:   47,
 									},
 								},
 							},
@@ -2047,13 +2047,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   60,
+												Line:   57,
 											},
 											File:   "bigpanda.flux",
 											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            }",
 											Start: ast.Position{
 												Column: 20,
-												Line:   51,
+												Line:   48,
 											},
 										},
 									},
@@ -2063,13 +2063,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   60,
+													Line:   57,
 												},
 												File:   "bigpanda.flux",
 												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            }",
 												Start: ast.Position{
 													Column: 20,
-													Line:   51,
+													Line:   48,
 												},
 											},
 										},
@@ -2079,13 +2079,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   51,
+														Line:   48,
 													},
 													File:   "bigpanda.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 20,
-														Line:   51,
+														Line:   48,
 													},
 												},
 											},
@@ -2097,13 +2097,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   60,
+														Line:   57,
 													},
 													File:   "bigpanda.flux",
 													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            }",
 													Start: ast.Position{
 														Column: 24,
-														Line:   51,
+														Line:   48,
 													},
 												},
 											},
@@ -2113,13 +2113,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   60,
+															Line:   57,
 														},
 														File:   "bigpanda.flux",
 														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            }",
 														Start: ast.Position{
 															Column: 31,
-															Line:   51,
+															Line:   48,
 														},
 													},
 												},
@@ -2129,13 +2129,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   52,
+																Line:   49,
 															},
 															File:   "bigpanda.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 17,
-																Line:   52,
+																Line:   49,
 															},
 														},
 													},
@@ -2145,13 +2145,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 20,
-																	Line:   52,
+																	Line:   49,
 																},
 																File:   "bigpanda.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   52,
+																	Line:   49,
 																},
 															},
 														},
@@ -2164,13 +2164,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 33,
-																		Line:   52,
+																		Line:   49,
 																	},
 																	File:   "bigpanda.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 29,
-																		Line:   52,
+																		Line:   49,
 																	},
 																},
 															},
@@ -2180,13 +2180,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 33,
-																			Line:   52,
+																			Line:   49,
 																		},
 																		File:   "bigpanda.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 29,
-																			Line:   52,
+																			Line:   49,
 																		},
 																	},
 																},
@@ -2196,13 +2196,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   52,
+																				Line:   49,
 																			},
 																			File:   "bigpanda.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 29,
-																				Line:   52,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -2214,13 +2214,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 33,
-																				Line:   52,
+																				Line:   49,
 																			},
 																			File:   "bigpanda.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   52,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -2234,13 +2234,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   52,
+																	Line:   49,
 																},
 																File:   "bigpanda.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   52,
+																	Line:   49,
 																},
 															},
 														},
@@ -2250,13 +2250,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 28,
-																		Line:   52,
+																		Line:   49,
 																	},
 																	File:   "bigpanda.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 23,
-																		Line:   52,
+																		Line:   49,
 																	},
 																},
 															},
@@ -2270,13 +2270,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 26,
-																	Line:   59,
+																	Line:   56,
 																},
 																File:   "bigpanda.flux",
 																Source: "{r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   53,
+																	Line:   50,
 																},
 															},
 														},
@@ -2286,13 +2286,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   59,
+																		Line:   56,
 																	},
 																	File:   "bigpanda.flux",
 																	Source: "_sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)",
 																	Start: ast.Position{
 																		Column: 32,
-																		Line:   53,
+																		Line:   50,
 																	},
 																},
 															},
@@ -2302,13 +2302,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   53,
+																			Line:   50,
 																		},
 																		File:   "bigpanda.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   53,
+																			Line:   50,
 																		},
 																	},
 																},
@@ -2321,13 +2321,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 24,
-																				Line:   59,
+																				Line:   56,
 																			},
 																			File:   "bigpanda.flux",
 																			Source: "v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100",
 																			Start: ast.Position{
 																				Column: 46,
-																				Line:   53,
+																				Line:   50,
 																			},
 																		},
 																	},
@@ -2337,13 +2337,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 24,
-																					Line:   59,
+																					Line:   56,
 																				},
 																				File:   "bigpanda.flux",
 																				Source: "v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100",
 																				Start: ast.Position{
 																					Column: 46,
-																					Line:   53,
+																					Line:   50,
 																				},
 																			},
 																		},
@@ -2353,13 +2353,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 47,
-																						Line:   53,
+																						Line:   50,
 																					},
 																					File:   "bigpanda.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 46,
-																						Line:   53,
+																						Line:   50,
 																					},
 																				},
 																			},
@@ -2371,13 +2371,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 24,
-																						Line:   59,
+																						Line:   56,
 																					},
 																					File:   "bigpanda.flux",
 																					Source: "2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100",
 																					Start: ast.Position{
 																						Column: 49,
-																						Line:   53,
+																						Line:   50,
 																					},
 																				},
 																			},
@@ -2387,13 +2387,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 50,
-																							Line:   53,
+																							Line:   50,
 																						},
 																						File:   "bigpanda.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 49,
-																							Line:   53,
+																							Line:   50,
 																						},
 																					},
 																				},
@@ -2406,13 +2406,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 24,
-																							Line:   59,
+																							Line:   56,
 																						},
 																						File:   "bigpanda.flux",
 																						Source: "sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100",
 																						Start: ast.Position{
 																							Column: 54,
-																							Line:   53,
+																							Line:   50,
 																						},
 																					},
 																				},
@@ -2423,13 +2423,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 25,
-																									Line:   58,
+																									Line:   55,
 																								},
 																								File:   "bigpanda.flux",
 																								Source: "url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj",
 																								Start: ast.Position{
 																									Column: 17,
-																									Line:   54,
+																									Line:   51,
 																								},
 																							},
 																						},
@@ -2439,13 +2439,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 25,
-																										Line:   54,
+																										Line:   51,
 																									},
 																									File:   "bigpanda.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 17,
-																										Line:   54,
+																										Line:   51,
 																									},
 																								},
 																							},
@@ -2455,13 +2455,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 20,
-																											Line:   54,
+																											Line:   51,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 17,
-																											Line:   54,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2473,13 +2473,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 25,
-																											Line:   54,
+																											Line:   51,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 22,
-																											Line:   54,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2491,13 +2491,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 31,
-																										Line:   55,
+																										Line:   52,
 																									},
 																									File:   "bigpanda.flux",
 																									Source: "appKey: appKey",
 																									Start: ast.Position{
 																										Column: 17,
-																										Line:   55,
+																										Line:   52,
 																									},
 																								},
 																							},
@@ -2507,13 +2507,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 23,
-																											Line:   55,
+																											Line:   52,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "appKey",
 																										Start: ast.Position{
 																											Column: 17,
-																											Line:   55,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2525,13 +2525,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   55,
+																											Line:   52,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "appKey",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   55,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2543,13 +2543,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 29,
-																										Line:   56,
+																										Line:   53,
 																									},
 																									File:   "bigpanda.flux",
 																									Source: "token: token",
 																									Start: ast.Position{
 																										Column: 17,
-																										Line:   56,
+																										Line:   53,
 																									},
 																								},
 																							},
@@ -2559,13 +2559,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 22,
-																											Line:   56,
+																											Line:   53,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 17,
-																											Line:   56,
+																											Line:   53,
 																										},
 																									},
 																								},
@@ -2577,13 +2577,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   56,
+																											Line:   53,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 24,
-																											Line:   56,
+																											Line:   53,
 																										},
 																									},
 																								},
@@ -2595,13 +2595,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 35,
-																										Line:   57,
+																										Line:   54,
 																									},
 																									File:   "bigpanda.flux",
 																									Source: "status: obj.status",
 																									Start: ast.Position{
 																										Column: 17,
-																										Line:   57,
+																										Line:   54,
 																									},
 																								},
 																							},
@@ -2611,13 +2611,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 23,
-																											Line:   57,
+																											Line:   54,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "status",
 																										Start: ast.Position{
 																											Column: 17,
-																											Line:   57,
+																											Line:   54,
 																										},
 																									},
 																								},
@@ -2629,13 +2629,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 35,
-																											Line:   57,
+																											Line:   54,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "obj.status",
 																										Start: ast.Position{
 																											Column: 25,
-																											Line:   57,
+																											Line:   54,
 																										},
 																									},
 																								},
@@ -2645,13 +2645,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 28,
-																												Line:   57,
+																												Line:   54,
 																											},
 																											File:   "bigpanda.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 25,
-																												Line:   57,
+																												Line:   54,
 																											},
 																										},
 																									},
@@ -2663,13 +2663,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 35,
-																												Line:   57,
+																												Line:   54,
 																											},
 																											File:   "bigpanda.flux",
 																											Source: "status",
 																											Start: ast.Position{
 																												Column: 29,
-																												Line:   57,
+																												Line:   54,
 																											},
 																										},
 																									},
@@ -2682,13 +2682,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 25,
-																										Line:   58,
+																										Line:   55,
 																									},
 																									File:   "bigpanda.flux",
 																									Source: "rec: obj",
 																									Start: ast.Position{
 																										Column: 17,
-																										Line:   58,
+																										Line:   55,
 																									},
 																								},
 																							},
@@ -2698,13 +2698,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 20,
-																											Line:   58,
+																											Line:   55,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "rec",
 																										Start: ast.Position{
 																											Column: 17,
-																											Line:   58,
+																											Line:   55,
 																										},
 																									},
 																								},
@@ -2716,13 +2716,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 25,
-																											Line:   58,
+																											Line:   55,
 																										},
 																										File:   "bigpanda.flux",
 																										Source: "obj",
 																										Start: ast.Position{
 																											Column: 22,
-																											Line:   58,
+																											Line:   55,
 																										},
 																									},
 																								},
@@ -2736,13 +2736,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 18,
-																								Line:   59,
+																								Line:   56,
 																							},
 																							File:   "bigpanda.flux",
 																							Source: "sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                )",
 																							Start: ast.Position{
 																								Column: 54,
-																								Line:   53,
+																								Line:   50,
 																							},
 																						},
 																					},
@@ -2752,13 +2752,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 63,
-																									Line:   53,
+																									Line:   50,
 																								},
 																								File:   "bigpanda.flux",
 																								Source: "sendAlert",
 																								Start: ast.Position{
 																									Column: 54,
-																									Line:   53,
+																									Line:   50,
 																								},
 																							},
 																						},
@@ -2772,13 +2772,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 24,
-																								Line:   59,
+																								Line:   56,
 																							},
 																							File:   "bigpanda.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 21,
-																								Line:   59,
+																								Line:   56,
 																							},
 																						},
 																					},
@@ -2794,13 +2794,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   59,
+																			Line:   56,
 																		},
 																		File:   "bigpanda.flux",
 																		Source: "string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)",
 																		Start: ast.Position{
 																			Column: 39,
-																			Line:   53,
+																			Line:   50,
 																		},
 																	},
 																},
@@ -2810,13 +2810,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 45,
-																				Line:   53,
+																				Line:   50,
 																			},
 																			File:   "bigpanda.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 39,
-																				Line:   53,
+																				Line:   50,
 																			},
 																		},
 																	},
@@ -2830,13 +2830,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 26,
-																		Line:   53,
+																		Line:   50,
 																	},
 																	File:   "bigpanda.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   53,
+																		Line:   50,
 																	},
 																},
 															},
@@ -2848,13 +2848,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   59,
+																Line:   56,
 															},
 															File:   "bigpanda.flux",
 															Source: "return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}",
 															Start: ast.Position{
 																Column: 17,
-																Line:   53,
+																Line:   50,
 															},
 														},
 													},
@@ -2866,13 +2866,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   51,
+															Line:   48,
 														},
 														File:   "bigpanda.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 25,
-															Line:   51,
+															Line:   48,
 														},
 													},
 												},
@@ -2882,13 +2882,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   51,
+																Line:   48,
 															},
 															File:   "bigpanda.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 25,
-																Line:   51,
+																Line:   48,
 															},
 														},
 													},
@@ -2905,13 +2905,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   60,
+											Line:   57,
 										},
 										File:   "bigpanda.flux",
 										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                url: url,\n                appKey: appKey,\n                token: token,\n                status: obj.status,\n                rec: obj,\n                ) / 100)}\n            })",
 										Start: ast.Position{
 											Column: 16,
-											Line:   51,
+											Line:   48,
 										},
 									},
 								},
@@ -2921,13 +2921,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   51,
+												Line:   48,
 											},
 											File:   "bigpanda.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 16,
-												Line:   51,
+												Line:   48,
 											},
 										},
 									},
@@ -2941,13 +2941,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   50,
+										Line:   47,
 									},
 									File:   "bigpanda.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 10,
-										Line:   50,
+										Line:   47,
 									},
 								},
 							},
@@ -2957,13 +2957,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   50,
+											Line:   47,
 										},
 										File:   "bigpanda.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 10,
-											Line:   50,
+											Line:   47,
 										},
 									},
 								},
@@ -2974,13 +2974,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   50,
+										Line:   47,
 									},
 									File:   "bigpanda.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 17,
-										Line:   50,
+										Line:   47,
 									},
 								},
 							}},
@@ -2992,13 +2992,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   49,
+									Line:   46,
 								},
 								File:   "bigpanda.flux",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 6,
-									Line:   49,
+									Line:   46,
 								},
 							},
 						},
@@ -3008,13 +3008,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   49,
+										Line:   46,
 									},
 									File:   "bigpanda.flux",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 6,
-										Line:   49,
+										Line:   46,
 									},
 								},
 							},
@@ -3029,13 +3029,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   48,
+								Line:   45,
 							},
 							File:   "bigpanda.flux",
 							Source: "url=defaultUrl",
 							Start: ast.Position{
 								Column: 13,
-								Line:   48,
+								Line:   45,
 							},
 						},
 					},
@@ -3045,13 +3045,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   48,
+									Line:   45,
 								},
 								File:   "bigpanda.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   48,
+									Line:   45,
 								},
 							},
 						},
@@ -3063,13 +3063,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   48,
+									Line:   45,
 								},
 								File:   "bigpanda.flux",
 								Source: "defaultUrl",
 								Start: ast.Position{
 									Column: 17,
-									Line:   48,
+									Line:   45,
 								},
 							},
 						},
@@ -3081,13 +3081,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   48,
+								Line:   45,
 							},
 							File:   "bigpanda.flux",
 							Source: "token",
 							Start: ast.Position{
 								Column: 29,
-								Line:   48,
+								Line:   45,
 							},
 						},
 					},
@@ -3097,13 +3097,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   48,
+									Line:   45,
 								},
 								File:   "bigpanda.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 29,
-									Line:   48,
+									Line:   45,
 								},
 							},
 						},
@@ -3116,13 +3116,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
-								Line:   48,
+								Line:   45,
 							},
 							File:   "bigpanda.flux",
 							Source: "appKey",
 							Start: ast.Position{
 								Column: 36,
-								Line:   48,
+								Line:   45,
 							},
 						},
 					},
@@ -3132,13 +3132,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   48,
+									Line:   45,
 								},
 								File:   "bigpanda.flux",
 								Source: "appKey",
 								Start: ast.Position{
 									Column: 36,
-									Line:   48,
+									Line:   45,
 								},
 							},
 						},
