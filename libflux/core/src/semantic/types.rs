@@ -9,7 +9,7 @@ use std::{
     fmt,
 };
 
-// For use in generics where the specific type of map is not not mentioned.
+// For use in generics where the specific type of map is not mentioned.
 pub type SemanticMap<K, V> = BTreeMap<K, V>;
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
