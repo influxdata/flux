@@ -72,6 +72,16 @@ This is done by running `go generate` in the following way.
 $ go generate ./stdlib
 ```
 
+### Regenerating checksums
+
+If you modify any `.rs` files in the repository, checksums must be recomputed.
+This allows the Go–Rust interaction to work appropriately. 
+From the repository root, run
+
+```bash
+$ make generate
+```
+
 ### Contributing Flux Packages
 
 If you have some Flux code that you think the wider community would benifit from please consider contributing it to the Flux repo.
