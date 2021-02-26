@@ -38,7 +38,7 @@ func init() {
 	plan.RegisterLogicalRules(
 		influxdb.DefaultFromAttributes{
 			Org:  &influxdb.NameOrID{Name: "influxdata"},
-			Host: func(v string) *string { return &v }("http://localhost:9999"),
+			Host: func(v string) *string { return &v }("http://localhost:8086"),
 		},
 	)
 }

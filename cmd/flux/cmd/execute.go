@@ -25,7 +25,7 @@ func init() {
 	rootCmd.AddCommand(executeCmd)
 }
 
-const DefaultInfluxDBHost = "http://localhost:9999"
+const DefaultInfluxDBHost = "http://localhost:8086"
 
 func injectDependencies(ctx context.Context) (context.Context, flux.Dependencies) {
 	deps := flux.NewDefaultDependencies()

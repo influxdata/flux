@@ -68,7 +68,7 @@ case "$1" in
 		curl -s \
 			-H "Authorization: Token $TOKEN" \
 			-H "Content-Type: application/vnd.flux" \
-			"http://localhost:9999/api/v2/query?org=$ORG" \
+			"http://localhost:8086/api/v2/query?org=$ORG" \
 			--data-binary "@$QUERY" > $RESPONSE
 		if head -1 $RESPONSE | grep -q '^{'; then
 			cat $RESPONSE

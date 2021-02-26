@@ -72,14 +72,14 @@ func TestFrom_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "from with host and token",
-			Raw:  `from(bucket:"mybucket", host: "http://localhost:9999", token: "mytoken")`,
+			Raw:  `from(bucket:"mybucket", host: "http://localhost:8086", token: "mytoken")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID: "from0",
 						Spec: &influxdb.FromOpSpec{
 							Bucket: influxdb.NameOrID{Name: "mybucket"},
-							Host:   stringPtr("http://localhost:9999"),
+							Host:   stringPtr("http://localhost:8086"),
 							Token:  stringPtr("mytoken"),
 						},
 					},

@@ -22,7 +22,7 @@ func init() {
 	plan.RegisterLogicalRules(
 		influxdb.DefaultFromAttributes{
 			Org:  &influxdb.NameOrID{Name: "influxdata"},
-			Host: func(v string) *string { return &v }("http://localhost:9999"),
+			Host: func(v string) *string { return &v }("http://localhost:8086"),
 		},
 	)
 }
@@ -38,7 +38,7 @@ func TestRuleRegistration(t *testing.T) {
 
 	now := time.Now().UTC()
 	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
-		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m)`)
+		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}
@@ -99,7 +99,7 @@ func TestRewriteWithContext(t *testing.T) {
 
 	now := time.Now().UTC()
 	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(ctx), runtime.Default, now,
-		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m)`)
+		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m)`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}
@@ -164,7 +164,7 @@ func TestRewriteWithContext_TableObjectCompiler(t *testing.T) {
 	prelude := runtime.Prelude()
 	buckets, _ := prelude.Lookup("buckets")
 	args := values.NewObjectWithValues(map[string]values.Value{
-		"host": values.NewString("http://localhost:9999"),
+		"host": values.NewString("http://localhost:8086"),
 	})
 	res, err := buckets.Function().Call(ctx, args)
 	if err != nil {
@@ -196,7 +196,7 @@ func TestMultiRootMatch(t *testing.T) {
 
 	now := time.Now().UTC()
 	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
-		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
+		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}
@@ -234,7 +234,7 @@ func TestExpectPlannerRule(t *testing.T) {
 
 	now := time.Now().UTC()
 	fluxSpec, err := spec.FromScript(dependenciestest.Default().Inject(context.Background()), runtime.Default, now,
-		`from(host: "http://localhost:9999", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
+		`from(host: "http://localhost:8086", bucket: "telegraf") |> range(start: -5m) |> min() |> max() |> mean()`)
 	if err != nil {
 		t.Fatalf("could not compile very simple Flux query: %v", err)
 	}

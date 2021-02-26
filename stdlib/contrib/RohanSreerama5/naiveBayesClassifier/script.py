@@ -52,7 +52,7 @@ org = "hackathonDemoOrg"
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 from influxdb_client.client.write_api import SYNCHRONOUS
 
-client = InfluxDBClient(url="http://localhost:9999", token=token, org=org, debug=False)
+client = InfluxDBClient(url="http://localhost:8086", token=token, org=org, debug=False)
 write_client = client.write_api(write_options=SYNCHRONOUS)
 
 write_client.write(bucket, record=mydata, data_frame_measurement_name='zoo-data',

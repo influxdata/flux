@@ -8,7 +8,7 @@ Steps:
 Prerequesites: InfluxDB 2.0 (local or Cloud instance), this repo (includes zoo-data.csv, script.py and naiveBayesClassifier.flux) 
 InfluxDB: https://github.com/influxdata/influxdb
 
-1) Ensure you have InfluxDB 2.0 set up by either going to localhost:9999 (if you `make` InfluxDB from source) or going to your Cloud instance on AWS, Azure, etc. Keep the instance running throughout this demo.  
+1) Ensure you have InfluxDB 2.0 set up by either going to localhost:8086 (if you `make` InfluxDB from source) or going to your Cloud instance on AWS, Azure, etc. Keep the instance running throughout this demo.  
 2) Choose a binary dataset (fields can only take on 2 unique values) or visit https://archive.ics.uci.edu/ml/datasets.php for some wonderful datasets you can get started with. 
 
 [Animal dataset](zoo_data.csv)
