@@ -85,6 +85,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/bonitoo-io/tickscript/tickscript.flux":                          "488fdf1809dfd2434c8ceab92ea0a0b483ee17f872aaca158f152648fed0e7f2",
 	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                            "5c4c674ab4f8de030a49c6ef6a78fcccb203527e659af9f505e4935098377f57",
 	"stdlib/contrib/bonitoo-io/zenoss/zenoss.flux":                                  "bf006c3f3361ec5002102ab7468fa98e15ea9ba92a0ad7be9fe1bdc3f1395da9",
+	"stdlib/contrib/bonitoo-io/servicenow/servicenow.flux":                          "231142801e984136dd80a0c04968ecdaaf5214acc0a8c9fec18ccf14af2024f0",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                    "b9f9b1a60fc92f47930fa4252a77bfc1def5ba98084880eddb4ebbab4078a697",
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                            "fffde07d389b43cd8e2a0f7109f0afa4157174f28d71afac7d484b3423985e93",
 	"stdlib/contrib/jsternberg/aggregate/table_test.flux":                           "5091de069830dcfb6bbddbfa068c1777e747347e9da3dfa59f50195df5b20d4f",
