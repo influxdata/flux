@@ -24,7 +24,6 @@ import (
 	tasks "github.com/influxdata/flux/stdlib/influxdata/influxdb/tasks"
 	promql "github.com/influxdata/flux/stdlib/internal/promql"
 	interpolate "github.com/influxdata/flux/stdlib/interpolate"
-	interval "github.com/influxdata/flux/stdlib/interval"
 	planner "github.com/influxdata/flux/stdlib/planner"
 	regexp "github.com/influxdata/flux/stdlib/regexp"
 	strings "github.com/influxdata/flux/stdlib/strings"
@@ -60,7 +59,6 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, tasks.FluxTestPackages...)
 	pkgs = append(pkgs, promql.FluxTestPackages...)
 	pkgs = append(pkgs, interpolate.FluxTestPackages...)
-	pkgs = append(pkgs, interval.FluxTestPackages...)
 	pkgs = append(pkgs, planner.FluxTestPackages...)
 	pkgs = append(pkgs, regexp.FluxTestPackages...)
 	pkgs = append(pkgs, strings.FluxTestPackages...)
