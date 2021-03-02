@@ -1,26 +1,26 @@
 # ServiceNow Package
 
-Use this Flux package to send alerts to ServiceNow as events.
+Use this package to send events to ServiceNow.
 
 Event fields are described in [Create Event](https://docs.servicenow.com/bundle/paris-it-operations-management/page/product/event-management/task/t_EMCreateEventManually.html) ServiceNow documentation topic.
 
 ## servicenow.event
 
-`servicenow.event` sends an alert to ServiceNow as event. It has the following arguments:
+`servicenow.event` sends event to ServiceNow. It has the following arguments:
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | url | string | ServiceNow web service URL. |
 | username  | string | HTTP BASIC authentication username. |
 | password | string | HTTP BASIC authentication username. |
-| source | string | Source name. Default: "Flux" |
+| source | string | Source name. Default: `"Flux"` |
 | node | string | Node name or IP address related to the event. Default is empty string. |
-| metricType | string | Metric type related to the event (eg. CPU). Default is empty string. |
-| resource | string | Resource related to the event (eg. CPU-1). Default is empty string. |
+| metricType | string | Metric type related to the event (eg. `"CPU"`). Default is empty string. |
+| resource | string | Resource related to the event (eg. `"CPU-1"`). Default is empty string. |
 | metricName | string | Metric name related to the event (eg. usage_idle). Default is empty string. |
-| messageKey | string | Unique identifier of the alert / event (eg. InfluxDB alert ID). Default is empty string (ServiceNow fills in the value). |
-| description | string | Alert or event description. |
-| severity | string | Severity of the alert or event. Possible values: "critical", "major", "minor", "warning", "info", "clear". |
+| messageKey | string | Unique identifier of the event (eg. InfluxDB alert ID). Default is empty string (ServiceNow fills in the value). |
+| description | string | Event description. |
+| severity | string | Severity of the event. Possible values: `"critical"`, `"major"`, `"minor"`, `"warning"`, `"info"`, `"clear"`. |
 | additionalInfo | record | More information about the event.
 
 Example:
@@ -58,23 +58,27 @@ Example:
 ## servicenow.endpoint
 
 `servicenow.endpoint` creates a factory function that creates a target function for pipeline `|>` to send events 
-to ServiceNow for each row.
-The returned factory function accepts a `mapFn` parameter.
-The `mapFn` accepts a row and returns an object with events fields. Arguments:
+to ServiceNow for each row. Parameters:
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | url | string | ServiceNow web service URL. |
 | username  | string | HTTP BASIC authentication username. |
 | password | string | HTTP BASIC authentication username. |
-| source | string | Source name. Default: "Flux" |
+| source | string | Source name. Default: `"Flux"` |
+
+The returned factory function accepts a `mapFn` parameter.
+The `mapFn` function accepts a row and returns an object with the following fields:
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
 | node | string | Node name or IP address related to the event. Default is empty string. |
-| metricType | string | Metric type related to the event (eg. CPU). Default is empty string. |
-| resource | string | Resource related to the event (eg. CPU-1). Default is empty string. |
-| metricName | string | Metric name related to the event (eg. usage_idle). Default is empty string. |
-| messageKey | string | Unique identifier of the alert / event (eg. InfluxDB alert ID). Default is empty string (ServiceNow fills in the value). |
-| description | string | Alert or event description. |
-| severity | string | Severity of the alert or event. Possible values: "critical", "major", "minor", "warning", "info", "clear". |
+| metricType | string | Metric type related to the event (eg. `"CPU"`). Default is empty string. |
+| resource | string | Resource related to the event (eg. `"CPU-1"`). Default is empty string. |
+| metricName | string | Metric name related to the event (eg. `"usage_idle`"). Default is empty string. |
+| messageKey | string | Unique identifier of the event (eg. InfluxDB alert ID). Default is empty string (ServiceNow fills in the value). |
+| description | string | Event description. |
+| severity | string | Severity of the event. Possible values: `"critical"`, `"major"`, `"minor"`, `"warning"`, `"info"`, `"clear"`. |
 | additionalInfo | record | More information about the event.
 
 Example:
