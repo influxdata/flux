@@ -3,6 +3,7 @@ package slack_test
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -36,7 +37,7 @@ data = "
 ,,fakeChannel,this is a lot of text yay,\"#FF0000\"
 "
 
-process = slack.endpoint(url:url, token:token)( mapFn: 
+process = slack.endpoint(url:url, token:token)( mapFn:
 	(r) => {
 		return {channel:r.qchannel,text:r.qtext,color:r.color}
 	}
@@ -67,8 +68,16 @@ func NewServer(t *testing.T) *Server {
 			URL:           r.URL.String(), // r.URL.String(),
 			Authorization: r.Header.Get("Authorization"),
 		}
-		dec := json.NewDecoder(r.Body)
-		err := dec.Decode(&sr.PostData)
+		b, err := ioutil.ReadAll(r.Body)
+		defer r.Body.Close()
+    if err != nil {
+			t.Error(err)
+		}
+		err = json.Unmarshal(b,&sr.PostData)
+		if err != nil {
+			t.Error(err)
+		}
+		err = json.Unmarshal(b,&sr.RawData)
 		if err != nil {
 			t.Error(err)
 		}
@@ -97,12 +106,20 @@ type Request struct {
 	URL           string
 	Authorization string
 	PostData      PostData
+
+	// As part of fixing #3995, we need to ensure that the `as_user` key is
+	// _absent_ from the JSON we send; it being present but null would still
+	// result in Slack's API rejecting the request. Unfortunately, once the
+	// request body has been Unmarshalled to a Struct, there is no way to
+	// distinguish between an absent key and a null one; so we need to
+	// unmarshal it as map[string]interface{} to perform the test.
+	RawData       map[string]interface{}
 }
 
 type PostData struct {
 	Channel     string       `json:"channel"`
-	Text        string       `json:"text"`
 	Attachments []Attachment `json:"attachments"`
+	AsUser      bool         `json:"as_user"`
 }
 
 type Attachment struct {
@@ -231,6 +248,11 @@ data = "
 			}
 			if req.PostData.Attachments[0].Color != tc.color {
 				t.Errorf("got color %s, expected %s", req.PostData.Attachments[0].Color, tc.color)
+			}
+
+			// This test can be removed on 2022-03-09; see #3531
+			if _, hasKey := req.RawData["as_user"]; hasKey {
+				t.Errorf("posted JSON included as_user key, Slack will reject this message from modern app tokens")
 			}
 		})
 	}
