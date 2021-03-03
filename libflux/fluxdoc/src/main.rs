@@ -191,6 +191,7 @@ fn pkg_types(pkg: &semantic::nodes::Package) -> HashMap<String, PolyType> {
     types
 }
 
+#[allow(clippy::unnecessary_wraps)]
 // Generates docs for the values in a given source file.
 fn generate_values(
     f: &ast::File,

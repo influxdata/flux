@@ -8,10 +8,12 @@ extern crate derive_more;
 extern crate serde_derive;
 extern crate serde_aux;
 
+#[allow(clippy::unnecessary_wraps)]
 pub mod ast;
 pub mod formatter;
 pub mod parser;
 pub mod scanner;
+#[allow(clippy::unnecessary_wraps)]
 pub mod semantic;
 
 use std::error;
