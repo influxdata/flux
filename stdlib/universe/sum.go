@@ -20,13 +20,13 @@ type SumOpSpec struct {
 func init() {
 	sumSignature := runtime.MustLookupBuiltinType("universe", "sum")
 
-	runtime.RegisterPackageValue("universe", SumKind, flux.MustValue(flux.FunctionValue(SumKind, createSumOpSpec, sumSignature)))
+	runtime.RegisterPackageValue("universe", SumKind, flux.MustValue(flux.FunctionValue(SumKind, CreateSumOpSpec, sumSignature)))
 	flux.RegisterOpSpec(SumKind, newSumOp)
 	plan.RegisterProcedureSpec(SumKind, newSumProcedure, SumKind)
 	execute.RegisterTransformation(SumKind, createSumTransformation)
 }
 
-func createSumOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateSumOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

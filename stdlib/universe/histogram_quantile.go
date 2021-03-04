@@ -27,12 +27,12 @@ type HistogramQuantileOpSpec struct {
 func init() {
 	histogramQuantileSignature := runtime.MustLookupBuiltinType("universe", "histogramQuantile")
 
-	runtime.RegisterPackageValue("universe", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, createHistogramQuantileOpSpec, histogramQuantileSignature)))
+	runtime.RegisterPackageValue("universe", HistogramQuantileKind, flux.MustValue(flux.FunctionValue(HistogramQuantileKind, CreateHistogramQuantileOpSpec, histogramQuantileSignature)))
 	flux.RegisterOpSpec(HistogramQuantileKind, newHistogramQuantileOp)
 	plan.RegisterProcedureSpec(HistogramQuantileKind, newHistogramQuantileProcedure, HistogramQuantileKind)
 	execute.RegisterTransformation(HistogramQuantileKind, createHistogramQuantileTransformation)
 }
-func createHistogramQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateHistogramQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

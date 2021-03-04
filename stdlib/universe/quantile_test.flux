@@ -1,5 +1,5 @@
 package universe_test
- 
+
 import "testing"
 
 option now = () => (2030-01-01T00:00:00Z)
@@ -131,4 +131,3 @@ t_quantile = (table=<-) =>
 
 test _quantile = () =>
 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})
-

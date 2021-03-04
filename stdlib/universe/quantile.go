@@ -40,7 +40,7 @@ type QuantileOpSpec struct {
 func init() {
 	quantileSignature := runtime.MustLookupBuiltinType("universe", "quantile")
 
-	runtime.RegisterPackageValue("universe", QuantileKind, flux.MustValue(flux.FunctionValue(QuantileKind, createQuantileOpSpec, quantileSignature)))
+	runtime.RegisterPackageValue("universe", QuantileKind, flux.MustValue(flux.FunctionValue(QuantileKind, CreateQuantileOpSpec, quantileSignature)))
 
 	flux.RegisterOpSpec(QuantileKind, newQuantileOp)
 	plan.RegisterProcedureSpec(QuantileKind, newQuantileProcedure, QuantileKind)
@@ -49,7 +49,7 @@ func init() {
 	execute.RegisterTransformation(ExactQuantileSelectKind, createExactQuantileSelectTransformation)
 }
 
-func createQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateQuantileOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

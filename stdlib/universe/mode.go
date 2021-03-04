@@ -21,13 +21,13 @@ type ModeOpSpec struct {
 func init() {
 	modeSignature := runtime.MustLookupBuiltinType("universe", "mode")
 
-	runtime.RegisterPackageValue("universe", ModeKind, flux.MustValue(flux.FunctionValue(ModeKind, createModeOpSpec, modeSignature)))
+	runtime.RegisterPackageValue("universe", ModeKind, flux.MustValue(flux.FunctionValue(ModeKind, CreateModeOpSpec, modeSignature)))
 	flux.RegisterOpSpec(ModeKind, newModeOp)
 	plan.RegisterProcedureSpec(ModeKind, newModeProcedure, ModeKind)
 	execute.RegisterTransformation(ModeKind, createModeTransformation)
 }
 
-func createModeOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateModeOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

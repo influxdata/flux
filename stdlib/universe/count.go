@@ -18,13 +18,13 @@ type CountOpSpec struct {
 
 func init() {
 	countSignature := runtime.MustLookupBuiltinType("universe", "count")
-	runtime.RegisterPackageValue("universe", CountKind, flux.MustValue(flux.FunctionValue(CountKind, createCountOpSpec, countSignature)))
+	runtime.RegisterPackageValue("universe", CountKind, flux.MustValue(flux.FunctionValue(CountKind, CreateCountOpSpec, countSignature)))
 	flux.RegisterOpSpec(CountKind, newCountOp)
 	plan.RegisterProcedureSpec(CountKind, newCountProcedure, CountKind)
 	execute.RegisterTransformation(CountKind, createCountTransformation)
 }
 
-func createCountOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateCountOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
