@@ -120,6 +120,160 @@ func TestResultDecoder(t *testing.T) {
 			},
 		},
 		{
+			name: "single table small buffer",
+			decoderConfig: csv.ResultDecoderConfig{
+				MaxBufferCount: 2,
+			},
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,,,,,,,
+,result,table,_start,_stop,_time,_measurement,host,_value
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:02Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:03Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:04Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:05Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:06Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:07Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:08Z,cpu,A,43
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:09Z,cpu,A,43
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:10Z,cpu,A,43
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:11Z,cpu,A,43
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:12Z,cpu,A,43
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:13Z,cpu,A,43
+`),
+			result: &executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{{
+					KeyCols: []string{"_start", "_stop", "_measurement", "host"},
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TTime},
+						{Label: "_stop", Type: flux.TTime},
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 2, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 3, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 4, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 5, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 6, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 7, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 8, 0, time.UTC)),
+							"cpu",
+							"A",
+							43.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 9, 0, time.UTC)),
+							"cpu",
+							"A",
+							43.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 10, 0, time.UTC)),
+							"cpu",
+							"A",
+							43.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 11, 0, time.UTC)),
+							"cpu",
+							"A",
+							43.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 12, 0, time.UTC)),
+							"cpu",
+							"A",
+							43.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 13, 0, time.UTC)),
+							"cpu",
+							"A",
+							43.0,
+						},
+					},
+				}},
+			},
+		},
+		{
 			name:          "single table with null",
 			encoderConfig: csv.DefaultEncoderConfig(),
 			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
@@ -248,6 +402,48 @@ func TestResultDecoder(t *testing.T) {
 					KeyCols:   []string(nil),
 					KeyValues: []interface{}(nil),
 					ColMeta:   []flux.ColMeta(nil),
+				}},
+			},
+		},
+		{
+			name: "single table no annotations",
+			decoderConfig: csv.ResultDecoderConfig{
+				NoAnnotations: true,
+			},
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded: toCRLF(`_start,_stop,_time,_measurement,host,_value
+2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
+2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,43
+`),
+			result: &executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{{
+					ColMeta: []flux.ColMeta{
+						{Label: "_start", Type: flux.TString},
+						{Label: "_stop", Type: flux.TString},
+						{Label: "_time", Type: flux.TString},
+						{Label: "_measurement", Type: flux.TString},
+						{Label: "host", Type: flux.TString},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{
+							"2018-04-17T00:00:00Z",
+							"2018-04-17T00:05:00Z",
+							"2018-04-17T00:00:00Z",
+							"cpu",
+							"A",
+							"42",
+						},
+						{
+							"2018-04-17T00:00:00Z",
+							"2018-04-17T00:05:00Z",
+							"2018-04-17T00:00:01Z",
+							"cpu",
+							"A",
+							"43",
+						},
+					},
 				}},
 			},
 		},

@@ -71,11 +71,11 @@ var pkgAST = &ast.Package{
 					Errors: nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 68,
+							Column: 83,
 							Line:   6,
 						},
 						File:   "csv.flux",
-						Source: "(?csv: string, ?file: string) => [A] where A: Record",
+						Source: "(?csv: string, ?file: string, ?mode: string) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 16,
 							Line:   6,
@@ -87,13 +87,13 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 68,
+								Column: 83,
 								Line:   6,
 							},
 							File:   "csv.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 59,
+								Column: 74,
 								Line:   6,
 							},
 						},
@@ -103,13 +103,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 68,
+									Column: 83,
 									Line:   6,
 								},
 								File:   "csv.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 62,
+									Column: 77,
 									Line:   6,
 								},
 							},
@@ -121,13 +121,13 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 60,
+									Column: 75,
 									Line:   6,
 								},
 								File:   "csv.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 59,
+									Column: 74,
 									Line:   6,
 								},
 							},
@@ -140,11 +140,11 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 52,
+								Column: 67,
 								Line:   6,
 							},
 							File:   "csv.flux",
-							Source: "(?csv: string, ?file: string) => [A]",
+							Source: "(?csv: string, ?file: string, ?mode: string) => [A]",
 							Start: ast.Position{
 								Column: 16,
 								Line:   6,
@@ -291,24 +291,24 @@ var pkgAST = &ast.Package{
 								Name: "string",
 							},
 						},
-					}},
-					Return: &ast.ArrayType{
+					}, &ast.ParameterType{
 						BaseNode: ast.BaseNode{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 52,
+									Column: 59,
 									Line:   6,
 								},
 								File:   "csv.flux",
-								Source: "[A]",
+								Source: "?mode: string",
 								Start: ast.Position{
-									Column: 49,
+									Column: 46,
 									Line:   6,
 								},
 							},
 						},
-						ElementType: &ast.TvarType{
+						Kind: "Optional",
+						Name: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Errors: nil,
 								Loc: &ast.SourceLocation{
@@ -317,9 +317,27 @@ var pkgAST = &ast.Package{
 										Line:   6,
 									},
 									File:   "csv.flux",
-									Source: "A",
+									Source: "mode",
 									Start: ast.Position{
-										Column: 50,
+										Column: 47,
+										Line:   6,
+									},
+								},
+							},
+							Name: "mode",
+						},
+						Ty: &ast.NamedType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 59,
+										Line:   6,
+									},
+									File:   "csv.flux",
+									Source: "string",
+									Start: ast.Position{
+										Column: 53,
 										Line:   6,
 									},
 								},
@@ -329,13 +347,65 @@ var pkgAST = &ast.Package{
 									Errors: nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 51,
+											Column: 59,
+											Line:   6,
+										},
+										File:   "csv.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 53,
+											Line:   6,
+										},
+									},
+								},
+								Name: "string",
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 67,
+									Line:   6,
+								},
+								File:   "csv.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 64,
+									Line:   6,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 66,
+										Line:   6,
+									},
+									File:   "csv.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 65,
+										Line:   6,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 66,
 											Line:   6,
 										},
 										File:   "csv.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 50,
+											Column: 65,
 											Line:   6,
 										},
 									},

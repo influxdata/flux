@@ -3,4 +3,4 @@ package csv
 
 
 // From parses an annotated CSV and produces a stream of tables.
-builtin from : (?csv: string, ?file: string) => [A] where A: Record
+builtin from : (?csv: string, ?file: string, ?mode: string) => [A] where A: Record

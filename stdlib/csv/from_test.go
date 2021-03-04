@@ -212,7 +212,8 @@ func TestFromCSV_NewQuery(t *testing.T) {
 					{
 						ID: "fromCSV0",
 						Spec: &csv.FromCSVOpSpec{
-							CSV: "1,2",
+							CSV:  "1,2",
+							Mode: "annotations",
 						},
 					},
 					{
@@ -255,11 +256,12 @@ func TestFromCSV_NewQuery(t *testing.T) {
 }
 
 func TestFromCSVOperation_Marshaling(t *testing.T) {
-	data := []byte(`{"id":"fromCSV","kind":"fromCSV","spec":{"csv":"1,2"}}`)
+	data := []byte(`{"id":"fromCSV","kind":"fromCSV","spec":{"csv":"1,2","mode":"annotations"}}`)
 	op := &flux.Operation{
 		ID: "fromCSV",
 		Spec: &csv.FromCSVOpSpec{
-			CSV: "1,2",
+			CSV:  "1,2",
+			Mode: "annotations",
 		},
 	}
 	querytest.OperationMarshalingTestHelper(t, data, op)
