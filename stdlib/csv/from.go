@@ -2,6 +2,7 @@ package csv
 
 import (
 	"context"
+	"io"
 	"io/ioutil"
 	"strings"
 
@@ -103,26 +104,35 @@ func createFromCSVSource(prSpec plan.ProcedureSpec, dsid execute.DatasetID, a ex
 }
 
 func CreateSource(spec *FromCSVProcedureSpec, dsid execute.DatasetID, a execute.Administration) (execute.Source, error) {
-	csvText := spec.CSV
-	// if spec.File non-empty then spec.CSV is empty
+	var getDataStream func() (io.ReadCloser, error)
 	if spec.File != "" {
-		csvBytes, err := filesystem.ReadFile(a.Context(), spec.File)
-		if err != nil {
-			return nil, errors.Wrap(err, codes.Inherit, "csv.from() failed to read file")
+		getDataStream = func() (io.ReadCloser, error) {
+			f, err := filesystem.OpenFile(a.Context(), spec.File)
+			if err != nil {
+				return nil, errors.Wrap(err, codes.Inherit, "csv.from() failed to read file")
+			}
+			return f, nil
 		}
-		csvText = string(csvBytes)
+	} else { // if spec.File is empty then spec.CSV is not empty
+		getDataStream = func() (io.ReadCloser, error) {
+			return ioutil.NopCloser(strings.NewReader(spec.CSV)), nil
+		}
 	}
-	csvSource := CSVSource{id: dsid, tx: csvText, alloc: a.Allocator()}
+	csvSource := CSVSource{
+		id:            dsid,
+		getDataStream: getDataStream,
+		alloc:         a.Allocator(),
+	}
 
 	return &csvSource, nil
 }
 
 type CSVSource struct {
 	execute.ExecutionNode
-	id    execute.DatasetID
-	tx    string
-	ts    []execute.Transformation
-	alloc *memory.Allocator
+	id            execute.DatasetID
+	getDataStream func() (io.ReadCloser, error)
+	ts            []execute.Transformation
+	alloc         *memory.Allocator
 }
 
 func (c *CSVSource) AddTransformation(t execute.Transformation) {
@@ -144,7 +154,12 @@ func (c *CSVSource) Run(ctx context.Context) {
 			Allocator: c.alloc,
 			Context:   ctx,
 		})
-		results, decodeErr := decoder.Decode(ioutil.NopCloser(strings.NewReader(c.tx)))
+		var data io.ReadCloser
+		data, err = c.getDataStream()
+		if err != nil {
+			goto FINISH
+		}
+		results, decodeErr := decoder.Decode(data)
 		defer results.Release()
 		if decodeErr != nil {
 			err = decodeErr
