@@ -65,7 +65,8 @@ func TestRange_NewQuery(t *testing.T) {
 					{
 						ID: "fromCSV0",
 						Spec: &csv.FromCSVOpSpec{
-							CSV: "1,2",
+							CSV:  "1,2",
+							Mode: "annotations",
 						},
 					},
 					{

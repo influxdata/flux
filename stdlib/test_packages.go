@@ -11,6 +11,7 @@ import (
 	aggregate "github.com/influxdata/flux/stdlib/contrib/jsternberg/aggregate"
 	rows "github.com/influxdata/flux/stdlib/contrib/jsternberg/rows"
 	events "github.com/influxdata/flux/stdlib/contrib/tomhollingworth/events"
+	csv "github.com/influxdata/flux/stdlib/csv"
 	date "github.com/influxdata/flux/stdlib/date"
 	dict "github.com/influxdata/flux/stdlib/dict"
 	experimental "github.com/influxdata/flux/stdlib/experimental"
@@ -46,6 +47,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, aggregate.FluxTestPackages...)
 	pkgs = append(pkgs, rows.FluxTestPackages...)
 	pkgs = append(pkgs, events.FluxTestPackages...)
+	pkgs = append(pkgs, csv.FluxTestPackages...)
 	pkgs = append(pkgs, date.FluxTestPackages...)
 	pkgs = append(pkgs, dict.FluxTestPackages...)
 	pkgs = append(pkgs, experimental.FluxTestPackages...)

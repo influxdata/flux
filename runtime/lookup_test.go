@@ -1,8 +1,9 @@
 package runtime_test
 
 import (
-	"github.com/influxdata/flux/runtime"
 	"testing"
+
+	"github.com/influxdata/flux/runtime"
 )
 
 func TestLookupSimpleTypes(t *testing.T) {
@@ -39,7 +40,7 @@ func TestLookupComplexTypes(t *testing.T) {
 			path: "csv",
 			id:   "from",
 			name: "lookup csv.from",
-			want: "(?csv: string, ?file: string) -> [t0]",
+			want: "(?csv: string, ?file: string, ?mode: string) -> [t0]",
 		},
 		{
 			path: "date",

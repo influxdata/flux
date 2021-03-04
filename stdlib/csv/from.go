@@ -22,7 +22,13 @@ const FromCSVKind = "fromCSV"
 type FromCSVOpSpec struct {
 	CSV  string `json:"csv"`
 	File string `json:"file"`
+	Mode string `json:"mode"`
 }
+
+const (
+	annotationMode = "annotations"
+	rawMode        = "raw"
+)
 
 func init() {
 	fromCSVSignature := runtime.MustLookupBuiltinType("csv", "from")
@@ -55,6 +61,15 @@ func createFromCSVOpSpec(args flux.Arguments, a *flux.Administration) (flux.Oper
 		return nil, errors.New(codes.Invalid, "must provide exactly one of the parameters csv or file")
 	}
 
+	if mode, ok, err := args.GetString("mode"); err != nil {
+		return nil, err
+	} else if ok {
+		spec.Mode = mode
+	} else {
+		// default to annotation mode
+		spec.Mode = annotationMode
+	}
+
 	return spec, nil
 }
 
@@ -70,6 +85,7 @@ type FromCSVProcedureSpec struct {
 	plan.DefaultCost
 	CSV  string
 	File string
+	Mode string
 }
 
 func newFromCSVProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
@@ -81,6 +97,7 @@ func newFromCSVProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.Pr
 	return &FromCSVProcedureSpec{
 		CSV:  spec.CSV,
 		File: spec.File,
+		Mode: spec.Mode,
 	}, nil
 }
 
@@ -92,6 +109,7 @@ func (s *FromCSVProcedureSpec) Copy() plan.ProcedureSpec {
 	ns := new(FromCSVProcedureSpec)
 	ns.CSV = s.CSV
 	ns.File = s.File
+	ns.Mode = s.Mode
 	return ns
 }
 
@@ -122,6 +140,7 @@ func CreateSource(spec *FromCSVProcedureSpec, dsid execute.DatasetID, a execute.
 		id:            dsid,
 		getDataStream: getDataStream,
 		alloc:         a.Allocator(),
+		mode:          spec.Mode,
 	}
 
 	return &csvSource, nil
@@ -133,6 +152,7 @@ type CSVSource struct {
 	getDataStream func() (io.ReadCloser, error)
 	ts            []execute.Transformation
 	alloc         *memory.Allocator
+	mode          string
 }
 
 func (c *CSVSource) AddTransformation(t execute.Transformation) {
@@ -150,16 +170,27 @@ func (c *CSVSource) Run(ctx context.Context) {
 		// transformation. Unlike other sources, tables from csv sources
 		// are not read-only. They contain mutable state and therefore
 		// cannot be shared among goroutines.
-		decoder := csv.NewMultiResultDecoder(csv.ResultDecoderConfig{
+		config := csv.ResultDecoderConfig{
 			Allocator: c.alloc,
 			Context:   ctx,
-		})
+		}
+		switch c.mode {
+		case rawMode:
+			config.NoAnnotations = true
+		default:
+		}
+		decoder := csv.NewMultiResultDecoder(config)
 		var data io.ReadCloser
 		data, err = c.getDataStream()
 		if err != nil {
 			goto FINISH
 		}
-		results, decodeErr := decoder.Decode(data)
+		// Many applications will add a UTF BOM (byte order mark) to the beginning of csv files
+		// We expect UTF8 encoded data so the byte order does not matter.
+		// Therefore we skip the BOM if it exists.
+		// See http://www.unicode.org/faq/utf_bom.html#BOM
+		rc := newSkipBOMReader(data)
+		results, decodeErr := decoder.Decode(rc)
 		defer results.Release()
 		if decodeErr != nil {
 			err = decodeErr
@@ -213,4 +244,49 @@ FINISH:
 	for _, t := range c.ts {
 		t.Finish(c.id, err)
 	}
+}
+
+// skipBOMReader wraps an io.ReadCloser and skips the BOM,
+// if it exists at the beginning of the stream.
+type skipBOMReader struct {
+	io.ReadCloser
+	buf     []byte
+	checked bool
+}
+
+func newSkipBOMReader(r io.ReadCloser) io.ReadCloser {
+	return &skipBOMReader{
+		ReadCloser: r,
+		// BOM is three bytes long
+		buf:     []byte{0, 0, 0},
+		checked: false,
+	}
+}
+
+func (r *skipBOMReader) Read(p []byte) (n int, err error) {
+	if !r.checked {
+		r.checked = true
+		// Read at least 3 bytes if possible
+		// We do not use io.ReadFull or io.ReadAtLeast here as they
+		// change the semantics of how errors are reported..
+		total := 0
+		for total < len(r.buf) {
+			n, err := r.ReadCloser.Read(r.buf[total:])
+			total += n
+			if err != nil {
+				m := copy(p, r.buf[:total])
+				return m, err
+			}
+		}
+		if r.buf[0] == 0xef && r.buf[1] == 0xbb && r.buf[2] == 0xbf {
+			// Found the BOM, null the buffer so that we don't return those bytes
+			r.buf = nil
+		}
+	}
+	if len(r.buf) > 0 {
+		n := copy(p, r.buf)
+		r.buf = r.buf[n:]
+		return n, nil
+	}
+	return r.ReadCloser.Read(p)
 }

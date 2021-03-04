@@ -31,7 +31,7 @@ const (
 	resultIdx     = 1
 	tableIdx      = 2
 
-	recordStartIdx = 3
+	defaultRecordStartIdx = 3
 
 	datatypeAnnotation = "datatype"
 	groupAnnotation    = "group"
@@ -71,6 +71,10 @@ func NewResultDecoder(c ResultDecoderConfig) *ResultDecoder {
 
 // ResultDecoderConfig are options that can be specified on the ResultDecoder.
 type ResultDecoderConfig struct {
+	// NoAnnotations indicates that the CSV data will not have annotations rows.
+	// Without annotations the decoder will assume every column is of type string and
+	// that all data is in a single table in a single result.
+	NoAnnotations bool
 	// NoHeader indicates that the CSV data will not have a header row.
 	NoHeader bool
 	// MaxBufferCount is the maximum number of rows that will be buffered when decoding.
@@ -117,7 +121,7 @@ func (d *MultiResultDecoder) Decode(r io.ReadCloser) (flux.ResultIterator, error
 type resultIterator struct {
 	c    ResultDecoderConfig
 	r    io.ReadCloser
-	cr   *csv.Reader
+	cr   *bufferedCSVReader
 	next *resultDecoder
 	err  error
 
@@ -172,14 +176,14 @@ type resultDecoder struct {
 	id string
 	c  ResultDecoderConfig
 
-	cr *csv.Reader
+	cr *bufferedCSVReader
 
 	extraMeta *tableMetadata
 
 	eof bool
 }
 
-func newResultDecoder(cr *csv.Reader, c ResultDecoderConfig, extraMeta *tableMetadata) (*resultDecoder, error) {
+func newResultDecoder(cr *bufferedCSVReader, c ResultDecoderConfig, extraMeta *tableMetadata) (*resultDecoder, error) {
 	d := &resultDecoder{
 		c:         c,
 		cr:        cr,
@@ -187,7 +191,7 @@ func newResultDecoder(cr *csv.Reader, c ResultDecoderConfig, extraMeta *tableMet
 	}
 	// We need to know the result ID before we return
 	if extraMeta == nil {
-		tm, err := readMetadata(d.cr, c, nil)
+		tm, err := readMetadata(d.cr, c)
 		if err != nil {
 			if err == io.EOF {
 				return nil, err
@@ -202,12 +206,16 @@ func newResultDecoder(cr *csv.Reader, c ResultDecoderConfig, extraMeta *tableMet
 	return d, nil
 }
 
-func newCSVReader(r io.Reader) *csv.Reader {
+func newCSVReader(r io.Reader) *bufferedCSVReader {
 	csvr := csv.NewReader(r)
 	csvr.ReuseRecord = true
 	// Do not check record size
 	csvr.FieldsPerRecord = -1
-	return csvr
+	csvr.LazyQuotes = true
+	return &bufferedCSVReader{
+		r:    csvr,
+		line: nil,
+	}
 }
 
 func (r *resultDecoder) Name() string {
@@ -228,7 +236,6 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 		ctx = context.Background()
 	}
 
-	var extraLine []string
 	var meta tableMetadata
 	newMeta := true
 	for !r.eof {
@@ -237,11 +244,10 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 				meta = *r.extraMeta
 				r.extraMeta = nil
 			} else {
-				tm, err := readMetadata(r.cr, r.c, extraLine)
+				tm, err := readMetadata(r.cr, r.c)
 				if err != nil {
 					if err == io.EOF {
-						r.eof = true
-						return nil
+						goto EOF
 					}
 					if sfe, ok := err.(*serializedFluxError); ok {
 						return sfe.err
@@ -249,7 +255,6 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 					return errors.Wrap(err, codes.Inherit, "failed to read metadata")
 				}
 				meta = tm
-				extraLine = nil
 			}
 
 			if meta.ResultID != r.id {
@@ -258,37 +263,53 @@ func (r *resultDecoder) Do(f func(flux.Table) error) error {
 			}
 		}
 
-		// create new table
-		b, err := newTable(r.cr, r.c, meta, extraLine)
+		// Create a new table
+		tbl, err := newTable(r.cr, r.c, meta)
 		if err != nil {
 			return err
 		}
-		if err := f(b); err != nil {
+		// Call f on the table, f can return before the table has been fully consumed.
+		if err := f(tbl); err != nil {
 			return err
 		}
+		// Block until the table has been fully consumed or the context is canceled
 		select {
-		case <-b.done:
+		case <-tbl.done:
 		case <-ctx.Done():
 			return ctx.Err()
 		}
-		// track whether we hit the EOF
-		r.eof = b.eof
-		// track any extra line that was read
-		extraLine = b.extraLine
-		if len(extraLine) > 0 {
-			newMeta = extraLine[annotationIdx] != ""
+
+		// Now that the table has been consumed we can check for more tables
+		// Check next line to see if we have a new meta block
+		line, err := r.cr.Read()
+		if err != nil {
+			if err == io.EOF {
+				goto EOF
+			}
+			return err
 		}
+		// cannot be a new meta block if there are no annotations
+		newMeta = !r.c.NoAnnotations && len(line) > annotationIdx && line[annotationIdx] != ""
+		err = r.cr.Unread(line)
+		if err != nil {
+			return err
+		}
+		// track whether we hit the EOF
+		r.eof = tbl.eof
 	}
+EOF:
+	r.eof = true
 	return nil
 }
 
 type tableMetadata struct {
-	ResultID  string
-	TableID   string
-	Cols      []colMeta
-	Groups    []bool
-	Defaults  []values.Value
-	NumFields int
+	ResultID       string
+	TableID        string
+	Cols           []colMeta
+	Groups         []bool
+	Defaults       []values.Value
+	NumFields      int
+	RecordStartIdx int
 }
 
 // serializedFluxError represents an error that occurred during
@@ -306,17 +327,39 @@ func (sfe *serializedFluxError) Error() string {
 // In case of an actual error:
 //   - if it's error that was serialized to CSV, it will be wrapped in serializedFluxError.
 //   - otherwise, it's a serialization error, it will be returned as-is.
-func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tableMetadata, error) {
+func readMetadata(r *bufferedCSVReader, c ResultDecoderConfig) (tableMetadata, error) {
 	n := -1
+	var recordStartIdx int
 	var resultID, tableID string
 	var datatypes, groups, defaults []string
-	for datatypes == nil || groups == nil || defaults == nil {
-		var line []string
-		if len(extraLine) > 0 {
-			line = extraLine
-			extraLine = nil
-		} else {
-			l, err := r.Read()
+	if c.NoAnnotations {
+		// No annotations means that we are going to treat all rows as part of the same result with exactly one table
+		resultID = "_result"
+		tableID = "0"
+		recordStartIdx = 0
+		line, err := r.Read()
+		if err != nil {
+			return tableMetadata{}, err
+		}
+		n = len(line)
+		// We treat all columns as strings
+		datatypes = make([]string, n)
+		groups = make([]string, n)
+		defaults = make([]string, n)
+		for i := range datatypes {
+			datatypes[i] = "string"
+			groups[i] = "false"
+			defaults[i] = ""
+		}
+		// put this line back now that we know its length
+		err = r.Unread(line)
+		if err != nil {
+			return tableMetadata{}, err
+		}
+	} else {
+		recordStartIdx = defaultRecordStartIdx
+		for datatypes == nil || groups == nil || defaults == nil {
+			line, err := r.Read()
 			if err != nil {
 				if err == io.EOF {
 					if datatypes == nil && groups == nil && defaults == nil {
@@ -333,38 +376,37 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 				}
 				return tableMetadata{}, err
 			}
-			line = l
-		}
-		if n == -1 {
-			n = len(line)
-		}
-		if n != len(line) {
-			return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid, "failed to read annotations")
-		}
-		switch annotation := strings.TrimPrefix(line[annotationIdx], commentPrefix); annotation {
-		case datatypeAnnotation:
-			datatypes = copyLine(line[recordStartIdx:])
-		case groupAnnotation:
-			groups = copyLine(line[recordStartIdx:])
-		case defaultAnnotation:
-			resultID = line[resultIdx]
-			tableID = line[tableIdx]
-			if _, err := strconv.ParseInt(tableID, 10, 64); tableID != "" && err != nil {
-				return tableMetadata{}, fmt.Errorf("default Table ID is not an integer")
+			if n == -1 {
+				n = len(line)
 			}
-			defaults = copyLine(line[recordStartIdx:])
-		default:
-			if !strings.HasPrefix(line[annotationIdx], commentPrefix) {
-				switch {
-				case datatypes == nil:
-					return tableMetadata{}, fmt.Errorf("missing expected annotation datatype")
-				case groups == nil:
-					return tableMetadata{}, fmt.Errorf("missing expected annotation group")
-				case defaults == nil:
-					return tableMetadata{}, fmt.Errorf("missing expected annotation default")
+			if n != len(line) {
+				return tableMetadata{}, errors.Wrap(csv.ErrFieldCount, codes.Invalid, "failed to read annotations")
+			}
+			switch annotation := strings.TrimPrefix(line[annotationIdx], commentPrefix); annotation {
+			case datatypeAnnotation:
+				datatypes = copyLine(line[defaultRecordStartIdx:])
+			case groupAnnotation:
+				groups = copyLine(line[defaultRecordStartIdx:])
+			case defaultAnnotation:
+				resultID = line[resultIdx]
+				tableID = line[tableIdx]
+				if _, err := strconv.ParseInt(tableID, 10, 64); tableID != "" && err != nil {
+					return tableMetadata{}, fmt.Errorf("default Table ID is not an integer")
 				}
+				defaults = copyLine(line[defaultRecordStartIdx:])
+			default:
+				if !strings.HasPrefix(line[annotationIdx], commentPrefix) {
+					switch {
+					case datatypes == nil:
+						return tableMetadata{}, fmt.Errorf("missing expected annotation datatype")
+					case groups == nil:
+						return tableMetadata{}, fmt.Errorf("missing expected annotation group")
+					case defaults == nil:
+						return tableMetadata{}, fmt.Errorf("missing expected annotation default")
+					}
+				}
+				// Ignore unsupported/unknown annotations.
 			}
-			// Ignore unsupported/unknown annotations.
 		}
 	}
 
@@ -447,17 +489,18 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 	}
 
 	return tableMetadata{
-		ResultID:  resultID,
-		TableID:   tableID,
-		Cols:      cols,
-		Groups:    groupValues,
-		Defaults:  defaultValues,
-		NumFields: n,
+		ResultID:       resultID,
+		TableID:        tableID,
+		Cols:           cols,
+		Groups:         groupValues,
+		Defaults:       defaultValues,
+		NumFields:      n,
+		RecordStartIdx: recordStartIdx,
 	}, nil
 }
 
 type tableDecoder struct {
-	r *csv.Reader
+	r *bufferedCSVReader
 	c ResultDecoderConfig
 
 	meta tableMetadata
@@ -475,15 +518,13 @@ type tableDecoder struct {
 
 	done chan struct{}
 
-	eof       bool
-	extraLine []string
+	eof bool
 }
 
 func newTable(
-	r *csv.Reader,
+	r *bufferedCSVReader,
 	c ResultDecoderConfig,
 	meta tableMetadata,
-	extraLine []string,
 ) (*tableDecoder, error) {
 	b := &tableDecoder{
 		r:    r,
@@ -493,7 +534,7 @@ func newTable(
 		empty: true,
 		done:  make(chan struct{}),
 	}
-	more, err := b.advance(extraLine)
+	more, err := b.advance()
 	if !more {
 		close(b.done)
 	}
@@ -529,7 +570,7 @@ func (d *tableDecoder) Do(f func(flux.ColReader) error) error {
 	defer close(d.done)
 	for more {
 		var err error
-		more, err = d.advance(nil)
+		more, err = d.advance()
 		if err != nil {
 			return err
 		}
@@ -546,23 +587,17 @@ func (d *tableDecoder) Done() {
 
 // advance reads the csv data until the end of the table or bufSize rows have been read.
 // Advance returns whether there is more data and any error.
-func (d *tableDecoder) advance(extraLine []string) (bool, error) {
+func (d *tableDecoder) advance() (bool, error) {
 	var line, record []string
 	var err error
 	for !d.initialized || d.nrows < d.c.MaxBufferCount {
-		if len(extraLine) > 0 {
-			line = extraLine
-			extraLine = nil
-		} else {
-			l, err := d.r.Read()
-			if err != nil {
-				if err == io.EOF {
-					d.eof = true
-					return false, nil
-				}
-				return false, err
+		line, err = d.r.Read()
+		if err != nil {
+			if err == io.EOF {
+				d.eof = true
+				return false, nil
 			}
-			line = l
+			return false, err
 		}
 		// whatever this line is, it's not part of this table so goto DONE
 		if len(line) != d.meta.NumFields {
@@ -573,7 +608,7 @@ func (d *tableDecoder) advance(extraLine []string) (bool, error) {
 		}
 
 		// Check for new annotation
-		if line[annotationIdx] != "" {
+		if !d.c.NoAnnotations && line[annotationIdx] != "" {
 			goto DONE
 		}
 
@@ -585,11 +620,11 @@ func (d *tableDecoder) advance(extraLine []string) (bool, error) {
 		}
 
 		// check if we have tableID that is now different
-		if line[tableIdx] != "" && line[tableIdx] != d.id {
+		if !d.c.NoAnnotations && line[tableIdx] != "" && line[tableIdx] != d.id {
 			goto DONE
 		}
 
-		record = line[recordStartIdx:]
+		record = line[d.meta.RecordStartIdx:]
 		err = d.appendRecord(record)
 		if err != nil {
 			return false, err
@@ -599,7 +634,12 @@ func (d *tableDecoder) advance(extraLine []string) (bool, error) {
 
 DONE:
 	// table is done
-	d.extraLine = line
+
+	// unread the last line
+	err = d.r.Unread(line)
+	if err != nil {
+		return false, err
+	}
 	if !d.initialized {
 		// if we found a new annotation without any data rows, then the table is empty and we
 		// init using the meta.Default column values.
@@ -615,16 +655,20 @@ DONE:
 }
 
 func (d *tableDecoder) init(line []string) error {
-	if len(line) != 0 {
-		d.id = line[tableIdx]
-	} else if d.meta.TableID != "" {
-		d.id = d.meta.TableID
+	if d.c.NoAnnotations {
+		d.id = "0"
 	} else {
-		return errors.New(codes.Invalid, "missing table ID")
+		if len(line) != 0 {
+			d.id = line[tableIdx]
+		} else if d.meta.TableID != "" {
+			d.id = d.meta.TableID
+		} else {
+			return errors.New(codes.Invalid, "missing table ID")
+		}
 	}
 	var record []string
 	if len(line) != 0 {
-		record = line[recordStartIdx:]
+		record = line[d.meta.RecordStartIdx:]
 	}
 	keyCols := make([]flux.ColMeta, 0, len(d.meta.Cols))
 	keyValues := make([]values.Value, 0, len(d.meta.Cols))
@@ -897,10 +941,10 @@ func (e *ResultEncoder) Encode(w io.Writer, result flux.Result) (int64, error) {
 		}
 
 		if err := tbl.Do(func(cr flux.ColReader) error {
-			record := row[recordStartIdx:]
+			record := row[defaultRecordStartIdx:]
 			l := cr.Len()
 			for i := 0; i < l; i++ {
-				for j, c := range cols[recordStartIdx:] {
+				for j, c := range cols[defaultRecordStartIdx:] {
 					v, err := encodeValueFrom(i, j, c, cr)
 					if err != nil {
 						return wrapEncodingError(err)
@@ -1270,4 +1314,30 @@ func NewMultiResultEncoder(c ResultEncoderConfig) flux.MultiResultEncoder {
 		Delimiter: []byte("\r\n"),
 		Encoder:   NewResultEncoder(c),
 	}
+}
+
+// bufferedCSVReader allows for unreading a single line of the csv data
+type bufferedCSVReader struct {
+	r    *csv.Reader
+	line []string
+}
+
+// Read returns the next line in the csv stream
+func (b *bufferedCSVReader) Read() ([]string, error) {
+	if len(b.line) > 0 {
+		line := b.line
+		b.line = nil
+		return line, nil
+	}
+	return b.r.Read()
+}
+
+// Unread places the provided line back on the buffer.
+// It is invalid to call unread multiple times without calling Read inbetween.
+func (b *bufferedCSVReader) Unread(line []string) error {
+	if len(b.line) > 0 {
+		return errors.New(codes.Internal, "unread was called without reading first")
+	}
+	b.line = line
+	return nil
 }
