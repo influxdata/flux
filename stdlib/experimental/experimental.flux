@@ -52,3 +52,31 @@ builtin window : (
 
 // An experimental version of integral.
 builtin integral : (<-tables: [{T with _time: time, _value: B}], ?unit: duration, ?interpolate: string) => [{T with _value: B}]
+
+// An experimental version of count.
+builtin count : (<-tables: [{T with _value: A}]) => [{T with _value: int}]
+
+// An experimental version of histogramQuantile
+builtin histogramQuantile : (<-tables: [{T with _value: float, le: float}], ?quantile: float, ?minValue: float) => [{T with _value: float}]
+
+// An experimental version of mean.
+builtin mean : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
+
+// An experimental version of mode.
+builtin mode : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+
+// An experimental version of quantile.
+builtin quantile : (<-tables: [{T with _value: float}], q: float, ?compression: float, ?method: string) => [{T with _value: float}]
+
+// An experimental version of skew.
+builtin skew : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
+
+// An experimental version of spread.
+builtin spread : (<-tables: [{T with _value: A}]) =>  [{T with _value: A}] where A: Numeric
+
+// An experimental version of stddev.
+builtin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with _value: float}]
+
+// An experimental version of sum.
+builtin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric
+

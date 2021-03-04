@@ -27,12 +27,12 @@ type StddevOpSpec struct {
 func init() {
 	stddevSignature := runtime.MustLookupBuiltinType("universe", "stddev")
 
-	runtime.RegisterPackageValue("universe", StddevKind, flux.MustValue(flux.FunctionValue(StddevKind, createStddevOpSpec, stddevSignature)))
+	runtime.RegisterPackageValue("universe", StddevKind, flux.MustValue(flux.FunctionValue(StddevKind, CreateStddevOpSpec, stddevSignature)))
 	flux.RegisterOpSpec(StddevKind, newStddevOp)
 	plan.RegisterProcedureSpec(StddevKind, newStddevProcedure, StddevKind)
 	execute.RegisterTransformation(StddevKind, createStddevTransformation)
 }
-func createStddevOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateStddevOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

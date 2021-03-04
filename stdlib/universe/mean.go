@@ -22,12 +22,12 @@ type MeanOpSpec struct {
 func init() {
 	meanSignature := runtime.MustLookupBuiltinType("universe", "mean")
 
-	runtime.RegisterPackageValue("universe", MeanKind, flux.MustValue(flux.FunctionValue(MeanKind, createMeanOpSpec, meanSignature)))
+	runtime.RegisterPackageValue("universe", MeanKind, flux.MustValue(flux.FunctionValue(MeanKind, CreateMeanOpSpec, meanSignature)))
 	flux.RegisterOpSpec(MeanKind, newMeanOp)
 	plan.RegisterProcedureSpec(MeanKind, newMeanProcedure, MeanKind)
 	execute.RegisterTransformation(MeanKind, createMeanTransformation)
 }
-func createMeanOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateMeanOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

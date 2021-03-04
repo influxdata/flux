@@ -16,13 +16,13 @@ const SpreadKind = "spread"
 func init() {
 	spreadSignature := runtime.MustLookupBuiltinType("universe", "spread")
 
-	runtime.RegisterPackageValue("universe", SpreadKind, flux.MustValue(flux.FunctionValue(SpreadKind, createSpreadOpSpec, spreadSignature)))
+	runtime.RegisterPackageValue("universe", SpreadKind, flux.MustValue(flux.FunctionValue(SpreadKind, CreateSpreadOpSpec, spreadSignature)))
 	flux.RegisterOpSpec(SpreadKind, newSpreadOp)
 	plan.RegisterProcedureSpec(SpreadKind, newSpreadProcedure, SpreadKind)
 	execute.RegisterTransformation(SpreadKind, createSpreadTransformation)
 }
 
-func createSpreadOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateSpreadOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

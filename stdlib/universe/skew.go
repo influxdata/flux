@@ -21,12 +21,12 @@ type SkewOpSpec struct {
 func init() {
 	skewSignature := runtime.MustLookupBuiltinType("universe", "skew")
 
-	runtime.RegisterPackageValue("universe", SkewKind, flux.MustValue(flux.FunctionValue(SkewKind, createSkewOpSpec, skewSignature)))
+	runtime.RegisterPackageValue("universe", SkewKind, flux.MustValue(flux.FunctionValue(SkewKind, CreateSkewOpSpec, skewSignature)))
 	flux.RegisterOpSpec(SkewKind, newSkewOp)
 	plan.RegisterProcedureSpec(SkewKind, newSkewProcedure, SkewKind)
 	execute.RegisterTransformation(SkewKind, createSkewTransformation)
 }
-func createSkewOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateSkewOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
