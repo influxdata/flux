@@ -371,7 +371,7 @@ func readMetadata(r *csv.Reader, c ResultDecoderConfig, extraLine []string) (tab
 	// Determine column labels
 	var labels []string
 	if c.NoHeader {
-		labels := make([]string, len(datatypes))
+		labels = make([]string, len(datatypes))
 		for i := range labels {
 			labels[i] = fmt.Sprintf("col%d", i)
 		}
