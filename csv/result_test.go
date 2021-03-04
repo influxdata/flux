@@ -75,6 +75,51 @@ func TestResultDecoder(t *testing.T) {
 			},
 		},
 		{
+			name: "single table no header",
+			decoderConfig: csv.ResultDecoderConfig{
+				NoHeader: true,
+			},
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
+#group,false,false,true,true,false,true,true,false
+#default,_result,,,,,,,
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:00Z,cpu,A,42
+,,0,2018-04-17T00:00:00Z,2018-04-17T00:05:00Z,2018-04-17T00:00:01Z,cpu,A,43
+`),
+			result: &executetest.Result{
+				Nm: "_result",
+				Tbls: []*executetest.Table{{
+					KeyCols: []string{"col0", "col1", "col3", "col4"},
+					ColMeta: []flux.ColMeta{
+						{Label: "col0", Type: flux.TTime},
+						{Label: "col1", Type: flux.TTime},
+						{Label: "col2", Type: flux.TTime},
+						{Label: "col3", Type: flux.TString},
+						{Label: "col4", Type: flux.TString},
+						{Label: "col5", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							"cpu",
+							"A",
+							42.0,
+						},
+						{
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 5, 0, 0, time.UTC)),
+							values.ConvertTime(time.Date(2018, 4, 17, 0, 0, 1, 0, time.UTC)),
+							"cpu",
+							"A",
+							43.0,
+						},
+					},
+				}},
+			},
+		},
+		{
 			name:          "single table with null",
 			encoderConfig: csv.DefaultEncoderConfig(),
 			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
