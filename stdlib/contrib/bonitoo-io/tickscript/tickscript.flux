@@ -7,6 +7,16 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/schema"
 import "universe"
 
+// defineCheck creates custom check data required by alert() / monitor.check()
+defineCheck = (id, name, type="custom") => {
+    return {
+        _check_id:   id,
+        _check_name: name,
+        _type:       type,
+        tags:        {}
+    }
+}
+
 // alert is a helper function similar to TICKscript alert.
 alert = (
     check,

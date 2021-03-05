@@ -19,6 +19,7 @@ To learn more about monitoring and alerting in InfluxDB 2.x and Flux, please see
 - `join`
 - `alert`
 - `deadman`
+- `defineCheck`
 
 ## Conversion guidelines
 
@@ -211,11 +212,7 @@ ts.join(tables: { requests: requests, failures: failures }, measurement: "xte")
 _It requires pivoted data (call `schema.fieldsAsCols()` before `tickscript.alert()`)._
 
 Parameters:
-- `check` - Check description. It is a record required by the underlying `monitor` package with the following required fields:  
-   `_check_id` - check unique identifier. Checks created via InfluxDB UI have GUID generated value, but the value can be arbitrary (but unique).  
-   `_check_name` - check name  
-   `_type` - check type (string value, must be `"custom"`)  
-   `tags` - record with additional tags
+- `check` - Check data. It is a record required by the underlying `monitor.check()`. Use `defineCheck()` or create manually.
 - `id` - Function that constructs alert ID. Default is `(r) => "${r._check_id}"`.
 - `message` - Function that constructs alert message. Default is `Threshold Check: ${r._check_name} is: ${r._level}"`.
 - `details` - Function that constructs detailed alert message. Default is `(r) => ""`.
@@ -235,11 +232,7 @@ Triggers critical alert if thoughput drops bellow `threshold` value.
 _It requires pivoted data (call `schema.fieldsAsCols()` before `tickscript.deadman()`)._
 
 Parameters:
-- `check` - Check description. It is a record required by the underlying `monitor` package with the following required fields:  
-   `_check_id` - check unique identifier. Checks created via InfluxDB UI have GUID generated value, but the value can be arbitrary (but unique).  
-   `_check_name` - check name  
-   `_type` - check type (string value, must be `"deadman"`)  
-   `tags` - record with additional tags
+- `check` - Check data. It is a record required by the underlying `monitor` package. Use `defineCheck()` or create manually.
 - `measurement` - measurement name
 - `threshold` - threshold value (integer)
 - `id` - Function that constructs alert ID. Default is `(r) => "${r._check_id}"`.
@@ -247,6 +240,25 @@ Parameters:
 - `topic` - Topic name.
 
 _See Examples._
+
+### tickscript.defineCheck
+
+`tickscript.defineCheck()` creates check record that is required by `alert()` and `deadman()`.
+
+Parameters:
+- `name` - name of the check
+- `id` - unique identifier of the check
+- `type` - check type. Default value: `"custom"`.
+
+It returns a record with the following structure:
+```js
+{
+   _check_id :id,
+   _check_name: name,
+   _type: "custom",
+   tags: {}
+}
+```
 
 ## Examples
 
@@ -286,13 +298,8 @@ option task = {
   every: 1m
 }
 
-// custom check info
-check = {
-  _check_id: "${task.name}-check",
-  _check_name: "${task.name} Check",
-  _type: "custom",
-  tags: {}
-} 
+// create custom check metainfo
+check = ts.defineCheck(id: "${task.name}-check", name: "${task.name} Check")
 
 // converted TICKscript
 
