@@ -40,14 +40,14 @@ data = "
 "
 
 process = servicenow.endpoint(url: url, username: username, password: password)(mapFn: (r) => ({
-    "node": r.node,
-    "metricType": r.metric_type,
-    "resource": r.resource,
-    "metricName": r.metric_name,
-    "messageKey": r.message_key,
-    "description": r.description,
-    "severity": r.severity,
-    "additionalInfo": {}
+    node: r.node,
+    metricType: r.metric_type,
+    resource: r.resource,
+    metricName: r.metric_name,
+    messageKey: r.message_key,
+    description: r.description,
+    severity: r.severity,
+    additionalInfo: {}
 }))
 
 csv.from(csv:data) |> process()
