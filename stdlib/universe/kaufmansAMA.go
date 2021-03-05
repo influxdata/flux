@@ -21,13 +21,13 @@ type KamaOpSpec struct {
 func init() {
 	kamaSignature := runtime.MustLookupBuiltinType("universe", "kaufmansAMA")
 
-	runtime.RegisterPackageValue("universe", kamaKind, flux.MustValue(flux.FunctionValue(kamaKind, createkamaOpSpec, kamaSignature)))
+	runtime.RegisterPackageValue("universe", kamaKind, flux.MustValue(flux.FunctionValue(kamaKind, CreatekamaOpSpec, kamaSignature)))
 	flux.RegisterOpSpec(kamaKind, newkamaOp)
 	plan.RegisterProcedureSpec(kamaKind, newkamaProcedure, kamaKind)
 	execute.RegisterTransformation(kamaKind, createkamaTransformation)
 }
 
-func createkamaOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreatekamaOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

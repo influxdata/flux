@@ -13015,6 +13015,1420 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors: nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
+					Column: 95,
+					Line:   78,
+				},
+				File:   "kama_test.flux",
+				Source: "package experimental_test\n\nimport \"testing\"\nimport \"experimental\"\n\noption now = () => (2030-01-01T00:00:00Z)\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:30Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:40Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:00Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:10Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:30Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:40Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,15,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:01:40Z,10.444444444444445,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,11.135802469135802,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,11.964334705075446,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,12.869074836153025,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,13.81615268675168,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,13.871008014588556,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13.71308456353558,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,13.553331356741122,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,13.46599437575161,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,13.4515677602438,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,13.29930139347417,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,12.805116570729282,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,11.752584300922965,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,10.036160535131101,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,7.797866963961722,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,6.109926091089845,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,4.727736717272135,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,3.515409287373408,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,2.3974496040963373,used_percent,disk,disk1s1,apfs,host.local,/\n\"\n\nkama = (table=<-) =>\n    (table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> experimental.kaufmansAMA(n: 10)\n    )\n\ntest _kama = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})",
+				Start: ast.Position{
+					Column: 1,
+					Line:   1,
+				},
+			},
+		},
+		Body: []ast.Statement{&ast.OptionStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 42,
+							Line:   6,
+						},
+						File:   "kama_test.flux",
+						Source: "now = () => (2030-01-01T00:00:00Z)",
+						Start: ast.Position{
+							Column: 8,
+							Line:   6,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   6,
+							},
+							File:   "kama_test.flux",
+							Source: "now",
+							Start: ast.Position{
+								Column: 8,
+								Line:   6,
+							},
+						},
+					},
+					Name: "now",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 42,
+								Line:   6,
+							},
+							File:   "kama_test.flux",
+							Source: "() => (2030-01-01T00:00:00Z)",
+							Start: ast.Position{
+								Column: 14,
+								Line:   6,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   6,
+								},
+								File:   "kama_test.flux",
+								Source: "(2030-01-01T00:00:00Z)",
+								Start: ast.Position{
+									Column: 20,
+									Line:   6,
+								},
+							},
+						},
+						Expression: &ast.DateTimeLiteral{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 41,
+										Line:   6,
+									},
+									File:   "kama_test.flux",
+									Source: "2030-01-01T00:00:00Z",
+									Start: ast.Position{
+										Column: 21,
+										Line:   6,
+									},
+								},
+							},
+							Value: parser.MustParseTime("2030-01-01T00:00:00Z"),
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 42,
+						Line:   6,
+					},
+					File:   "kama_test.flux",
+					Source: "option now = () => (2030-01-01T00:00:00Z)",
+					Start: ast.Position{
+						Column: 1,
+						Line:   6,
+					},
+				},
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   42,
+					},
+					File:   "kama_test.flux",
+					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:30Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:40Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:00Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:10Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:30Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:40Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,15,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   8,
+						},
+						File:   "kama_test.flux",
+						Source: "inData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "inData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   42,
+						},
+						File:   "kama_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:30Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:40Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:00Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:10Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:30Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:40Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,15,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n\"",
+						Start: ast.Position{
+							Column: 10,
+							Line:   8,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:00:00Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:10Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:30Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:40Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:00:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:00Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:10Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:30Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:40Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,15,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,14,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,12,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,11,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,10,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,9,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,8,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,7,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,6,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,5,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,4,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,3,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,2,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,1,used_percent,disk,disk1s1,apfs,host.local,/\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   68,
+					},
+					File:   "kama_test.flux",
+					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:01:40Z,10.444444444444445,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,11.135802469135802,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,11.964334705075446,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,12.869074836153025,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,13.81615268675168,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,13.871008014588556,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13.71308456353558,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,13.553331356741122,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,13.46599437575161,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,13.4515677602438,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,13.29930139347417,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,12.805116570729282,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,11.752584300922965,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,10.036160535131101,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,7.797866963961722,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,6.109926091089845,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,4.727736717272135,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,3.515409287373408,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,2.3974496040963373,used_percent,disk,disk1s1,apfs,host.local,/\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   44,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 8,
+							Line:   44,
+						},
+						File:   "kama_test.flux",
+						Source: "outData",
+						Start: ast.Position{
+							Column: 1,
+							Line:   44,
+						},
+					},
+				},
+				Name: "outData",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   68,
+						},
+						File:   "kama_test.flux",
+						Source: "\"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:01:40Z,10.444444444444445,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,11.135802469135802,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,11.964334705075446,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,12.869074836153025,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,13.81615268675168,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,13.871008014588556,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13.71308456353558,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,13.553331356741122,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,13.46599437575161,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,13.4515677602438,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,13.29930139347417,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,12.805116570729282,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,11.752584300922965,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,10.036160535131101,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,7.797866963961722,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,6.109926091089845,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,4.727736717272135,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,3.515409287373408,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,2.3974496040963373,used_percent,disk,disk1s1,apfs,host.local,/\n\"",
+						Start: ast.Position{
+							Column: 11,
+							Line:   44,
+						},
+					},
+				},
+				Value: "\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string\n#group,false,false,false,false,true,true,true,true,true,true\n#default,_result,,,,,,,,,\n,result,table,_time,_value,_field,_measurement,device,fstype,host,path\n,,0,2018-05-22T00:01:40Z,10.444444444444445,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:01:50Z,11.135802469135802,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:00Z,11.964334705075446,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:10Z,12.869074836153025,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:20Z,13.81615268675168,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:30Z,13.871008014588556,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:40Z,13.71308456353558,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:02:50Z,13.553331356741122,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:00Z,13.46599437575161,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:10Z,13.4515677602438,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:20Z,13.29930139347417,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:30Z,12.805116570729282,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:40Z,11.752584300922965,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:03:50Z,10.036160535131101,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:00Z,7.797866963961722,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:10Z,6.109926091089845,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:20Z,4.727736717272135,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:30Z,3.515409287373408,used_percent,disk,disk1s1,apfs,host.local,/\n,,0,2018-05-22T00:04:40Z,2.3974496040963373,used_percent,disk,disk1s1,apfs,host.local,/\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 6,
+						Line:   75,
+					},
+					File:   "kama_test.flux",
+					Source: "kama = (table=<-) =>\n    (table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> experimental.kaufmansAMA(n: 10)\n    )",
+					Start: ast.Position{
+						Column: 1,
+						Line:   70,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   70,
+						},
+						File:   "kama_test.flux",
+						Source: "kama",
+						Start: ast.Position{
+							Column: 1,
+							Line:   70,
+						},
+					},
+				},
+				Name: "kama",
+			},
+			Init: &ast.FunctionExpression{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 6,
+							Line:   75,
+						},
+						File:   "kama_test.flux",
+						Source: "(table=<-) =>\n    (table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> experimental.kaufmansAMA(n: 10)\n    )",
+						Start: ast.Position{
+							Column: 8,
+							Line:   70,
+						},
+					},
+				},
+				Body: &ast.ParenExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 6,
+								Line:   75,
+							},
+							File:   "kama_test.flux",
+							Source: "(table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> experimental.kaufmansAMA(n: 10)\n    )",
+							Start: ast.Position{
+								Column: 5,
+								Line:   71,
+							},
+						},
+					},
+					Expression: &ast.PipeExpression{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.PipeExpression{
+								Argument: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   71,
+											},
+											File:   "kama_test.flux",
+											Source: "table",
+											Start: ast.Position{
+												Column: 6,
+												Line:   71,
+											},
+										},
+									},
+									Name: "table",
+								},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 45,
+											Line:   72,
+										},
+										File:   "kama_test.flux",
+										Source: "table\n        |> range(start:2018-05-22T00:00:00Z)",
+										Start: ast.Position{
+											Column: 6,
+											Line:   71,
+										},
+									},
+								},
+								Call: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   72,
+												},
+												File:   "kama_test.flux",
+												Source: "start:2018-05-22T00:00:00Z",
+												Start: ast.Position{
+													Column: 18,
+													Line:   72,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   72,
+													},
+													File:   "kama_test.flux",
+													Source: "start:2018-05-22T00:00:00Z",
+													Start: ast.Position{
+														Column: 18,
+														Line:   72,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 23,
+															Line:   72,
+														},
+														File:   "kama_test.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 18,
+															Line:   72,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Value: &ast.DateTimeLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   72,
+														},
+														File:   "kama_test.flux",
+														Source: "2018-05-22T00:00:00Z",
+														Start: ast.Position{
+															Column: 24,
+															Line:   72,
+														},
+													},
+												},
+												Value: parser.MustParseTime("2018-05-22T00:00:00Z"),
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   72,
+											},
+											File:   "kama_test.flux",
+											Source: "range(start:2018-05-22T00:00:00Z)",
+											Start: ast.Position{
+												Column: 12,
+												Line:   72,
+											},
+										},
+									},
+									Callee: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 17,
+													Line:   72,
+												},
+												File:   "kama_test.flux",
+												Source: "range",
+												Start: ast.Position{
+													Column: 12,
+													Line:   72,
+												},
+											},
+										},
+										Name: "range",
+									},
+								},
+							},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 46,
+										Line:   73,
+									},
+									File:   "kama_test.flux",
+									Source: "table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])",
+									Start: ast.Position{
+										Column: 6,
+										Line:   71,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 45,
+												Line:   73,
+											},
+											File:   "kama_test.flux",
+											Source: "columns: [\"_start\", \"_stop\"]",
+											Start: ast.Position{
+												Column: 17,
+												Line:   73,
+											},
+										},
+									},
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   73,
+												},
+												File:   "kama_test.flux",
+												Source: "columns: [\"_start\", \"_stop\"]",
+												Start: ast.Position{
+													Column: 17,
+													Line:   73,
+												},
+											},
+										},
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   73,
+													},
+													File:   "kama_test.flux",
+													Source: "columns",
+													Start: ast.Position{
+														Column: 17,
+														Line:   73,
+													},
+												},
+											},
+											Name: "columns",
+										},
+										Value: &ast.ArrayExpression{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   73,
+													},
+													File:   "kama_test.flux",
+													Source: "[\"_start\", \"_stop\"]",
+													Start: ast.Position{
+														Column: 26,
+														Line:   73,
+													},
+												},
+											},
+											Elements: []ast.Expression{&ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 35,
+															Line:   73,
+														},
+														File:   "kama_test.flux",
+														Source: "\"_start\"",
+														Start: ast.Position{
+															Column: 27,
+															Line:   73,
+														},
+													},
+												},
+												Value: "_start",
+											}, &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 44,
+															Line:   73,
+														},
+														File:   "kama_test.flux",
+														Source: "\"_stop\"",
+														Start: ast.Position{
+															Column: 37,
+															Line:   73,
+														},
+													},
+												},
+												Value: "_stop",
+											}},
+										},
+									}},
+									With: nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   73,
+										},
+										File:   "kama_test.flux",
+										Source: "drop(columns: [\"_start\", \"_stop\"])",
+										Start: ast.Position{
+											Column: 12,
+											Line:   73,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   73,
+											},
+											File:   "kama_test.flux",
+											Source: "drop",
+											Start: ast.Position{
+												Column: 12,
+												Line:   73,
+											},
+										},
+									},
+									Name: "drop",
+								},
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 43,
+									Line:   74,
+								},
+								File:   "kama_test.flux",
+								Source: "table\n        |> range(start:2018-05-22T00:00:00Z)\n        |> drop(columns: [\"_start\", \"_stop\"])\n        |> experimental.kaufmansAMA(n: 10)",
+								Start: ast.Position{
+									Column: 6,
+									Line:   71,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   74,
+										},
+										File:   "kama_test.flux",
+										Source: "n: 10",
+										Start: ast.Position{
+											Column: 37,
+											Line:   74,
+										},
+									},
+								},
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   74,
+											},
+											File:   "kama_test.flux",
+											Source: "n: 10",
+											Start: ast.Position{
+												Column: 37,
+												Line:   74,
+											},
+										},
+									},
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 38,
+													Line:   74,
+												},
+												File:   "kama_test.flux",
+												Source: "n",
+												Start: ast.Position{
+													Column: 37,
+													Line:   74,
+												},
+											},
+										},
+										Name: "n",
+									},
+									Value: &ast.IntegerLiteral{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 42,
+													Line:   74,
+												},
+												File:   "kama_test.flux",
+												Source: "10",
+												Start: ast.Position{
+													Column: 40,
+													Line:   74,
+												},
+											},
+										},
+										Value: int64(10),
+									},
+								}},
+								With: nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 43,
+										Line:   74,
+									},
+									File:   "kama_test.flux",
+									Source: "experimental.kaufmansAMA(n: 10)",
+									Start: ast.Position{
+										Column: 12,
+										Line:   74,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 36,
+											Line:   74,
+										},
+										File:   "kama_test.flux",
+										Source: "experimental.kaufmansAMA",
+										Start: ast.Position{
+											Column: 12,
+											Line:   74,
+										},
+									},
+								},
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   74,
+											},
+											File:   "kama_test.flux",
+											Source: "experimental",
+											Start: ast.Position{
+												Column: 12,
+												Line:   74,
+											},
+										},
+									},
+									Name: "experimental",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 36,
+												Line:   74,
+											},
+											File:   "kama_test.flux",
+											Source: "kaufmansAMA",
+											Start: ast.Position{
+												Column: 25,
+												Line:   74,
+											},
+										},
+									},
+									Name: "kaufmansAMA",
+								},
+							},
+						},
+					},
+				},
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   70,
+							},
+							File:   "kama_test.flux",
+							Source: "table=<-",
+							Start: ast.Position{
+								Column: 9,
+								Line:   70,
+							},
+						},
+					},
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   70,
+								},
+								File:   "kama_test.flux",
+								Source: "table",
+								Start: ast.Position{
+									Column: 9,
+									Line:   70,
+								},
+							},
+						},
+						Name: "table",
+					},
+					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 17,
+								Line:   70,
+							},
+							File:   "kama_test.flux",
+							Source: "<-",
+							Start: ast.Position{
+								Column: 15,
+								Line:   70,
+							},
+						},
+					}},
+				}},
+			},
+		}, &ast.TestStatement{
+			Assignment: &ast.VariableAssignment{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 95,
+							Line:   78,
+						},
+						File:   "kama_test.flux",
+						Source: "_kama = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})",
+						Start: ast.Position{
+							Column: 6,
+							Line:   77,
+						},
+					},
+				},
+				ID: &ast.Identifier{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 11,
+								Line:   77,
+							},
+							File:   "kama_test.flux",
+							Source: "_kama",
+							Start: ast.Position{
+								Column: 6,
+								Line:   77,
+							},
+						},
+					},
+					Name: "_kama",
+				},
+				Init: &ast.FunctionExpression{
+					BaseNode: ast.BaseNode{
+						Errors: nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 95,
+								Line:   78,
+							},
+							File:   "kama_test.flux",
+							Source: "() =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})",
+							Start: ast.Position{
+								Column: 14,
+								Line:   77,
+							},
+						},
+					},
+					Body: &ast.ParenExpression{
+						BaseNode: ast.BaseNode{
+							Errors: nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 95,
+									Line:   78,
+								},
+								File:   "kama_test.flux",
+								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})",
+								Start: ast.Position{
+									Column: 5,
+									Line:   78,
+								},
+							},
+						},
+						Expression: &ast.ObjectExpression{
+							BaseNode: ast.BaseNode{
+								Errors: nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 94,
+										Line:   78,
+									},
+									File:   "kama_test.flux",
+									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama}",
+									Start: ast.Position{
+										Column: 6,
+										Line:   78,
+									},
+								},
+							},
+							Properties: []*ast.Property{&ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 46,
+											Line:   78,
+										},
+										File:   "kama_test.flux",
+										Source: "input: testing.loadStorage(csv: inData)",
+										Start: ast.Position{
+											Column: 7,
+											Line:   78,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 12,
+												Line:   78,
+											},
+											File:   "kama_test.flux",
+											Source: "input",
+											Start: ast.Position{
+												Column: 7,
+												Line:   78,
+											},
+										},
+									},
+									Name: "input",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 45,
+													Line:   78,
+												},
+												File:   "kama_test.flux",
+												Source: "csv: inData",
+												Start: ast.Position{
+													Column: 34,
+													Line:   78,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 45,
+														Line:   78,
+													},
+													File:   "kama_test.flux",
+													Source: "csv: inData",
+													Start: ast.Position{
+														Column: 34,
+														Line:   78,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 37,
+															Line:   78,
+														},
+														File:   "kama_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 34,
+															Line:   78,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 45,
+															Line:   78,
+														},
+														File:   "kama_test.flux",
+														Source: "inData",
+														Start: ast.Position{
+															Column: 39,
+															Line:   78,
+														},
+													},
+												},
+												Name: "inData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 46,
+												Line:   78,
+											},
+											File:   "kama_test.flux",
+											Source: "testing.loadStorage(csv: inData)",
+											Start: ast.Position{
+												Column: 14,
+												Line:   78,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   78,
+												},
+												File:   "kama_test.flux",
+												Source: "testing.loadStorage",
+												Start: ast.Position{
+													Column: 14,
+													Line:   78,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 21,
+														Line:   78,
+													},
+													File:   "kama_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 14,
+														Line:   78,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 33,
+														Line:   78,
+													},
+													File:   "kama_test.flux",
+													Source: "loadStorage",
+													Start: ast.Position{
+														Column: 22,
+														Line:   78,
+													},
+												},
+											},
+											Name: "loadStorage",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 83,
+											Line:   78,
+										},
+										File:   "kama_test.flux",
+										Source: "want: testing.loadMem(csv: outData)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   78,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 52,
+												Line:   78,
+											},
+											File:   "kama_test.flux",
+											Source: "want",
+											Start: ast.Position{
+												Column: 48,
+												Line:   78,
+											},
+										},
+									},
+									Name: "want",
+								},
+								Value: &ast.CallExpression{
+									Arguments: []ast.Expression{&ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   78,
+												},
+												File:   "kama_test.flux",
+												Source: "csv: outData",
+												Start: ast.Position{
+													Column: 70,
+													Line:   78,
+												},
+											},
+										},
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 82,
+														Line:   78,
+													},
+													File:   "kama_test.flux",
+													Source: "csv: outData",
+													Start: ast.Position{
+														Column: 70,
+														Line:   78,
+													},
+												},
+											},
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 73,
+															Line:   78,
+														},
+														File:   "kama_test.flux",
+														Source: "csv",
+														Start: ast.Position{
+															Column: 70,
+															Line:   78,
+														},
+													},
+												},
+												Name: "csv",
+											},
+											Value: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Errors: nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   78,
+														},
+														File:   "kama_test.flux",
+														Source: "outData",
+														Start: ast.Position{
+															Column: 75,
+															Line:   78,
+														},
+													},
+												},
+												Name: "outData",
+											},
+										}},
+										With: nil,
+									}},
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   78,
+											},
+											File:   "kama_test.flux",
+											Source: "testing.loadMem(csv: outData)",
+											Start: ast.Position{
+												Column: 54,
+												Line:   78,
+											},
+										},
+									},
+									Callee: &ast.MemberExpression{
+										BaseNode: ast.BaseNode{
+											Errors: nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 69,
+													Line:   78,
+												},
+												File:   "kama_test.flux",
+												Source: "testing.loadMem",
+												Start: ast.Position{
+													Column: 54,
+													Line:   78,
+												},
+											},
+										},
+										Object: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   78,
+													},
+													File:   "kama_test.flux",
+													Source: "testing",
+													Start: ast.Position{
+														Column: 54,
+														Line:   78,
+													},
+												},
+											},
+											Name: "testing",
+										},
+										Property: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Errors: nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 69,
+														Line:   78,
+													},
+													File:   "kama_test.flux",
+													Source: "loadMem",
+													Start: ast.Position{
+														Column: 62,
+														Line:   78,
+													},
+												},
+											},
+											Name: "loadMem",
+										},
+									},
+								},
+							}, &ast.Property{
+								BaseNode: ast.BaseNode{
+									Errors: nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 93,
+											Line:   78,
+										},
+										File:   "kama_test.flux",
+										Source: "fn: kama",
+										Start: ast.Position{
+											Column: 85,
+											Line:   78,
+										},
+									},
+								},
+								Key: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 87,
+												Line:   78,
+											},
+											File:   "kama_test.flux",
+											Source: "fn",
+											Start: ast.Position{
+												Column: 85,
+												Line:   78,
+											},
+										},
+									},
+									Name: "fn",
+								},
+								Value: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Errors: nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 93,
+												Line:   78,
+											},
+											File:   "kama_test.flux",
+											Source: "kama",
+											Start: ast.Position{
+												Column: 89,
+												Line:   78,
+											},
+										},
+									},
+									Name: "kama",
+								},
+							}},
+							With: nil,
+						},
+					},
+					Params: []*ast.Property{},
+				},
+			},
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 95,
+						Line:   78,
+					},
+					File:   "kama_test.flux",
+					Source: "test _kama = () =>\n    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})",
+					Start: ast.Position{
+						Column: 1,
+						Line:   77,
+					},
+				},
+			},
+		}},
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 17,
+						Line:   3,
+					},
+					File:   "kama_test.flux",
+					Source: "import \"testing\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 17,
+							Line:   3,
+						},
+						File:   "kama_test.flux",
+						Source: "\"testing\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "testing",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 22,
+						Line:   4,
+					},
+					File:   "kama_test.flux",
+					Source: "import \"experimental\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 22,
+							Line:   4,
+						},
+						File:   "kama_test.flux",
+						Source: "\"experimental\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "experimental",
+			},
+		}},
+		Metadata: "parser-type=rust",
+		Name:     "kama_test.flux",
+		Package: &ast.PackageClause{
+			BaseNode: ast.BaseNode{
+				Errors: nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 26,
+						Line:   1,
+					},
+					File:   "kama_test.flux",
+					Source: "package experimental_test",
+					Start: ast.Position{
+						Column: 1,
+						Line:   1,
+					},
+				},
+			},
+			Name: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Errors: nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 26,
+							Line:   1,
+						},
+						File:   "kama_test.flux",
+						Source: "experimental_test",
+						Start: ast.Position{
+							Column: 9,
+							Line:   1,
+						},
+					},
+				},
+				Name: "experimental_test",
+			},
+		},
+	}, &ast.File{
+		BaseNode: ast.BaseNode{
+			Errors: nil,
+			Loc: &ast.SourceLocation{
+				End: ast.Position{
 					Column: 94,
 					Line:   59,
 				},
