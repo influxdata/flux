@@ -7,7 +7,7 @@ import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/schema"
 import "universe"
 
-// defineCheck creates custom check data required by alert() / monitor.check()
+// defineCheck creates custom check data required by alert() and deadman()
 defineCheck = (id, name, type="custom") => {
     return {
         _check_id:   id,
