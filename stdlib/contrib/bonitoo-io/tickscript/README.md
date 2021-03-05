@@ -298,7 +298,7 @@ option task = {
   every: 1m
 }
 
-// create custom check metainfo
+// create custom check info
 check = ts.defineCheck(id: "${task.name}-check", name: "${task.name} Check")
 
 // converted TICKscript
@@ -360,12 +360,7 @@ option task = {
 }
 
 // custom check info
-check = {
-  _check_id: "${task.name}-check",
-  _check_name: "${task.name} Check",
-  _type: "deadman",
-  tags: {}
-}
+check = ts.defineCheck(id: "${task.name}-check", name: "${task.name} Check")
 
 // converted TICKscript
 
