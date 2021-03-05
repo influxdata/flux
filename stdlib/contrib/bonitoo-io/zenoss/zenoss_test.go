@@ -3,7 +3,6 @@ package zenoss_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
@@ -41,14 +40,14 @@ data = "
 "
 
 process = zenoss.endpoint(url: url, username: username, password: password)(mapFn: (r) => ({
-    "summary": r.description,
-    "device": r.node,
-    "component": "CPU",
-    "severity": r.severity,
-    "eventClass": "/App",
-    "eventClassKey": "",
-    "message": "",
-    "collector": "localhost",
+    summary: r.description,
+    device: r.node,
+    component: "CPU",
+    severity: r.severity,
+    eventClass: "/App",
+    eventClassKey: "",
+    message: "",
+    collector: "localhost",
 }))
 
 csv.from(csv:data) |> process()
@@ -149,7 +148,7 @@ endpoint = ` + tc.fn + `(mapFn: (r) => ({
 }))
 
 csv.from(csv:data) |> endpoint()`
-			fmt.Println(fluxString)
+
 			prog, err := lang.Compile(fluxString, runtime.Default, time.Now())
 			if err != nil {
 				t.Fatal(err)
