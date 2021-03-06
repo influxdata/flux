@@ -80,3 +80,6 @@ builtin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with
 // An experimental version of sum.
 builtin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric
 
+// An experimental version of kaufmansAMA.
+builtin kaufmansAMA : (<-tables: [{T with _value: A}], n: int) => [{T with _value: float}] where A: Numeric
+
