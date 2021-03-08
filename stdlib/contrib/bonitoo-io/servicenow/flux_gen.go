@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   87,
+					Line:   93,
 				},
 				File:   "servicenow.flux",
-				Source: "package servicenow\n\nimport \"http\"\nimport \"json\"\n\n// `event` sends an alert to ServiceNow as event.\n// `url` - string - web service URL. No default.\n// `username` - string - username for HTTP BASIC authentication.\n// `password` - string - password for HTTP BASIC authentication.\n// `source` - string - source that generated the event. Defaults to \"Flux\".\n// `node` - string - node name, IP address etc associated with the event. Defaults to empty string.\n// `metricType` - string - metric type to which the event is related. Defaults to empty string.\n// `resource` - string - node resource to which the event is related. Defaults to empty string.\n// `metricName` - string - metric name. Defaults to empty string.\n// `messageKey` - string - unique identification of the event, eg. InfluxDB alert ID. Default is empty string (ServiceNow will fill the value).\n// `description` - string - The text describing the event.\n// `severity` - severity - Severity of the event. One of \"critical\", \"major\", \"minor\", \"warning\", \"info\" or \"clear\".\n// `additionalInfo` - record - Additional information.\nevent = (url, username, password, source=\"Flux\", node=\"\", metricType=\"\", resource=\"\", metricName=\"\", messageKey=\"\", description, severity, additionalInfo) => {\n    encodedInfo = string(v: json.encode(v: additionalInfo))\n    event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }\n    payload = {\n        records: [\n            event\n        ]\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}\n\n// `endpoint` creates the endpoint for the ServiceNow external service.\n// `url` - string - ServiceNow web service URL. No default.\n// `username` - string - username for HTTP BASIC authentication. Default is empty string (no authentication).\n// `password` - string - password for HTTP BASIC authentication. Default is empty string (no authentication).\n// `source` - string - source that generated the event. Defaults to \"Flux\".\n// `node` - string - node name, IP address etc associated with the event. Defaults to empty string.\n// `metricType` - string - metric type to which the event is related. Defaults to empty string.\n// `resource` - string - node resource to which the event is related. Defaults to empty string.\n// `metricName` - string - metric name. Defaults to empty string.\n// `messageKey` - string - unique identification of the event, eg. InfluxDB alert ID. Default is empty string (ServiceNow will fill the value).\n// `description` - string - The text describing the event.\n// `severity` - severity - Severity of the event. One of \"critical\", \"major\", \"minor\", \"warning\", \"info\" or \"clear\".\n// `additionalInfo` - record - Additional information.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `node`, `metricType`, `resource`, `metricName`, `messageKey`, `description`, `severity` and `additionalInfo` fields as defined in the `event` function arguments.\nendpoint = (url, username, password, source=\"Flux\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
+				Source: "package servicenow\n\nimport \"http\"\nimport \"json\"\n\n// event sends event to ServiceNow.\n// `url` - string - web service URL. No default.\n// `username` - string - username for HTTP BASIC authentication.\n// `password` - string - password for HTTP BASIC authentication.\n// `source` - string - source that generated the event. Defaults to \"Flux\".\n// `node` - string - node name, IP address etc associated with the event. Defaults to empty string.\n// `metricType` - string - metric type to which the event is related. Defaults to empty string.\n// `resource` - string - node resource to which the event is related. Defaults to empty string.\n// `metricName` - string - metric name. Defaults to empty string.\n// `messageKey` - string - unique identification of the event, eg. InfluxDB alert ID. Default is empty string (ServiceNow will fill the value).\n// `description` - string - The text describing the event.\n// `severity` - severity - Severity of the event. One of \"critical\", \"major\", \"minor\", \"warning\", \"info\" or \"clear\".\n// `additionalInfo` - record - Additional information.\nevent = (\n    url,\n    username,\n    password,\n    source=\"Flux\",\n    node=\"\",\n    metricType=\"\",\n    resource=\"\",\n    metricName=\"\",\n    messageKey=\"\",\n    description,\n    severity,\n    additionalInfo\n) => {\n    encodedInfo = string(v: json.encode(v: additionalInfo))\n    event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }\n    payload = {\n        records: [\n            event\n        ]\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}\n\n// endpoint creates the endpoint for the ServiceNow external service.\n// `url` - string - ServiceNow web service URL. No default.\n// `username` - string - username for HTTP BASIC authentication. Default is empty string (no authentication).\n// `password` - string - password for HTTP BASIC authentication. Default is empty string (no authentication).\n// `source` - string - source that generated the event. Defaults to \"Flux\".\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `node`, `metricType`, `resource`, `metricName`, `messageKey`, `description`,\n// `severity` and `additionalInfo` fields as defined in the `event` function arguments.\nendpoint = (url, username, password, source=\"Flux\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -38,10 +38,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   51,
+						Line:   64,
 					},
 					File:   "servicenow.flux",
-					Source: "event = (url, username, password, source=\"Flux\", node=\"\", metricType=\"\", resource=\"\", metricName=\"\", messageKey=\"\", description, severity, additionalInfo) => {\n    encodedInfo = string(v: json.encode(v: additionalInfo))\n    event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }\n    payload = {\n        records: [\n            event\n        ]\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
+					Source: "event = (\n    url,\n    username,\n    password,\n    source=\"Flux\",\n    node=\"\",\n    metricType=\"\",\n    resource=\"\",\n    metricName=\"\",\n    messageKey=\"\",\n    description,\n    severity,\n    additionalInfo\n) => {\n    encodedInfo = string(v: json.encode(v: additionalInfo))\n    event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }\n    payload = {\n        records: [\n            event\n        ]\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   19,
@@ -72,10 +72,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   51,
+							Line:   64,
 						},
 						File:   "servicenow.flux",
-						Source: "(url, username, password, source=\"Flux\", node=\"\", metricType=\"\", resource=\"\", metricName=\"\", messageKey=\"\", description, severity, additionalInfo) => {\n    encodedInfo = string(v: json.encode(v: additionalInfo))\n    event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }\n    payload = {\n        records: [\n            event\n        ]\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
+						Source: "(\n    url,\n    username,\n    password,\n    source=\"Flux\",\n    node=\"\",\n    metricType=\"\",\n    resource=\"\",\n    metricName=\"\",\n    messageKey=\"\",\n    description,\n    severity,\n    additionalInfo\n) => {\n    encodedInfo = string(v: json.encode(v: additionalInfo))\n    event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }\n    payload = {\n        records: [\n            event\n        ]\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 						Start: ast.Position{
 							Column: 9,
 							Line:   19,
@@ -88,13 +88,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   51,
+								Line:   64,
 							},
 							File:   "servicenow.flux",
 							Source: "{\n    encodedInfo = string(v: json.encode(v: additionalInfo))\n    event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }\n    payload = {\n        records: [\n            event\n        ]\n    }\n    headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:payload)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 							Start: ast.Position{
-								Column: 159,
-								Line:   19,
+								Column: 6,
+								Line:   32,
 							},
 						},
 					},
@@ -104,13 +104,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   20,
+									Line:   33,
 								},
 								File:   "servicenow.flux",
 								Source: "encodedInfo = string(v: json.encode(v: additionalInfo))",
 								Start: ast.Position{
 									Column: 5,
-									Line:   20,
+									Line:   33,
 								},
 							},
 						},
@@ -120,13 +120,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   20,
+										Line:   33,
 									},
 									File:   "servicenow.flux",
 									Source: "encodedInfo",
 									Start: ast.Position{
 										Column: 5,
-										Line:   20,
+										Line:   33,
 									},
 								},
 							},
@@ -139,13 +139,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   20,
+											Line:   33,
 										},
 										File:   "servicenow.flux",
 										Source: "v: json.encode(v: additionalInfo)",
 										Start: ast.Position{
 											Column: 26,
-											Line:   20,
+											Line:   33,
 										},
 									},
 								},
@@ -155,13 +155,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 59,
-												Line:   20,
+												Line:   33,
 											},
 											File:   "servicenow.flux",
 											Source: "v: json.encode(v: additionalInfo)",
 											Start: ast.Position{
 												Column: 26,
-												Line:   20,
+												Line:   33,
 											},
 										},
 									},
@@ -171,13 +171,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   20,
+													Line:   33,
 												},
 												File:   "servicenow.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 26,
-													Line:   20,
+													Line:   33,
 												},
 											},
 										},
@@ -190,13 +190,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
-														Line:   20,
+														Line:   33,
 													},
 													File:   "servicenow.flux",
 													Source: "v: additionalInfo",
 													Start: ast.Position{
 														Column: 41,
-														Line:   20,
+														Line:   33,
 													},
 												},
 											},
@@ -206,13 +206,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 58,
-															Line:   20,
+															Line:   33,
 														},
 														File:   "servicenow.flux",
 														Source: "v: additionalInfo",
 														Start: ast.Position{
 															Column: 41,
-															Line:   20,
+															Line:   33,
 														},
 													},
 												},
@@ -222,13 +222,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 42,
-																Line:   20,
+																Line:   33,
 															},
 															File:   "servicenow.flux",
 															Source: "v",
 															Start: ast.Position{
 																Column: 41,
-																Line:   20,
+																Line:   33,
 															},
 														},
 													},
@@ -240,13 +240,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 58,
-																Line:   20,
+																Line:   33,
 															},
 															File:   "servicenow.flux",
 															Source: "additionalInfo",
 															Start: ast.Position{
 																Column: 44,
-																Line:   20,
+																Line:   33,
 															},
 														},
 													},
@@ -260,13 +260,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   20,
+													Line:   33,
 												},
 												File:   "servicenow.flux",
 												Source: "json.encode(v: additionalInfo)",
 												Start: ast.Position{
 													Column: 29,
-													Line:   20,
+													Line:   33,
 												},
 											},
 										},
@@ -276,13 +276,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
-														Line:   20,
+														Line:   33,
 													},
 													File:   "servicenow.flux",
 													Source: "json.encode",
 													Start: ast.Position{
 														Column: 29,
-														Line:   20,
+														Line:   33,
 													},
 												},
 											},
@@ -292,13 +292,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   20,
+															Line:   33,
 														},
 														File:   "servicenow.flux",
 														Source: "json",
 														Start: ast.Position{
 															Column: 29,
-															Line:   20,
+															Line:   33,
 														},
 													},
 												},
@@ -310,13 +310,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 40,
-															Line:   20,
+															Line:   33,
 														},
 														File:   "servicenow.flux",
 														Source: "encode",
 														Start: ast.Position{
 															Column: 34,
-															Line:   20,
+															Line:   33,
 														},
 													},
 												},
@@ -332,13 +332,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   20,
+										Line:   33,
 									},
 									File:   "servicenow.flux",
 									Source: "string(v: json.encode(v: additionalInfo))",
 									Start: ast.Position{
 										Column: 19,
-										Line:   20,
+										Line:   33,
 									},
 								},
 							},
@@ -348,13 +348,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   20,
+											Line:   33,
 										},
 										File:   "servicenow.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 19,
-											Line:   20,
+											Line:   33,
 										},
 									},
 								},
@@ -367,13 +367,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   38,
+									Line:   51,
 								},
 								File:   "servicenow.flux",
 								Source: "event = {\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   21,
+									Line:   34,
 								},
 							},
 						},
@@ -383,13 +383,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   21,
+										Line:   34,
 									},
 									File:   "servicenow.flux",
 									Source: "event",
 									Start: ast.Position{
 										Column: 5,
-										Line:   21,
+										Line:   34,
 									},
 								},
 							},
@@ -401,13 +401,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   38,
+										Line:   51,
 									},
 									File:   "servicenow.flux",
 									Source: "{\n        source: source,\n        node: node,\n        type: metricType,\n        resource: resource,\n        metric_name: metricName,\n        message_key: messageKey,\n        description: description,\n        severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\", // shouldn't happen\n        additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo\n    }",
 									Start: ast.Position{
 										Column: 13,
-										Line:   21,
+										Line:   34,
 									},
 								},
 							},
@@ -417,13 +417,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   22,
+											Line:   35,
 										},
 										File:   "servicenow.flux",
 										Source: "source: source",
 										Start: ast.Position{
 											Column: 9,
-											Line:   22,
+											Line:   35,
 										},
 									},
 								},
@@ -433,13 +433,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   22,
+												Line:   35,
 											},
 											File:   "servicenow.flux",
 											Source: "source",
 											Start: ast.Position{
 												Column: 9,
-												Line:   22,
+												Line:   35,
 											},
 										},
 									},
@@ -451,13 +451,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   22,
+												Line:   35,
 											},
 											File:   "servicenow.flux",
 											Source: "source",
 											Start: ast.Position{
 												Column: 17,
-												Line:   22,
+												Line:   35,
 											},
 										},
 									},
@@ -469,13 +469,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   23,
+											Line:   36,
 										},
 										File:   "servicenow.flux",
 										Source: "node: node",
 										Start: ast.Position{
 											Column: 9,
-											Line:   23,
+											Line:   36,
 										},
 									},
 								},
@@ -485,13 +485,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   23,
+												Line:   36,
 											},
 											File:   "servicenow.flux",
 											Source: "node",
 											Start: ast.Position{
 												Column: 9,
-												Line:   23,
+												Line:   36,
 											},
 										},
 									},
@@ -503,13 +503,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   23,
+												Line:   36,
 											},
 											File:   "servicenow.flux",
 											Source: "node",
 											Start: ast.Position{
 												Column: 15,
-												Line:   23,
+												Line:   36,
 											},
 										},
 									},
@@ -521,13 +521,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   24,
+											Line:   37,
 										},
 										File:   "servicenow.flux",
 										Source: "type: metricType",
 										Start: ast.Position{
 											Column: 9,
-											Line:   24,
+											Line:   37,
 										},
 									},
 								},
@@ -537,13 +537,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   24,
+												Line:   37,
 											},
 											File:   "servicenow.flux",
 											Source: "type",
 											Start: ast.Position{
 												Column: 9,
-												Line:   24,
+												Line:   37,
 											},
 										},
 									},
@@ -555,13 +555,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   24,
+												Line:   37,
 											},
 											File:   "servicenow.flux",
 											Source: "metricType",
 											Start: ast.Position{
 												Column: 15,
-												Line:   24,
+												Line:   37,
 											},
 										},
 									},
@@ -573,13 +573,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   25,
+											Line:   38,
 										},
 										File:   "servicenow.flux",
 										Source: "resource: resource",
 										Start: ast.Position{
 											Column: 9,
-											Line:   25,
+											Line:   38,
 										},
 									},
 								},
@@ -589,13 +589,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   25,
+												Line:   38,
 											},
 											File:   "servicenow.flux",
 											Source: "resource",
 											Start: ast.Position{
 												Column: 9,
-												Line:   25,
+												Line:   38,
 											},
 										},
 									},
@@ -607,13 +607,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   25,
+												Line:   38,
 											},
 											File:   "servicenow.flux",
 											Source: "resource",
 											Start: ast.Position{
 												Column: 19,
-												Line:   25,
+												Line:   38,
 											},
 										},
 									},
@@ -625,13 +625,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   26,
+											Line:   39,
 										},
 										File:   "servicenow.flux",
 										Source: "metric_name: metricName",
 										Start: ast.Position{
 											Column: 9,
-											Line:   26,
+											Line:   39,
 										},
 									},
 								},
@@ -641,13 +641,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   26,
+												Line:   39,
 											},
 											File:   "servicenow.flux",
 											Source: "metric_name",
 											Start: ast.Position{
 												Column: 9,
-												Line:   26,
+												Line:   39,
 											},
 										},
 									},
@@ -659,13 +659,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   26,
+												Line:   39,
 											},
 											File:   "servicenow.flux",
 											Source: "metricName",
 											Start: ast.Position{
 												Column: 22,
-												Line:   26,
+												Line:   39,
 											},
 										},
 									},
@@ -677,13 +677,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   27,
+											Line:   40,
 										},
 										File:   "servicenow.flux",
 										Source: "message_key: messageKey",
 										Start: ast.Position{
 											Column: 9,
-											Line:   27,
+											Line:   40,
 										},
 									},
 								},
@@ -693,13 +693,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   27,
+												Line:   40,
 											},
 											File:   "servicenow.flux",
 											Source: "message_key",
 											Start: ast.Position{
 												Column: 9,
-												Line:   27,
+												Line:   40,
 											},
 										},
 									},
@@ -711,13 +711,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   27,
+												Line:   40,
 											},
 											File:   "servicenow.flux",
 											Source: "messageKey",
 											Start: ast.Position{
 												Column: 22,
-												Line:   27,
+												Line:   40,
 											},
 										},
 									},
@@ -729,13 +729,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   28,
+											Line:   41,
 										},
 										File:   "servicenow.flux",
 										Source: "description: description",
 										Start: ast.Position{
 											Column: 9,
-											Line:   28,
+											Line:   41,
 										},
 									},
 								},
@@ -745,13 +745,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   28,
+												Line:   41,
 											},
 											File:   "servicenow.flux",
 											Source: "description",
 											Start: ast.Position{
 												Column: 9,
-												Line:   28,
+												Line:   41,
 											},
 										},
 									},
@@ -763,13 +763,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   28,
+												Line:   41,
 											},
 											File:   "servicenow.flux",
 											Source: "description",
 											Start: ast.Position{
 												Column: 22,
-												Line:   28,
+												Line:   41,
 											},
 										},
 									},
@@ -781,13 +781,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   36,
+											Line:   49,
 										},
 										File:   "servicenow.flux",
 										Source: "severity:\n            if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   29,
+											Line:   42,
 										},
 									},
 								},
@@ -797,13 +797,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   29,
+												Line:   42,
 											},
 											File:   "servicenow.flux",
 											Source: "severity",
 											Start: ast.Position{
 												Column: 9,
-												Line:   29,
+												Line:   42,
 											},
 										},
 									},
@@ -821,13 +821,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 20,
-																		Line:   36,
+																		Line:   49,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "\"\"",
 																	Start: ast.Position{
 																		Column: 18,
-																		Line:   36,
+																		Line:   49,
 																	},
 																},
 															},
@@ -838,13 +838,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 20,
-																	Line:   36,
+																	Line:   49,
 																},
 																File:   "servicenow.flux",
 																Source: "if severity == \"clear\" then \"0\"\n            else \"\"",
 																Start: ast.Position{
 																	Column: 18,
-																	Line:   35,
+																	Line:   48,
 																},
 															},
 														},
@@ -854,13 +854,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 49,
-																		Line:   35,
+																		Line:   48,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "\"0\"",
 																	Start: ast.Position{
 																		Column: 46,
-																		Line:   35,
+																		Line:   48,
 																	},
 																},
 															},
@@ -872,13 +872,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 40,
-																		Line:   35,
+																		Line:   48,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "severity == \"clear\"",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   35,
+																		Line:   48,
 																	},
 																},
 															},
@@ -888,13 +888,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 29,
-																			Line:   35,
+																			Line:   48,
 																		},
 																		File:   "servicenow.flux",
 																		Source: "severity",
 																		Start: ast.Position{
 																			Column: 21,
-																			Line:   35,
+																			Line:   48,
 																		},
 																	},
 																},
@@ -907,13 +907,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 40,
-																			Line:   35,
+																			Line:   48,
 																		},
 																		File:   "servicenow.flux",
 																		Source: "\"clear\"",
 																		Start: ast.Position{
 																			Column: 33,
-																			Line:   35,
+																			Line:   48,
 																		},
 																	},
 																},
@@ -926,13 +926,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 20,
-																Line:   36,
+																Line:   49,
 															},
 															File:   "servicenow.flux",
 															Source: "if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\"",
 															Start: ast.Position{
 																Column: 18,
-																Line:   34,
+																Line:   47,
 															},
 														},
 													},
@@ -942,13 +942,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 48,
-																	Line:   34,
+																	Line:   47,
 																},
 																File:   "servicenow.flux",
 																Source: "\"5\"",
 																Start: ast.Position{
 																	Column: 45,
-																	Line:   34,
+																	Line:   47,
 																},
 															},
 														},
@@ -960,13 +960,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 39,
-																	Line:   34,
+																	Line:   47,
 																},
 																File:   "servicenow.flux",
 																Source: "severity == \"info\"",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   34,
+																	Line:   47,
 																},
 															},
 														},
@@ -976,13 +976,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 29,
-																		Line:   34,
+																		Line:   47,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "severity",
 																	Start: ast.Position{
 																		Column: 21,
-																		Line:   34,
+																		Line:   47,
 																	},
 																},
 															},
@@ -995,13 +995,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 39,
-																		Line:   34,
+																		Line:   47,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "\"info\"",
 																	Start: ast.Position{
 																		Column: 33,
-																		Line:   34,
+																		Line:   47,
 																	},
 																},
 															},
@@ -1014,13 +1014,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   36,
+															Line:   49,
 														},
 														File:   "servicenow.flux",
 														Source: "if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\"",
 														Start: ast.Position{
 															Column: 18,
-															Line:   33,
+															Line:   46,
 														},
 													},
 												},
@@ -1030,13 +1030,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 51,
-																Line:   33,
+																Line:   46,
 															},
 															File:   "servicenow.flux",
 															Source: "\"4\"",
 															Start: ast.Position{
 																Column: 48,
-																Line:   33,
+																Line:   46,
 															},
 														},
 													},
@@ -1048,13 +1048,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 42,
-																Line:   33,
+																Line:   46,
 															},
 															File:   "servicenow.flux",
 															Source: "severity == \"warning\"",
 															Start: ast.Position{
 																Column: 21,
-																Line:   33,
+																Line:   46,
 															},
 														},
 													},
@@ -1064,13 +1064,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 29,
-																	Line:   33,
+																	Line:   46,
 																},
 																File:   "servicenow.flux",
 																Source: "severity",
 																Start: ast.Position{
 																	Column: 21,
-																	Line:   33,
+																	Line:   46,
 																},
 															},
 														},
@@ -1083,13 +1083,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 42,
-																	Line:   33,
+																	Line:   46,
 																},
 																File:   "servicenow.flux",
 																Source: "\"warning\"",
 																Start: ast.Position{
 																	Column: 33,
-																	Line:   33,
+																	Line:   46,
 																},
 															},
 														},
@@ -1102,13 +1102,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   36,
+														Line:   49,
 													},
 													File:   "servicenow.flux",
 													Source: "if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\"",
 													Start: ast.Position{
 														Column: 18,
-														Line:   32,
+														Line:   45,
 													},
 												},
 											},
@@ -1118,13 +1118,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   32,
+															Line:   45,
 														},
 														File:   "servicenow.flux",
 														Source: "\"3\"",
 														Start: ast.Position{
 															Column: 46,
-															Line:   32,
+															Line:   45,
 														},
 													},
 												},
@@ -1136,13 +1136,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 40,
-															Line:   32,
+															Line:   45,
 														},
 														File:   "servicenow.flux",
 														Source: "severity == \"minor\"",
 														Start: ast.Position{
 															Column: 21,
-															Line:   32,
+															Line:   45,
 														},
 													},
 												},
@@ -1152,13 +1152,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 29,
-																Line:   32,
+																Line:   45,
 															},
 															File:   "servicenow.flux",
 															Source: "severity",
 															Start: ast.Position{
 																Column: 21,
-																Line:   32,
+																Line:   45,
 															},
 														},
 													},
@@ -1171,13 +1171,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 40,
-																Line:   32,
+																Line:   45,
 															},
 															File:   "servicenow.flux",
 															Source: "\"minor\"",
 															Start: ast.Position{
 																Column: 33,
-																Line:   32,
+																Line:   45,
 															},
 														},
 													},
@@ -1190,13 +1190,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   36,
+													Line:   49,
 												},
 												File:   "servicenow.flux",
 												Source: "if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   31,
+													Line:   44,
 												},
 											},
 										},
@@ -1206,13 +1206,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   31,
+														Line:   44,
 													},
 													File:   "servicenow.flux",
 													Source: "\"2\"",
 													Start: ast.Position{
 														Column: 46,
-														Line:   31,
+														Line:   44,
 													},
 												},
 											},
@@ -1224,13 +1224,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
-														Line:   31,
+														Line:   44,
 													},
 													File:   "servicenow.flux",
 													Source: "severity == \"major\"",
 													Start: ast.Position{
 														Column: 21,
-														Line:   31,
+														Line:   44,
 													},
 												},
 											},
@@ -1240,13 +1240,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 29,
-															Line:   31,
+															Line:   44,
 														},
 														File:   "servicenow.flux",
 														Source: "severity",
 														Start: ast.Position{
 															Column: 21,
-															Line:   31,
+															Line:   44,
 														},
 													},
 												},
@@ -1259,13 +1259,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 40,
-															Line:   31,
+															Line:   44,
 														},
 														File:   "servicenow.flux",
 														Source: "\"major\"",
 														Start: ast.Position{
 															Column: 33,
-															Line:   31,
+															Line:   44,
 														},
 													},
 												},
@@ -1278,13 +1278,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   36,
+												Line:   49,
 											},
 											File:   "servicenow.flux",
 											Source: "if severity == \"critical\" then \"1\"\n            else if severity == \"major\" then \"2\"\n            else if severity == \"minor\" then \"3\"\n            else if severity == \"warning\" then \"4\"\n            else if severity == \"info\" then \"5\"\n            else if severity == \"clear\" then \"0\"\n            else \"\"",
 											Start: ast.Position{
 												Column: 13,
-												Line:   30,
+												Line:   43,
 											},
 										},
 									},
@@ -1294,13 +1294,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   30,
+													Line:   43,
 												},
 												File:   "servicenow.flux",
 												Source: "\"1\"",
 												Start: ast.Position{
 													Column: 44,
-													Line:   30,
+													Line:   43,
 												},
 											},
 										},
@@ -1312,13 +1312,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   30,
+													Line:   43,
 												},
 												File:   "servicenow.flux",
 												Source: "severity == \"critical\"",
 												Start: ast.Position{
 													Column: 16,
-													Line:   30,
+													Line:   43,
 												},
 											},
 										},
@@ -1328,13 +1328,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 24,
-														Line:   30,
+														Line:   43,
 													},
 													File:   "servicenow.flux",
 													Source: "severity",
 													Start: ast.Position{
 														Column: 16,
-														Line:   30,
+														Line:   43,
 													},
 												},
 											},
@@ -1347,13 +1347,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   30,
+														Line:   43,
 													},
 													File:   "servicenow.flux",
 													Source: "\"critical\"",
 													Start: ast.Position{
 														Column: 28,
-														Line:   30,
+														Line:   43,
 													},
 												},
 											},
@@ -1367,13 +1367,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 73,
-											Line:   37,
+											Line:   50,
 										},
 										File:   "servicenow.flux",
 										Source: "additional_info: if encodedInfo == \"{}\" then \"\" else encodedInfo",
 										Start: ast.Position{
 											Column: 9,
-											Line:   37,
+											Line:   50,
 										},
 									},
 								},
@@ -1383,13 +1383,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   37,
+												Line:   50,
 											},
 											File:   "servicenow.flux",
 											Source: "additional_info",
 											Start: ast.Position{
 												Column: 9,
-												Line:   37,
+												Line:   50,
 											},
 										},
 									},
@@ -1402,13 +1402,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 73,
-													Line:   37,
+													Line:   50,
 												},
 												File:   "servicenow.flux",
 												Source: "encodedInfo",
 												Start: ast.Position{
 													Column: 62,
-													Line:   37,
+													Line:   50,
 												},
 											},
 										},
@@ -1419,13 +1419,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   37,
+												Line:   50,
 											},
 											File:   "servicenow.flux",
 											Source: "if encodedInfo == \"{}\" then \"\" else encodedInfo",
 											Start: ast.Position{
 												Column: 26,
-												Line:   37,
+												Line:   50,
 											},
 										},
 									},
@@ -1435,13 +1435,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 56,
-													Line:   37,
+													Line:   50,
 												},
 												File:   "servicenow.flux",
 												Source: "\"\"",
 												Start: ast.Position{
 													Column: 54,
-													Line:   37,
+													Line:   50,
 												},
 											},
 										},
@@ -1453,13 +1453,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   37,
+													Line:   50,
 												},
 												File:   "servicenow.flux",
 												Source: "encodedInfo == \"{}\"",
 												Start: ast.Position{
 													Column: 29,
-													Line:   37,
+													Line:   50,
 												},
 											},
 										},
@@ -1469,13 +1469,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
-														Line:   37,
+														Line:   50,
 													},
 													File:   "servicenow.flux",
 													Source: "encodedInfo",
 													Start: ast.Position{
 														Column: 29,
-														Line:   37,
+														Line:   50,
 													},
 												},
 											},
@@ -1488,13 +1488,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
-														Line:   37,
+														Line:   50,
 													},
 													File:   "servicenow.flux",
 													Source: "\"{}\"",
 													Start: ast.Position{
 														Column: 44,
-														Line:   37,
+														Line:   50,
 													},
 												},
 											},
@@ -1511,13 +1511,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   43,
+									Line:   56,
 								},
 								File:   "servicenow.flux",
 								Source: "payload = {\n        records: [\n            event\n        ]\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   39,
+									Line:   52,
 								},
 							},
 						},
@@ -1527,13 +1527,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   39,
+										Line:   52,
 									},
 									File:   "servicenow.flux",
 									Source: "payload",
 									Start: ast.Position{
 										Column: 5,
-										Line:   39,
+										Line:   52,
 									},
 								},
 							},
@@ -1545,13 +1545,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   43,
+										Line:   56,
 									},
 									File:   "servicenow.flux",
 									Source: "{\n        records: [\n            event\n        ]\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   39,
+										Line:   52,
 									},
 								},
 							},
@@ -1561,13 +1561,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
-											Line:   42,
+											Line:   55,
 										},
 										File:   "servicenow.flux",
 										Source: "records: [\n            event\n        ]",
 										Start: ast.Position{
 											Column: 9,
-											Line:   40,
+											Line:   53,
 										},
 									},
 								},
@@ -1577,13 +1577,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   40,
+												Line:   53,
 											},
 											File:   "servicenow.flux",
 											Source: "records",
 											Start: ast.Position{
 												Column: 9,
-												Line:   40,
+												Line:   53,
 											},
 										},
 									},
@@ -1595,13 +1595,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
-												Line:   42,
+												Line:   55,
 											},
 											File:   "servicenow.flux",
 											Source: "[\n            event\n        ]",
 											Start: ast.Position{
 												Column: 18,
-												Line:   40,
+												Line:   53,
 											},
 										},
 									},
@@ -1611,13 +1611,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   41,
+													Line:   54,
 												},
 												File:   "servicenow.flux",
 												Source: "event",
 												Start: ast.Position{
 													Column: 13,
-													Line:   41,
+													Line:   54,
 												},
 											},
 										},
@@ -1633,13 +1633,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   47,
+									Line:   60,
 								},
 								File:   "servicenow.flux",
 								Source: "headers = {\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   44,
+									Line:   57,
 								},
 							},
 						},
@@ -1649,13 +1649,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   44,
+										Line:   57,
 									},
 									File:   "servicenow.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   44,
+										Line:   57,
 									},
 								},
 							},
@@ -1667,13 +1667,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   47,
+										Line:   60,
 									},
 									File:   "servicenow.flux",
 									Source: "{\n        \"Authorization\": http.basicAuth(u: username, p: password),\n        \"Content-Type\": \"application/json\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   44,
+										Line:   57,
 									},
 								},
 							},
@@ -1683,13 +1683,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 66,
-											Line:   45,
+											Line:   58,
 										},
 										File:   "servicenow.flux",
 										Source: "\"Authorization\": http.basicAuth(u: username, p: password)",
 										Start: ast.Position{
 											Column: 9,
-											Line:   45,
+											Line:   58,
 										},
 									},
 								},
@@ -1699,13 +1699,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   45,
+												Line:   58,
 											},
 											File:   "servicenow.flux",
 											Source: "\"Authorization\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   45,
+												Line:   58,
 											},
 										},
 									},
@@ -1718,13 +1718,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   45,
+													Line:   58,
 												},
 												File:   "servicenow.flux",
 												Source: "u: username, p: password",
 												Start: ast.Position{
 													Column: 41,
-													Line:   45,
+													Line:   58,
 												},
 											},
 										},
@@ -1734,13 +1734,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 52,
-														Line:   45,
+														Line:   58,
 													},
 													File:   "servicenow.flux",
 													Source: "u: username",
 													Start: ast.Position{
 														Column: 41,
-														Line:   45,
+														Line:   58,
 													},
 												},
 											},
@@ -1750,13 +1750,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   45,
+															Line:   58,
 														},
 														File:   "servicenow.flux",
 														Source: "u",
 														Start: ast.Position{
 															Column: 41,
-															Line:   45,
+															Line:   58,
 														},
 													},
 												},
@@ -1768,13 +1768,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 52,
-															Line:   45,
+															Line:   58,
 														},
 														File:   "servicenow.flux",
 														Source: "username",
 														Start: ast.Position{
 															Column: 44,
-															Line:   45,
+															Line:   58,
 														},
 													},
 												},
@@ -1786,13 +1786,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
-														Line:   45,
+														Line:   58,
 													},
 													File:   "servicenow.flux",
 													Source: "p: password",
 													Start: ast.Position{
 														Column: 54,
-														Line:   45,
+														Line:   58,
 													},
 												},
 											},
@@ -1802,13 +1802,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 55,
-															Line:   45,
+															Line:   58,
 														},
 														File:   "servicenow.flux",
 														Source: "p",
 														Start: ast.Position{
 															Column: 54,
-															Line:   45,
+															Line:   58,
 														},
 													},
 												},
@@ -1820,13 +1820,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
-															Line:   45,
+															Line:   58,
 														},
 														File:   "servicenow.flux",
 														Source: "password",
 														Start: ast.Position{
 															Column: 57,
-															Line:   45,
+															Line:   58,
 														},
 													},
 												},
@@ -1840,13 +1840,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   45,
+												Line:   58,
 											},
 											File:   "servicenow.flux",
 											Source: "http.basicAuth(u: username, p: password)",
 											Start: ast.Position{
 												Column: 26,
-												Line:   45,
+												Line:   58,
 											},
 										},
 									},
@@ -1856,13 +1856,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
-													Line:   45,
+													Line:   58,
 												},
 												File:   "servicenow.flux",
 												Source: "http.basicAuth",
 												Start: ast.Position{
 													Column: 26,
-													Line:   45,
+													Line:   58,
 												},
 											},
 										},
@@ -1872,13 +1872,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   45,
+														Line:   58,
 													},
 													File:   "servicenow.flux",
 													Source: "http",
 													Start: ast.Position{
 														Column: 26,
-														Line:   45,
+														Line:   58,
 													},
 												},
 											},
@@ -1890,13 +1890,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
-														Line:   45,
+														Line:   58,
 													},
 													File:   "servicenow.flux",
 													Source: "basicAuth",
 													Start: ast.Position{
 														Column: 31,
-														Line:   45,
+														Line:   58,
 													},
 												},
 											},
@@ -1910,13 +1910,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   46,
+											Line:   59,
 										},
 										File:   "servicenow.flux",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   46,
+											Line:   59,
 										},
 									},
 								},
@@ -1926,13 +1926,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   46,
+												Line:   59,
 											},
 											File:   "servicenow.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   46,
+												Line:   59,
 											},
 										},
 									},
@@ -1944,13 +1944,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   46,
+												Line:   59,
 											},
 											File:   "servicenow.flux",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   46,
+												Line:   59,
 											},
 										},
 									},
@@ -1965,13 +1965,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   48,
+									Line:   61,
 								},
 								File:   "servicenow.flux",
 								Source: "body = json.encode(v:payload)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   48,
+									Line:   61,
 								},
 							},
 						},
@@ -1981,13 +1981,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   48,
+										Line:   61,
 									},
 									File:   "servicenow.flux",
 									Source: "body",
 									Start: ast.Position{
 										Column: 5,
-										Line:   48,
+										Line:   61,
 									},
 								},
 							},
@@ -2000,13 +2000,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   48,
+											Line:   61,
 										},
 										File:   "servicenow.flux",
 										Source: "v:payload",
 										Start: ast.Position{
 											Column: 24,
-											Line:   48,
+											Line:   61,
 										},
 									},
 								},
@@ -2016,13 +2016,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   48,
+												Line:   61,
 											},
 											File:   "servicenow.flux",
 											Source: "v:payload",
 											Start: ast.Position{
 												Column: 24,
-												Line:   48,
+												Line:   61,
 											},
 										},
 									},
@@ -2032,13 +2032,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   48,
+													Line:   61,
 												},
 												File:   "servicenow.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 24,
-													Line:   48,
+													Line:   61,
 												},
 											},
 										},
@@ -2050,13 +2050,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   48,
+													Line:   61,
 												},
 												File:   "servicenow.flux",
 												Source: "payload",
 												Start: ast.Position{
 													Column: 26,
-													Line:   48,
+													Line:   61,
 												},
 											},
 										},
@@ -2070,13 +2070,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   48,
+										Line:   61,
 									},
 									File:   "servicenow.flux",
 									Source: "json.encode(v:payload)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   48,
+										Line:   61,
 									},
 								},
 							},
@@ -2086,13 +2086,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   48,
+											Line:   61,
 										},
 										File:   "servicenow.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 12,
-											Line:   48,
+											Line:   61,
 										},
 									},
 								},
@@ -2102,13 +2102,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   48,
+												Line:   61,
 											},
 											File:   "servicenow.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 12,
-												Line:   48,
+												Line:   61,
 											},
 										},
 									},
@@ -2120,13 +2120,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   48,
+												Line:   61,
 											},
 											File:   "servicenow.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 17,
-												Line:   48,
+												Line:   61,
 											},
 										},
 									},
@@ -2142,13 +2142,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 60,
-											Line:   50,
+											Line:   63,
 										},
 										File:   "servicenow.flux",
 										Source: "headers: headers, url: url, data: body",
 										Start: ast.Position{
 											Column: 22,
-											Line:   50,
+											Line:   63,
 										},
 									},
 								},
@@ -2158,13 +2158,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   50,
+												Line:   63,
 											},
 											File:   "servicenow.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   50,
+												Line:   63,
 											},
 										},
 									},
@@ -2174,13 +2174,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   50,
+													Line:   63,
 												},
 												File:   "servicenow.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   50,
+													Line:   63,
 												},
 											},
 										},
@@ -2192,13 +2192,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   50,
+													Line:   63,
 												},
 												File:   "servicenow.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   50,
+													Line:   63,
 												},
 											},
 										},
@@ -2210,13 +2210,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   50,
+												Line:   63,
 											},
 											File:   "servicenow.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   50,
+												Line:   63,
 											},
 										},
 									},
@@ -2226,13 +2226,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   50,
+													Line:   63,
 												},
 												File:   "servicenow.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   50,
+													Line:   63,
 												},
 											},
 										},
@@ -2244,13 +2244,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   50,
+													Line:   63,
 												},
 												File:   "servicenow.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   50,
+													Line:   63,
 												},
 											},
 										},
@@ -2262,13 +2262,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 60,
-												Line:   50,
+												Line:   63,
 											},
 											File:   "servicenow.flux",
 											Source: "data: body",
 											Start: ast.Position{
 												Column: 50,
-												Line:   50,
+												Line:   63,
 											},
 										},
 									},
@@ -2278,13 +2278,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   50,
+													Line:   63,
 												},
 												File:   "servicenow.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   50,
+													Line:   63,
 												},
 											},
 										},
@@ -2296,13 +2296,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   50,
+													Line:   63,
 												},
 												File:   "servicenow.flux",
 												Source: "body",
 												Start: ast.Position{
 													Column: 56,
-													Line:   50,
+													Line:   63,
 												},
 											},
 										},
@@ -2316,13 +2316,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 61,
-										Line:   50,
+										Line:   63,
 									},
 									File:   "servicenow.flux",
 									Source: "http.post(headers: headers, url: url, data: body)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   50,
+										Line:   63,
 									},
 								},
 							},
@@ -2332,13 +2332,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   50,
+											Line:   63,
 										},
 										File:   "servicenow.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   50,
+											Line:   63,
 										},
 									},
 								},
@@ -2348,13 +2348,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   50,
+												Line:   63,
 											},
 											File:   "servicenow.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   50,
+												Line:   63,
 											},
 										},
 									},
@@ -2366,13 +2366,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   50,
+												Line:   63,
 											},
 											File:   "servicenow.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   50,
+												Line:   63,
 											},
 										},
 									},
@@ -2385,13 +2385,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   50,
+									Line:   63,
 								},
 								File:   "servicenow.flux",
 								Source: "return http.post(headers: headers, url: url, data: body)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   50,
+									Line:   63,
 								},
 							},
 						},
@@ -2402,14 +2402,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 13,
-								Line:   19,
+								Column: 8,
+								Line:   20,
 							},
 							File:   "servicenow.flux",
 							Source: "url",
 							Start: ast.Position{
-								Column: 10,
-								Line:   19,
+								Column: 5,
+								Line:   20,
 							},
 						},
 					},
@@ -2418,14 +2418,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
-									Line:   19,
+									Column: 8,
+									Line:   20,
 								},
 								File:   "servicenow.flux",
 								Source: "url",
 								Start: ast.Position{
-									Column: 10,
-									Line:   19,
+									Column: 5,
+									Line:   20,
 								},
 							},
 						},
@@ -2437,14 +2437,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 23,
-								Line:   19,
+								Column: 13,
+								Line:   21,
 							},
 							File:   "servicenow.flux",
 							Source: "username",
 							Start: ast.Position{
-								Column: 15,
-								Line:   19,
+								Column: 5,
+								Line:   21,
 							},
 						},
 					},
@@ -2453,14 +2453,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 23,
-									Line:   19,
+									Column: 13,
+									Line:   21,
 								},
 								File:   "servicenow.flux",
 								Source: "username",
 								Start: ast.Position{
-									Column: 15,
-									Line:   19,
+									Column: 5,
+									Line:   21,
 								},
 							},
 						},
@@ -2472,14 +2472,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 33,
-								Line:   19,
+								Column: 13,
+								Line:   22,
 							},
 							File:   "servicenow.flux",
 							Source: "password",
 							Start: ast.Position{
-								Column: 25,
-								Line:   19,
+								Column: 5,
+								Line:   22,
 							},
 						},
 					},
@@ -2488,14 +2488,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 33,
-									Line:   19,
+									Column: 13,
+									Line:   22,
 								},
 								File:   "servicenow.flux",
 								Source: "password",
 								Start: ast.Position{
-									Column: 25,
-									Line:   19,
+									Column: 5,
+									Line:   22,
 								},
 							},
 						},
@@ -2507,14 +2507,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 48,
-								Line:   19,
+								Column: 18,
+								Line:   23,
 							},
 							File:   "servicenow.flux",
 							Source: "source=\"Flux\"",
 							Start: ast.Position{
-								Column: 35,
-								Line:   19,
+								Column: 5,
+								Line:   23,
 							},
 						},
 					},
@@ -2523,14 +2523,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 41,
-									Line:   19,
+									Column: 11,
+									Line:   23,
 								},
 								File:   "servicenow.flux",
 								Source: "source",
 								Start: ast.Position{
-									Column: 35,
-									Line:   19,
+									Column: 5,
+									Line:   23,
 								},
 							},
 						},
@@ -2541,14 +2541,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
-									Line:   19,
+									Column: 18,
+									Line:   23,
 								},
 								File:   "servicenow.flux",
 								Source: "\"Flux\"",
 								Start: ast.Position{
-									Column: 42,
-									Line:   19,
+									Column: 12,
+									Line:   23,
 								},
 							},
 						},
@@ -2559,14 +2559,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 57,
-								Line:   19,
+								Column: 12,
+								Line:   24,
 							},
 							File:   "servicenow.flux",
 							Source: "node=\"\"",
 							Start: ast.Position{
-								Column: 50,
-								Line:   19,
+								Column: 5,
+								Line:   24,
 							},
 						},
 					},
@@ -2575,14 +2575,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 54,
-									Line:   19,
+									Column: 9,
+									Line:   24,
 								},
 								File:   "servicenow.flux",
 								Source: "node",
 								Start: ast.Position{
-									Column: 50,
-									Line:   19,
+									Column: 5,
+									Line:   24,
 								},
 							},
 						},
@@ -2593,14 +2593,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 57,
-									Line:   19,
+									Column: 12,
+									Line:   24,
 								},
 								File:   "servicenow.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 55,
-									Line:   19,
+									Column: 10,
+									Line:   24,
 								},
 							},
 						},
@@ -2611,14 +2611,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 72,
-								Line:   19,
+								Column: 18,
+								Line:   25,
 							},
 							File:   "servicenow.flux",
 							Source: "metricType=\"\"",
 							Start: ast.Position{
-								Column: 59,
-								Line:   19,
+								Column: 5,
+								Line:   25,
 							},
 						},
 					},
@@ -2627,14 +2627,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 69,
-									Line:   19,
+									Column: 15,
+									Line:   25,
 								},
 								File:   "servicenow.flux",
 								Source: "metricType",
 								Start: ast.Position{
-									Column: 59,
-									Line:   19,
+									Column: 5,
+									Line:   25,
 								},
 							},
 						},
@@ -2645,14 +2645,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 72,
-									Line:   19,
+									Column: 18,
+									Line:   25,
 								},
 								File:   "servicenow.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 70,
-									Line:   19,
+									Column: 16,
+									Line:   25,
 								},
 							},
 						},
@@ -2663,14 +2663,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 85,
-								Line:   19,
+								Column: 16,
+								Line:   26,
 							},
 							File:   "servicenow.flux",
 							Source: "resource=\"\"",
 							Start: ast.Position{
-								Column: 74,
-								Line:   19,
+								Column: 5,
+								Line:   26,
 							},
 						},
 					},
@@ -2679,14 +2679,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 82,
-									Line:   19,
+									Column: 13,
+									Line:   26,
 								},
 								File:   "servicenow.flux",
 								Source: "resource",
 								Start: ast.Position{
-									Column: 74,
-									Line:   19,
+									Column: 5,
+									Line:   26,
 								},
 							},
 						},
@@ -2697,14 +2697,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 85,
-									Line:   19,
+									Column: 16,
+									Line:   26,
 								},
 								File:   "servicenow.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 83,
-									Line:   19,
+									Column: 14,
+									Line:   26,
 								},
 							},
 						},
@@ -2715,14 +2715,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 100,
-								Line:   19,
+								Column: 18,
+								Line:   27,
 							},
 							File:   "servicenow.flux",
 							Source: "metricName=\"\"",
 							Start: ast.Position{
-								Column: 87,
-								Line:   19,
+								Column: 5,
+								Line:   27,
 							},
 						},
 					},
@@ -2731,14 +2731,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 97,
-									Line:   19,
+									Column: 15,
+									Line:   27,
 								},
 								File:   "servicenow.flux",
 								Source: "metricName",
 								Start: ast.Position{
-									Column: 87,
-									Line:   19,
+									Column: 5,
+									Line:   27,
 								},
 							},
 						},
@@ -2749,14 +2749,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 100,
-									Line:   19,
+									Column: 18,
+									Line:   27,
 								},
 								File:   "servicenow.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 98,
-									Line:   19,
+									Column: 16,
+									Line:   27,
 								},
 							},
 						},
@@ -2767,14 +2767,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 115,
-								Line:   19,
+								Column: 18,
+								Line:   28,
 							},
 							File:   "servicenow.flux",
 							Source: "messageKey=\"\"",
 							Start: ast.Position{
-								Column: 102,
-								Line:   19,
+								Column: 5,
+								Line:   28,
 							},
 						},
 					},
@@ -2783,14 +2783,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 112,
-									Line:   19,
+									Column: 15,
+									Line:   28,
 								},
 								File:   "servicenow.flux",
 								Source: "messageKey",
 								Start: ast.Position{
-									Column: 102,
-									Line:   19,
+									Column: 5,
+									Line:   28,
 								},
 							},
 						},
@@ -2801,14 +2801,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 115,
-									Line:   19,
+									Column: 18,
+									Line:   28,
 								},
 								File:   "servicenow.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 113,
-									Line:   19,
+									Column: 16,
+									Line:   28,
 								},
 							},
 						},
@@ -2819,14 +2819,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 128,
-								Line:   19,
+								Column: 16,
+								Line:   29,
 							},
 							File:   "servicenow.flux",
 							Source: "description",
 							Start: ast.Position{
-								Column: 117,
-								Line:   19,
+								Column: 5,
+								Line:   29,
 							},
 						},
 					},
@@ -2835,14 +2835,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 128,
-									Line:   19,
+									Column: 16,
+									Line:   29,
 								},
 								File:   "servicenow.flux",
 								Source: "description",
 								Start: ast.Position{
-									Column: 117,
-									Line:   19,
+									Column: 5,
+									Line:   29,
 								},
 							},
 						},
@@ -2854,14 +2854,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 138,
-								Line:   19,
+								Column: 13,
+								Line:   30,
 							},
 							File:   "servicenow.flux",
 							Source: "severity",
 							Start: ast.Position{
-								Column: 130,
-								Line:   19,
+								Column: 5,
+								Line:   30,
 							},
 						},
 					},
@@ -2870,14 +2870,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 138,
-									Line:   19,
+									Column: 13,
+									Line:   30,
 								},
 								File:   "servicenow.flux",
 								Source: "severity",
 								Start: ast.Position{
-									Column: 130,
-									Line:   19,
+									Column: 5,
+									Line:   30,
 								},
 							},
 						},
@@ -2889,14 +2889,14 @@ var pkgAST = &ast.Package{
 						Errors: nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 154,
-								Line:   19,
+								Column: 19,
+								Line:   31,
 							},
 							File:   "servicenow.flux",
 							Source: "additionalInfo",
 							Start: ast.Position{
-								Column: 140,
-								Line:   19,
+								Column: 5,
+								Line:   31,
 							},
 						},
 					},
@@ -2905,14 +2905,14 @@ var pkgAST = &ast.Package{
 							Errors: nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 154,
-									Line:   19,
+									Column: 19,
+									Line:   31,
 								},
 								File:   "servicenow.flux",
 								Source: "additionalInfo",
 								Start: ast.Position{
-									Column: 140,
-									Line:   19,
+									Column: 5,
+									Line:   31,
 								},
 							},
 						},
@@ -2927,13 +2927,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   87,
+						Line:   93,
 					},
 					File:   "servicenow.flux",
-					Source: "endpoint = (url, username, password, source=\"Flux\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
+					Source: "endpoint = (url, username, password, source=\"Flux\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
 					Start: ast.Position{
 						Column: 1,
-						Line:   68,
+						Line:   74,
 					},
 				},
 			},
@@ -2943,13 +2943,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   68,
+							Line:   74,
 						},
 						File:   "servicenow.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   68,
+							Line:   74,
 						},
 					},
 				},
@@ -2961,13 +2961,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   87,
+							Line:   93,
 						},
 						File:   "servicenow.flux",
-						Source: "(url, username, password, source=\"Flux\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
+						Source: "(url, username, password, source=\"Flux\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
 						Start: ast.Position{
 							Column: 12,
-							Line:   68,
+							Line:   74,
 						},
 					},
 				},
@@ -2977,13 +2977,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   87,
+								Line:   93,
 							},
 							File:   "servicenow.flux",
-							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
+							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
 							Start: ast.Position{
 								Column: 5,
-								Line:   69,
+								Line:   75,
 							},
 						},
 					},
@@ -2993,13 +2993,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   87,
+									Line:   93,
 								},
 								File:   "servicenow.flux",
-								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
+								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
 								Start: ast.Position{
 									Column: 9,
-									Line:   70,
+									Line:   76,
 								},
 							},
 						},
@@ -3010,13 +3010,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   70,
+											Line:   76,
 										},
 										File:   "servicenow.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 24,
-											Line:   70,
+											Line:   76,
 										},
 									},
 								},
@@ -3027,13 +3027,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   87,
+										Line:   93,
 									},
 									File:   "servicenow.flux",
-									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
+									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
 									Start: ast.Position{
 										Column: 24,
-										Line:   70,
+										Line:   76,
 									},
 								},
 							},
@@ -3044,13 +3044,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   87,
+												Line:   93,
 											},
 											File:   "servicenow.flux",
-											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
+											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
 											Start: ast.Position{
 												Column: 20,
-												Line:   71,
+												Line:   77,
 											},
 										},
 									},
@@ -3060,13 +3060,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   87,
+													Line:   93,
 												},
 												File:   "servicenow.flux",
-												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
+												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
 												Start: ast.Position{
 													Column: 20,
-													Line:   71,
+													Line:   77,
 												},
 											},
 										},
@@ -3076,13 +3076,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   71,
+														Line:   77,
 													},
 													File:   "servicenow.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 20,
-														Line:   71,
+														Line:   77,
 													},
 												},
 											},
@@ -3094,13 +3094,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   87,
+														Line:   93,
 													},
 													File:   "servicenow.flux",
-													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
+													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
 													Start: ast.Position{
 														Column: 24,
-														Line:   71,
+														Line:   77,
 													},
 												},
 											},
@@ -3110,13 +3110,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   87,
+															Line:   93,
 														},
 														File:   "servicenow.flux",
-														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
+														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            }",
 														Start: ast.Position{
 															Column: 31,
-															Line:   71,
+															Line:   77,
 														},
 													},
 												},
@@ -3126,13 +3126,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   72,
+																Line:   78,
 															},
 															File:   "servicenow.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 17,
-																Line:   72,
+																Line:   78,
 															},
 														},
 													},
@@ -3142,13 +3142,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 20,
-																	Line:   72,
+																	Line:   78,
 																},
 																File:   "servicenow.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   72,
+																	Line:   78,
 																},
 															},
 														},
@@ -3161,13 +3161,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 33,
-																		Line:   72,
+																		Line:   78,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 29,
-																		Line:   72,
+																		Line:   78,
 																	},
 																},
 															},
@@ -3177,13 +3177,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 33,
-																			Line:   72,
+																			Line:   78,
 																		},
 																		File:   "servicenow.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 29,
-																			Line:   72,
+																			Line:   78,
 																		},
 																	},
 																},
@@ -3193,13 +3193,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   72,
+																				Line:   78,
 																			},
 																			File:   "servicenow.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 29,
-																				Line:   72,
+																				Line:   78,
 																			},
 																		},
 																	},
@@ -3211,13 +3211,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 33,
-																				Line:   72,
+																				Line:   78,
 																			},
 																			File:   "servicenow.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   72,
+																				Line:   78,
 																			},
 																		},
 																	},
@@ -3231,13 +3231,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   72,
+																	Line:   78,
 																},
 																File:   "servicenow.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   72,
+																	Line:   78,
 																},
 															},
 														},
@@ -3247,13 +3247,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 28,
-																		Line:   72,
+																		Line:   78,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 23,
-																		Line:   72,
+																		Line:   78,
 																	},
 																},
 															},
@@ -3267,13 +3267,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 26,
-																	Line:   86,
+																	Line:   92,
 																},
 																File:   "servicenow.flux",
-																Source: "{r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}",
+																Source: "{r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   73,
+																	Line:   79,
 																},
 															},
 														},
@@ -3283,13 +3283,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   86,
+																		Line:   92,
 																	},
 																	File:   "servicenow.flux",
-																	Source: "_sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)",
+																	Source: "_sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)",
 																	Start: ast.Position{
 																		Column: 32,
-																		Line:   73,
+																		Line:   79,
 																	},
 																},
 															},
@@ -3299,13 +3299,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   73,
+																			Line:   79,
 																		},
 																		File:   "servicenow.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   73,
+																			Line:   79,
 																		},
 																	},
 																},
@@ -3318,13 +3318,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 24,
-																				Line:   86,
+																				Line:   92,
 																			},
 																			File:   "servicenow.flux",
-																			Source: "v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
+																			Source: "v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
 																			Start: ast.Position{
 																				Column: 46,
-																				Line:   73,
+																				Line:   79,
 																			},
 																		},
 																	},
@@ -3334,13 +3334,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 24,
-																					Line:   86,
+																					Line:   92,
 																				},
 																				File:   "servicenow.flux",
-																				Source: "v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
+																				Source: "v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
 																				Start: ast.Position{
 																					Column: 46,
-																					Line:   73,
+																					Line:   79,
 																				},
 																			},
 																		},
@@ -3350,13 +3350,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 47,
-																						Line:   73,
+																						Line:   79,
 																					},
 																					File:   "servicenow.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 46,
-																						Line:   73,
+																						Line:   79,
 																					},
 																				},
 																			},
@@ -3368,13 +3368,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 24,
-																						Line:   86,
+																						Line:   92,
 																					},
 																					File:   "servicenow.flux",
-																					Source: "2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
+																					Source: "2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
 																					Start: ast.Position{
 																						Column: 49,
-																						Line:   73,
+																						Line:   79,
 																					},
 																				},
 																			},
@@ -3384,13 +3384,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 50,
-																							Line:   73,
+																							Line:   79,
 																						},
 																						File:   "servicenow.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 49,
-																							Line:   73,
+																							Line:   79,
 																						},
 																					},
 																				},
@@ -3403,13 +3403,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 24,
-																							Line:   86,
+																							Line:   92,
 																						},
 																						File:   "servicenow.flux",
-																						Source: "event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
+																						Source: "event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100",
 																						Start: ast.Position{
 																							Column: 54,
-																							Line:   73,
+																							Line:   79,
 																						},
 																					},
 																				},
@@ -3420,13 +3420,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 55,
-																									Line:   85,
+																									Line:   91,
 																								},
 																								File:   "servicenow.flux",
-																								Source: "url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo",
+																								Source: "url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo",
 																								Start: ast.Position{
 																									Column: 21,
-																									Line:   74,
+																									Line:   80,
 																								},
 																							},
 																						},
@@ -3436,13 +3436,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 29,
-																										Line:   74,
+																										Line:   80,
 																									},
 																									File:   "servicenow.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   74,
+																										Line:   80,
 																									},
 																								},
 																							},
@@ -3452,13 +3452,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 24,
-																											Line:   74,
+																											Line:   80,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   74,
+																											Line:   80,
 																										},
 																									},
 																								},
@@ -3470,13 +3470,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   74,
+																											Line:   80,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 26,
-																											Line:   74,
+																											Line:   80,
 																										},
 																									},
 																								},
@@ -3488,13 +3488,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 42,
-																										Line:   75,
+																										Line:   81,
 																									},
 																									File:   "servicenow.flux",
 																									Source: "username:    username",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   75,
+																										Line:   81,
 																									},
 																								},
 																							},
@@ -3504,13 +3504,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   75,
+																											Line:   81,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "username",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   75,
+																											Line:   81,
 																										},
 																									},
 																								},
@@ -3522,13 +3522,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 42,
-																											Line:   75,
+																											Line:   81,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "username",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   75,
+																											Line:   81,
 																										},
 																									},
 																								},
@@ -3540,13 +3540,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 42,
-																										Line:   76,
+																										Line:   82,
 																									},
 																									File:   "servicenow.flux",
 																									Source: "password:    password",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   76,
+																										Line:   82,
 																									},
 																								},
 																							},
@@ -3556,13 +3556,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   76,
+																											Line:   82,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "password",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   76,
+																											Line:   82,
 																										},
 																									},
 																								},
@@ -3574,13 +3574,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 42,
-																											Line:   76,
+																											Line:   82,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "password",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   76,
+																											Line:   82,
 																										},
 																									},
 																								},
@@ -3592,13 +3592,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 40,
-																										Line:   77,
+																										Line:   83,
 																									},
 																									File:   "servicenow.flux",
 																									Source: "source:      source",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   77,
+																										Line:   83,
 																									},
 																								},
 																							},
@@ -3608,13 +3608,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 27,
-																											Line:   77,
+																											Line:   83,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "source",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   77,
+																											Line:   83,
 																										},
 																									},
 																								},
@@ -3626,13 +3626,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 40,
-																											Line:   77,
+																											Line:   83,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "source",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   77,
+																											Line:   83,
 																										},
 																									},
 																								},
@@ -3643,14 +3643,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 74,
-																										Line:   78,
+																										Column: 42,
+																										Line:   84,
 																									},
 																									File:   "servicenow.flux",
-																									Source: "node:        if exists obj.node then obj.node else \"\"",
+																									Source: "node:        obj.node",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   78,
+																										Line:   84,
 																									},
 																								},
 																							},
@@ -3660,175 +3660,69 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 25,
-																											Line:   78,
+																											Line:   84,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "node",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   78,
+																											Line:   84,
 																										},
 																									},
 																								},
 																								Name: "node",
 																							},
-																							Value: &ast.ConditionalExpression{
-																								Alternate: &ast.StringLiteral{
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 74,
-																												Line:   78,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "\"\"",
-																											Start: ast.Position{
-																												Column: 72,
-																												Line:   78,
-																											},
-																										},
-																									},
-																									Value: "",
-																								},
+																							Value: &ast.MemberExpression{
 																								BaseNode: ast.BaseNode{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 74,
-																											Line:   78,
+																											Column: 42,
+																											Line:   84,
 																										},
 																										File:   "servicenow.flux",
-																										Source: "if exists obj.node then obj.node else \"\"",
+																										Source: "obj.node",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   78,
+																											Line:   84,
 																										},
 																									},
 																								},
-																								Consequent: &ast.MemberExpression{
+																								Object: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 66,
-																												Line:   78,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "obj.node",
-																											Start: ast.Position{
-																												Column: 58,
-																												Line:   78,
-																											},
-																										},
-																									},
-																									Object: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 61,
-																													Line:   78,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj",
-																												Start: ast.Position{
-																													Column: 58,
-																													Line:   78,
-																												},
-																											},
-																										},
-																										Name: "obj",
-																									},
-																									Property: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 66,
-																													Line:   78,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "node",
-																												Start: ast.Position{
-																													Column: 62,
-																													Line:   78,
-																												},
-																											},
-																										},
-																										Name: "node",
-																									},
-																								},
-																								Test: &ast.UnaryExpression{
-																									Argument: &ast.MemberExpression{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 52,
-																													Line:   78,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj.node",
-																												Start: ast.Position{
-																													Column: 44,
-																													Line:   78,
-																												},
-																											},
-																										},
-																										Object: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 47,
-																														Line:   78,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "obj",
-																													Start: ast.Position{
-																														Column: 44,
-																														Line:   78,
-																													},
-																												},
-																											},
-																											Name: "obj",
-																										},
-																										Property: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 52,
-																														Line:   78,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "node",
-																													Start: ast.Position{
-																														Column: 48,
-																														Line:   78,
-																													},
-																												},
-																											},
-																											Name: "node",
-																										},
-																									},
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 52,
-																												Line:   78,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "exists obj.node",
-																											Start: ast.Position{
 																												Column: 37,
-																												Line:   78,
+																												Line:   84,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "obj",
+																											Start: ast.Position{
+																												Column: 34,
+																												Line:   84,
 																											},
 																										},
 																									},
-																									Operator: 14,
+																									Name: "obj",
+																								},
+																								Property: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Errors: nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 42,
+																												Line:   84,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "node",
+																											Start: ast.Position{
+																												Column: 38,
+																												Line:   84,
+																											},
+																										},
+																									},
+																									Name: "node",
 																								},
 																							},
 																						}, &ast.Property{
@@ -3836,14 +3730,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 86,
-																										Line:   79,
+																										Column: 48,
+																										Line:   85,
 																									},
 																									File:   "servicenow.flux",
-																									Source: "metricType:  if exists obj.metricType then obj.metricType else \"\"",
+																									Source: "metricType:  obj.metricType",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   79,
+																										Line:   85,
 																									},
 																								},
 																							},
@@ -3853,175 +3747,69 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   79,
+																											Line:   85,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "metricType",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   79,
+																											Line:   85,
 																										},
 																									},
 																								},
 																								Name: "metricType",
 																							},
-																							Value: &ast.ConditionalExpression{
-																								Alternate: &ast.StringLiteral{
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 86,
-																												Line:   79,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "\"\"",
-																											Start: ast.Position{
-																												Column: 84,
-																												Line:   79,
-																											},
-																										},
-																									},
-																									Value: "",
-																								},
+																							Value: &ast.MemberExpression{
 																								BaseNode: ast.BaseNode{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 86,
-																											Line:   79,
+																											Column: 48,
+																											Line:   85,
 																										},
 																										File:   "servicenow.flux",
-																										Source: "if exists obj.metricType then obj.metricType else \"\"",
+																										Source: "obj.metricType",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   79,
+																											Line:   85,
 																										},
 																									},
 																								},
-																								Consequent: &ast.MemberExpression{
+																								Object: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 78,
-																												Line:   79,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "obj.metricType",
-																											Start: ast.Position{
-																												Column: 64,
-																												Line:   79,
-																											},
-																										},
-																									},
-																									Object: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 67,
-																													Line:   79,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj",
-																												Start: ast.Position{
-																													Column: 64,
-																													Line:   79,
-																												},
-																											},
-																										},
-																										Name: "obj",
-																									},
-																									Property: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 78,
-																													Line:   79,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "metricType",
-																												Start: ast.Position{
-																													Column: 68,
-																													Line:   79,
-																												},
-																											},
-																										},
-																										Name: "metricType",
-																									},
-																								},
-																								Test: &ast.UnaryExpression{
-																									Argument: &ast.MemberExpression{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 58,
-																													Line:   79,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj.metricType",
-																												Start: ast.Position{
-																													Column: 44,
-																													Line:   79,
-																												},
-																											},
-																										},
-																										Object: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 47,
-																														Line:   79,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "obj",
-																													Start: ast.Position{
-																														Column: 44,
-																														Line:   79,
-																													},
-																												},
-																											},
-																											Name: "obj",
-																										},
-																										Property: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 58,
-																														Line:   79,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "metricType",
-																													Start: ast.Position{
-																														Column: 48,
-																														Line:   79,
-																													},
-																												},
-																											},
-																											Name: "metricType",
-																										},
-																									},
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 58,
-																												Line:   79,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "exists obj.metricType",
-																											Start: ast.Position{
 																												Column: 37,
-																												Line:   79,
+																												Line:   85,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "obj",
+																											Start: ast.Position{
+																												Column: 34,
+																												Line:   85,
 																											},
 																										},
 																									},
-																									Operator: 14,
+																									Name: "obj",
+																								},
+																								Property: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Errors: nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 48,
+																												Line:   85,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "metricType",
+																											Start: ast.Position{
+																												Column: 38,
+																												Line:   85,
+																											},
+																										},
+																									},
+																									Name: "metricType",
 																								},
 																							},
 																						}, &ast.Property{
@@ -4029,14 +3817,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 82,
-																										Line:   80,
+																										Column: 46,
+																										Line:   86,
 																									},
 																									File:   "servicenow.flux",
-																									Source: "resource:    if exists obj.resource then obj.resource else \"\"",
+																									Source: "resource:    obj.resource",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   80,
+																										Line:   86,
 																									},
 																								},
 																							},
@@ -4046,175 +3834,69 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   80,
+																											Line:   86,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "resource",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   80,
+																											Line:   86,
 																										},
 																									},
 																								},
 																								Name: "resource",
 																							},
-																							Value: &ast.ConditionalExpression{
-																								Alternate: &ast.StringLiteral{
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 82,
-																												Line:   80,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "\"\"",
-																											Start: ast.Position{
-																												Column: 80,
-																												Line:   80,
-																											},
-																										},
-																									},
-																									Value: "",
-																								},
+																							Value: &ast.MemberExpression{
 																								BaseNode: ast.BaseNode{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 82,
-																											Line:   80,
+																											Column: 46,
+																											Line:   86,
 																										},
 																										File:   "servicenow.flux",
-																										Source: "if exists obj.resource then obj.resource else \"\"",
+																										Source: "obj.resource",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   80,
+																											Line:   86,
 																										},
 																									},
 																								},
-																								Consequent: &ast.MemberExpression{
+																								Object: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 74,
-																												Line:   80,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "obj.resource",
-																											Start: ast.Position{
-																												Column: 62,
-																												Line:   80,
-																											},
-																										},
-																									},
-																									Object: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 65,
-																													Line:   80,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj",
-																												Start: ast.Position{
-																													Column: 62,
-																													Line:   80,
-																												},
-																											},
-																										},
-																										Name: "obj",
-																									},
-																									Property: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 74,
-																													Line:   80,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "resource",
-																												Start: ast.Position{
-																													Column: 66,
-																													Line:   80,
-																												},
-																											},
-																										},
-																										Name: "resource",
-																									},
-																								},
-																								Test: &ast.UnaryExpression{
-																									Argument: &ast.MemberExpression{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 56,
-																													Line:   80,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj.resource",
-																												Start: ast.Position{
-																													Column: 44,
-																													Line:   80,
-																												},
-																											},
-																										},
-																										Object: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 47,
-																														Line:   80,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "obj",
-																													Start: ast.Position{
-																														Column: 44,
-																														Line:   80,
-																													},
-																												},
-																											},
-																											Name: "obj",
-																										},
-																										Property: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 56,
-																														Line:   80,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "resource",
-																													Start: ast.Position{
-																														Column: 48,
-																														Line:   80,
-																													},
-																												},
-																											},
-																											Name: "resource",
-																										},
-																									},
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 56,
-																												Line:   80,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "exists obj.resource",
-																											Start: ast.Position{
 																												Column: 37,
-																												Line:   80,
+																												Line:   86,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "obj",
+																											Start: ast.Position{
+																												Column: 34,
+																												Line:   86,
 																											},
 																										},
 																									},
-																									Operator: 14,
+																									Name: "obj",
+																								},
+																								Property: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Errors: nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 46,
+																												Line:   86,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "resource",
+																											Start: ast.Position{
+																												Column: 38,
+																												Line:   86,
+																											},
+																										},
+																									},
+																									Name: "resource",
 																								},
 																							},
 																						}, &ast.Property{
@@ -4222,14 +3904,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 86,
-																										Line:   81,
+																										Column: 48,
+																										Line:   87,
 																									},
 																									File:   "servicenow.flux",
-																									Source: "metricName:  if exists obj.metricName then obj.metricName else \"\"",
+																									Source: "metricName:  obj.metricName",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   81,
+																										Line:   87,
 																									},
 																								},
 																							},
@@ -4239,175 +3921,69 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   81,
+																											Line:   87,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "metricName",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   81,
+																											Line:   87,
 																										},
 																									},
 																								},
 																								Name: "metricName",
 																							},
-																							Value: &ast.ConditionalExpression{
-																								Alternate: &ast.StringLiteral{
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 86,
-																												Line:   81,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "\"\"",
-																											Start: ast.Position{
-																												Column: 84,
-																												Line:   81,
-																											},
-																										},
-																									},
-																									Value: "",
-																								},
+																							Value: &ast.MemberExpression{
 																								BaseNode: ast.BaseNode{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 86,
-																											Line:   81,
+																											Column: 48,
+																											Line:   87,
 																										},
 																										File:   "servicenow.flux",
-																										Source: "if exists obj.metricName then obj.metricName else \"\"",
+																										Source: "obj.metricName",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   81,
+																											Line:   87,
 																										},
 																									},
 																								},
-																								Consequent: &ast.MemberExpression{
+																								Object: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 78,
-																												Line:   81,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "obj.metricName",
-																											Start: ast.Position{
-																												Column: 64,
-																												Line:   81,
-																											},
-																										},
-																									},
-																									Object: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 67,
-																													Line:   81,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj",
-																												Start: ast.Position{
-																													Column: 64,
-																													Line:   81,
-																												},
-																											},
-																										},
-																										Name: "obj",
-																									},
-																									Property: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 78,
-																													Line:   81,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "metricName",
-																												Start: ast.Position{
-																													Column: 68,
-																													Line:   81,
-																												},
-																											},
-																										},
-																										Name: "metricName",
-																									},
-																								},
-																								Test: &ast.UnaryExpression{
-																									Argument: &ast.MemberExpression{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 58,
-																													Line:   81,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj.metricName",
-																												Start: ast.Position{
-																													Column: 44,
-																													Line:   81,
-																												},
-																											},
-																										},
-																										Object: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 47,
-																														Line:   81,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "obj",
-																													Start: ast.Position{
-																														Column: 44,
-																														Line:   81,
-																													},
-																												},
-																											},
-																											Name: "obj",
-																										},
-																										Property: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 58,
-																														Line:   81,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "metricName",
-																													Start: ast.Position{
-																														Column: 48,
-																														Line:   81,
-																													},
-																												},
-																											},
-																											Name: "metricName",
-																										},
-																									},
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 58,
-																												Line:   81,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "exists obj.metricName",
-																											Start: ast.Position{
 																												Column: 37,
-																												Line:   81,
+																												Line:   87,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "obj",
+																											Start: ast.Position{
+																												Column: 34,
+																												Line:   87,
 																											},
 																										},
 																									},
-																									Operator: 14,
+																									Name: "obj",
+																								},
+																								Property: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Errors: nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 48,
+																												Line:   87,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "metricName",
+																											Start: ast.Position{
+																												Column: 38,
+																												Line:   87,
+																											},
+																										},
+																									},
+																									Name: "metricName",
 																								},
 																							},
 																						}, &ast.Property{
@@ -4415,14 +3991,14 @@ var pkgAST = &ast.Package{
 																								Errors: nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 86,
-																										Line:   82,
+																										Column: 48,
+																										Line:   88,
 																									},
 																									File:   "servicenow.flux",
-																									Source: "messageKey:  if exists obj.messageKey then obj.messageKey else \"\"",
+																									Source: "messageKey:  obj.messageKey",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   82,
+																										Line:   88,
 																									},
 																								},
 																							},
@@ -4432,175 +4008,69 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 31,
-																											Line:   82,
+																											Line:   88,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "messageKey",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   82,
+																											Line:   88,
 																										},
 																									},
 																								},
 																								Name: "messageKey",
 																							},
-																							Value: &ast.ConditionalExpression{
-																								Alternate: &ast.StringLiteral{
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 86,
-																												Line:   82,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "\"\"",
-																											Start: ast.Position{
-																												Column: 84,
-																												Line:   82,
-																											},
-																										},
-																									},
-																									Value: "",
-																								},
+																							Value: &ast.MemberExpression{
 																								BaseNode: ast.BaseNode{
 																									Errors: nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 86,
-																											Line:   82,
+																											Column: 48,
+																											Line:   88,
 																										},
 																										File:   "servicenow.flux",
-																										Source: "if exists obj.messageKey then obj.messageKey else \"\"",
+																										Source: "obj.messageKey",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   82,
+																											Line:   88,
 																										},
 																									},
 																								},
-																								Consequent: &ast.MemberExpression{
+																								Object: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
 																										Errors: nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 78,
-																												Line:   82,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "obj.messageKey",
-																											Start: ast.Position{
-																												Column: 64,
-																												Line:   82,
-																											},
-																										},
-																									},
-																									Object: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 67,
-																													Line:   82,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj",
-																												Start: ast.Position{
-																													Column: 64,
-																													Line:   82,
-																												},
-																											},
-																										},
-																										Name: "obj",
-																									},
-																									Property: &ast.Identifier{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 78,
-																													Line:   82,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "messageKey",
-																												Start: ast.Position{
-																													Column: 68,
-																													Line:   82,
-																												},
-																											},
-																										},
-																										Name: "messageKey",
-																									},
-																								},
-																								Test: &ast.UnaryExpression{
-																									Argument: &ast.MemberExpression{
-																										BaseNode: ast.BaseNode{
-																											Errors: nil,
-																											Loc: &ast.SourceLocation{
-																												End: ast.Position{
-																													Column: 58,
-																													Line:   82,
-																												},
-																												File:   "servicenow.flux",
-																												Source: "obj.messageKey",
-																												Start: ast.Position{
-																													Column: 44,
-																													Line:   82,
-																												},
-																											},
-																										},
-																										Object: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 47,
-																														Line:   82,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "obj",
-																													Start: ast.Position{
-																														Column: 44,
-																														Line:   82,
-																													},
-																												},
-																											},
-																											Name: "obj",
-																										},
-																										Property: &ast.Identifier{
-																											BaseNode: ast.BaseNode{
-																												Errors: nil,
-																												Loc: &ast.SourceLocation{
-																													End: ast.Position{
-																														Column: 58,
-																														Line:   82,
-																													},
-																													File:   "servicenow.flux",
-																													Source: "messageKey",
-																													Start: ast.Position{
-																														Column: 48,
-																														Line:   82,
-																													},
-																												},
-																											},
-																											Name: "messageKey",
-																										},
-																									},
-																									BaseNode: ast.BaseNode{
-																										Errors: nil,
-																										Loc: &ast.SourceLocation{
-																											End: ast.Position{
-																												Column: 58,
-																												Line:   82,
-																											},
-																											File:   "servicenow.flux",
-																											Source: "exists obj.messageKey",
-																											Start: ast.Position{
 																												Column: 37,
-																												Line:   82,
+																												Line:   88,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "obj",
+																											Start: ast.Position{
+																												Column: 34,
+																												Line:   88,
 																											},
 																										},
 																									},
-																									Operator: 14,
+																									Name: "obj",
+																								},
+																								Property: &ast.Identifier{
+																									BaseNode: ast.BaseNode{
+																										Errors: nil,
+																										Loc: &ast.SourceLocation{
+																											End: ast.Position{
+																												Column: 48,
+																												Line:   88,
+																											},
+																											File:   "servicenow.flux",
+																											Source: "messageKey",
+																											Start: ast.Position{
+																												Column: 38,
+																												Line:   88,
+																											},
+																										},
+																									},
+																									Name: "messageKey",
 																								},
 																							},
 																						}, &ast.Property{
@@ -4609,13 +4079,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 49,
-																										Line:   83,
+																										Line:   89,
 																									},
 																									File:   "servicenow.flux",
 																									Source: "description: obj.description",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   83,
+																										Line:   89,
 																									},
 																								},
 																							},
@@ -4625,13 +4095,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 32,
-																											Line:   83,
+																											Line:   89,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "description",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   83,
+																											Line:   89,
 																										},
 																									},
 																								},
@@ -4643,13 +4113,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 49,
-																											Line:   83,
+																											Line:   89,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "obj.description",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   83,
+																											Line:   89,
 																										},
 																									},
 																								},
@@ -4659,13 +4129,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   83,
+																												Line:   89,
 																											},
 																											File:   "servicenow.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   83,
+																												Line:   89,
 																											},
 																										},
 																									},
@@ -4677,13 +4147,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 49,
-																												Line:   83,
+																												Line:   89,
 																											},
 																											File:   "servicenow.flux",
 																											Source: "description",
 																											Start: ast.Position{
 																												Column: 38,
-																												Line:   83,
+																												Line:   89,
 																											},
 																										},
 																									},
@@ -4696,13 +4166,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 46,
-																										Line:   84,
+																										Line:   90,
 																									},
 																									File:   "servicenow.flux",
 																									Source: "severity:    obj.severity",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   84,
+																										Line:   90,
 																									},
 																								},
 																							},
@@ -4712,13 +4182,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   84,
+																											Line:   90,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "severity",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   84,
+																											Line:   90,
 																										},
 																									},
 																								},
@@ -4730,13 +4200,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 46,
-																											Line:   84,
+																											Line:   90,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "obj.severity",
 																										Start: ast.Position{
 																											Column: 34,
-																											Line:   84,
+																											Line:   90,
 																										},
 																									},
 																								},
@@ -4746,13 +4216,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   84,
+																												Line:   90,
 																											},
 																											File:   "servicenow.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   84,
+																												Line:   90,
 																											},
 																										},
 																									},
@@ -4764,13 +4234,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 46,
-																												Line:   84,
+																												Line:   90,
 																											},
 																											File:   "servicenow.flux",
 																											Source: "severity",
 																											Start: ast.Position{
 																												Column: 38,
-																												Line:   84,
+																												Line:   90,
 																											},
 																										},
 																									},
@@ -4783,13 +4253,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 55,
-																										Line:   85,
+																										Line:   91,
 																									},
 																									File:   "servicenow.flux",
 																									Source: "additionalInfo: obj.additionalInfo",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   85,
+																										Line:   91,
 																									},
 																								},
 																							},
@@ -4799,13 +4269,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 35,
-																											Line:   85,
+																											Line:   91,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "additionalInfo",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   85,
+																											Line:   91,
 																										},
 																									},
 																								},
@@ -4817,13 +4287,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 55,
-																											Line:   85,
+																											Line:   91,
 																										},
 																										File:   "servicenow.flux",
 																										Source: "obj.additionalInfo",
 																										Start: ast.Position{
 																											Column: 37,
-																											Line:   85,
+																											Line:   91,
 																										},
 																									},
 																								},
@@ -4833,13 +4303,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 40,
-																												Line:   85,
+																												Line:   91,
 																											},
 																											File:   "servicenow.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 37,
-																												Line:   85,
+																												Line:   91,
 																											},
 																										},
 																									},
@@ -4851,13 +4321,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 55,
-																												Line:   85,
+																												Line:   91,
 																											},
 																											File:   "servicenow.flux",
 																											Source: "additionalInfo",
 																											Start: ast.Position{
 																												Column: 41,
-																												Line:   85,
+																												Line:   91,
 																											},
 																										},
 																									},
@@ -4872,13 +4342,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 18,
-																								Line:   86,
+																								Line:   92,
 																							},
 																							File:   "servicenow.flux",
-																							Source: "event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                )",
+																							Source: "event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                )",
 																							Start: ast.Position{
 																								Column: 54,
-																								Line:   73,
+																								Line:   79,
 																							},
 																						},
 																					},
@@ -4888,13 +4358,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 59,
-																									Line:   73,
+																									Line:   79,
 																								},
 																								File:   "servicenow.flux",
 																								Source: "event",
 																								Start: ast.Position{
 																									Column: 54,
-																									Line:   73,
+																									Line:   79,
 																								},
 																							},
 																						},
@@ -4908,13 +4378,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 24,
-																								Line:   86,
+																								Line:   92,
 																							},
 																							File:   "servicenow.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 21,
-																								Line:   86,
+																								Line:   92,
 																							},
 																						},
 																					},
@@ -4930,13 +4400,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   86,
+																			Line:   92,
 																		},
 																		File:   "servicenow.flux",
-																		Source: "string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)",
+																		Source: "string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)",
 																		Start: ast.Position{
 																			Column: 39,
-																			Line:   73,
+																			Line:   79,
 																		},
 																	},
 																},
@@ -4946,13 +4416,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 45,
-																				Line:   73,
+																				Line:   79,
 																			},
 																			File:   "servicenow.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 39,
-																				Line:   73,
+																				Line:   79,
 																			},
 																		},
 																	},
@@ -4966,13 +4436,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 26,
-																		Line:   73,
+																		Line:   79,
 																	},
 																	File:   "servicenow.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   73,
+																		Line:   79,
 																	},
 																},
 															},
@@ -4984,13 +4454,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   86,
+																Line:   92,
 															},
 															File:   "servicenow.flux",
-															Source: "return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}",
+															Source: "return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}",
 															Start: ast.Position{
 																Column: 17,
-																Line:   73,
+																Line:   79,
 															},
 														},
 													},
@@ -5002,13 +4472,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   71,
+															Line:   77,
 														},
 														File:   "servicenow.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 25,
-															Line:   71,
+															Line:   77,
 														},
 													},
 												},
@@ -5018,13 +4488,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   71,
+																Line:   77,
 															},
 															File:   "servicenow.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 25,
-																Line:   71,
+																Line:   77,
 															},
 														},
 													},
@@ -5041,13 +4511,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   87,
+											Line:   93,
 										},
 										File:   "servicenow.flux",
-										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        if exists obj.node then obj.node else \"\",\n                    metricType:  if exists obj.metricType then obj.metricType else \"\",\n                    resource:    if exists obj.resource then obj.resource else \"\",\n                    metricName:  if exists obj.metricName then obj.metricName else \"\",\n                    messageKey:  if exists obj.messageKey then obj.messageKey else \"\",\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
+										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == event(\n                    url: url,\n                    username:    username,\n                    password:    password,\n                    source:      source,\n                    node:        obj.node,\n                    metricType:  obj.metricType,\n                    resource:    obj.resource,\n                    metricName:  obj.metricName,\n                    messageKey:  obj.messageKey,\n                    description: obj.description,\n                    severity:    obj.severity,\n                    additionalInfo: obj.additionalInfo\n                ) / 100)}\n            })",
 										Start: ast.Position{
 											Column: 16,
-											Line:   71,
+											Line:   77,
 										},
 									},
 								},
@@ -5057,13 +4527,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   71,
+												Line:   77,
 											},
 											File:   "servicenow.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 16,
-												Line:   71,
+												Line:   77,
 											},
 										},
 									},
@@ -5077,13 +4547,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   70,
+										Line:   76,
 									},
 									File:   "servicenow.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 10,
-										Line:   70,
+										Line:   76,
 									},
 								},
 							},
@@ -5093,13 +4563,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   70,
+											Line:   76,
 										},
 										File:   "servicenow.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 10,
-											Line:   70,
+											Line:   76,
 										},
 									},
 								},
@@ -5110,13 +4580,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   70,
+										Line:   76,
 									},
 									File:   "servicenow.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 17,
-										Line:   70,
+										Line:   76,
 									},
 								},
 							}},
@@ -5128,13 +4598,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   69,
+									Line:   75,
 								},
 								File:   "servicenow.flux",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 6,
-									Line:   69,
+									Line:   75,
 								},
 							},
 						},
@@ -5144,13 +4614,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   69,
+										Line:   75,
 									},
 									File:   "servicenow.flux",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 6,
-										Line:   69,
+										Line:   75,
 									},
 								},
 							},
@@ -5165,13 +4635,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   68,
+								Line:   74,
 							},
 							File:   "servicenow.flux",
 							Source: "url",
 							Start: ast.Position{
 								Column: 13,
-								Line:   68,
+								Line:   74,
 							},
 						},
 					},
@@ -5181,13 +4651,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   68,
+									Line:   74,
 								},
 								File:   "servicenow.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   68,
+									Line:   74,
 								},
 							},
 						},
@@ -5200,13 +4670,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   68,
+								Line:   74,
 							},
 							File:   "servicenow.flux",
 							Source: "username",
 							Start: ast.Position{
 								Column: 18,
-								Line:   68,
+								Line:   74,
 							},
 						},
 					},
@@ -5216,13 +4686,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   68,
+									Line:   74,
 								},
 								File:   "servicenow.flux",
 								Source: "username",
 								Start: ast.Position{
 									Column: 18,
-									Line:   68,
+									Line:   74,
 								},
 							},
 						},
@@ -5235,13 +4705,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   68,
+								Line:   74,
 							},
 							File:   "servicenow.flux",
 							Source: "password",
 							Start: ast.Position{
 								Column: 28,
-								Line:   68,
+								Line:   74,
 							},
 						},
 					},
@@ -5251,13 +4721,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   68,
+									Line:   74,
 								},
 								File:   "servicenow.flux",
 								Source: "password",
 								Start: ast.Position{
 									Column: 28,
-									Line:   68,
+									Line:   74,
 								},
 							},
 						},
@@ -5270,13 +4740,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   68,
+								Line:   74,
 							},
 							File:   "servicenow.flux",
 							Source: "source=\"Flux\"",
 							Start: ast.Position{
 								Column: 38,
-								Line:   68,
+								Line:   74,
 							},
 						},
 					},
@@ -5286,13 +4756,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   68,
+									Line:   74,
 								},
 								File:   "servicenow.flux",
 								Source: "source",
 								Start: ast.Position{
 									Column: 38,
-									Line:   68,
+									Line:   74,
 								},
 							},
 						},
@@ -5304,13 +4774,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   68,
+									Line:   74,
 								},
 								File:   "servicenow.flux",
 								Source: "\"Flux\"",
 								Start: ast.Position{
 									Column: 45,
-									Line:   68,
+									Line:   74,
 								},
 							},
 						},
