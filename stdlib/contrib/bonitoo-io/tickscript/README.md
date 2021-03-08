@@ -52,6 +52,9 @@ To learn more about monitoring and alerting in InfluxDB 2.x and Flux, please see
 ```
 can be rewritten to Flux as
 ```js
+    import ts "contrib/bonitoo-io/tickscript"
+    import "influxdata/influxdb/schema"
+
     from(bucket: ...)
        |> range(start: -1m)
        |> filter(fn: (r) => ... )
@@ -73,6 +76,9 @@ can be rewritten to Flux as
 ```
 can be rewritten to Flux as
 ```js
+    import ts "contrib/bonitoo-io/tickscript"
+    import "influxdata/influxdb/schema"
+
     from(bucket: ...)
        |> range(start: -1m)
        |> filter(fn: (r) => ... )
@@ -126,11 +132,15 @@ Parameters:
 
 Examples:
 ```js
+import ts "contrib/bonitoo-io/tickscript"
+
 from(bucket: "test")
     ...
     |> ts.select(column: "message_rate", as: "MsgRate") // query('''SELECT "message_rate" AS "MsgRate"''')
 ```
 ```js
+import ts "contrib/bonitoo-io/tickscript"
+
 from(bucket: "test")
     ...
     |> ts.select(column: "counter", fn: mean, as: "count") // query('''SELECT mean("counter") AS "count"''')
@@ -150,6 +160,8 @@ Parameters:
 
 Examples:
 ```js
+import ts "contrib/bonitoo-io/tickscript"
+
 from(bucket: "test")
     ...
     |> ts.selectWindow(column: "counter", fn: mean, as: "rate", every: 1m, defaultValue: 0.0) // query('''"SELECT mean("counter") AS "rate"''').groupBy(time(1m))
@@ -176,6 +188,8 @@ Parameters:
 
 Examples:
 ```js
+import ts "contrib/bonitoo-io/tickscript"
+
 from(bucket: "test")
     ...
     |> ts.compute(column: "message_rate", fn: median, as: "median_message_rate") // query|median('message_rate').as('median_message_rate)
@@ -193,6 +207,8 @@ Parameters:
 
 Examples:
 ```js
+import ts "contrib/bonitoo-io/tickscript"
+
 requests = from(bucket: "test")
     ...
     |> ts.select(column: "counter", fn: sum, as: "total_sum")
