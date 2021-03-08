@@ -34,8 +34,8 @@ Example:
     import "influxdata/influxdb/secrets"
     import "strings"
 
-    username = secrets.get(key: "SERVICENOW_USERNAME")
-    password = secrets.get(key: "SERVICENOW_PASSWORD")
+    username = secrets.get(key: "ZENOSS_USERNAME")
+    password = secrets.get(key: "ZENOSS_PASSWORD")
 
     lastReported =
       from(bucket: "example-bucket")
@@ -93,8 +93,8 @@ Example:
     import "influxdata/influxdb/secrets"
     import "strings"
 
-    username = secrets.get(key: "SERVICENOW_USERNAME")
-    password = secrets.get(key: "SERVICENOW_PASSWORD")
+    username = secrets.get(key: "ZENOSS_USERNAME")
+    password = secrets.get(key: "ZENOSS_PASSWORD")
 
     endpoint = zenoss.endpoint(
         url: "https://tenant.zenoss.io:8080/zport/dmd/evconsole_router",
