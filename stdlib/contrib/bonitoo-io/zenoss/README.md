@@ -111,8 +111,8 @@ Example:
           component: "CPU",
           eventClass: "/App,
           severity:
-              if lastReported._value < 1.0 then "Critical"
-              else if lastReported._value < 5.0 then "Warning"
+              if r._value < 1.0 then "Critical"
+              else if r._value < 5.0 then "Warning"
               else "Info",
         })
       )()
