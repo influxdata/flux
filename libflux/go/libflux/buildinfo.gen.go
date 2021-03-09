@@ -78,6 +78,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                         "da898bbb218ec8723e85d68afcd8d94cb35d662d61ece237ce41f35e48f92e3b",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                             "d0b71e0a13566f6916586ca49a16ebd96f940b35bf48af4c5c6444653cfd565d",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                        "21a1bed6c35e9dec388d3bb8e8d4dd6e4e647a612ff6c1af434dcdbd01c9d26a",
+	"stdlib/contrib/bonitoo-io/victorops/victorops.flux":                            "22e1e3987c8340800d9fdbc9fe2fe7fd4e2ff98cb210684ffacf22530b38cd82",
 	"stdlib/contrib/chobbs/discord/discord.flux":                                    "b9f9b1a60fc92f47930fa4252a77bfc1def5ba98084880eddb4ebbab4078a697",
 	"stdlib/contrib/jsternberg/aggregate/aggregate.flux":                            "fffde07d389b43cd8e2a0f7109f0afa4157174f28d71afac7d484b3423985e93",
 	"stdlib/contrib/jsternberg/aggregate/table_test.flux":                           "5091de069830dcfb6bbddbfa068c1777e747347e9da3dfa59f50195df5b20d4f",
