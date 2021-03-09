@@ -23,7 +23,6 @@ message = (url=defaultURL, token="", channel, text, color) => {
     data = {
         channel: channel,
         attachments: attachments,
-        as_user: false,
     }
 
     headers = {

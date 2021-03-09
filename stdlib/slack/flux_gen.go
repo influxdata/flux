@@ -22,10 +22,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   54,
+					Line:   53,
 				},
 				File:   "slack.flux",
-				Source: "package slack\n\nimport \"http\"\nimport \"json\"\n\nbuiltin validateColorString : (color: string) => string\n\noption defaultURL = \"https://slack.com/api/chat.postMessage\"\n\n// `message` sends a single message to a Slack channel. It will work either with the chat.postMessage API or with a slack webhook.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup. This URL will be secret. Don't worry about secrets for the initial implementation.\n// `token` - string - the api token string.  Defaults to: \"\", and can be ignored if one uses the webhook api URL.\n// `channel` - string - Name of channel in which to post the message. No default.\n// `text` - string - The text to display.\n// `color` - string - Color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.\nmessage = (url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// `endpoint` creates the endpoint for the Slack external service.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup, and this URL will be secret.\n// `token` - string - token for the slack endpoint.  This can be ignored if one uses the webhook url acquired as part of the slack API setup, but must be supplied if the chat.postMessage API is used.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel`, `text`, and `color` fields as defined in the `message` function arguments.\nendpoint = (url=defaultURL, token=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
+				Source: "package slack\n\nimport \"http\"\nimport \"json\"\n\nbuiltin validateColorString : (color: string) => string\n\noption defaultURL = \"https://slack.com/api/chat.postMessage\"\n\n// `message` sends a single message to a Slack channel. It will work either with the chat.postMessage API or with a slack webhook.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup. This URL will be secret. Don't worry about secrets for the initial implementation.\n// `token` - string - the api token string.  Defaults to: \"\", and can be ignored if one uses the webhook api URL.\n// `channel` - string - Name of channel in which to post the message. No default.\n// `text` - string - The text to display.\n// `color` - string - Color to give message: one of good, warning, and danger, or any hex rgb color value ex. #439FE0.\nmessage = (url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}\n\n// `endpoint` creates the endpoint for the Slack external service.\n// `url` - string - URL of the slack endpoint. Defaults to: \"https://slack.com/api/chat.postMessage\", if one uses the webhook api this must be acquired as part of the slack API setup, and this URL will be secret.\n// `token` - string - token for the slack endpoint.  This can be ignored if one uses the webhook url acquired as part of the slack API setup, but must be supplied if the chat.postMessage API is used.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `channel`, `text`, and `color` fields as defined in the `message` function arguments.\nendpoint = (url=defaultURL, token=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -282,10 +282,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   35,
+						Line:   34,
 					},
 					File:   "slack.flux",
-					Source: "message = (url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
+					Source: "message = (url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   16,
@@ -316,10 +316,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   35,
+							Line:   34,
 						},
 						File:   "slack.flux",
-						Source: "(url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
+						Source: "(url=defaultURL, token=\"\", channel, text, color) => {\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
 						Start: ast.Position{
 							Column: 11,
 							Line:   16,
@@ -332,10 +332,10 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   35,
+								Line:   34,
 							},
 							File:   "slack.flux",
-							Source: "{\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
+							Source: "{\n    attachments = [{\n        color: validateColorString(color),\n        text: string(v: text),\n        mrkdwn_in: [\"text\"],\n    }]\n\n    data = {\n        channel: channel,\n        attachments: attachments,\n    }\n\n    headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }\n    enc = json.encode(v:data)\n    return http.post(headers: headers, url: url, data: enc)\n}",
 							Start: ast.Position{
 								Column: 63,
 								Line:   16,
@@ -750,10 +750,10 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   27,
+									Line:   26,
 								},
 								File:   "slack.flux",
-								Source: "data = {\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }",
+								Source: "data = {\n        channel: channel,\n        attachments: attachments,\n    }",
 								Start: ast.Position{
 									Column: 5,
 									Line:   23,
@@ -784,10 +784,10 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   27,
+										Line:   26,
 									},
 									File:   "slack.flux",
-									Source: "{\n        channel: channel,\n        attachments: attachments,\n        as_user: false,\n    }",
+									Source: "{\n        channel: channel,\n        attachments: attachments,\n    }",
 									Start: ast.Position{
 										Column: 12,
 										Line:   23,
@@ -898,58 +898,6 @@ var pkgAST = &ast.Package{
 									},
 									Name: "attachments",
 								},
-							}, &ast.Property{
-								BaseNode: ast.BaseNode{
-									Errors: nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 23,
-											Line:   26,
-										},
-										File:   "slack.flux",
-										Source: "as_user: false",
-										Start: ast.Position{
-											Column: 9,
-											Line:   26,
-										},
-									},
-								},
-								Key: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 16,
-												Line:   26,
-											},
-											File:   "slack.flux",
-											Source: "as_user",
-											Start: ast.Position{
-												Column: 9,
-												Line:   26,
-											},
-										},
-									},
-									Name: "as_user",
-								},
-								Value: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Errors: nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 23,
-												Line:   26,
-											},
-											File:   "slack.flux",
-											Source: "false",
-											Start: ast.Position{
-												Column: 18,
-												Line:   26,
-											},
-										},
-									},
-									Name: "false",
-								},
 							}},
 							With: nil,
 						},
@@ -959,13 +907,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   32,
+									Line:   31,
 								},
 								File:   "slack.flux",
 								Source: "headers = {\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   29,
+									Line:   28,
 								},
 							},
 						},
@@ -975,13 +923,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   29,
+										Line:   28,
 									},
 									File:   "slack.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   29,
+										Line:   28,
 									},
 								},
 							},
@@ -993,13 +941,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   32,
+										Line:   31,
 									},
 									File:   "slack.flux",
 									Source: "{\n        \"Authorization\": \"Bearer \" + token,\n        \"Content-Type\": \"application/json\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   29,
+										Line:   28,
 									},
 								},
 							},
@@ -1009,13 +957,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   30,
+											Line:   29,
 										},
 										File:   "slack.flux",
 										Source: "\"Authorization\": \"Bearer \" + token",
 										Start: ast.Position{
 											Column: 9,
-											Line:   30,
+											Line:   29,
 										},
 									},
 								},
@@ -1025,13 +973,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   30,
+												Line:   29,
 											},
 											File:   "slack.flux",
 											Source: "\"Authorization\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   30,
+												Line:   29,
 											},
 										},
 									},
@@ -1043,13 +991,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   30,
+												Line:   29,
 											},
 											File:   "slack.flux",
 											Source: "\"Bearer \" + token",
 											Start: ast.Position{
 												Column: 26,
-												Line:   30,
+												Line:   29,
 											},
 										},
 									},
@@ -1059,13 +1007,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   30,
+													Line:   29,
 												},
 												File:   "slack.flux",
 												Source: "\"Bearer \"",
 												Start: ast.Position{
 													Column: 26,
-													Line:   30,
+													Line:   29,
 												},
 											},
 										},
@@ -1078,13 +1026,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   30,
+													Line:   29,
 												},
 												File:   "slack.flux",
 												Source: "token",
 												Start: ast.Position{
 													Column: 38,
-													Line:   30,
+													Line:   29,
 												},
 											},
 										},
@@ -1097,13 +1045,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   31,
+											Line:   30,
 										},
 										File:   "slack.flux",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   31,
+											Line:   30,
 										},
 									},
 								},
@@ -1113,13 +1061,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   31,
+												Line:   30,
 											},
 											File:   "slack.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   31,
+												Line:   30,
 											},
 										},
 									},
@@ -1131,13 +1079,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   31,
+												Line:   30,
 											},
 											File:   "slack.flux",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   31,
+												Line:   30,
 											},
 										},
 									},
@@ -1152,13 +1100,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   33,
+									Line:   32,
 								},
 								File:   "slack.flux",
 								Source: "enc = json.encode(v:data)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   33,
+									Line:   32,
 								},
 							},
 						},
@@ -1168,13 +1116,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 8,
-										Line:   33,
+										Line:   32,
 									},
 									File:   "slack.flux",
 									Source: "enc",
 									Start: ast.Position{
 										Column: 5,
-										Line:   33,
+										Line:   32,
 									},
 								},
 							},
@@ -1187,13 +1135,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   33,
+											Line:   32,
 										},
 										File:   "slack.flux",
 										Source: "v:data",
 										Start: ast.Position{
 											Column: 23,
-											Line:   33,
+											Line:   32,
 										},
 									},
 								},
@@ -1203,13 +1151,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   33,
+												Line:   32,
 											},
 											File:   "slack.flux",
 											Source: "v:data",
 											Start: ast.Position{
 												Column: 23,
-												Line:   33,
+												Line:   32,
 											},
 										},
 									},
@@ -1219,13 +1167,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   33,
+													Line:   32,
 												},
 												File:   "slack.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 23,
-													Line:   33,
+													Line:   32,
 												},
 											},
 										},
@@ -1237,13 +1185,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   33,
+													Line:   32,
 												},
 												File:   "slack.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 25,
-													Line:   33,
+													Line:   32,
 												},
 											},
 										},
@@ -1257,13 +1205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   33,
+										Line:   32,
 									},
 									File:   "slack.flux",
 									Source: "json.encode(v:data)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   33,
+										Line:   32,
 									},
 								},
 							},
@@ -1273,13 +1221,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   33,
+											Line:   32,
 										},
 										File:   "slack.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 11,
-											Line:   33,
+											Line:   32,
 										},
 									},
 								},
@@ -1289,13 +1237,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   33,
+												Line:   32,
 											},
 											File:   "slack.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 11,
-												Line:   33,
+												Line:   32,
 											},
 										},
 									},
@@ -1307,13 +1255,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   33,
+												Line:   32,
 											},
 											File:   "slack.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 16,
-												Line:   33,
+												Line:   32,
 											},
 										},
 									},
@@ -1329,13 +1277,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   34,
+											Line:   33,
 										},
 										File:   "slack.flux",
 										Source: "headers: headers, url: url, data: enc",
 										Start: ast.Position{
 											Column: 22,
-											Line:   34,
+											Line:   33,
 										},
 									},
 								},
@@ -1345,13 +1293,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   34,
+												Line:   33,
 											},
 											File:   "slack.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   34,
+												Line:   33,
 											},
 										},
 									},
@@ -1361,13 +1309,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   34,
+													Line:   33,
 												},
 												File:   "slack.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   34,
+													Line:   33,
 												},
 											},
 										},
@@ -1379,13 +1327,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   34,
+													Line:   33,
 												},
 												File:   "slack.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   34,
+													Line:   33,
 												},
 											},
 										},
@@ -1397,13 +1345,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   34,
+												Line:   33,
 											},
 											File:   "slack.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   34,
+												Line:   33,
 											},
 										},
 									},
@@ -1413,13 +1361,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   34,
+													Line:   33,
 												},
 												File:   "slack.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   34,
+													Line:   33,
 												},
 											},
 										},
@@ -1431,13 +1379,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   34,
+													Line:   33,
 												},
 												File:   "slack.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   34,
+													Line:   33,
 												},
 											},
 										},
@@ -1449,13 +1397,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 59,
-												Line:   34,
+												Line:   33,
 											},
 											File:   "slack.flux",
 											Source: "data: enc",
 											Start: ast.Position{
 												Column: 50,
-												Line:   34,
+												Line:   33,
 											},
 										},
 									},
@@ -1465,13 +1413,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   34,
+													Line:   33,
 												},
 												File:   "slack.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   34,
+													Line:   33,
 												},
 											},
 										},
@@ -1483,13 +1431,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   34,
+													Line:   33,
 												},
 												File:   "slack.flux",
 												Source: "enc",
 												Start: ast.Position{
 													Column: 56,
-													Line:   34,
+													Line:   33,
 												},
 											},
 										},
@@ -1503,13 +1451,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   34,
+										Line:   33,
 									},
 									File:   "slack.flux",
 									Source: "http.post(headers: headers, url: url, data: enc)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   34,
+										Line:   33,
 									},
 								},
 							},
@@ -1519,13 +1467,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   34,
+											Line:   33,
 										},
 										File:   "slack.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   34,
+											Line:   33,
 										},
 									},
 								},
@@ -1535,13 +1483,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   34,
+												Line:   33,
 											},
 											File:   "slack.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   34,
+												Line:   33,
 											},
 										},
 									},
@@ -1553,13 +1501,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   34,
+												Line:   33,
 											},
 											File:   "slack.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   34,
+												Line:   33,
 											},
 										},
 									},
@@ -1572,13 +1520,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   34,
+									Line:   33,
 								},
 								File:   "slack.flux",
 								Source: "return http.post(headers: headers, url: url, data: enc)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   34,
+									Line:   33,
 								},
 							},
 						},
@@ -1801,13 +1749,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   54,
+						Line:   53,
 					},
 					File:   "slack.flux",
 					Source: "endpoint = (url=defaultURL, token=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 					Start: ast.Position{
 						Column: 1,
-						Line:   42,
+						Line:   41,
 					},
 				},
 			},
@@ -1817,13 +1765,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   42,
+							Line:   41,
 						},
 						File:   "slack.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   42,
+							Line:   41,
 						},
 					},
 				},
@@ -1835,13 +1783,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   54,
+							Line:   53,
 						},
 						File:   "slack.flux",
 						Source: "(url=defaultURL, token=\"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 						Start: ast.Position{
 							Column: 12,
-							Line:   42,
+							Line:   41,
 						},
 					},
 				},
@@ -1851,13 +1799,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   54,
+								Line:   53,
 							},
 							File:   "slack.flux",
 							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 							Start: ast.Position{
 								Column: 5,
-								Line:   43,
+								Line:   42,
 							},
 						},
 					},
@@ -1867,13 +1815,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   54,
+									Line:   53,
 								},
 								File:   "slack.flux",
 								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 								Start: ast.Position{
 									Column: 9,
-									Line:   44,
+									Line:   43,
 								},
 							},
 						},
@@ -1884,13 +1832,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   44,
+											Line:   43,
 										},
 										File:   "slack.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 24,
-											Line:   44,
+											Line:   43,
 										},
 									},
 								},
@@ -1901,13 +1849,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   54,
+										Line:   53,
 									},
 									File:   "slack.flux",
 									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 									Start: ast.Position{
 										Column: 24,
-										Line:   44,
+										Line:   43,
 									},
 								},
 							},
@@ -1918,13 +1866,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   54,
+												Line:   53,
 											},
 											File:   "slack.flux",
 											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            }",
 											Start: ast.Position{
 												Column: 20,
-												Line:   45,
+												Line:   44,
 											},
 										},
 									},
@@ -1934,13 +1882,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   54,
+													Line:   53,
 												},
 												File:   "slack.flux",
 												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            }",
 												Start: ast.Position{
 													Column: 20,
-													Line:   45,
+													Line:   44,
 												},
 											},
 										},
@@ -1950,13 +1898,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   45,
+														Line:   44,
 													},
 													File:   "slack.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 20,
-														Line:   45,
+														Line:   44,
 													},
 												},
 											},
@@ -1968,13 +1916,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   54,
+														Line:   53,
 													},
 													File:   "slack.flux",
 													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            }",
 													Start: ast.Position{
 														Column: 24,
-														Line:   45,
+														Line:   44,
 													},
 												},
 											},
@@ -1984,13 +1932,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   54,
+															Line:   53,
 														},
 														File:   "slack.flux",
 														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            }",
 														Start: ast.Position{
 															Column: 31,
-															Line:   45,
+															Line:   44,
 														},
 													},
 												},
@@ -2000,13 +1948,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   46,
+																Line:   45,
 															},
 															File:   "slack.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
 																Column: 17,
-																Line:   46,
+																Line:   45,
 															},
 														},
 													},
@@ -2016,13 +1964,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 20,
-																	Line:   46,
+																	Line:   45,
 																},
 																File:   "slack.flux",
 																Source: "obj",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   46,
+																	Line:   45,
 																},
 															},
 														},
@@ -2035,13 +1983,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 33,
-																		Line:   46,
+																		Line:   45,
 																	},
 																	File:   "slack.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
 																		Column: 29,
-																		Line:   46,
+																		Line:   45,
 																	},
 																},
 															},
@@ -2051,13 +1999,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 33,
-																			Line:   46,
+																			Line:   45,
 																		},
 																		File:   "slack.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
 																			Column: 29,
-																			Line:   46,
+																			Line:   45,
 																		},
 																	},
 																},
@@ -2067,13 +2015,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
-																				Line:   46,
+																				Line:   45,
 																			},
 																			File:   "slack.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 29,
-																				Line:   46,
+																				Line:   45,
 																			},
 																		},
 																	},
@@ -2085,13 +2033,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 33,
-																				Line:   46,
+																				Line:   45,
 																			},
 																			File:   "slack.flux",
 																			Source: "r",
 																			Start: ast.Position{
 																				Column: 32,
-																				Line:   46,
+																				Line:   45,
 																			},
 																		},
 																	},
@@ -2105,13 +2053,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   46,
+																	Line:   45,
 																},
 																File:   "slack.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   46,
+																	Line:   45,
 																},
 															},
 														},
@@ -2121,13 +2069,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 28,
-																		Line:   46,
+																		Line:   45,
 																	},
 																	File:   "slack.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
 																		Column: 23,
-																		Line:   46,
+																		Line:   45,
 																	},
 																},
 															},
@@ -2141,13 +2089,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 26,
-																	Line:   53,
+																	Line:   52,
 																},
 																File:   "slack.flux",
 																Source: "{r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   47,
+																	Line:   46,
 																},
 															},
 														},
@@ -2157,13 +2105,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   53,
+																		Line:   52,
 																	},
 																	File:   "slack.flux",
 																	Source: "_sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)",
 																	Start: ast.Position{
 																		Column: 32,
-																		Line:   47,
+																		Line:   46,
 																	},
 																},
 															},
@@ -2173,13 +2121,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   47,
+																			Line:   46,
 																		},
 																		File:   "slack.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   47,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -2192,13 +2140,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 24,
-																				Line:   53,
+																				Line:   52,
 																			},
 																			File:   "slack.flux",
 																			Source: "v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100",
 																			Start: ast.Position{
 																				Column: 46,
-																				Line:   47,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -2208,13 +2156,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 24,
-																					Line:   53,
+																					Line:   52,
 																				},
 																				File:   "slack.flux",
 																				Source: "v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100",
 																				Start: ast.Position{
 																					Column: 46,
-																					Line:   47,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -2224,13 +2172,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 47,
-																						Line:   47,
+																						Line:   46,
 																					},
 																					File:   "slack.flux",
 																					Source: "v",
 																					Start: ast.Position{
 																						Column: 46,
-																						Line:   47,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -2242,13 +2190,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 24,
-																						Line:   53,
+																						Line:   52,
 																					},
 																					File:   "slack.flux",
 																					Source: "2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100",
 																					Start: ast.Position{
 																						Column: 49,
-																						Line:   47,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -2258,13 +2206,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 50,
-																							Line:   47,
+																							Line:   46,
 																						},
 																						File:   "slack.flux",
 																						Source: "2",
 																						Start: ast.Position{
 																							Column: 49,
-																							Line:   47,
+																							Line:   46,
 																						},
 																					},
 																				},
@@ -2277,13 +2225,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 24,
-																							Line:   53,
+																							Line:   52,
 																						},
 																						File:   "slack.flux",
 																						Source: "message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100",
 																						Start: ast.Position{
 																							Column: 54,
-																							Line:   47,
+																							Line:   46,
 																						},
 																					},
 																				},
@@ -2294,13 +2242,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 37,
-																									Line:   52,
+																									Line:   51,
 																								},
 																								File:   "slack.flux",
 																								Source: "url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color",
 																								Start: ast.Position{
 																									Column: 21,
-																									Line:   48,
+																									Line:   47,
 																								},
 																							},
 																						},
@@ -2310,13 +2258,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 29,
-																										Line:   48,
+																										Line:   47,
 																									},
 																									File:   "slack.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   48,
+																										Line:   47,
 																									},
 																								},
 																							},
@@ -2326,13 +2274,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 24,
-																											Line:   48,
+																											Line:   47,
 																										},
 																										File:   "slack.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   48,
+																											Line:   47,
 																										},
 																									},
 																								},
@@ -2344,13 +2292,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 29,
-																											Line:   48,
+																											Line:   47,
 																										},
 																										File:   "slack.flux",
 																										Source: "url",
 																										Start: ast.Position{
 																											Column: 26,
-																											Line:   48,
+																											Line:   47,
 																										},
 																									},
 																								},
@@ -2362,13 +2310,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 33,
-																										Line:   49,
+																										Line:   48,
 																									},
 																									File:   "slack.flux",
 																									Source: "token: token",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   49,
+																										Line:   48,
 																									},
 																								},
 																							},
@@ -2378,13 +2326,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 26,
-																											Line:   49,
+																											Line:   48,
 																										},
 																										File:   "slack.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   49,
+																											Line:   48,
 																										},
 																									},
 																								},
@@ -2396,13 +2344,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 33,
-																											Line:   49,
+																											Line:   48,
 																										},
 																										File:   "slack.flux",
 																										Source: "token",
 																										Start: ast.Position{
 																											Column: 28,
-																											Line:   49,
+																											Line:   48,
 																										},
 																									},
 																								},
@@ -2414,13 +2362,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 41,
-																										Line:   50,
+																										Line:   49,
 																									},
 																									File:   "slack.flux",
 																									Source: "channel: obj.channel",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   50,
+																										Line:   49,
 																									},
 																								},
 																							},
@@ -2430,13 +2378,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   50,
+																											Line:   49,
 																										},
 																										File:   "slack.flux",
 																										Source: "channel",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   50,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -2448,13 +2396,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 41,
-																											Line:   50,
+																											Line:   49,
 																										},
 																										File:   "slack.flux",
 																										Source: "obj.channel",
 																										Start: ast.Position{
 																											Column: 30,
-																											Line:   50,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -2464,13 +2412,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 33,
-																												Line:   50,
+																												Line:   49,
 																											},
 																											File:   "slack.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 30,
-																												Line:   50,
+																												Line:   49,
 																											},
 																										},
 																									},
@@ -2482,13 +2430,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 41,
-																												Line:   50,
+																												Line:   49,
 																											},
 																											File:   "slack.flux",
 																											Source: "channel",
 																											Start: ast.Position{
 																												Column: 34,
-																												Line:   50,
+																												Line:   49,
 																											},
 																										},
 																									},
@@ -2501,13 +2449,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 35,
-																										Line:   51,
+																										Line:   50,
 																									},
 																									File:   "slack.flux",
 																									Source: "text: obj.text",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   51,
+																										Line:   50,
 																									},
 																								},
 																							},
@@ -2517,13 +2465,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 25,
-																											Line:   51,
+																											Line:   50,
 																										},
 																										File:   "slack.flux",
 																										Source: "text",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   51,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -2535,13 +2483,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 35,
-																											Line:   51,
+																											Line:   50,
 																										},
 																										File:   "slack.flux",
 																										Source: "obj.text",
 																										Start: ast.Position{
 																											Column: 27,
-																											Line:   51,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -2551,13 +2499,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 30,
-																												Line:   51,
+																												Line:   50,
 																											},
 																											File:   "slack.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 27,
-																												Line:   51,
+																												Line:   50,
 																											},
 																										},
 																									},
@@ -2569,13 +2517,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 35,
-																												Line:   51,
+																												Line:   50,
 																											},
 																											File:   "slack.flux",
 																											Source: "text",
 																											Start: ast.Position{
 																												Column: 31,
-																												Line:   51,
+																												Line:   50,
 																											},
 																										},
 																									},
@@ -2588,13 +2536,13 @@ var pkgAST = &ast.Package{
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 37,
-																										Line:   52,
+																										Line:   51,
 																									},
 																									File:   "slack.flux",
 																									Source: "color: obj.color",
 																									Start: ast.Position{
 																										Column: 21,
-																										Line:   52,
+																										Line:   51,
 																									},
 																								},
 																							},
@@ -2604,13 +2552,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 26,
-																											Line:   52,
+																											Line:   51,
 																										},
 																										File:   "slack.flux",
 																										Source: "color",
 																										Start: ast.Position{
 																											Column: 21,
-																											Line:   52,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2622,13 +2570,13 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 37,
-																											Line:   52,
+																											Line:   51,
 																										},
 																										File:   "slack.flux",
 																										Source: "obj.color",
 																										Start: ast.Position{
 																											Column: 28,
-																											Line:   52,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2638,13 +2586,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 31,
-																												Line:   52,
+																												Line:   51,
 																											},
 																											File:   "slack.flux",
 																											Source: "obj",
 																											Start: ast.Position{
 																												Column: 28,
-																												Line:   52,
+																												Line:   51,
 																											},
 																										},
 																									},
@@ -2656,13 +2604,13 @@ var pkgAST = &ast.Package{
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 37,
-																												Line:   52,
+																												Line:   51,
 																											},
 																											File:   "slack.flux",
 																											Source: "color",
 																											Start: ast.Position{
 																												Column: 32,
-																												Line:   52,
+																												Line:   51,
 																											},
 																										},
 																									},
@@ -2677,13 +2625,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 18,
-																								Line:   53,
+																								Line:   52,
 																							},
 																							File:   "slack.flux",
 																							Source: "message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                )",
 																							Start: ast.Position{
 																								Column: 54,
-																								Line:   47,
+																								Line:   46,
 																							},
 																						},
 																					},
@@ -2693,13 +2641,13 @@ var pkgAST = &ast.Package{
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 61,
-																									Line:   47,
+																									Line:   46,
 																								},
 																								File:   "slack.flux",
 																								Source: "message",
 																								Start: ast.Position{
 																									Column: 54,
-																									Line:   47,
+																									Line:   46,
 																								},
 																							},
 																						},
@@ -2713,13 +2661,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 24,
-																								Line:   53,
+																								Line:   52,
 																							},
 																							File:   "slack.flux",
 																							Source: "100",
 																							Start: ast.Position{
 																								Column: 21,
-																								Line:   53,
+																								Line:   52,
 																							},
 																						},
 																					},
@@ -2735,13 +2683,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
-																			Line:   53,
+																			Line:   52,
 																		},
 																		File:   "slack.flux",
 																		Source: "string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)",
 																		Start: ast.Position{
 																			Column: 39,
-																			Line:   47,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -2751,13 +2699,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 45,
-																				Line:   47,
+																				Line:   46,
 																			},
 																			File:   "slack.flux",
 																			Source: "string",
 																			Start: ast.Position{
 																				Column: 39,
-																				Line:   47,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -2771,13 +2719,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 26,
-																		Line:   47,
+																		Line:   46,
 																	},
 																	File:   "slack.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 25,
-																		Line:   47,
+																		Line:   46,
 																	},
 																},
 															},
@@ -2789,13 +2737,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   53,
+																Line:   52,
 															},
 															File:   "slack.flux",
 															Source: "return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}",
 															Start: ast.Position{
 																Column: 17,
-																Line:   47,
+																Line:   46,
 															},
 														},
 													},
@@ -2807,13 +2755,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   45,
+															Line:   44,
 														},
 														File:   "slack.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 25,
-															Line:   45,
+															Line:   44,
 														},
 													},
 												},
@@ -2823,13 +2771,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 26,
-																Line:   45,
+																Line:   44,
 															},
 															File:   "slack.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 25,
-																Line:   45,
+																Line:   44,
 															},
 														},
 													},
@@ -2846,13 +2794,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   54,
+											Line:   53,
 										},
 										File:   "slack.flux",
 										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    token: token,\n                    channel: obj.channel,\n                    text: obj.text,\n                    color: obj.color,\n                ) / 100)}\n            })",
 										Start: ast.Position{
 											Column: 16,
-											Line:   45,
+											Line:   44,
 										},
 									},
 								},
@@ -2862,13 +2810,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   45,
+												Line:   44,
 											},
 											File:   "slack.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 16,
-												Line:   45,
+												Line:   44,
 											},
 										},
 									},
@@ -2882,13 +2830,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   44,
+										Line:   43,
 									},
 									File:   "slack.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 10,
-										Line:   44,
+										Line:   43,
 									},
 								},
 							},
@@ -2898,13 +2846,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   44,
+											Line:   43,
 										},
 										File:   "slack.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 10,
-											Line:   44,
+											Line:   43,
 										},
 									},
 								},
@@ -2915,13 +2863,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   44,
+										Line:   43,
 									},
 									File:   "slack.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 17,
-										Line:   44,
+										Line:   43,
 									},
 								},
 							}},
@@ -2933,13 +2881,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
-									Line:   43,
+									Line:   42,
 								},
 								File:   "slack.flux",
 								Source: "mapFn",
 								Start: ast.Position{
 									Column: 6,
-									Line:   43,
+									Line:   42,
 								},
 							},
 						},
@@ -2949,13 +2897,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   43,
+										Line:   42,
 									},
 									File:   "slack.flux",
 									Source: "mapFn",
 									Start: ast.Position{
 										Column: 6,
-										Line:   43,
+										Line:   42,
 									},
 								},
 							},
@@ -2970,13 +2918,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   42,
+								Line:   41,
 							},
 							File:   "slack.flux",
 							Source: "url=defaultURL",
 							Start: ast.Position{
 								Column: 13,
-								Line:   42,
+								Line:   41,
 							},
 						},
 					},
@@ -2986,13 +2934,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   42,
+									Line:   41,
 								},
 								File:   "slack.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   42,
+									Line:   41,
 								},
 							},
 						},
@@ -3004,13 +2952,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   42,
+									Line:   41,
 								},
 								File:   "slack.flux",
 								Source: "defaultURL",
 								Start: ast.Position{
 									Column: 17,
-									Line:   42,
+									Line:   41,
 								},
 							},
 						},
@@ -3022,13 +2970,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 37,
-								Line:   42,
+								Line:   41,
 							},
 							File:   "slack.flux",
 							Source: "token=\"\"",
 							Start: ast.Position{
 								Column: 29,
-								Line:   42,
+								Line:   41,
 							},
 						},
 					},
@@ -3038,13 +2986,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   42,
+									Line:   41,
 								},
 								File:   "slack.flux",
 								Source: "token",
 								Start: ast.Position{
 									Column: 29,
-									Line:   42,
+									Line:   41,
 								},
 							},
 						},
@@ -3056,13 +3004,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   42,
+									Line:   41,
 								},
 								File:   "slack.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 35,
-									Line:   42,
+									Line:   41,
 								},
 							},
 						},
