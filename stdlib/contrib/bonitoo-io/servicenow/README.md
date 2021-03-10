@@ -115,8 +115,6 @@ Example:
 
 ## Contact
 
-Provide a way for users to get in touch with you if they have questions or need help using your package. What information you give is up to you, but we encourage providing those below.
-
 - Author: Ales Pour / Bonitoo
 - Email: alespour@bonitoo.io
 - Github: [@alespour](https://github.com/alespour), [@bonitoo-io](https://github.com/bonitoo-io)
