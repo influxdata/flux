@@ -23,7 +23,7 @@ import (
 
 func TestZenoss(t *testing.T) {
 	ctx := dependenciestest.Default().Inject(context.Background())
-	_, scope, err := runtime.Eval(ctx, `
+	_, _, err := runtime.Eval(ctx, `
 import "csv"
 import "contrib/bonitoo-io/zenoss"
 
@@ -56,7 +56,6 @@ csv.from(csv:data) |> process()
 	if err != nil {
 		t.Error(err)
 	}
-	_ = scope
 }
 
 func TestZenossPost(t *testing.T) {
@@ -161,10 +160,11 @@ csv.from(csv:data) |> endpoint()`
 			}
 
 			var res flux.Result
+			timer := time.NewTimer(1 * time.Second)
 			select {
-			case res = <-query.Results():
-				// got timely result
-			case <-time.After(1 * time.Second):
+			case res = <- query.Results():
+				timer.Stop()
+			case <- timer.C:
 				t.Fatal("query timeout")
 			}
 
