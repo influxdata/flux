@@ -162,9 +162,9 @@ csv.from(csv:data) |> endpoint()`
 
 			var res flux.Result
 			select {
-			case res = <- query.Results():
+			case res = <-query.Results():
 				// got timely result
-			case <- time.After(1 * time.Second):
+			case <-time.After(1 * time.Second):
 				t.Fatal("query timeout")
 			}
 
