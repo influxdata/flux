@@ -41,7 +41,7 @@ sendAlert = (url, token, appKey, status, rec) => {
 // `token` - string - BigPanda authorization Bearer token
 // `appKey` - string - BigPanda App Key.
 // The returned factory function accepts a `mapFn` parameter.
-// // The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and appKey).
+// The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and appKey).
 endpoint = (url=defaultUrl, token, appKey) =>
     (mapFn) =>
         (tables=<-) => tables
