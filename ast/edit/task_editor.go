@@ -6,6 +6,9 @@ import (
 	"github.com/influxdata/flux/codes"
 )
 
+// OptionNotFoundError variable is to handle the error gracefully in the client code
+var OptionNotFoundError = &flux.Error{Code: codes.Invalid, Msg: "option not found"}
+
 // GetOption finds and returns the init for the option's variable assignment
 func GetOption(file *ast.File, name string) (ast.Expression, error) {
 	for _, st := range file.Body {
@@ -21,10 +24,7 @@ func GetOption(file *ast.File, name string) (ast.Expression, error) {
 		}
 	}
 
-	return nil, &flux.Error{
-		Code: codes.Internal,
-		Msg:  "Option not found",
-	}
+	return nil, OptionNotFoundError
 }
 
 // SetOption replaces an existing option's init with the provided init or adds

@@ -11,6 +11,19 @@ import (
 	"github.com/influxdata/flux/parser"
 )
 
+func TestGetOptionBlockMissing(t *testing.T) {
+	// missing `option task = {...}` block from the script
+	src := ``
+
+	f := parser.ParseSource(src).Files[0]
+
+	// here GetOption will return nil, OptionNotFoundError
+	_, err := edit.GetOption(f, "task")
+	if err != edit.OptionNotFoundError {
+		t.Errorf("expected err == edit.OptionNotFoundError but found err == : %v", err)
+	}
+}
+
 func TestGetOptionProperty(t *testing.T) {
 	src := `option task = {a: 5, b: "6"}`
 
