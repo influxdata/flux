@@ -23,7 +23,7 @@ import (
 
 func TestServiceNow(t *testing.T) {
 	ctx := dependenciestest.Default().Inject(context.Background())
-	_, scope, err := runtime.Eval(ctx, `
+	_, _, err := runtime.Eval(ctx, `
 import "csv"
 import "contrib/bonitoo-io/servicenow"
 
@@ -56,7 +56,6 @@ csv.from(csv:data) |> process()
 	if err != nil {
 		t.Error(err)
 	}
-	_ = scope
 }
 
 func TestServiceNowPost(t *testing.T) {
@@ -144,20 +143,25 @@ csv.from(csv:data) |> endpoint()`
 				t.Fatal(err)
 			}
 
-			res := <-query.Results()
-			_ = res
-			var HasSent bool
+			var res flux.Result
+			timer := time.NewTimer(1 * time.Second)
+			select {
+			case res = <-query.Results():
+				timer.Stop()
+			case <-timer.C:
+				t.Fatal("query timeout")
+			}
+
+			var hasSent bool
 			err = res.Tables().Do(func(table flux.Table) error {
 				return table.Do(func(reader flux.ColReader) error {
-					if reader == nil {
-						return nil
-					}
 					for i, meta := range reader.Cols() {
 						if meta.Label == "_sent" {
-							HasSent = true
+							hasSent = true
 							if v := reader.Strings(i).Value(0); string(v) != "true" {
 								t.Fatalf("expecting _sent=true but got _sent=%v", string(v))
 							}
+							break
 						}
 					}
 					return nil
@@ -168,7 +172,7 @@ csv.from(csv:data) |> endpoint()`
 				t.Fatal(err)
 			}
 
-			if !HasSent {
+			if !hasSent {
 				t.Fatal("expected _sent column but didn't get one")
 			}
 
