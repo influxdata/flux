@@ -58,6 +58,21 @@ void test_ast() {
     flux_free_ast_pkg(ast_pkg_foo);
     printf("\n");
   }
+  {
+    printf("Format AST\n");
+    struct flux_ast_pkg_t *ast_pkg_foo = flux_parse("test", "package foo\nx=1+1");
+    assert(ast_pkg_foo != NULL);
+
+    struct flux_error_t* err = flux_ast_get_error(ast_pkg_foo);
+    assert(err == NULL);
+
+    struct flux_buffer_t buf;
+    err = flux_ast_format(ast_pkg_foo, &buf);
+    assert(err == NULL);
+
+    flux_free_ast_pkg(ast_pkg_foo);
+    flux_free_bytes(buf.data);
+  }
 }
 
 void test_semantic() {

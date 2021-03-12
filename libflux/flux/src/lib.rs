@@ -46,6 +46,12 @@ pub struct ErrorHandle {
     pub err: Box<dyn error::Error>,
 }
 
+impl <T: 'static + error::Error> From<T> for Box<ErrorHandle> {
+    fn from(err: T) -> Self {
+        Box::new(ErrorHandle { err: Box::new(err) })
+    }
+}
+
 /// Frees a previously allocated error.
 ///
 /// Note: we use the pattern described here: https://doc.rust-lang.org/std/boxed/index.html#memory-layout
@@ -92,6 +98,27 @@ pub unsafe extern "C" fn flux_parse(
     let mut p = Parser::new(&src);
     let pkg: ast::Package = p.parse_file(fname).into();
     Box::new(pkg)
+}
+
+#[no_mangle]
+pub extern "C" fn flux_ast_format(ast_pkg: &ast::Package, out: &mut flux_buffer_t) -> Option<Box<ErrorHandle>> {
+    let mut out_str = String::new();
+    for file in &ast_pkg.files {
+        let s = match formatter::convert_to_string(&file) {
+            Ok(v) => v,
+            Err(e) => return Some(e.into()),
+        };
+        out_str.push_str(&s);
+    }
+
+    let len = out_str.len();
+    let cstr = match CString::new(out_str) {
+        Ok(bytes) => bytes,
+        Err(e) => return Some(e.into()),
+    };
+    out.data = cstr.into_raw() as *mut u8;
+    out.len = len;
+    None
 }
 
 /// flux_ast_get_error returns the first error in the given AST.
