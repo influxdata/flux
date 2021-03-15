@@ -90,11 +90,17 @@ RUN useradd -m -u $UID -g $UNAME -s /bin/bash $UNAME
 USER $UNAME
 ENV HOME=/home/$UNAME
 
+# The latest stable rust version
+# TODO: Update manually.
+ENV RUST_LATEST_VERSION=1.50.0
+
 # Install Rust
 RUN curl https://sh.rustup.rs -sSf | \
-    sh -s -- --default-toolchain stable -y
+    sh -s -- --default-toolchain none
+RUN rustup toolchain install $RUST_LATEST_VERSION && \
+    rustup default $RUST_LATEST_VERSION
 ENV PATH="$HOME/.cargo/bin:${PATH}"
-RUN rustup component add rustfmt
+RUN rustup component add rustfmt clippy --toolchain $RUST_LATEST_VERSION
 
 # Install wasm-pack
 RUN cargo install wasm-pack
