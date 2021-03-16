@@ -46,7 +46,7 @@ pub struct ErrorHandle {
     pub err: Box<dyn error::Error>,
 }
 
-impl <T: 'static + error::Error> From<T> for Box<ErrorHandle> {
+impl<T: 'static + error::Error> From<T> for Box<ErrorHandle> {
     fn from(err: T) -> Self {
         Box::new(ErrorHandle { err: Box::new(err) })
     }
@@ -101,7 +101,10 @@ pub unsafe extern "C" fn flux_parse(
 }
 
 #[no_mangle]
-pub extern "C" fn flux_ast_format(ast_pkg: &ast::Package, out: &mut flux_buffer_t) -> Option<Box<ErrorHandle>> {
+pub extern "C" fn flux_ast_format(
+    ast_pkg: &ast::Package,
+    out: &mut flux_buffer_t,
+) -> Option<Box<ErrorHandle>> {
     let mut out_str = String::new();
     for file in &ast_pkg.files {
         let s = match formatter::convert_to_string(&file) {
