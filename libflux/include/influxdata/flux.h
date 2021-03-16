@@ -37,6 +37,10 @@ struct flux_ast_pkg_t;
 // return the AST representation of the query.
 struct flux_ast_pkg_t *flux_parse(const char *file_name, const char *flux_source);
 
+// flux_ast_format will take an AST and format it to a single string.
+// It will allocate a buffer that needs to be freed after use with flux_free_bytes.
+struct flux_error_t *flux_ast_format(struct flux_ast_pkg_t *, struct flux_buffer_t *);
+
 // flux_ast_get_error will return the first error in the AST, if any.
 struct flux_error_t *flux_ast_get_error(struct flux_ast_pkg_t *);
 

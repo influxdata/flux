@@ -41,6 +41,16 @@ from(bucket: "telegraf")
 	ast.Free()
 }
 
+func TestASTPkg_Format(t *testing.T) {
+	src := `x=1+2`
+	ast := libflux.ParseString(src)
+	defer ast.Free()
+
+	if want, got := `x = 1 + 2`, ast.Format(); want != got {
+		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
+	}
+}
+
 func TestASTPkg_GetError(t *testing.T) {
 	src := `x = 1 + / 3`
 	ast := libflux.ParseString(src)
