@@ -13,6 +13,7 @@ export PKG_CONFIG:=$(PWD)/pkg-config.sh
 export GOOS=$(shell go env GOOS)
 export GO_BUILD=env GO111MODULE=on go build $(GO_ARGS)
 export GO_TEST=env GO111MODULE=on go test $(GO_ARGS)
+export GO_RUN=env GO111MODULE=on go run $(GO_ARGS)
 export GO_TEST_FLAGS=
 # Do not add GO111MODULE=on to the call to go generate so it doesn't pollute the environment.
 export GO_GENERATE=go generate $(GO_ARGS)
@@ -102,13 +103,16 @@ staticcheck:
 		`go list ./... | grep -v '\/flux\/stdlib\>'`
 	GO111MODULE=on ./gotool.sh honnef.co/go/tools/cmd/staticcheck ./stdlib/...
 
-test: test-go test-rust
+test: test-go test-rust test-flux
 
 test-go: libflux-go
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
 test-rust:
 	cd libflux && $(CARGO) test $(CARGO_ARGS) && $(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
+
+test-flux:
+	$(GO_RUN) ./cmd/flux test -v
 
 test-race: libflux-go
 	$(GO_TEST) -race -count=1 ./...
