@@ -112,7 +112,7 @@ test-rust:
 	cd libflux && $(CARGO) test $(CARGO_ARGS) && $(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
 
 test-flux:
-	$(GO_RUN) ./cmd/flux test
+	$(GO_RUN) ./cmd/flux test -v
 
 test-race: libflux-go
 	$(GO_TEST) -race -count=1 ./...
