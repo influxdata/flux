@@ -448,6 +448,21 @@ func TestResultDecoder(t *testing.T) {
 			},
 		},
 		{
+			name: "single table no annotations bad header",
+			decoderConfig: csv.ResultDecoderConfig{
+				NoAnnotations: true,
+			},
+			encoderConfig: csv.DefaultEncoderConfig(),
+			encoded: toCRLF(`
+col1,col2,col3,col4
+data1,data2,data3
+`),
+			result: &executetest.Result{
+				Nm:  "_result",
+				Err: errors.New("wrong number of fields"),
+			},
+		},
+		{
 			name:          "multiple tables",
 			encoderConfig: csv.DefaultEncoderConfig(),
 			encoded: toCRLF(`#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double
@@ -1517,7 +1532,7 @@ func TestResultDecoder(t *testing.T) {
 
 			cmpOpts := cmpopts.IgnoreFields(executetest.Result{}, "Err")
 			if !cmp.Equal(got, tc.result, cmpOpts) {
-				t.Error("unexpected results -want/+got", cmp.Diff(tc.result, got))
+				t.Error("unexpected results -want/+got", cmp.Diff(tc.result, got, cmpOpts))
 			}
 			if (got.Err == nil) != (tc.result.Err == nil) {
 				t.Errorf("error mismatch in result: -want/+got:\n- %q\n+ %q", tc.result.Err, got.Err)
