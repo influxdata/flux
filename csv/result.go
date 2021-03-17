@@ -601,7 +601,10 @@ func (d *tableDecoder) advance() (bool, error) {
 		}
 		// whatever this line is, it's not part of this table so goto DONE
 		if len(line) != d.meta.NumFields {
-			if len(line) > annotationIdx && line[annotationIdx] == "" {
+			// If this line is another annotation then the current table has no more data.
+			// Otherwise if this line is not another annotation or if we are not expecting annotations
+			// we have an ErrFieldCount, meaning that a row we expected to be a data row has the wrong number of fields.
+			if d.c.NoAnnotations || (len(line) > annotationIdx && line[annotationIdx] == "") {
 				return false, csv.ErrFieldCount
 			}
 			goto DONE
