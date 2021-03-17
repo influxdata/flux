@@ -100,6 +100,7 @@ enum Kind : ubyte {
   Record,
   Negatable,
   Timeable,
+  Stringable,
 }
 
 table Constraint {

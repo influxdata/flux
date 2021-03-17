@@ -323,8 +323,14 @@ Interpolation example:
     "the answer is not ${n+1}" // the answer is not 43
     "dollar sign opening curly bracket \${" // dollar sign opening curly bracket ${
 
-[IMPL#1775](https://github.com/influxdata/flux/issues/1775) Interpolate arbitrary expressions in string literals
+String interpolation expressions must satisfy the Stringable constraint.
 
+Arbitrary Expression Interpolation example:
+
+    n = duration(v: "1m") 
+    "the answer is ${n}" // the answer is 1m
+    t0 = time(v: "2016-06-13T17:43:50.1004002Z")
+    "the answer is ${t0}" // the answer is 2016-06-13T17:43:50.1004002Z 
 
 #### Regular expression literals
 
@@ -649,6 +655,11 @@ Int, Uint, Float, and Duration types are Negatable.
 ##### Timeable Constraint
 
 Duration and Time types are Timeable.
+
+##### Stringable Constraint
+
+Stringable types can be evaluated and expressed in string interpolation.
+String, Int, Uint, Float, Bool, Time, and Duration types are Stringable. 
 
 ### Blocks
 

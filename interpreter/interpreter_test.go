@@ -61,10 +61,19 @@ func TestEval(t *testing.T) {
 			wantErr: any,
 		},
 		{
-			name: "string interpolation field has wrong type",
+			name: "string interpolation non-string type",
 			query: `
 				r = makeRecord(o: {a: "foo", b: 42})
 				"r._value = ${r.b}"`,
+			want: []values.Value{
+				values.NewString("r._value = 42"),
+			},
+		},
+		{
+			name: "string interpolation wrong type",
+			query: `
+				r = makeRecord(o: {a: "foo", b: 42})
+				"r = ${r}"`,
 			wantErr: any,
 		},
 		{
