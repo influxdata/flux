@@ -546,9 +546,13 @@ func compile(n semantic.Node, subst map[uint64]semantic.MonoType, scope Scope) (
 		if err != nil {
 			return nil, err
 		}
-		return &interpolatedEvaluator{
-			s: e,
-		}, nil
+		switch e.Type().Nature() {
+		case semantic.String, semantic.Bool, semantic.Int, semantic.UInt, semantic.Float, semantic.Time, semantic.Duration:
+			return &interpolatedEvaluator{
+				s: e,
+			}, nil
+		}
+		return nil, errors.New(codes.Invalid, "invalid interpolation type")
 	case *semantic.BooleanLiteral:
 		return &booleanEvaluator{
 			b: n.Value,

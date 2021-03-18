@@ -531,53 +531,71 @@ fn string_interpolation() {
             "message" => "string",
         ],
     }
-    test_infer_err! {
+    test_infer! {
         env: map![
             "name" => "bool",
         ],
         src: r#"
-            "Hello, ${name}!"
+            message = "Hello, ${name}!"
         "#,
+        exp: map![
+            "message" => "string"
+        ],
     }
-    test_infer_err! {
+    test_infer! {
         env: map![
             "name" => "int",
         ],
         src: r#"
-            "Hello, ${name}!"
+            message = "Hello, ${name}!"
         "#,
+        exp: map![
+            "message" => "string"
+        ],
     }
-    test_infer_err! {
+    test_infer! {
         env: map![
             "name" => "uint",
         ],
         src: r#"
-            "Hello, ${name}!"
+            message = "Hello, ${name}!"
         "#,
+        exp: map![
+            "message" => "string"
+        ],
     }
-    test_infer_err! {
+    test_infer! {
         env: map![
             "name" => "float",
         ],
         src: r#"
-            "Hello, ${name}!"
+            message = "Hello, ${name}!"
         "#,
+        exp: map![
+            "message" => "string"
+        ],
     }
-    test_infer_err! {
+    test_infer! {
         env: map![
             "name" => "duration",
         ],
         src: r#"
-            "Hello, ${name}!"
+            message = "Hello, ${name}!"
         "#,
+        exp: map![
+            "message" => "string"
+        ],
     }
-    test_infer_err! {
+    test_infer! {
         env: map![
             "name" => "time",
         ],
         src: r#"
-            "Hello, ${name}!"
+            message = "Hello, ${name}!"
         "#,
+        exp: map![
+            "message" => "string"
+        ],
     }
     test_infer_err! {
         env: map![
@@ -2868,14 +2886,14 @@ fn constrain_tvars() {
             a = f(x: "10")
         "#,
         exp: map![
-            "f" => "(x: string) => string",
+            "f" => "(x: G) => string where G: Stringable",
             "a" => "string",
         ],
     }
     test_infer_err! {
         src: r#"
             f = (x) => "x = ${x}"
-            f(x: 10)
+            f(x: {a: 100, b: 10})
         "#,
     }
 }
@@ -3413,11 +3431,11 @@ fn test_error_messages() {
     test_error_msg! {
         src: r#"
             bob = "Bob"
-            joe = 0
+            joe = {a: 0, b: 0.1}
             "Hey ${bob} it's me ${joe}!"
         "#,
         // Location points to second interpolated expression
-        err: "type error @4:35-4:38: expected string but found int",
+        err: "type error @4:35-4:38: {b:float, a:int} is not Stringable",
     }
     test_error_msg! {
         src: r#"

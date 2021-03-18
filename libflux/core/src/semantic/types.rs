@@ -225,6 +225,7 @@ pub enum Kind {
     Record,
     Negatable,
     Timeable,
+    Stringable,
 }
 
 // Kinds are ordered by name so that polytypes are displayed deterministically
@@ -375,7 +376,7 @@ impl MonoType {
     pub fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match self {
             MonoType::Bool => match with {
-                Kind::Equatable | Kind::Nullable => Ok(Substitution::empty()),
+                Kind::Equatable | Kind::Nullable | Kind::Stringable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
                     exp: with,
@@ -389,6 +390,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Stringable
                 | Kind::Negatable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
@@ -403,6 +405,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Stringable
                 | Kind::Negatable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
@@ -417,6 +420,7 @@ impl MonoType {
                 | Kind::Comparable
                 | Kind::Equatable
                 | Kind::Nullable
+                | Kind::Stringable
                 | Kind::Negatable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
@@ -424,9 +428,11 @@ impl MonoType {
                 }),
             },
             MonoType::String => match with {
-                Kind::Addable | Kind::Comparable | Kind::Equatable | Kind::Nullable => {
-                    Ok(Substitution::empty())
-                }
+                Kind::Addable
+                | Kind::Comparable
+                | Kind::Equatable
+                | Kind::Nullable
+                | Kind::Stringable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
                     exp: with,
@@ -437,16 +443,19 @@ impl MonoType {
                 | Kind::Equatable
                 | Kind::Nullable
                 | Kind::Negatable
-                | Kind::Timeable => Ok(Substitution::empty()),
+                | Kind::Timeable
+                | Kind::Stringable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
                     exp: with,
                 }),
             },
             MonoType::Time => match with {
-                Kind::Comparable | Kind::Equatable | Kind::Nullable | Kind::Timeable => {
-                    Ok(Substitution::empty())
-                }
+                Kind::Comparable
+                | Kind::Equatable
+                | Kind::Nullable
+                | Kind::Timeable
+                | Kind::Stringable => Ok(Substitution::empty()),
                 _ => Err(Error::CannotConstrain {
                     act: self,
                     exp: with,
@@ -1363,6 +1372,10 @@ mod tests {
         assert!(Kind::Nullable.to_string() == "Nullable");
     }
     #[test]
+    fn display_kind_stringable() {
+        assert!(Kind::Stringable.to_string() == "Stringable");
+    }
+    #[test]
     fn display_kind_row() {
         assert!(Kind::Record.to_string() == "Record");
     }
@@ -1942,6 +1955,7 @@ mod tests {
             Kind::Comparable,
             Kind::Equatable,
             Kind::Nullable,
+            Kind::Stringable,
         ];
         for c in allowable_cons {
             let sub = MonoType::Int.constrain(c, &mut TvarKinds::new());
