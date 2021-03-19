@@ -303,6 +303,9 @@ func NewRegexp(v *regexp.Regexp) Value {
 }
 
 func Stringify(v Value) (Value, error) {
+	if v.IsNull() {
+		return NewString("<null>"), nil
+	}
 	val := Unwrap(v)
 	switch v.Type().Nature() {
 	case semantic.Bool:
