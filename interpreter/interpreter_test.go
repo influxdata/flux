@@ -58,7 +58,9 @@ func TestEval(t *testing.T) {
 			query: `
 				r = makeRecord(o: {a: "foo", b: 42})
 				"r._value = ${r._value}"`,
-			wantErr: any,
+			want: []values.Value{
+				values.NewString("r._value = <null>"),
+			},
 		},
 		{
 			name: "string interpolation non-string type",
