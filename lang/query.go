@@ -1,15 +1,18 @@
 package lang
 
 import (
+	"context"
 	"sync"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/memory"
 	"github.com/opentracing/opentracing-go"
 )
 
 // query implements the flux.Query interface.
 type query struct {
+	ctx     context.Context
 	results chan flux.Result
 	stats   flux.Statistics
 	alloc   *memory.Allocator
@@ -31,6 +34,14 @@ func (q *query) Done() {
 	if q.span != nil {
 		q.span.Finish()
 		q.span = nil
+	}
+
+	// Note: it is safe to read and write to q.err because we have explicitly
+	// waited on the wait group, therefore only a the current goroutine
+	// can access q.err
+	if q.err == nil {
+		// If the testing framework was configured, verify all expectations.
+		q.err = testing.Check(q.ctx)
 	}
 }
 
