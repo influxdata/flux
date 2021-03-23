@@ -51,6 +51,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -917,6 +918,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -2099,6 +2101,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -2872,6 +2875,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -4276,6 +4280,7 @@ var pkgAST = &ast.Package{
 				},
 			},
 		}},
+		Eof:      nil,
 		Imports:  nil,
 		Metadata: "parser-type=rust",
 		Name:     "influxdb.flux",

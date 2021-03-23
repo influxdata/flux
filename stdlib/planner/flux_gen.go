@@ -107,6 +107,8 @@ var pkgAST = &ast.Package{
 						},
 						Value: "",
 					}},
+					Lbrack: nil,
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -198,6 +200,8 @@ var pkgAST = &ast.Package{
 						},
 						Value: "",
 					}},
+					Lbrack: nil,
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -217,6 +221,7 @@ var pkgAST = &ast.Package{
 				},
 			},
 		}},
+		Eof:      nil,
 		Imports:  nil,
 		Metadata: "parser-type=rust",
 		Name:     "planner.flux",

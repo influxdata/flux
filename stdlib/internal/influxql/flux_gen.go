@@ -201,6 +201,7 @@ var pkgAST = &ast.Package{
 				Value: parser.MustParseTime("2262-04-11T23:47:16.854775806Z"),
 			},
 		}},
+		Eof:      nil,
 		Imports:  nil,
 		Metadata: "parser-type=rust",
 		Name:     "influxql.flux",

@@ -51,6 +51,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -291,6 +292,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -531,6 +533,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -771,6 +774,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -1011,6 +1015,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -1251,6 +1256,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -1491,6 +1497,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -1731,6 +1738,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -1971,6 +1979,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -2211,6 +2220,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -2451,6 +2461,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -2691,6 +2702,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -2931,6 +2943,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -3171,6 +3184,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -4514,6 +4528,7 @@ var pkgAST = &ast.Package{
 				Value: int64(12),
 			},
 		}},
+		Eof:      nil,
 		Imports:  nil,
 		Metadata: "parser-type=rust",
 		Name:     "date.flux",

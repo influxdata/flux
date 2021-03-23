@@ -51,6 +51,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -216,6 +217,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -550,6 +552,7 @@ var pkgAST = &ast.Package{
 				Name: "lastSuccess",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -584,6 +587,7 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
+						Lbrace: nil,
 						Properties: []*ast.Property{&ast.Property{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -601,6 +605,7 @@ var pkgAST = &ast.Package{
 									},
 								},
 							},
+							Comma: nil,
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -620,7 +625,8 @@ var pkgAST = &ast.Package{
 								},
 								Name: "orTime",
 							},
-							Value: nil,
+							Separator: nil,
+							Value:     nil,
 						}, &ast.Property{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -638,6 +644,7 @@ var pkgAST = &ast.Package{
 									},
 								},
 							},
+							Comma: nil,
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -657,9 +664,11 @@ var pkgAST = &ast.Package{
 								},
 								Name: "lastSuccessTime",
 							},
-							Value: nil,
+							Separator: nil,
+							Value:     nil,
 						}},
-						With: nil,
+						Rbrace: nil,
+						With:   nil,
 					}},
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -696,7 +705,10 @@ var pkgAST = &ast.Package{
 						},
 						Name: "_lastSuccess",
 					},
+					Lparen: nil,
+					Rparen: nil,
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -714,6 +726,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -733,10 +746,13 @@ var pkgAST = &ast.Package{
 						},
 						Name: "orTime",
 					},
-					Value: nil,
+					Separator: nil,
+					Value:     nil,
 				}},
+				Rparan: nil,
 			},
 		}},
+		Eof:      nil,
 		Imports:  nil,
 		Metadata: "parser-type=rust",
 		Name:     "tasks.flux",

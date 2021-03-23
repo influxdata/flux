@@ -68,6 +68,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "now",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -120,8 +121,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -159,6 +164,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -194,6 +200,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -211,6 +218,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -230,6 +238,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -247,6 +256,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -265,6 +275,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -303,6 +314,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "write",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -340,6 +352,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -375,6 +388,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -392,6 +406,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -411,6 +426,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -428,6 +444,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -446,6 +463,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -484,6 +502,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "log",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -665,6 +684,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
+				Lbrace: nil,
 				Properties: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -682,6 +702,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -701,6 +722,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_id",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -737,6 +759,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -756,6 +779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_name",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -792,6 +816,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -811,6 +836,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_type",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -847,6 +873,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
@@ -866,6 +893,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tags",
 					},
+					Separator: nil,
 					Value: &ast.ObjectExpression{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -883,11 +911,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Lbrace:     nil,
 						Properties: []*ast.Property{},
+						Rbrace:     nil,
 						With:       nil,
 					},
 				}},
-				With: nil,
+				Rbrace: nil,
+				With:   nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1201,6 +1232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Name: "tickscript_alert",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -1277,6 +1309,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrace: nil,
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -1294,6 +1327,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Comma: nil,
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -1313,6 +1347,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Name: "start",
 														},
+														Separator: nil,
 														Value: &ast.DateTimeLiteral{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -1333,7 +1368,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: parser.MustParseTime("2020-11-25T14:05:00Z"),
 														},
 													}},
-													With: nil,
+													Rbrace: nil,
+													With:   nil,
 												}},
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -1370,6 +1406,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Name: "range",
 												},
+												Lparen: nil,
+												Rparen: nil,
 											},
 										},
 										BaseNode: ast.BaseNode{
@@ -1406,6 +1444,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													},
 												},
+												Lbrace: nil,
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -1423,6 +1462,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Comma: nil,
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -1442,7 +1482,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "fn",
 													},
+													Separator: nil,
 													Value: &ast.FunctionExpression{
+														Arrow: nil,
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
@@ -1510,6 +1552,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																		},
 																	},
+																	Lbrack: nil,
 																	Object: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
 																			Comments: nil,
@@ -1548,6 +1591,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																		Name: "_field",
 																	},
+																	Rbrack: nil,
 																},
 																Operator: 17,
 																Right: &ast.Identifier{
@@ -1605,6 +1649,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																		},
 																	},
+																	Lbrack: nil,
 																	Object: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
 																			Comments: nil,
@@ -1643,6 +1688,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																		Name: "realm",
 																	},
+																	Rbrack: nil,
 																},
 																Operator: 17,
 																Right: &ast.Identifier{
@@ -1666,6 +1712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lparen: nil,
 														Params: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -1683,6 +1730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																},
 															},
+															Comma: nil,
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -1702,11 +1750,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Name: "r",
 															},
-															Value: nil,
+															Separator: nil,
+															Value:     nil,
 														}},
+														Rparan: nil,
 													},
 												}},
-												With: nil,
+												Rbrace: nil,
+												With:   nil,
 											}},
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -1743,6 +1794,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "filter",
 											},
+											Lparen: nil,
+											Rparen: nil,
 										},
 									},
 									BaseNode: ast.BaseNode{
@@ -1796,6 +1849,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Lbrack: nil,
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -1834,7 +1888,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "fieldsAsCols",
 											},
+											Rbrack: nil,
 										},
+										Lparen: nil,
+										Rparen: nil,
 									},
 								},
 								BaseNode: ast.BaseNode{
@@ -1871,6 +1928,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -1888,6 +1946,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -1907,6 +1966,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "column",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -1943,6 +2003,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -1962,6 +2023,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "as",
 											},
+											Separator: nil,
 											Value: &ast.StringLiteral{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -1982,7 +2044,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: "KafkaMsgRate",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -2017,6 +2080,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -2055,7 +2119,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "select",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							},
 							BaseNode: ast.BaseNode{
@@ -2092,6 +2159,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrace: nil,
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -2109,6 +2177,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -2128,6 +2197,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "columns",
 										},
+										Separator: nil,
 										Value: &ast.ArrayExpression{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -2182,9 +2252,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: "realm",
 											}},
+											Lbrack: nil,
+											Rbrack: nil,
 										},
 									}},
-									With: nil,
+									Rbrace: nil,
+									With:   nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -2219,6 +2292,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrack: nil,
 									Object: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -2257,7 +2331,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "groupBy",
 									},
+									Rbrack: nil,
 								},
+								Lparen: nil,
+								Rparen: nil,
 							},
 						},
 						BaseNode: ast.BaseNode{
@@ -2294,6 +2371,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Lbrace: nil,
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -2311,6 +2389,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -2330,6 +2409,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "check",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -2366,6 +2446,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -2385,7 +2466,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "id",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -2471,6 +2554,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -2509,6 +2593,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "realm",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -2562,6 +2647,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -2600,6 +2686,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "host",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -2675,6 +2762,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: " threshold alert",
 											}},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -2692,6 +2780,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -2711,8 +2800,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -2731,6 +2822,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -2750,7 +2842,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "message",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -2818,6 +2912,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -2856,6 +2951,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "id",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -2909,6 +3005,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -2947,6 +3044,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "_level",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -3001,6 +3099,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lbrace: nil,
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -3018,6 +3117,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																},
 															},
+															Comma: nil,
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -3037,6 +3137,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Name: "v",
 															},
+															Separator: nil,
 															Value: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -3054,6 +3155,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																	},
 																},
+																Lbrack: nil,
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
 																		Comments: nil,
@@ -3092,9 +3194,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																	Name: "KafkaMsgRate",
 																},
+																Rbrack: nil,
 															},
 														}},
-														With: nil,
+														Rbrace: nil,
+														With:   nil,
 													}},
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -3131,9 +3235,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "string",
 													},
+													Lparen: nil,
+													Rparen: nil,
 												},
 											}},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -3151,6 +3258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -3170,8 +3278,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -3190,6 +3300,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -3209,7 +3320,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "details",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -3295,6 +3408,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -3333,9 +3447,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "realm",
 													},
+													Rbrack: nil,
 												},
 											}},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -3353,6 +3469,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -3372,8 +3489,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -3392,6 +3511,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -3411,7 +3531,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "crit",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -3479,6 +3601,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -3517,6 +3640,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 10,
 												Right: &ast.Identifier{
@@ -3574,6 +3698,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -3612,6 +3737,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 8,
 												Right: &ast.Identifier{
@@ -3635,6 +3761,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -3652,6 +3779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -3671,8 +3799,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -3691,6 +3821,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -3710,7 +3841,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "warn",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -3778,6 +3911,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -3816,6 +3950,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 10,
 												Right: &ast.Identifier{
@@ -3873,6 +4008,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -3911,6 +4047,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 8,
 												Right: &ast.Identifier{
@@ -3934,6 +4071,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -3951,6 +4089,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -3970,11 +4109,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}},
-								With: nil,
+								Rbrace: nil,
+								With:   nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -4009,6 +4151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Lbrack: nil,
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4047,7 +4190,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "alert",
 								},
+								Rbrack: nil,
 							},
+							Lparen: nil,
+							Rparen: nil,
 						},
 					},
 					BaseNode: ast.BaseNode{
@@ -4084,6 +4230,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -4101,6 +4248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4120,6 +4268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "columns",
 								},
+								Separator: nil,
 								Value: &ast.ArrayExpression{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4156,9 +4305,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: "_time",
 									}},
+									Lbrack: nil,
+									Rbrack: nil,
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -4195,8 +4347,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "drop",
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -4214,6 +4369,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -4233,6 +4389,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "table",
 					},
+					Separator: nil,
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -4250,6 +4407,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					}},
 				}},
+				Rparan: nil,
 			},
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
@@ -4289,6 +4447,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "_tickscript_alert",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -4339,6 +4498,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -4356,6 +4516,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4375,6 +4536,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "input",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -4393,6 +4555,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -4410,6 +4573,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -4429,6 +4593,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -4449,7 +4614,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "inData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4484,6 +4650,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -4522,7 +4689,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadStorage",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -4541,6 +4711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4560,6 +4731,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "want",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -4578,6 +4750,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -4595,6 +4768,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -4614,6 +4788,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -4634,7 +4809,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "outData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4669,6 +4845,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -4707,7 +4884,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadMem",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -4726,6 +4906,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4745,6 +4926,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "fn",
 								},
+								Separator: nil,
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -4765,10 +4947,15 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "tickscript_alert",
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -4788,6 +4975,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 		}},
+		Eof: nil,
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
@@ -5068,6 +5256,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "now",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -5120,8 +5309,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -5159,6 +5352,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -5194,6 +5388,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5211,6 +5406,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -5230,6 +5426,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -5247,6 +5444,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -5265,6 +5463,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5303,6 +5502,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "write",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -5340,6 +5540,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -5375,6 +5576,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5392,6 +5594,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -5411,6 +5614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -5428,6 +5632,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -5446,6 +5651,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5484,6 +5690,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "log",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -5665,6 +5872,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
+				Lbrace: nil,
 				Properties: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -5682,6 +5890,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5701,6 +5910,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_id",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5737,6 +5947,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5756,6 +5967,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_name",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5792,6 +6004,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5811,6 +6024,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_type",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5847,6 +6061,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
@@ -5866,6 +6081,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tags",
 					},
+					Separator: nil,
 					Value: &ast.ObjectExpression{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -5883,11 +6099,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Lbrace:     nil,
 						Properties: []*ast.Property{},
+						Rbrace:     nil,
 						With:       nil,
 					},
 				}},
-				With: nil,
+				Rbrace: nil,
+				With:   nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -6201,6 +6420,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Name: "tickscript_alert",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -6277,6 +6497,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrace: nil,
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -6294,6 +6515,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Comma: nil,
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -6313,6 +6535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Name: "start",
 														},
+														Separator: nil,
 														Value: &ast.DateTimeLiteral{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -6333,7 +6556,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: parser.MustParseTime("2020-11-25T14:05:00Z"),
 														},
 													}},
-													With: nil,
+													Rbrace: nil,
+													With:   nil,
 												}},
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -6370,6 +6594,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Name: "range",
 												},
+												Lparen: nil,
+												Rparen: nil,
 											},
 										},
 										BaseNode: ast.BaseNode{
@@ -6406,6 +6632,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													},
 												},
+												Lbrace: nil,
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -6423,6 +6650,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Comma: nil,
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -6442,7 +6670,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "fn",
 													},
+													Separator: nil,
 													Value: &ast.FunctionExpression{
+														Arrow: nil,
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
@@ -6510,6 +6740,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																		},
 																	},
+																	Lbrack: nil,
 																	Object: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
 																			Comments: nil,
@@ -6548,6 +6779,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																		Name: "_field",
 																	},
+																	Rbrack: nil,
 																},
 																Operator: 17,
 																Right: &ast.Identifier{
@@ -6605,6 +6837,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																		},
 																	},
+																	Lbrack: nil,
 																	Object: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
 																			Comments: nil,
@@ -6643,6 +6876,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																		Name: "realm",
 																	},
+																	Rbrack: nil,
 																},
 																Operator: 17,
 																Right: &ast.Identifier{
@@ -6666,6 +6900,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lparen: nil,
 														Params: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -6683,6 +6918,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																},
 															},
+															Comma: nil,
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -6702,11 +6938,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Name: "r",
 															},
-															Value: nil,
+															Separator: nil,
+															Value:     nil,
 														}},
+														Rparan: nil,
 													},
 												}},
-												With: nil,
+												Rbrace: nil,
+												With:   nil,
 											}},
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -6743,6 +6982,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "filter",
 											},
+											Lparen: nil,
+											Rparen: nil,
 										},
 									},
 									BaseNode: ast.BaseNode{
@@ -6796,6 +7037,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Lbrack: nil,
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -6834,7 +7076,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "fieldsAsCols",
 											},
+											Rbrack: nil,
 										},
+										Lparen: nil,
+										Rparen: nil,
 									},
 								},
 								BaseNode: ast.BaseNode{
@@ -6871,6 +7116,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -6888,6 +7134,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -6907,6 +7154,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "column",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -6943,6 +7191,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -6962,6 +7211,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "as",
 											},
+											Separator: nil,
 											Value: &ast.StringLiteral{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -6982,7 +7232,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: "KafkaMsgRate",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -7017,6 +7268,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -7055,7 +7307,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "select",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							},
 							BaseNode: ast.BaseNode{
@@ -7092,6 +7347,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrace: nil,
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -7109,6 +7365,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -7128,6 +7385,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "columns",
 										},
+										Separator: nil,
 										Value: &ast.ArrayExpression{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -7182,9 +7440,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: "realm",
 											}},
+											Lbrack: nil,
+											Rbrack: nil,
 										},
 									}},
-									With: nil,
+									Rbrace: nil,
+									With:   nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -7219,6 +7480,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrack: nil,
 									Object: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -7257,7 +7519,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "groupBy",
 									},
+									Rbrack: nil,
 								},
+								Lparen: nil,
+								Rparen: nil,
 							},
 						},
 						BaseNode: ast.BaseNode{
@@ -7294,6 +7559,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Lbrace: nil,
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -7311,6 +7577,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -7330,6 +7597,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "check",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -7366,6 +7634,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -7385,7 +7654,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "id",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -7471,6 +7742,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -7509,6 +7781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "realm",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -7562,6 +7835,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -7600,6 +7874,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "host",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -7675,6 +7950,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Value: " threshold alert",
 											}},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -7692,6 +7968,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -7711,8 +7988,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -7731,6 +8010,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -7750,7 +8030,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "message",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -7818,6 +8100,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -7856,6 +8139,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "id",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -7909,6 +8193,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -7947,6 +8232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "_level",
 													},
+													Rbrack: nil,
 												},
 											}, &ast.TextPart{
 												BaseNode: ast.BaseNode{
@@ -8001,6 +8287,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lbrace: nil,
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -8018,6 +8305,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																},
 															},
+															Comma: nil,
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -8037,6 +8325,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Name: "v",
 															},
+															Separator: nil,
 															Value: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -8054,6 +8343,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																	},
 																},
+																Lbrack: nil,
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
 																		Comments: nil,
@@ -8092,9 +8382,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																	Name: "KafkaMsgRate",
 																},
+																Rbrack: nil,
 															},
 														}},
-														With: nil,
+														Rbrace: nil,
+														With:   nil,
 													}},
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -8131,9 +8423,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "string",
 													},
+													Lparen: nil,
+													Rparen: nil,
 												},
 											}},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -8151,6 +8446,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -8170,8 +8466,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -8190,6 +8488,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -8209,7 +8508,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "details",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -8295,6 +8596,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -8333,9 +8635,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "realm",
 													},
+													Rbrack: nil,
 												},
 											}},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -8353,6 +8657,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -8372,8 +8677,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -8392,6 +8699,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -8411,7 +8719,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "crit",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -8479,6 +8789,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -8517,6 +8828,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 10,
 												Right: &ast.Identifier{
@@ -8574,6 +8886,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -8612,6 +8925,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 8,
 												Right: &ast.Identifier{
@@ -8635,6 +8949,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -8652,6 +8967,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -8671,8 +8987,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -8691,6 +9009,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -8710,7 +9029,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "warn",
 									},
+									Separator: nil,
 									Value: &ast.FunctionExpression{
+										Arrow: nil,
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
@@ -8778,6 +9099,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -8816,6 +9138,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 10,
 												Right: &ast.Identifier{
@@ -8873,6 +9196,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrack: nil,
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -8911,6 +9235,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "KafkaMsgRate",
 													},
+													Rbrack: nil,
 												},
 												Operator: 8,
 												Right: &ast.Identifier{
@@ -8934,6 +9259,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lparen: nil,
 										Params: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -8951,6 +9277,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -8970,8 +9297,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "r",
 											},
-											Value: nil,
+											Separator: nil,
+											Value:     nil,
 										}},
+										Rparan: nil,
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
@@ -8990,6 +9319,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -9009,6 +9339,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "topic",
 									},
+									Separator: nil,
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -9029,7 +9360,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Value: "TESTING",
 									},
 								}},
-								With: nil,
+								Rbrace: nil,
+								With:   nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -9064,6 +9396,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Lbrack: nil,
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9102,7 +9435,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "alert",
 								},
+								Rbrack: nil,
 							},
+							Lparen: nil,
+							Rparen: nil,
 						},
 					},
 					BaseNode: ast.BaseNode{
@@ -9139,6 +9475,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -9156,6 +9493,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9175,6 +9513,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "columns",
 								},
+								Separator: nil,
 								Value: &ast.ArrayExpression{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9211,9 +9550,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: "_time",
 									}},
+									Lbrack: nil,
+									Rbrack: nil,
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -9250,8 +9592,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "drop",
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -9269,6 +9614,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -9288,6 +9634,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "table",
 					},
+					Separator: nil,
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -9305,6 +9652,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					}},
 				}},
+				Rparan: nil,
 			},
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
@@ -9344,6 +9692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "_tickscript_alert",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -9394,6 +9743,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -9411,6 +9761,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9430,6 +9781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "input",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -9448,6 +9800,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -9465,6 +9818,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -9484,6 +9838,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -9504,7 +9859,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "inData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9539,6 +9895,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -9577,7 +9934,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadStorage",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -9596,6 +9956,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9615,6 +9976,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "want",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -9633,6 +9995,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -9650,6 +10013,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -9669,6 +10033,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -9689,7 +10054,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "outData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9724,6 +10090,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -9762,7 +10129,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadMem",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -9781,6 +10151,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9800,6 +10171,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "fn",
 								},
+								Separator: nil,
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -9820,10 +10192,15 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "tickscript_alert",
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -9843,6 +10220,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 		}},
+		Eof: nil,
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
@@ -10123,6 +10501,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "now",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -10175,8 +10554,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -10214,6 +10597,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -10249,6 +10633,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10266,6 +10651,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -10285,6 +10671,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -10302,6 +10689,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -10320,6 +10708,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10358,6 +10747,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "write",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -10395,6 +10785,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -10430,6 +10821,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10447,6 +10839,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -10466,6 +10859,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -10483,6 +10877,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -10501,6 +10896,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10539,6 +10935,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "log",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -10720,6 +11117,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
+				Lbrace: nil,
 				Properties: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -10737,6 +11135,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10756,6 +11155,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_id",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10792,6 +11192,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10811,6 +11212,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_name",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10847,6 +11249,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10866,6 +11269,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_type",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10902,6 +11306,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
@@ -10921,6 +11326,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tags",
 					},
+					Separator: nil,
 					Value: &ast.ObjectExpression{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -10938,11 +11344,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Lbrace:     nil,
 						Properties: []*ast.Property{},
+						Rbrace:     nil,
 						With:       nil,
 					},
 				}},
-				With: nil,
+				Rbrace: nil,
+				With:   nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -11091,6 +11500,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Name: "tickscript_deadman",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -11167,6 +11577,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrace: nil,
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -11184,6 +11595,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Comma: nil,
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -11203,6 +11615,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Name: "start",
 														},
+														Separator: nil,
 														Value: &ast.DateTimeLiteral{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -11223,7 +11636,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: parser.MustParseTime("2020-11-25T14:05:15Z"),
 														},
 													}},
-													With: nil,
+													Rbrace: nil,
+													With:   nil,
 												}},
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -11260,6 +11674,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Name: "range",
 												},
+												Lparen: nil,
+												Rparen: nil,
 											},
 										},
 										BaseNode: ast.BaseNode{
@@ -11296,6 +11712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													},
 												},
+												Lbrace: nil,
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -11313,6 +11730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Comma: nil,
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -11332,7 +11750,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "fn",
 													},
+													Separator: nil,
 													Value: &ast.FunctionExpression{
+														Arrow: nil,
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
@@ -11417,6 +11837,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				},
 																			},
 																		},
+																		Lbrack: nil,
 																		Object: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
 																				Comments: nil,
@@ -11455,6 +11876,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																			Name: "_measurement",
 																		},
+																		Rbrack: nil,
 																	},
 																	Operator: 17,
 																	Right: &ast.StringLiteral{
@@ -11512,6 +11934,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				},
 																			},
 																		},
+																		Lbrack: nil,
 																		Object: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
 																				Comments: nil,
@@ -11550,6 +11973,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																			Name: "_field",
 																		},
+																		Rbrack: nil,
 																	},
 																	Operator: 17,
 																	Right: &ast.Identifier{
@@ -11608,6 +12032,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																		},
 																	},
+																	Lbrack: nil,
 																	Object: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
 																			Comments: nil,
@@ -11646,6 +12071,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																		Name: "realm",
 																	},
+																	Rbrack: nil,
 																},
 																Operator: 17,
 																Right: &ast.Identifier{
@@ -11669,6 +12095,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lparen: nil,
 														Params: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -11686,6 +12113,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																},
 															},
+															Comma: nil,
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -11705,11 +12133,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Name: "r",
 															},
-															Value: nil,
+															Separator: nil,
+															Value:     nil,
 														}},
+														Rparan: nil,
 													},
 												}},
-												With: nil,
+												Rbrace: nil,
+												With:   nil,
 											}},
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -11746,6 +12177,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "filter",
 											},
+											Lparen: nil,
+											Rparen: nil,
 										},
 									},
 									BaseNode: ast.BaseNode{
@@ -11799,6 +12232,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Lbrack: nil,
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -11837,7 +12271,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "fieldsAsCols",
 											},
+											Rbrack: nil,
 										},
+										Lparen: nil,
+										Rparen: nil,
 									},
 								},
 								BaseNode: ast.BaseNode{
@@ -11874,6 +12311,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -11891,6 +12329,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -11910,6 +12349,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "columns",
 											},
+											Separator: nil,
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -11964,9 +12404,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: "realm",
 												}},
+												Lbrack: nil,
+												Rbrack: nil,
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -12001,6 +12444,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12039,7 +12483,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "groupBy",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							},
 							BaseNode: ast.BaseNode{
@@ -12076,6 +12523,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrace: nil,
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -12093,6 +12541,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12112,6 +12561,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "check",
 										},
+										Separator: nil,
 										Value: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12148,6 +12598,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12167,6 +12618,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "measurement",
 										},
+										Separator: nil,
 										Value: &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12203,6 +12655,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12222,6 +12675,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "threshold",
 										},
+										Separator: nil,
 										Value: &ast.IntegerLiteral{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12258,6 +12712,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -12277,7 +12732,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "id",
 										},
+										Separator: nil,
 										Value: &ast.FunctionExpression{
+											Arrow: nil,
 											BaseNode: ast.BaseNode{
 												Comments: nil,
 												Errors:   nil,
@@ -12439,6 +12896,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Value: " deadman alert",
 												}},
 											},
+											Lparen: nil,
 											Params: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -12456,6 +12914,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													},
 												},
+												Comma: nil,
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -12475,11 +12934,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Name: "r",
 												},
-												Value: nil,
+												Separator: nil,
+												Value:     nil,
 											}},
+											Rparan: nil,
 										},
 									}},
-									With: nil,
+									Rbrace: nil,
+									With:   nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -12514,6 +12976,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrack: nil,
 									Object: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -12552,7 +13015,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "deadman",
 									},
+									Rbrack: nil,
 								},
+								Lparen: nil,
+								Rparen: nil,
 							},
 						},
 						BaseNode: ast.BaseNode{
@@ -12589,6 +13055,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Lbrace: nil,
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -12606,6 +13073,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -12625,6 +13093,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "columns",
 									},
+									Separator: nil,
 									Value: &ast.ArrayExpression{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -12661,9 +13130,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: "details",
 										}},
+										Lbrack: nil,
+										Rbrack: nil,
 									},
 								}},
-								With: nil,
+								Rbrace: nil,
+								With:   nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -12700,6 +13172,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Name: "drop",
 							},
+							Lparen: nil,
+							Rparen: nil,
 						},
 					},
 					BaseNode: ast.BaseNode{
@@ -12736,6 +13210,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -12753,6 +13228,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -12772,6 +13248,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "columns",
 								},
+								Separator: nil,
 								Value: &ast.ArrayExpression{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -12808,9 +13285,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: "_time",
 									}},
+									Lbrack: nil,
+									Rbrack: nil,
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -12847,8 +13327,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "drop",
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -12866,6 +13349,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -12885,6 +13369,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "table",
 					},
+					Separator: nil,
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -12902,6 +13387,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					}},
 				}},
+				Rparan: nil,
 			},
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
@@ -12941,6 +13427,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "_tickscript_deadman",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -12991,6 +13478,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -13008,6 +13496,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -13027,6 +13516,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "input",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -13045,6 +13535,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -13062,6 +13553,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -13081,6 +13573,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -13101,7 +13594,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "inData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -13136,6 +13630,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -13174,7 +13669,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadStorage",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -13193,6 +13691,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -13212,6 +13711,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "want",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -13230,6 +13730,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -13247,6 +13748,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -13266,6 +13768,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -13286,7 +13789,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "outData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -13321,6 +13825,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -13359,7 +13864,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadMem",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -13378,6 +13886,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -13397,6 +13906,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "fn",
 								},
+								Separator: nil,
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -13417,10 +13927,15 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "tickscript_deadman",
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -13440,6 +13955,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 		}},
+		Eof: nil,
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
@@ -13720,6 +14236,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "now",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -13772,8 +14289,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -13811,6 +14332,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -13846,6 +14368,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -13863,6 +14386,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -13882,6 +14406,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -13899,6 +14424,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -13917,6 +14443,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -13955,6 +14482,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "write",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -13992,6 +14520,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -14027,6 +14556,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tables",
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14044,6 +14574,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -14063,6 +14594,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "tables",
 						},
+						Separator: nil,
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -14080,6 +14612,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						}},
 					}},
+					Rparan: nil,
 				},
 				Member: &ast.MemberExpression{
 					BaseNode: ast.BaseNode{
@@ -14098,6 +14631,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Lbrack: nil,
 					Object: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14136,6 +14670,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "log",
 					},
+					Rbrack: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -14317,6 +14852,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 				},
+				Lbrace: nil,
 				Properties: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -14334,6 +14870,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14353,6 +14890,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_id",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14389,6 +14927,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14408,6 +14947,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_check_name",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14444,6 +14984,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14463,6 +15004,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "_type",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14499,6 +15041,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
@@ -14518,6 +15061,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "tags",
 					},
+					Separator: nil,
 					Value: &ast.ObjectExpression{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -14535,11 +15079,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 						},
+						Lbrace:     nil,
 						Properties: []*ast.Property{},
+						Rbrace:     nil,
 						With:       nil,
 					},
 				}},
-				With: nil,
+				Rbrace: nil,
+				With:   nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -14688,6 +15235,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Name: "tickscript_deadman",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -14764,6 +15312,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Lbrace: nil,
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -14781,6 +15330,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Comma: nil,
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -14800,6 +15350,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Name: "start",
 														},
+														Separator: nil,
 														Value: &ast.DateTimeLiteral{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -14820,7 +15371,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: parser.MustParseTime("2020-11-25T14:05:00Z"),
 														},
 													}},
-													With: nil,
+													Rbrace: nil,
+													With:   nil,
 												}},
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -14857,6 +15409,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Name: "range",
 												},
+												Lparen: nil,
+												Rparen: nil,
 											},
 										},
 										BaseNode: ast.BaseNode{
@@ -14893,6 +15447,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													},
 												},
+												Lbrace: nil,
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -14910,6 +15465,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 														},
 													},
+													Comma: nil,
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -14929,7 +15485,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Name: "fn",
 													},
+													Separator: nil,
 													Value: &ast.FunctionExpression{
+														Arrow: nil,
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
@@ -15014,6 +15572,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				},
 																			},
 																		},
+																		Lbrack: nil,
 																		Object: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
 																				Comments: nil,
@@ -15052,6 +15611,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																			Name: "_measurement",
 																		},
+																		Rbrack: nil,
 																	},
 																	Operator: 17,
 																	Right: &ast.StringLiteral{
@@ -15109,6 +15669,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				},
 																			},
 																		},
+																		Lbrack: nil,
 																		Object: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
 																				Comments: nil,
@@ -15147,6 +15708,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																			Name: "_field",
 																		},
+																		Rbrack: nil,
 																	},
 																	Operator: 17,
 																	Right: &ast.Identifier{
@@ -15205,6 +15767,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			},
 																		},
 																	},
+																	Lbrack: nil,
 																	Object: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
 																			Comments: nil,
@@ -15243,6 +15806,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		},
 																		Name: "realm",
 																	},
+																	Rbrack: nil,
 																},
 																Operator: 17,
 																Right: &ast.Identifier{
@@ -15266,6 +15830,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lparen: nil,
 														Params: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -15283,6 +15848,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																},
 															},
+															Comma: nil,
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -15302,11 +15868,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Name: "r",
 															},
-															Value: nil,
+															Separator: nil,
+															Value:     nil,
 														}},
+														Rparan: nil,
 													},
 												}},
-												With: nil,
+												Rbrace: nil,
+												With:   nil,
 											}},
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15343,6 +15912,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "filter",
 											},
+											Lparen: nil,
+											Rparen: nil,
 										},
 									},
 									BaseNode: ast.BaseNode{
@@ -15396,6 +15967,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Lbrack: nil,
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -15434,7 +16006,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "fieldsAsCols",
 											},
+											Rbrack: nil,
 										},
+										Lparen: nil,
+										Rparen: nil,
 									},
 								},
 								BaseNode: ast.BaseNode{
@@ -15471,6 +16046,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15488,6 +16064,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -15507,6 +16084,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "columns",
 											},
+											Separator: nil,
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -15561,9 +16139,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: "realm",
 												}},
+												Lbrack: nil,
+												Rbrack: nil,
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -15598,6 +16179,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15636,7 +16218,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "groupBy",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							},
 							BaseNode: ast.BaseNode{
@@ -15673,6 +16258,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrace: nil,
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -15690,6 +16276,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15709,6 +16296,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "check",
 										},
+										Separator: nil,
 										Value: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15745,6 +16333,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15764,6 +16353,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "measurement",
 										},
+										Separator: nil,
 										Value: &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15800,6 +16390,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15819,6 +16410,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "threshold",
 										},
+										Separator: nil,
 										Value: &ast.IntegerLiteral{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15855,6 +16447,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -15874,7 +16467,9 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "id",
 										},
+										Separator: nil,
 										Value: &ast.FunctionExpression{
+											Arrow: nil,
 											BaseNode: ast.BaseNode{
 												Comments: nil,
 												Errors:   nil,
@@ -15960,6 +16555,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lbrack: nil,
 														Object: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -15998,6 +16594,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Name: "realm",
 														},
+														Rbrack: nil,
 													},
 												}, &ast.TextPart{
 													BaseNode: ast.BaseNode{
@@ -16051,6 +16648,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															},
 														},
+														Lbrack: nil,
 														Object: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -16089,6 +16687,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Name: "host",
 														},
+														Rbrack: nil,
 													},
 												}, &ast.TextPart{
 													BaseNode: ast.BaseNode{
@@ -16164,6 +16763,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Value: " deadman alert",
 												}},
 											},
+											Lparen: nil,
 											Params: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -16181,6 +16781,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													},
 												},
+												Comma: nil,
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -16200,11 +16801,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Name: "r",
 												},
-												Value: nil,
+												Separator: nil,
+												Value:     nil,
 											}},
+											Rparan: nil,
 										},
 									}},
-									With: nil,
+									Rbrace: nil,
+									With:   nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -16239,6 +16843,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Lbrack: nil,
 									Object: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -16277,7 +16882,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "deadman",
 									},
+									Rbrack: nil,
 								},
+								Lparen: nil,
+								Rparen: nil,
 							},
 						},
 						BaseNode: ast.BaseNode{
@@ -16314,6 +16922,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Lbrace: nil,
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -16331,6 +16940,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -16350,6 +16960,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Name: "columns",
 									},
+									Separator: nil,
 									Value: &ast.ArrayExpression{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -16386,9 +16997,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: "details",
 										}},
+										Lbrack: nil,
+										Rbrack: nil,
 									},
 								}},
-								With: nil,
+								Rbrace: nil,
+								With:   nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -16425,6 +17039,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Name: "drop",
 							},
+							Lparen: nil,
+							Rparen: nil,
 						},
 					},
 					BaseNode: ast.BaseNode{
@@ -16461,6 +17077,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -16478,6 +17095,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -16497,6 +17115,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "columns",
 								},
+								Separator: nil,
 								Value: &ast.ArrayExpression{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -16533,9 +17152,12 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: "_time",
 									}},
+									Lbrack: nil,
+									Rbrack: nil,
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						}},
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -16572,8 +17194,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Name: "drop",
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -16591,6 +17216,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -16610,6 +17236,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Name: "table",
 					},
+					Separator: nil,
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -16627,6 +17254,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					}},
 				}},
+				Rparan: nil,
 			},
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
@@ -16666,6 +17294,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Name: "_tickscript_deadman",
 				},
 				Init: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -16716,6 +17345,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -16733,6 +17363,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -16752,6 +17383,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "input",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -16770,6 +17402,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -16787,6 +17420,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -16806,6 +17440,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -16826,7 +17461,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "inData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -16861,6 +17497,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -16899,7 +17536,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadStorage",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -16918,6 +17558,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -16937,6 +17578,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "want",
 								},
+								Separator: nil,
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
@@ -16955,6 +17597,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrace: nil,
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -16972,6 +17615,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												},
 											},
+											Comma: nil,
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -16991,6 +17635,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Name: "csv",
 											},
+											Separator: nil,
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -17011,7 +17656,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "outData",
 											},
 										}},
-										With: nil,
+										Rbrace: nil,
+										With:   nil,
 									}},
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -17046,6 +17692,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											},
 										},
+										Lbrack: nil,
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -17084,7 +17731,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Name: "loadMem",
 										},
+										Rbrack: nil,
 									},
+									Lparen: nil,
+									Rparen: nil,
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
@@ -17103,6 +17753,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -17122,6 +17773,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Name: "fn",
 								},
+								Separator: nil,
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -17142,10 +17794,15 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "tickscript_deadman",
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						},
+						Lparen: nil,
+						Rparen: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{},
+					Rparan: nil,
 				},
 			},
 			BaseNode: ast.BaseNode{
@@ -17165,6 +17822,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 		}},
+		Eof: nil,
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
