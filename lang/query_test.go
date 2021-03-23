@@ -3,11 +3,13 @@ package lang_test
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/influxdata/flux"
+	ftesting "github.com/influxdata/flux/dependencies/testing"
 	"github.com/influxdata/flux/execute/executetest"
 	_ "github.com/influxdata/flux/fluxinit/static"
 	"github.com/influxdata/flux/lang"
@@ -15,12 +17,12 @@ import (
 	"github.com/influxdata/flux/runtime"
 )
 
-func runQuery(script string) (flux.Query, error) {
+func runQuery(ctx context.Context, script string) (flux.Query, error) {
 	program, err := lang.Compile(script, runtime.Default, time.Unix(0, 0))
 	if err != nil {
 		return nil, err
 	}
-	ctx := executetest.NewTestExecuteDependencies().Inject(context.Background())
+	ctx = executetest.NewTestExecuteDependencies().Inject(ctx)
 	q, err := program.Start(ctx, &memory.Allocator{})
 	if err != nil {
 		return nil, err
@@ -49,7 +51,7 @@ data = "
 csv.from(csv: data) |> yield(name: "res")`
 
 func TestQuery_Results(t *testing.T) {
-	q, err := runQuery(validScript)
+	q, err := runQuery(context.Background(), validScript)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
@@ -72,7 +74,7 @@ func TestQuery_Results(t *testing.T) {
 		}
 	}
 
-	// com,pare expected counts
+	// compare expected counts
 	if resCount != 1 {
 		t.Errorf("got %d results instead of %d", resCount, 1)
 	}
@@ -91,10 +93,58 @@ func TestQuery_Results(t *testing.T) {
 	}
 }
 
+func TestQuery_TestingCheck(t *testing.T) {
+	ctx := ftesting.Inject(context.Background())
+	ftesting.ExpectPlannerRule(ctx, "NonExistantRule", 1)
+	q, err := runQuery(ctx, validScript)
+	if err != nil {
+		t.Fatalf("unexpected error while creating query: %s", err)
+	}
+
+	// gather counts
+	var resCount, tableCount, totRows int
+	for res := range q.Results() {
+		resCount++
+		if err := res.Tables().Do(func(tbl flux.Table) error {
+			tableCount++
+			return tbl.Do(func(cr flux.ColReader) error {
+				tags := cr.Strings(1)
+				for i := 0; i < tags.Len(); i++ {
+					totRows++
+				}
+				return nil
+			})
+		}); err != nil {
+			t.Fatalf("unexpected error while iterating over tables: %s", err)
+		}
+	}
+
+	// compare expected counts
+	if resCount != 1 {
+		t.Errorf("got %d results instead of %d", resCount, 1)
+	}
+	if tableCount != 4 {
+		t.Errorf("got %d tables instead of %d", tableCount, 4)
+	}
+	if totRows != 8 {
+		t.Errorf("got %d rows instead of %d", totRows, 8)
+	}
+
+	// release query resources
+	q.Done()
+
+	if q.Err() == nil {
+		t.Fatalf("expected error from query execution about failed testing checks")
+	}
+	if !strings.Contains(q.Err().Error(), "planner rule invoked an unexpected number of times") {
+		t.Errorf("expected error about failed testing checks got error: %v", q.Err())
+	}
+}
+
 func TestQuery_Stats(t *testing.T) {
 	t.Skip("stats are updated by the controller, running a standalone query won't update them")
 
-	q, err := runQuery(validScript)
+	q, err := runQuery(context.Background(), validScript)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
@@ -148,7 +198,7 @@ data = "
 
 csv.from(csv: data) |> map(fn: (r) => r.nonexistent)`
 
-	q, err := runQuery(invalidScript)
+	q, err := runQuery(context.Background(), invalidScript)
 	if err != nil {
 		t.Fatalf("unexpected error while creating query: %s", err)
 	}
@@ -164,9 +214,54 @@ csv.from(csv: data) |> map(fn: (r) => r.nonexistent)`
 			t.Fatal("expected error from accessing wrong property, got none")
 		}
 	}
+	q.Done()
 
 	if q.Err() != nil {
 		t.Fatalf("unexpected error from query execution: %s", q.Err())
+	}
+}
+
+func TestQuery_ContextError_TestingCheck(t *testing.T) {
+	// Use a Flux script that doesn't block on the context to
+	// produce results, this makes it possible to always expect the error
+	// as part of the q.Err() call.
+	script := `
+import "array"
+
+array.from(rows: [{_value:1}])
+`
+	ctx := ftesting.Inject(context.Background())
+	ftesting.ExpectPlannerRule(ctx, "NonExistantRule", 1)
+
+	// create a cancelable context and immediately cancel it
+	cctx, cancel := context.WithCancel(ctx)
+	cancel()
+
+	// Now when the query runs either it will notice the context cancel
+	// or it will notice the testing.Check error.
+	// This test ensures we do not have a race on q.err when both conditions occur.
+	// However it is not deterministic which error is reported, because it is possible
+	// the query completes without noticing the context was canceled.
+	q, err := runQuery(cctx, script)
+	if err != nil {
+		t.Fatalf("unexpected error while creating query: %s", err)
+	}
+
+	// consume and check for errors
+	for res := range q.Results() {
+		if err := res.Tables().Do(func(tbl flux.Table) error {
+			return tbl.Do(func(cr flux.ColReader) error {
+				// does nothing
+				return nil
+			})
+		}); err != nil {
+			t.Fatalf("unexpected error while reading results: %s", err)
+		}
+	}
+	q.Done()
+
+	if q.Err() == nil {
+		t.Fatal("expected error from query execution")
 	}
 }
 
@@ -298,7 +393,7 @@ data
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			if q, err := runQuery(prelude + tc.script); err != nil {
+			if q, err := runQuery(context.Background(), prelude+tc.script); err != nil {
 				t.Error(err)
 			} else {
 				got := fmt.Sprintf("%v", q.Statistics().Metadata["flux/query-plan"])
