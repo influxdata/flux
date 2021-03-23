@@ -18,6 +18,7 @@ import (
 	aggregate1 "github.com/influxdata/flux/stdlib/experimental/aggregate"
 	geo "github.com/influxdata/flux/stdlib/experimental/geo"
 	json "github.com/influxdata/flux/stdlib/experimental/json"
+	oee "github.com/influxdata/flux/stdlib/experimental/oee"
 	http "github.com/influxdata/flux/stdlib/http"
 	monitor "github.com/influxdata/flux/stdlib/influxdata/influxdb/monitor"
 	schema "github.com/influxdata/flux/stdlib/influxdata/influxdb/schema"
@@ -54,6 +55,7 @@ var FluxTestPackages = func() []*ast.Package {
 	pkgs = append(pkgs, aggregate1.FluxTestPackages...)
 	pkgs = append(pkgs, geo.FluxTestPackages...)
 	pkgs = append(pkgs, json.FluxTestPackages...)
+	pkgs = append(pkgs, oee.FluxTestPackages...)
 	pkgs = append(pkgs, http.FluxTestPackages...)
 	pkgs = append(pkgs, monitor.FluxTestPackages...)
 	pkgs = append(pkgs, schema.FluxTestPackages...)
