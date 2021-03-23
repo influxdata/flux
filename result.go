@@ -311,6 +311,7 @@ func (e *DelimitedMultiResultEncoder) Encode(w io.Writer, results ResultIterator
 			f.Flush()
 		}
 	}
+	results.Release()
 
 	// If we have any outlying errors in results, encode them
 	// If we have an error in the result and we have not written
