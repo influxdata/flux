@@ -170,9 +170,7 @@ pub unsafe extern "C" fn flux_parse_json(
             *out_pkg = Some(Box::new(pkg));
             None
         }
-        Err(err) => {
-            Some(Box::from(err))
-        }
+        Err(err) => Some(Box::from(err)),
     }
 }
 
@@ -288,9 +286,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
     match merge_packages(out_pkg, in_pkg) {
         None => None,
-        Some(err) => {
-            Some(Box::from(err))
-        }
+        Some(err) => Some(Box::from(err)),
     }
 }
 
@@ -349,9 +345,7 @@ pub unsafe extern "C" fn flux_analyze(
             *out_sem_pkg = Some(Box::new(sem_pkg));
             None
         }
-        Err(err) => {
-            Some(Box::from(err))
-        }
+        Err(err) => Some(Box::from(err)),
     }
 }
 
@@ -372,9 +366,7 @@ pub unsafe extern "C" fn flux_find_var_type(
     let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
     let name = String::from_utf8(buf.to_vec()).unwrap();
     find_var_type(*ast_pkg, name).map_or_else(
-        |e| {
-            Some(Box::from(e))
-        },
+        |e| Some(Box::from(e)),
         |t| {
             let mut builder = flatbuffers::FlatBufferBuilder::new();
             let (fb_mono_type, typ_type) = build_type(&mut builder, t);
