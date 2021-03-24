@@ -599,6 +599,7 @@ mod tests {
     use core::semantic::fresh::Fresher;
     use core::semantic::nodes::infer_file;
     use core::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
+    use std::ffi::CString;
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,
