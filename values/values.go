@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"regexp"
 	"runtime/debug"
-	"strconv"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -300,27 +299,6 @@ func NewRegexp(v *regexp.Regexp) Value {
 		t: semantic.BasicRegexp,
 		v: v,
 	}
-}
-
-func Stringify(v Value) (Value, error) {
-	val := Unwrap(v)
-	switch v.Type().Nature() {
-	case semantic.Bool:
-		return NewString(strconv.FormatBool(val.(bool))), nil
-	case semantic.Int:
-		return NewString(strconv.FormatInt(val.(int64), 10)), nil
-	case semantic.UInt:
-		return NewString(strconv.FormatUint(val.(uint64), 10)), nil
-	case semantic.Float:
-		return NewString(strconv.FormatFloat(val.(float64), 'f', -1, 64)), nil
-	case semantic.Time:
-		return NewString(val.(Time).String()), nil
-	case semantic.Duration:
-		return NewString(val.(Duration).String()), nil
-	case semantic.String:
-		return v, nil
-	}
-	return nil, errors.Newf(codes.Invalid, "invalid interpolation type")
 }
 
 func UnexpectedKind(got, exp semantic.Nature) error {

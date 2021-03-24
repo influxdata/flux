@@ -268,7 +268,6 @@ pub fn convert_polytype(
                         "Negatable" => kinds.push(types::Kind::Negatable),
                         "Timeable" => kinds.push(types::Kind::Timeable),
                         "Record" => kinds.push(types::Kind::Record),
-                        "Stringable" => kinds.push(types::Kind::Stringable),
                         _ => {
                             return Err(format!("Constraint not found {} ", &k.name.as_str()));
                         }

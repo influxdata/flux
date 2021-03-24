@@ -180,12 +180,7 @@ func (*interpolatedEvaluator) Type() semantic.MonoType {
 }
 
 func (e *interpolatedEvaluator) Eval(ctx context.Context, scope Scope) (values.Value, error) {
-	o, err := e.s.Eval(ctx, scope)
-	if err != nil {
-		return nil, err
-	}
-	v, err := values.Stringify(o)
-	return v, err
+	return e.s.Eval(ctx, scope)
 }
 
 type objEvaluator struct {
