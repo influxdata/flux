@@ -845,7 +845,7 @@ f
 					{execute.Time(1), uint64(1)},
 				},
 			}},
-			wantErr: errors.New(`failed to evaluate map function: strconv.ParseFloat: parsing "foo": invalid syntax`),
+			wantErr: errors.New(`failed to evaluate map function: cannot convert string "foo" to float due to invalid syntax`),
 		},
 		{
 			name: `with null record`,
