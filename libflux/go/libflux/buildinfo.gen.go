@@ -67,7 +67,7 @@ var sourceHashes = map[string]string{
 	"libflux/flux/benches/everything.flux":                                          "8fca377299a33e610fc435098c770ea0974b61150d71b9c5f206ce87c0a57656",
 	"libflux/flux/benches/formatter.rs":                                             "e4838c1428d45205292a9dda1759f804779a4e142db4360ec2a6be1c9ca741b8",
 	"libflux/flux/build.rs":                                                         "31a4f825297f9b79d1c8692a5fa3ff9211cb87d01650d147128d061588f75abd",
-	"libflux/flux/src/lib.rs":                                                       "0a4d360abe3b5400efdd7c6296ef1ef37069af510488e7f00f115096e9045f30",
+	"libflux/flux/src/lib.rs":                                                       "de890a3e1bfc80f81c23e005ef9d7a5d30bf8b8c2f026d6f79eab4b0f521b8eb",
 	"libflux/include/influxdata/flux.h":                                             "92ebd10e3884c4960a41b1611e26d90c10a296d24516739c07b0ca3048d76c8a",
 	"stdlib/array/array.flux":                                                       "51bf068721fb9fa1c7a732d7910e23a330f6aed7fafe8f7984315f97b5a68859",
 	"stdlib/array/from_group_test.flux":                                             "1de303410a2241993b17b5b90f3bd3289db1a0f68695f678503eea0e3547ef6b",
