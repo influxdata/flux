@@ -43,12 +43,14 @@ pub fn fresher() -> Fresher {
 /// consumers across language boundaries.
 pub struct ErrorHandle {
     /// A heap-allocated `Error`
-    pub err: Box<dyn error::Error>,
+    pub err: CString,
 }
 
 impl<T: 'static + error::Error> From<T> for Box<ErrorHandle> {
     fn from(err: T) -> Self {
-        Box::new(ErrorHandle { err: Box::new(err) })
+        Box::new(ErrorHandle {
+            err: CString::new(format!("{}", err)).unwrap(),
+        })
     }
 }
 
@@ -137,7 +139,7 @@ pub unsafe extern "C" fn flux_ast_get_error(
     let mut errs = ast::check::check(ast_pkg);
     if !errs.is_empty() {
         let err = Vec::remove(&mut errs, 0);
-        Some(Box::new(ErrorHandle { err: Box::new(err) }))
+        Some(err.into())
     } else {
         None
     }
@@ -168,10 +170,7 @@ pub unsafe extern "C" fn flux_parse_json(
             *out_pkg = Some(Box::new(pkg));
             None
         }
-        Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
-            Some(Box::new(errh))
-        }
+        Err(err) => Some(err.into()),
     }
 }
 
@@ -189,8 +188,7 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
-            return Some(Box::new(errh));
+            return Some(err.into());
         }
     };
 
@@ -215,10 +213,7 @@ pub unsafe extern "C" fn flux_ast_marshal_fb(
     let (mut vec, offset) = match ast::flatbuffers::serialize(ast_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            let errh = ErrorHandle {
-                err: Box::new(Error::from(err)),
-            };
-            return Some(Box::new(errh));
+            return Some(Box::from(Error::from(err)));
         }
     };
 
@@ -250,10 +245,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
     let (mut vec, offset) = match semantic::flatbuffers::serialize(sem_pkg) {
         Ok(vec_offset) => vec_offset,
         Err(err) => {
-            let errh = ErrorHandle {
-                err: Box::new(Error::from(err)),
-            };
-            return Some(Box::new(errh));
+            return Some(Box::from(Error::from(err)));
         }
     };
 
@@ -270,11 +262,9 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 ///
 /// This function is unsafe because it dereferences a raw pointer passed as a
 /// parameter
-#[allow(improper_ctypes_definitions)] // CString doesn't have repr(C)
 #[no_mangle]
-pub unsafe extern "C" fn flux_error_str(errh: *const ErrorHandle) -> CString {
-    let errh = &*errh;
-    CString::new(format!("{}", errh.err)).unwrap()
+pub unsafe extern "C" fn flux_error_str(errh: &ErrorHandle) -> *const c_char {
+    errh.err.as_ptr()
 }
 
 /// # Safety
@@ -295,10 +285,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
     match merge_packages(out_pkg, in_pkg) {
         None => None,
-        Some(err) => {
-            let err_handle = ErrorHandle { err: Box::new(err) };
-            Some(Box::new(err_handle))
-        }
+        Some(err) => Some(err.into()),
     }
 }
 
@@ -357,10 +344,7 @@ pub unsafe extern "C" fn flux_analyze(
             *out_sem_pkg = Some(Box::new(sem_pkg));
             None
         }
-        Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
-            Some(Box::new(errh))
-        }
+        Err(err) => Some(err.into()),
     }
 }
 
@@ -381,10 +365,7 @@ pub unsafe extern "C" fn flux_find_var_type(
     let buf = CStr::from_ptr(var_name).to_bytes(); // Unsafe
     let name = String::from_utf8(buf.to_vec()).unwrap();
     find_var_type(*ast_pkg, name).map_or_else(
-        |e| {
-            let handle = ErrorHandle { err: Box::new(e) };
-            Some(Box::new(handle))
-        },
+        |e| Some(Box::from(e)),
         |t| {
             let mut builder = flatbuffers::FlatBufferBuilder::new();
             let (fb_mono_type, typ_type) = build_type(&mut builder, t);
@@ -496,18 +477,14 @@ pub unsafe extern "C" fn flux_analyze_with(
     let analyzer = match &mut *analyzer {
         Ok(a) => a,
         Err(err) => {
-            let errh = ErrorHandle {
-                err: Box::new(err.to_owned()),
-            };
-            return Some(Box::new(errh));
+            return Some(Box::from(err.to_owned()));
         }
     };
 
     let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
         Ok(sem_pkg) => sem_pkg,
         Err(err) => {
-            let errh = ErrorHandle { err: Box::new(err) };
-            return Some(Box::new(errh));
+            return Some(err.into());
         }
     });
 
@@ -999,7 +976,7 @@ from(bucket: v.bucket)
         let errh = unsafe { flux_ast_get_error(ast) };
         assert_eq!(
             "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV",
-            format!("{}", errh.unwrap().err)
+            errh.unwrap().err.into_string().unwrap()
         );
     }
 

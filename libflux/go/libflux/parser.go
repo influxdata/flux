@@ -38,7 +38,6 @@ func (p ASTPkg) Format() string {
 	if err := C.flux_ast_format(p.ptr, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
 		str := C.GoString(cstr)
 		return fmt.Sprintf("%v", errors.Newf(codes.Invalid, str))
 	}
@@ -53,7 +52,6 @@ func (p ASTPkg) GetError() error {
 	if err := C.flux_ast_get_error(p.ptr); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
 		str := C.GoString(cstr)
 		return errors.Newf(codes.Invalid, str)
 	}
@@ -65,8 +63,6 @@ func (p *ASTPkg) MarshalJSON() ([]byte, error) {
 	if err := C.flux_ast_marshal_json(p.ptr, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
-
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal AST to JSON: %v", str)
 	}
@@ -86,8 +82,6 @@ func (p *ASTPkg) MarshalFB() ([]byte, error) {
 	if err := C.flux_ast_marshal_fb(p.ptr, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
-
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal AST to FlatBuffer: %v", str)
 	}
@@ -147,8 +141,6 @@ func ParseJSON(bs []byte) (*ASTPkg, error) {
 	if err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
-
 		str := C.GoString(cstr)
 		return nil, errors.New(codes.Invalid, str)
 	}
@@ -169,8 +161,6 @@ func MergePackages(outPkg *ASTPkg, inPkg *ASTPkg) error {
 	if err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
-
 		str := C.GoString(cstr)
 		return errors.Newf(codes.Internal, "failed to merge packages: %v", str)
 	}

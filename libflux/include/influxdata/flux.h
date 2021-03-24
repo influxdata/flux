@@ -23,8 +23,8 @@ struct flux_error_t;
 void flux_free_error(struct flux_error_t *);
 
 // flux_error_str will return a string representation of the error.
-// This will allocate memory for the returned string, which must be
-// freed wtih flux_free_bytes.
+// The string returned is a borrowed reference to the error, and
+// becomes invalid when the error is freed.
 const char *flux_error_str(struct flux_error_t *);
 
 // flux_free_bytes will release the memory pointed to by the pointer argument.

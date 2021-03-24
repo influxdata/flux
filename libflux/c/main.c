@@ -53,7 +53,6 @@ void test_ast() {
     assert(err != NULL);
     const char* err_str = flux_error_str(err);
     printf("  error: %s\n", err_str);
-    flux_free_bytes(err_str);
     flux_free_error(err);
     flux_free_ast_pkg(ast_pkg_foo);
     printf("\n");
@@ -110,7 +109,6 @@ void test_semantic() {
     assert(sem_pkg == NULL);
     const char* err_str = flux_error_str(err);
     printf("  error: %s\n", err_str);
-    flux_free_bytes(err_str);
     flux_free_error(err);
   }
 
@@ -138,7 +136,6 @@ void test_semantic() {
     assert(err != NULL);
     const char* err_str = flux_error_str(err);
     printf("  error: %s\n", err_str);
-    flux_free_bytes(err_str);
     flux_free_error(err);
   }
 
@@ -180,7 +177,6 @@ void test_semantic_analyzer() {
   assert(sem_pkg == NULL);
   const char* err_str = flux_error_str(err);
   printf("  error: %s\n", err_str);
-  flux_free_bytes(err_str);
   flux_free_error(err);
 
   flux_free_semantic_analyzer(analyzer);

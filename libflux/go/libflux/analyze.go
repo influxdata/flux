@@ -26,15 +26,12 @@ func (p *SemanticPkg) MarshalFB() ([]byte, error) {
 	if err := C.flux_semantic_marshal_fb(p.ptr, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
-
 		str := C.GoString(cstr)
 		return nil, errors.Newf(codes.Internal, "could not marshal semantic graph to FlatBuffer: %v", str)
 	}
 	// See MarshalFB in ASTPkg for why this is needed.
 	runtime.KeepAlive(p)
 	defer C.flux_free_bytes(buf.data)
-
 	data := C.GoBytes(unsafe.Pointer(buf.data), C.int(buf.len))
 	return data, nil
 }
@@ -70,8 +67,6 @@ func Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	if err := C.flux_analyze(astPkg.ptr, &semPkg); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
-
 		str := C.GoString(cstr)
 		return nil, errors.New(codes.Invalid, str)
 	}
@@ -97,7 +92,6 @@ func FindVarType(astPkg *ASTPkg, varName string) (semantic.MonoType, error) {
 	if err := C.flux_find_var_type(astPkg.ptr, cVarName, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
 		str := C.GoString(cstr)
 		return semantic.MonoType{}, errors.New(codes.Invalid, str)
 	}
@@ -133,8 +127,6 @@ func (p *Analyzer) Analyze(astPkg *ASTPkg) (*SemanticPkg, error) {
 	if err := C.flux_analyze_with(p.ptr, astPkg.ptr, &semPkg); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
-		defer C.flux_free_bytes(cstr)
-
 		str := C.GoString(cstr)
 		return nil, errors.New(codes.Invalid, str)
 	}
