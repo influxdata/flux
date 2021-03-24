@@ -492,6 +492,9 @@ func (itrp *Interpreter) doStringPart(ctx context.Context, part semantic.StringE
 		v, err := itrp.doExpression(ctx, p.Expression, scope)
 		if err != nil {
 			return nil, err
+		} else if v.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "%s: interpolated expression produced a null value",
+				p.Location())
 		} else {
 			o, err := values.Stringify(v)
 			if err != nil {

@@ -97,7 +97,7 @@ func TestCompileAndEval(t *testing.T) {
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewObjectWithValues(map[string]values.Value{}),
 			}),
-			want: values.NewString("n = <null>"),
+			wantEvalErr: true,
 		},
 		{
 			name: "simple ident return",
