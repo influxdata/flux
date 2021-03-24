@@ -139,7 +139,7 @@ pub unsafe extern "C" fn flux_ast_get_error(
     let mut errs = ast::check::check(ast_pkg);
     if !errs.is_empty() {
         let err = Vec::remove(&mut errs, 0);
-        Some(Box::from(err))
+        Some(err.into())
     } else {
         None
     }
@@ -170,7 +170,7 @@ pub unsafe extern "C" fn flux_parse_json(
             *out_pkg = Some(Box::new(pkg));
             None
         }
-        Err(err) => Some(Box::from(err)),
+        Err(err) => Some(err.into()),
     }
 }
 
@@ -188,7 +188,7 @@ pub unsafe extern "C" fn flux_ast_marshal_json(
     let data = match serde_json::to_vec(ast_pkg) {
         Ok(v) => v,
         Err(err) => {
-            return Some(Box::from(err));
+            return Some(err.into());
         }
     };
 
@@ -263,8 +263,7 @@ pub unsafe extern "C" fn flux_semantic_marshal_fb(
 /// This function is unsafe because it dereferences a raw pointer passed as a
 /// parameter
 #[no_mangle]
-pub unsafe extern "C" fn flux_error_str(errh: *const ErrorHandle) -> *const c_char {
-    let errh = &*errh;
+pub unsafe extern "C" fn flux_error_str(errh: &ErrorHandle) -> *const c_char {
     errh.err.as_ptr()
 }
 
@@ -286,7 +285,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
 
     match merge_packages(out_pkg, in_pkg) {
         None => None,
-        Some(err) => Some(Box::from(err)),
+        Some(err) => Some(err.into()),
     }
 }
 
@@ -345,7 +344,7 @@ pub unsafe extern "C" fn flux_analyze(
             *out_sem_pkg = Some(Box::new(sem_pkg));
             None
         }
-        Err(err) => Some(Box::from(err)),
+        Err(err) => Some(err.into()),
     }
 }
 
@@ -485,7 +484,7 @@ pub unsafe extern "C" fn flux_analyze_with(
     let sem_pkg = Box::new(match analyzer.analyze(ast_pkg) {
         Ok(sem_pkg) => sem_pkg,
         Err(err) => {
-            return Some(Box::from(err));
+            return Some(err.into());
         }
     });
 
@@ -599,7 +598,6 @@ mod tests {
     use core::semantic::fresh::Fresher;
     use core::semantic::nodes::infer_file;
     use core::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
-    use std::ffi::CString;
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,
@@ -977,8 +975,8 @@ from(bucket: v.bucket)
         let ast = Box::into_raw(Box::new(ast.into()));
         let errh = unsafe { flux_ast_get_error(ast) };
         assert_eq!(
-            CString::new("error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV").unwrap(),
-            errh.unwrap().err
+            "error at test@1:9-1:10: invalid expression: invalid token for primary expression: DIV",
+            errh.unwrap().err.into_string().unwrap()
         );
     }
 
