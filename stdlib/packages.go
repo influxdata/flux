@@ -8,7 +8,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/anomalydetection"
 	_ "github.com/influxdata/flux/stdlib/contrib/anaisdg/statsmodels"
 	_ "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/servicenow"
-    _ "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/tickscript"
+	_ "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/tickscript"
 	_ "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/victorops"
 	_ "github.com/influxdata/flux/stdlib/contrib/bonitoo-io/zenoss"
 	_ "github.com/influxdata/flux/stdlib/contrib/chobbs/discord"
