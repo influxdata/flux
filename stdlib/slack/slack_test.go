@@ -70,14 +70,14 @@ func NewServer(t *testing.T) *Server {
 		}
 		b, err := ioutil.ReadAll(r.Body)
 		defer r.Body.Close()
+    if err != nil {
+			t.Error(err)
+		}
+		err = json.Unmarshal(b,&sr.PostData)
 		if err != nil {
 			t.Error(err)
 		}
-		err = json.Unmarshal(b, &sr.PostData)
-		if err != nil {
-			t.Error(err)
-		}
-		err = json.Unmarshal(b, &sr.RawData)
+		err = json.Unmarshal(b,&sr.RawData)
 		if err != nil {
 			t.Error(err)
 		}
@@ -113,7 +113,7 @@ type Request struct {
 	// request body has been Unmarshalled to a Struct, there is no way to
 	// distinguish between an absent key and a null one; so we need to
 	// unmarshal it as map[string]interface{} to perform the test.
-	RawData map[string]interface{}
+	RawData       map[string]interface{}
 }
 
 type PostData struct {
