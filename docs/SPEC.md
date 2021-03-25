@@ -332,8 +332,6 @@ Arbitrary Expression Interpolation example:
     t0 = time(v: "2016-06-13T17:43:50.1004002Z")
     "the answer is ${t0}" // the answer is 2016-06-13T17:43:50.1004002Z 
 
-If the interpolated expression evaluates to a null value, the expression will be displayed with the `<null>` string.
-
 #### Regular expression literals
 
 A regular expression literal represents a regular expression pattern, enclosed in forward slashes.
