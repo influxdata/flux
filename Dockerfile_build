@@ -119,7 +119,7 @@ ENV HOME=/home/$UNAME
 
 # The latest stable rust version
 # TODO: Update manually.
-ENV RUST_LATEST_VERSION=1.50.0
+ENV RUST_LATEST_VERSION=1.51.0
 
 # Install Rust
 RUN curl https://sh.rustup.rs -sSf | \

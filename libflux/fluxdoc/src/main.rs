@@ -49,7 +49,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 // Walks the directory and generates docs for the package found at topdir and any sub packages.
-fn walk_pkg(topdir: &PathBuf, dir: &PathBuf) -> Result<DocPackage, Box<dyn std::error::Error>> {
+fn walk_pkg(topdir: &Path, dir: &Path) -> Result<DocPackage, Box<dyn std::error::Error>> {
     let mut packages = Vec::<DocPackage>::new();
     let mut src = Vec::<PathBuf>::new();
     for entry in fs::read_dir(dir)? {
@@ -277,7 +277,7 @@ lazy_static! {
 //      subpkgA
 //          index.html -- Contains subpkgA index
 //          valueb.html -- contains value B description
-fn write_html(dir: &PathBuf, pkg: &DocPackage) -> Result<(), Box<dyn std::error::Error>> {
+fn write_html(dir: &Path, pkg: &DocPackage) -> Result<(), Box<dyn std::error::Error>> {
     let pkgdir = dir.join(&pkg.name);
     fs::create_dir(&pkgdir)?;
     let mut f = File::create(pkgdir.join("index.html"))?;
@@ -294,7 +294,7 @@ fn write_html(dir: &PathBuf, pkg: &DocPackage) -> Result<(), Box<dyn std::error:
     Ok(())
 }
 // Render home.html template
-fn write_home(dir: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+fn write_home(dir: &Path) -> Result<(), Box<dyn std::error::Error>> {
     let ctx = Context::new();
     let data = TEMPLATES.render("home.html", &ctx)?;
     let mut f = File::create(dir.join("index.html"))?;
