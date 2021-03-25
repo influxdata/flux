@@ -84,7 +84,7 @@ func TestCompileAndEval(t *testing.T) {
 					"n": values.NewBytes([]byte("abc")),
 				}),
 			}),
-			wantCompileErr: true,
+			wantEvalErr: true,
 		},
 		{
 			name: "interpolated string expression null",
