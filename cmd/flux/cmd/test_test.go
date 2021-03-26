@@ -78,6 +78,10 @@ var archiveFiles = []struct {
 	data string
 }{
 	{
+		name: "fluxtest.root",
+		data: "math",
+	},
+	{
 		name: "a/a.flux",
 		data: `package a
 a = 3
@@ -149,7 +153,7 @@ func writeZipArchive(f *os.File) error {
 }
 
 func testGatherFromArchive(t *testing.T, fn gatherFunc, filename string) {
-	files, fs, err := fn(filename)
+	files, fs, modules, err := fn(filename)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -176,9 +180,26 @@ func testGatherFromArchive(t *testing.T, fn gatherFunc, filename string) {
 		}
 	}
 
+	if want, got := 1, len(modules); want != got {
+		t.Errorf("unexpected number of modules -want/+got:\n\t- %d\n\t+ %d", want, got)
+	} else {
+		mod, ok := modules["math"]
+		if !ok {
+			t.Error("missing module \"math\"")
+		} else {
+			f, err := mod.Open("a/a_test.flux")
+			if err != nil {
+				t.Errorf("unexpected error: %s", err)
+			}
+			_ = f.Close()
+		}
+	}
+
 	// Check the contents of each of these.
+	// The integers refer to the index of the files we want to check from
+	// the list of archive files.
 	ctx := filesystem.Inject(context.Background(), fs)
-	for _, index := range []int{1, 3} {
+	for _, index := range []int{2, 4} {
 		file := archiveFiles[index]
 		data, err := filesystem.ReadFile(ctx, file.name)
 		if err != nil {

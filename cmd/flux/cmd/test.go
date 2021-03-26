@@ -33,7 +33,7 @@ import (
 
 type testFlags struct {
 	testNames []string
-	path      string
+	paths     []string
 	verbosity int
 }
 
@@ -48,7 +48,7 @@ func TestCommand(setup TestSetupFunc) *cobra.Command {
 			runFluxTests(setup, flags)
 		},
 	}
-	testCommand.Flags().StringVarP(&flags.path, "path", "p", ".", "The root level directory for all packages.")
+	testCommand.Flags().StringSliceVarP(&flags.paths, "path", "p", nil, "The root level directory for all packages.")
 	testCommand.Flags().StringSliceVar(&flags.testNames, "test", []string{}, "The name of a specific test to run.")
 	testCommand.Flags().CountVarP(&flags.verbosity, "verbose", "v", "verbose (-v, or -vv)")
 	return testCommand
@@ -61,9 +61,13 @@ func init() {
 
 // runFluxTests invokes the test runner.
 func runFluxTests(setup TestSetupFunc, flags testFlags) {
+	if len(flags.paths) == 0 {
+		flags.paths = []string{"."}
+	}
+
 	reporter := NewTestReporter(flags.verbosity)
 	runner := NewTestRunner(reporter)
-	if err := runner.Gather(flags.path, flags.testNames); err != nil {
+	if err := runner.Gather(flags.paths, flags.testNames); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -134,66 +138,74 @@ func NewTestRunner(reporter TestReporter) TestRunner {
 	}
 }
 
-type gatherFunc func(filename string) ([]string, fs, error)
+type gatherFunc func(filename string) ([]string, fs, edit.TestModules, error)
 
 // Gather gathers all tests from the filesystem and creates Test instances
 // from that info.
-func (t *TestRunner) Gather(root string, names []string) error {
-	var gatherFrom gatherFunc
-	if strings.HasSuffix(root, ".tar.gz") || strings.HasSuffix(root, ".tar") {
-		gatherFrom = gatherFromTarArchive
-	} else if strings.HasSuffix(root, ".zip") {
-		gatherFrom = gatherFromZipArchive
-	} else if strings.HasSuffix(root, ".flux") {
-		gatherFrom = gatherFromFile
-	} else if st, err := os.Stat(root); err == nil && st.IsDir() {
-		gatherFrom = gatherFromDir
-	} else {
-		return fmt.Errorf("no test runner for file: %s", root)
-	}
+func (t *TestRunner) Gather(roots []string, names []string) error {
+	var modules edit.TestModules
+	for _, root := range roots {
+		var gatherFrom gatherFunc
+		if strings.HasSuffix(root, ".tar.gz") || strings.HasSuffix(root, ".tar") {
+			gatherFrom = gatherFromTarArchive
+		} else if strings.HasSuffix(root, ".zip") {
+			gatherFrom = gatherFromZipArchive
+		} else if strings.HasSuffix(root, ".flux") {
+			gatherFrom = gatherFromFile
+		} else if st, err := os.Stat(root); err == nil && st.IsDir() {
+			gatherFrom = gatherFromDir
+		} else {
+			return fmt.Errorf("no test runner for file: %s", root)
+		}
 
-	files, fs, err := gatherFrom(root)
-	if err != nil {
-		return err
-	}
-	defer func() { _ = fs.Close() }()
-
-	ctx := filesystem.Inject(context.Background(), fs)
-	for _, file := range files {
-		q, err := filesystem.ReadFile(ctx, file)
+		files, fs, mods, err := gatherFrom(root)
 		if err != nil {
 			return err
 		}
-		baseAST := parser.ParseSource(string(q))
-		if len(baseAST.Files) > 0 {
-			baseAST.Files[0].Name = file
-		}
-		tcnames, asts, err := edit.TestcaseTransform(ctx, baseAST)
-		if err != nil {
+		defer func() { _ = fs.Close() }()
+
+		// Merge in any new modules.
+		if err := modules.Merge(mods); err != nil {
 			return err
 		}
-		for i, astf := range asts {
-			test := NewTest(tcnames[i], astf)
-			if len(names) == 0 || contains(names, test.Name()) {
-				t.tests = append(t.tests, &test)
+
+		ctx := filesystem.Inject(context.Background(), fs)
+		for _, file := range files {
+			q, err := filesystem.ReadFile(ctx, file)
+			if err != nil {
+				return err
+			}
+			baseAST := parser.ParseSource(string(q))
+			if len(baseAST.Files) > 0 {
+				baseAST.Files[0].Name = file
+			}
+			tcnames, asts, err := edit.TestcaseTransform(ctx, baseAST, modules)
+			if err != nil {
+				return err
+			}
+			for i, astf := range asts {
+				test := NewTest(tcnames[i], astf)
+				if len(names) == 0 || contains(names, test.Name()) {
+					t.tests = append(t.tests, &test)
+				}
 			}
 		}
 	}
 	return nil
 }
 
-func gatherFromTarArchive(filename string) ([]string, fs, error) {
+func gatherFromTarArchive(filename string) ([]string, fs, edit.TestModules, error) {
 	var f io.ReadCloser
 	f, err := os.Open(filename)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	defer func() { _ = f.Close() }()
 
 	if strings.HasSuffix(filename, ".gz") {
 		r, err := gzip.NewReader(f)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		defer func() { _ = r.Close() }()
 		f = r
@@ -204,6 +216,7 @@ func gatherFromTarArchive(filename string) ([]string, fs, error) {
 		tfs   = &tarfs{
 			files: make(map[string]*tarfile),
 		}
+		modules edit.TestModules
 	)
 	archive := tar.NewReader(f)
 	for {
@@ -211,17 +224,30 @@ func gatherFromTarArchive(filename string) ([]string, fs, error) {
 		if errors.Is(err, io.EOF) {
 			break
 		} else if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 
 		info := hdr.FileInfo()
 		if !isTestFile(info, hdr.Name) {
+			if isTestRoot(hdr.Name) {
+				name, err := readTestRoot(archive, nil)
+				if err != nil {
+					return nil, nil, nil, err
+				}
+
+				if err := modules.Add(name, prefixfs{
+					prefix: filepath.Dir(hdr.Name),
+					fs:     tfs,
+				}); err != nil {
+					return nil, nil, nil, err
+				}
+			}
 			continue
 		}
 
 		source, err := ioutil.ReadAll(archive)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		tfs.files[filepath.Clean(hdr.Name)] = &tarfile{
 			data: source,
@@ -229,7 +255,7 @@ func gatherFromTarArchive(filename string) ([]string, fs, error) {
 		}
 		files = append(files, hdr.Name)
 	}
-	return files, tfs, nil
+	return files, tfs, modules, nil
 }
 
 type tarfs struct {
@@ -269,35 +295,52 @@ func (t *tarfile) Stat() (os.FileInfo, error) {
 	return t.info, nil
 }
 
-func gatherFromZipArchive(filename string) ([]string, fs, error) {
+func gatherFromZipArchive(filename string) ([]string, fs, edit.TestModules, error) {
+	var modules edit.TestModules
+
 	f, err := os.Open(filename)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	info, err := f.Stat()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	zipf, err := zip.NewReader(f, info.Size())
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
+	}
+
+	fs := &zipfs{
+		r:      zipf,
+		Closer: f,
 	}
 
 	var files []string
 	for _, file := range zipf.File {
 		info := file.FileInfo()
 		if !isTestFile(info, file.Name) {
+			if isTestRoot(file.Name) {
+				name, err := readTestRoot(file.Open())
+				if err != nil {
+					return nil, nil, nil, err
+				}
+
+				if err := modules.Add(name, prefixfs{
+					prefix: filepath.Dir(file.Name),
+					fs:     fs,
+				}); err != nil {
+					return nil, nil, nil, err
+				}
+			}
 			continue
 		}
 		files = append(files, file.Name)
 
 	}
-	return files, &zipfs{
-		r:      zipf,
-		Closer: f,
-	}, nil
+	return files, fs, modules, nil
 }
 
 type zipfs struct {
@@ -358,27 +401,124 @@ func (s systemfs) Close() error {
 	return nil
 }
 
-func gatherFromDir(filename string) ([]string, fs, error) {
-	var files []string
+type prefixfs struct {
+	prefix string
+	fs     filesystem.Service
+}
+
+func (s prefixfs) Open(fpath string) (filesystem.File, error) {
+	fpath = filepath.Join(s.prefix, fpath)
+	return s.fs.Open(fpath)
+}
+
+func gatherFromDir(filename string) ([]string, fs, edit.TestModules, error) {
+	var (
+		files   []string
+		modules edit.TestModules
+	)
+
+	// Find a test root above the root if it exists.
+	if name, fs, ok, err := findParentTestRoot(filename); err != nil {
+		return nil, nil, nil, err
+	} else if ok {
+		if err := modules.Add(name, fs); err != nil {
+			return nil, nil, nil, err
+		}
+	}
+
 	if err := filepath.Walk(
 		filename,
 		func(path string, info os.FileInfo, err error) error {
 			if isTestFile(info, path) {
 				files = append(files, path)
+			} else if isTestRoot(path) {
+				name, err := readTestRoot(os.Open(path))
+				if err != nil {
+					return err
+				}
+
+				if err := modules.Add(name, prefixfs{
+					prefix: filepath.Dir(path),
+					fs:     systemfs{},
+				}); err != nil {
+					return err
+				}
 			}
 			return nil
 		}); err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return files, systemfs{}, nil
+	return files, systemfs{}, modules, nil
 }
 
-func gatherFromFile(filename string) ([]string, fs, error) {
-	return []string{filename}, systemfs{}, nil
+func gatherFromFile(filename string) ([]string, fs, edit.TestModules, error) {
+	var modules edit.TestModules
+
+	// Find a test root above the root if it exists.
+	if name, fs, ok, err := findParentTestRoot(filename); err != nil {
+		return nil, nil, nil, err
+	} else if ok {
+		if err := modules.Add(name, fs); err != nil {
+			return nil, nil, nil, err
+		}
+	}
+	return []string{filename}, systemfs{}, modules, nil
 }
 
 func isTestFile(fi os.FileInfo, filename string) bool {
 	return !fi.IsDir() && strings.HasSuffix(filename, "_test.flux")
+}
+
+const testRootFilename = "fluxtest.root"
+
+func isTestRoot(filename string) bool {
+	return filepath.Base(filename) == testRootFilename
+}
+
+func readTestRoot(f io.Reader, err error) (string, error) {
+	if err != nil {
+		return "", err
+	}
+
+	if rc, ok := f.(io.ReadCloser); ok {
+		defer func() { _ = rc.Close() }()
+	}
+	name, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", err
+	}
+
+	s := string(bytes.TrimSpace(name))
+	if len(s) == 0 {
+		return "", errors.New(codes.FailedPrecondition, "test module name must be non-empty")
+	}
+	return s, nil
+}
+
+// findParentTestRoot searches the parents to find a test root.
+// This function only works for the system filesystem and isn't meant
+// to be used with archive filesystems.
+func findParentTestRoot(path string) (string, filesystem.Service, bool, error) {
+	cur, err := filepath.Abs(path)
+	if err != nil {
+		return "", nil, false, err
+	}
+
+	for cur != "/" {
+		fpath := filepath.Join(cur, testRootFilename)
+		if _, err := os.Stat(fpath); err == nil {
+			name, err := readTestRoot(os.Open(fpath))
+			if err != nil {
+				return "", nil, false, err
+			}
+			return name, prefixfs{
+				prefix: cur,
+				fs:     systemfs{},
+			}, true, nil
+		}
+		cur = filepath.Dir(cur)
+	}
+	return "", nil, false, nil
 }
 
 // Run runs all tests, reporting their results.
