@@ -504,7 +504,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/median_test.flux":                                              "cbbcaea655ac7514f050d0ae1d0fb7c4384fc5483679e900e49f5e895477a878",
 	"stdlib/universe/merge_filter_flag_off_test.flux":                               "59647fc1de82cf3e39a5771c39be1845ffa71fdd2f7ba07c705595e33b3892dc",
 	"stdlib/universe/merge_filter_flag_on_test.flux":                                "64450aa76d4535b16dcf0c761ad33163453b68c73c087f4e2eb9983cd7195583",
-	"stdlib/universe/merge_filter_test.flux":                                        "fbfcf8779c9d4479e55556699f38884fd845fd86dd3edd9bd912b35360ac5e2f",
+	"stdlib/universe/merge_filter_test.flux":                                        "590a8b5a137c5fb28972bf76ebafff43692d64e588f016684d13d9376a806056",
 	"stdlib/universe/meta_query_keys_test.flux":                                     "958014bdcc611c720556ce6552ba2edb9575a04db7acf3b02a75ffade9a16f96",
 	"stdlib/universe/min_test.flux":                                                 "67ce5676fdb15ddeed9e4298196cd6bfd11818d36f6600ecc3390aeefa6512ee",
 	"stdlib/universe/mode_string_test.flux":                                         "c488542740875e65fe13fe3dd5bb6905dca91235a6967b02bcf9bdf142190f06",
