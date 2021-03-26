@@ -34,12 +34,13 @@ merge_filter_fn = () =>
     |> filter(fn: (r) => r["_value"] == 1.77)
     |> filter(fn: (r) => r["_field"] == "load4")
 
-testcase merge_filter {
-    expect.planner(rules: ["MergeFiltersRule": 1])
+// Merge filter isn't currently enabled downstream.
+//testcase merge_filter {
+//    expect.planner(rules: ["MergeFiltersRule": 1])
 
-    result = merge_filter_fn()
-    testing.diff(got: result, want: testing.loadMem(csv: output))
-}
+//    result = merge_filter_fn()
+//    testing.diff(got: result, want: testing.loadMem(csv: output))
+//}
 
 testcase merge_filter_flag_off {
     option planner.disableLogicalRules = ["MergeFiltersRule"]
