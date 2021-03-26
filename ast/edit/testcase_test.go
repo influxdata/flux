@@ -50,7 +50,7 @@ testcase test_subtraction {
 
 	d := parser.ParseSource(testFile)
 
-	names, transformed, err := edit.TestcaseTransform(context.Background(), d)
+	names, transformed, err := edit.TestcaseTransform(context.Background(), d, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -72,7 +72,7 @@ myVar = 4`
 
 	d := parser.ParseSource(testFile)
 
-	_, transformed, err := edit.TestcaseTransform(context.Background(), d)
+	_, transformed, err := edit.TestcaseTransform(context.Background(), d, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -94,7 +94,7 @@ testcase a {
 `,
 			"b/b_test.flux": `package b_test
 import "testing/assert"
-testcase b extends "../a/a_test" {
+testcase b extends "flux/a/a_test" {
 	a_test.a()
 	assert.equal(want: 6, got: 3 + 3)
 }
@@ -113,7 +113,9 @@ testcase b extends "../a/a_test" {
 	}
 	pkg.Files[0].Name = "b/b_test.flux"
 
-	names, pkgs, err := edit.TestcaseTransform(ctx, pkg)
+	names, pkgs, err := edit.TestcaseTransform(ctx, pkg, edit.TestModules{
+		"flux": fs,
+	})
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

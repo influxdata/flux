@@ -2,15 +2,18 @@ package edit
 
 import (
 	"context"
-	"fmt"
+	"io/ioutil"
 	"path/filepath"
+	"strings"
 
 	"github.com/influxdata/flux/ast"
+	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/dependencies/filesystem"
+	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/parser"
 )
 
-// TestCaseTransform will transform an *ast.Package into a set of *ast.Package values
+// TestcaseTransform will transform an *ast.Package into a set of *ast.Package values
 // that represent each testcase defined within the original package.
 //
 // A testcase is defined with the testcase statement such as below.
@@ -63,9 +66,9 @@ import (
 // It is allowed for an imported testcase to have an option, but no attempt is made
 // to remove duplicate options. If there is a duplicate option, this will likely
 // cause an error when the test is actually run.
-func TestcaseTransform(ctx context.Context, pkg *ast.Package) ([]string, []*ast.Package, error) {
+func TestcaseTransform(ctx context.Context, pkg *ast.Package, modules TestModules) ([]string, []*ast.Package, error) {
 	if len(pkg.Files) != 1 {
-		return nil, nil, fmt.Errorf(fmt.Sprintf("Unsupported number of files in test case package. Got %d", len(pkg.Files)))
+		return nil, nil, errors.Newf(codes.FailedPrecondition, "unsupported number of files in test case package, got %d", len(pkg.Files))
 	}
 	file := pkg.Files[0]
 
@@ -91,7 +94,7 @@ func TestcaseTransform(ctx context.Context, pkg *ast.Package) ([]string, []*ast.
 			continue
 		}
 
-		testpkg, err := newTestPackage(ctx, pkg, predicate, testcase)
+		testpkg, err := newTestPackage(ctx, pkg, predicate, testcase, modules)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -102,7 +105,7 @@ func TestcaseTransform(ctx context.Context, pkg *ast.Package) ([]string, []*ast.
 	return names, pkgs, nil
 }
 
-func newTestPackage(ctx context.Context, basePkg *ast.Package, predicate []ast.Statement, tc *ast.TestCaseStatement) (*ast.Package, error) {
+func newTestPackage(ctx context.Context, basePkg *ast.Package, predicate []ast.Statement, tc *ast.TestCaseStatement, modules TestModules) (*ast.Package, error) {
 	pkg := basePkg.Copy().(*ast.Package)
 	pkg.Package = "main"
 	pkg.Files = nil
@@ -113,7 +116,7 @@ func newTestPackage(ctx context.Context, basePkg *ast.Package, predicate []ast.S
 	file.Body = make([]ast.Statement, 0, len(predicate)+len(tc.Block.Body))
 	file.Body = append(file.Body, predicate...)
 	if tc.Extends != nil {
-		f, err := extendTest(ctx, file, tc.Extends.Value)
+		f, err := extendTest(file, tc.Extends.Value, modules)
 		if err != nil {
 			return nil, err
 		}
@@ -124,10 +127,25 @@ func newTestPackage(ctx context.Context, basePkg *ast.Package, predicate []ast.S
 	return pkg, nil
 }
 
-func extendTest(ctx context.Context, file *ast.File, extends string) (*ast.File, error) {
-	basedir := filepath.Dir(file.Name)
-	path := filepath.Clean(filepath.Join(basedir, extends+".flux"))
-	contents, err := filesystem.ReadFile(ctx, path)
+func extendTest(file *ast.File, extends string, modules TestModules) (*ast.File, error) {
+	components := strings.Split(extends, "/")
+	if len(components) <= 1 {
+		return nil, errors.New(codes.Invalid, "testcase extension requires a test module name and at least one other path component")
+	}
+
+	moduleName := components[0]
+	module, ok := modules[moduleName]
+	if !ok {
+		return nil, errors.Newf(codes.FailedPrecondition, "test module %q not found", moduleName)
+	}
+
+	fpath := filepath.Join(components[1:]...) + ".flux"
+	f, err := module.Open(fpath)
+	if err != nil {
+		return nil, err
+	}
+	contents, err := ioutil.ReadAll(f)
+	_ = f.Close()
 	if err != nil {
 		return nil, err
 	}
@@ -231,4 +249,27 @@ func isValidTestcase(tc *ast.TestCaseStatement) (valid bool, reason string) {
 		}
 	}
 	return true, ""
+}
+
+type TestModules map[string]filesystem.Service
+
+func (m *TestModules) Add(name string, fs filesystem.Service) error {
+	if *m == nil {
+		*m = make(map[string]filesystem.Service)
+	}
+
+	if _, ok := (*m)[name]; ok {
+		return errors.Newf(codes.FailedPrecondition, "duplicate test module %q", name)
+	}
+	(*m)[name] = fs
+	return nil
+}
+
+func (m *TestModules) Merge(other TestModules) error {
+	for name, fs := range other {
+		if err := m.Add(name, fs); err != nil {
+			return err
+		}
+	}
+	return nil
 }
