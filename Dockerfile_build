@@ -123,9 +123,7 @@ ENV RUST_LATEST_VERSION=1.51.0
 
 # Install Rust
 RUN curl https://sh.rustup.rs -sSf | \
-    sh -s -- --default-toolchain none
-RUN rustup toolchain install $RUST_LATEST_VERSION && \
-    rustup default $RUST_LATEST_VERSION
+    sh -s -- --default-toolchain "$RUST_LATEST_VERSION" -y
 ENV PATH="$HOME/.cargo/bin:${PATH}"
 RUN rustup component add rustfmt clippy --toolchain $RUST_LATEST_VERSION
 
