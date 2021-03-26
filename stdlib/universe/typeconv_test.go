@@ -80,7 +80,7 @@ func TestTypeconv_String(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := values.NewObjectWithValues(myMap)
-			c := &stringConv{}
+			c := stringConv
 			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
@@ -151,7 +151,7 @@ func TestTypeconv_Int(t *testing.T) {
 			name:      "int64(error)",
 			v:         "notanumber",
 			want:      0,
-			expectErr: errors.New("strconv.ParseInt: parsing \"notanumber\": invalid syntax"),
+			expectErr: errors.New("cannot convert string \"notanumber\" to int due to invalid syntax"),
 		},
 		{
 			name:     "int64(v:nil)",
@@ -165,7 +165,7 @@ func TestTypeconv_Int(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := values.NewObjectWithValues(myMap)
-			c := &intConv{}
+			c := intConv
 			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
@@ -236,7 +236,7 @@ func TestTypeconv_UInt(t *testing.T) {
 			name:      "uint64(error)",
 			v:         "NaN",
 			want:      0,
-			expectErr: errors.New("strconv.ParseUint: parsing \"NaN\": invalid syntax"),
+			expectErr: errors.New("cannot convert string \"NaN\" to uint due to invalid syntax"),
 		},
 		{
 			name:     "uint64(v:nil)",
@@ -250,7 +250,7 @@ func TestTypeconv_UInt(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := values.NewObjectWithValues(myMap)
-			c := &uintConv{}
+			c := uintConv
 			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
@@ -340,7 +340,7 @@ func TestTypeconv_Bool(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := values.NewObjectWithValues(myMap)
-			c := &boolConv{}
+			c := boolConv
 			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
@@ -422,7 +422,7 @@ func TestTypeconv_Float(t *testing.T) {
 			name:      "float(error)",
 			v:         "ThisIsNotANumber",
 			want:      float64(0),
-			expectErr: errors.New("strconv.ParseFloat: parsing \"ThisIsNotANumber\": invalid syntax"),
+			expectErr: errors.New("cannot convert string \"ThisIsNotANumber\" to float due to invalid syntax"),
 		},
 		{
 			name:     "float(v:nil)",
@@ -436,7 +436,7 @@ func TestTypeconv_Float(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := values.NewObjectWithValues(myMap)
-			c := &floatConv{}
+			c := floatConv
 			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
@@ -496,7 +496,7 @@ func TestTypeconv_Time(t *testing.T) {
 			name:      "time(error)",
 			v:         "NotATime",
 			want:      values.Time(0),
-			expectErr: errors.New("parsing time \"NotATime\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"NotATime\" as \"2006\""),
+			expectErr: errors.New("cannot convert string \"NotATime\" to time due to invalid syntax: parsing time \"NotATime\" as \"2006-01-02T15:04:05.999999999Z07:00\": cannot parse \"NotATime\" as \"2006\""),
 		},
 		{
 			name:     "time(v:nil)",
@@ -510,7 +510,7 @@ func TestTypeconv_Time(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := values.NewObjectWithValues(myMap)
-			c := &timeConv{}
+			c := timeConv
 			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
@@ -566,7 +566,7 @@ func TestTypeconv_Duration(t *testing.T) {
 			name:      "duration(error)",
 			v:         "not_a_duration",
 			want:      values.ConvertDurationNsecs(0),
-			expectErr: errors.New("invalid duration not_a_duration"),
+			expectErr: errors.New("cannot convert string \"not_a_duration\" to duration due to invalid syntax"),
 		},
 		{
 			name:     "duration(v:nil)",
@@ -580,7 +580,7 @@ func TestTypeconv_Duration(t *testing.T) {
 				"v": values.New(tc.v),
 			}
 			args := values.NewObjectWithValues(myMap)
-			c := &durationConv{}
+			c := durationConv
 			got, err := c.Call(dependenciestest.Default().Inject(context.Background()), args)
 			if err != nil {
 				if tc.expectErr == nil {
