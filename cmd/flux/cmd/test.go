@@ -503,6 +503,10 @@ func findParentTestRoot(path string) (string, filesystem.Service, bool, error) {
 	if err != nil {
 		return "", nil, false, err
 	}
+	// Start with the parent directory of the path.
+	// A test root starting at the path will be found
+	// by the normal discovery mechanism.
+	cur = filepath.Dir(cur)
 
 	for cur != "/" {
 		fpath := filepath.Join(cur, testRootFilename)
