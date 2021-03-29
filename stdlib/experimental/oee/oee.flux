@@ -3,6 +3,15 @@ package oee
 import "contrib/tomhollingworth/events"
 import "experimental"
 
+// computeAPQ computes availability, performance, quality and overall equipment effectiveness (oee).
+// productionEvents - a stream of start/stop events for the production process. Each row contains
+//   a _time and state that indicates start and stop events.
+// partEvents - a stream of events for each part that is produced. Each row represents the production of
+//   a single or multiple parts, where column partCount represents total number of produced parts and badCount
+//   represents number of parts that did not meet quality standards.
+// runningState - production event or state value that corresponds to equipment running state
+// plannedTime - total time that equipment is expected to produce
+// idealCycleTime - theoretical minimum time to produce one part
 computeAPQ = (
     productionEvents,
     partEvents,
@@ -14,8 +23,7 @@ computeAPQ = (
         |> events.duration(unit: 1ns, columnName: "runTime")
         |> filter(fn: (r) => r.state == runningState)
         |> sum(column: "runTime")
-        |> duplicate(column: "_stop", as: "_time")
-        |> map(fn: (r) => ({ r with availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))
+        |> map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))
     totalCount = partEvents
         |> difference(columns: ["partCount"], nonNegative: true)
         |> sum(column: "partCount")
@@ -37,6 +45,12 @@ computeAPQ = (
     }))
 }
 
+// APQ computes availability, performance, quality and overall equipment effectiveness (oee).
+// Input tables are expected to have rows with _time, state, partCount and badCount columns, where
+//   state that indicates start and stop events, partCount represents total number
+//   of produced parts and badCount represents number of parts that did not meet quality standards.
+// plannedTime - total time that equipment is expected to produce
+// idealCycleTime - theoretical minimum time to produce one part
 APQ = (
     tables=<-,
     runningState,

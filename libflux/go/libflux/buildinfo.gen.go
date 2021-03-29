@@ -179,7 +179,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/mqtt/mqtt.flux":                                            "292e1e5d497104c3c262239020db12246535890e279467be20bf3ddbd1c49163",
 	"stdlib/experimental/oee/apq_test.flux":                                         "8d4c9aeed6ba274524a9f64206019130d69bd5016ceaa31e506c91e14cba2d5d",
 	"stdlib/experimental/oee/computeapq_test.flux":                                  "475c4cc612b70f3883e5b2ad676c7449066b20c8d96cef5b0f661558810512ae",
-	"stdlib/experimental/oee/oee.flux":                                              "fcc7f66621ed768ff6abb273c5b7d0b224d8441ba330b242fcade213c408b835",
+	"stdlib/experimental/oee/oee.flux":                                              "196f93baa72d40cf275a0fd45a70388a8b8347d32c91463e6cec8923caaf72c0",
 	"stdlib/experimental/prometheus/prometheus.flux":                                "71ee6fd31bc997998093ec574d13c2583fbfbffee01b2dde81968bb1536863e7",
 	"stdlib/experimental/quantile_test.flux":                                        "b6acdf70904f617c972720ad6082688a1df63a5f62c78aac8a56c8d3967bd0ba",
 	"stdlib/experimental/query/from.flux":                                           "1b09f777b01b83777d5c0d8754ef6f012ef1e7f4124882292dac3b36b35101fc",
