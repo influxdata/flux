@@ -13,6 +13,8 @@ use scanner_generated::scan;
 mod token;
 pub use token::TokenType;
 
+use super::DefaultHasher;
+
 #[cfg(test)]
 mod tests;
 
@@ -28,7 +30,7 @@ pub struct Scanner {
     checkpoint_line: i32,
     checkpoint_last_newline: i32,
     token: TokenType,
-    positions: HashMap<Position, u32>,
+    positions: HashMap<Position, u32, DefaultHasher>,
     pub comments: Option<Box<Token>>,
 }
 
@@ -73,7 +75,7 @@ impl Scanner {
             checkpoint: 0,
             checkpoint_line: 1,
             checkpoint_last_newline: 0,
-            positions: HashMap::new(),
+            positions: HashMap::default(),
             comments: None,
         }
     }

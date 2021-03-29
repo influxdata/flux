@@ -4,6 +4,7 @@ pub mod check;
 pub mod flatbuffers;
 pub mod walk;
 
+use super::DefaultHasher;
 use crate::scanner;
 use std::collections::HashMap;
 use std::fmt;
@@ -313,7 +314,7 @@ where
 {
     let mut seq = ser.serialize_seq(Some(errors.len()))?;
     for e in errors {
-        let mut me = HashMap::new();
+        let mut me: HashMap<String, &String, DefaultHasher> = HashMap::default();
         me.insert("msg".to_string(), e);
         seq.serialize_element(&me)?;
     }

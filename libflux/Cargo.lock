@@ -190,6 +190,7 @@ dependencies = [
  "derivative",
  "derive_more",
  "flatbuffers",
+ "fnv",
  "maplit",
  "pretty_assertions",
  "regex",
