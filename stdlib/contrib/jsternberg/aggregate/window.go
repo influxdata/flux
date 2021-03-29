@@ -79,7 +79,7 @@ func createWindowOpSpec(args flux.Arguments, a *flux.Administration) (flux.Opera
 	if p, ok, err := args.GetDuration("period"); err != nil {
 		return nil, err
 	} else if ok {
-		if p.IsZero() {
+		if p.IsNegative() {
 			return nil, errors.New(codes.Invalid, "parameter \"period\" must be a positive duration")
 		} else if p.IsZero() {
 			return nil, errors.New(codes.Invalid, "parameter \"period\" must be a non-zero duration")

@@ -645,8 +645,7 @@ impl Parser {
     }
 
     fn parse_constraints(&mut self) -> Vec<TypeConstraint> {
-        let mut constraints = Vec::<TypeConstraint>::new();
-        constraints.push(self.parse_constraint());
+        let mut constraints = vec![self.parse_constraint()];
         while self.peek().tok == TokenType::Comma {
             self.consume();
             constraints.push(self.parse_constraint());
@@ -1756,14 +1755,13 @@ impl Parser {
                 let next = self.peek();
                 match next.tok {
                     TokenType::Arrow => {
-                        let mut params = Vec::new();
-                        params.push(Property {
+                        let mut params = vec![Property {
                             base: self.base_node(key.base.location.clone()),
                             key: PropertyKey::Identifier(key),
                             value: None,
                             comma: None,
                             separator: None,
-                        });
+                        }];
                         self.parse_function_expression(lparen, t, params)
                     }
                     _ => Expression::Paren(Box::new(ParenExpr {
@@ -1777,14 +1775,13 @@ impl Parser {
             TokenType::Assign => {
                 self.consume();
                 let value = self.parse_expression();
-                let mut params = Vec::new();
-                params.push(Property {
+                let mut params = vec![Property {
                     base: self.base_node_from_others(&key.base, value.base()),
                     key: PropertyKey::Identifier(key),
                     value: Some(value),
                     separator: self.make_comments(&t),
                     comma: None,
-                });
+                }];
                 if self.peek().tok == TokenType::Comma {
                     let comma = self.scan();
                     params[0].comma = self.make_comments(&comma);
@@ -1796,14 +1793,13 @@ impl Parser {
             }
             TokenType::Comma => {
                 self.consume();
-                let mut params = Vec::new();
-                params.push(Property {
+                let mut params = vec![Property {
                     base: self.base_node(key.base.location.clone()),
                     key: PropertyKey::Identifier(key),
                     value: None,
                     separator: None,
                     comma: self.make_comments(&t),
-                });
+                }];
                 let others = &mut self.parse_parameter_list();
                 params.append(others);
                 let rparen = self.close(TokenType::RParen);
