@@ -6,9 +6,8 @@ import "experimental"
 // computeAPQ computes availability, performance, quality and overall equipment effectiveness (oee).
 // productionEvents - a stream of start/stop events for the production process. Each row contains
 //   a _time and state that indicates start and stop events.
-// partEvents - a stream of events for each part that is produced. Each row represents the production of
-//   a single or multiple parts, where column partCount represents total number of produced parts and badCount
-//   represents number of parts that did not meet quality standards.
+// partEvents - a stream of part counts. Each row contains cumulative counts where column partCount
+//   represents total number of produced parts and badCount number of parts that did not meet quality standards.
 // runningState - production event or state value that corresponds to equipment running state
 // plannedTime - total time that equipment is expected to produce
 // idealCycleTime - theoretical minimum time to produce one part
