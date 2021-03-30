@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "strict", deny(warnings))]
+
 extern crate serde_aux;
 extern crate serde_derive;
 
@@ -856,7 +858,7 @@ from(bucket: v.bucket)
             let mut out_pkg: ast::Package = has_clause_file.clone().into();
             let mut in_pkg: ast::Package = no_clause_file.clone().into();
             if let Some(e) = merge_packages(&mut out_pkg, &mut in_pkg) {
-                panic!(e);
+                panic!("{}", e);
             }
             let got = out_pkg.files;
             let want = vec![has_clause_file.clone(), no_clause_file.clone()];
@@ -867,7 +869,7 @@ from(bucket: v.bucket)
             let mut out_pkg: ast::Package = no_clause_file.clone().into();
             let mut in_pkg: ast::Package = has_clause_file.clone().into();
             if let Some(e) = merge_packages(&mut out_pkg, &mut in_pkg) {
-                panic!(e);
+                panic!("{}", e);
             }
             let got = out_pkg.files;
             let want = vec![no_clause_file.clone(), has_clause_file.clone()];
@@ -1013,8 +1015,7 @@ from(bucket: v.bucket)
         let err = get_err_type_expression(typ_expr.clone());
 
         if err != "" {
-            let msg = format!("TypeExpression parsing failed. {:?}", err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed. {:?}", err);
         }
         let want = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
@@ -1055,8 +1056,7 @@ from(bucket: v.bucket)
         let err = get_err_type_expression(typ_expr.clone());
 
         if err != "" {
-            let msg = format!("TypeExpression parsing failed for {:?}", err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
@@ -1074,8 +1074,7 @@ from(bucket: v.bucket)
         let err = get_err_type_expression(typ_expr.clone());
 
         if err != "" {
-            let msg = format!("TypeExpression parsing failed for {:?}", err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_b = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
@@ -1093,8 +1092,7 @@ from(bucket: v.bucket)
         let err = get_err_type_expression(typ_expr.clone());
 
         if err != "" {
-            let msg = format!("TypeExpression parsing failed for {:?}", err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed for {:?}", err);
         }
         let want_c = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 

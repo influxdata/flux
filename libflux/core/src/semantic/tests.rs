@@ -59,8 +59,7 @@ fn parse_map(m: HashMap<&str, &str>) -> PolyTypeMap {
             let err = get_err_type_expression(typ_expr.clone());
 
             if err != "" {
-                let msg = format!("TypeExpression parsing failed for {}. {:?}", name, err);
-                panic!(msg)
+                panic!("TypeExpression parsing failed for {}. {:?}", name, err);
             }
             let poly = convert_polytype(typ_expr, &mut Fresher::default());
 
@@ -216,7 +215,7 @@ macro_rules! test_infer {
             imp = $imp;
         )?
         if let Err(e) = infer_types($src, env, imp, Some($exp)) {
-            panic!(format!("{}", e));
+            panic!("{}", e);
         }
     }};
 }

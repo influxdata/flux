@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "strict", deny(warnings))]
+
 use std::collections::HashMap;
 use std::fs::{self, File};
 use std::io::Write;

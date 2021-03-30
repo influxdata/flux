@@ -8,6 +8,10 @@ edition = "2018"
 name = "flux"
 crate-type = ["rlib", "staticlib", "cdylib"]
 
+[features]
+default = ["strict"]
+strict = []
+
 [dependencies]
 core = { path = "../core" }
 flatbuffers = "0.6.0"
