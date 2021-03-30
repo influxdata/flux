@@ -621,8 +621,7 @@ mod tests {
         let err = get_err_type_expression(typ_expr.clone());
 
         if err != "" {
-            let msg = format!("TypeExpression parsing failed for {}. {:?}", expr, err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed for {}. {:?}", expr, err);
         }
         let want = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
@@ -638,8 +637,7 @@ mod tests {
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
         if err != "" {
-            let msg = format!("TypeExpression parsing failed for bool. {:?}", err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed for bool. {:?}", err);
         }
         let a = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 
@@ -647,8 +645,7 @@ mod tests {
         let typ_expr = p.parse_type_expression();
         let err = get_err_type_expression(typ_expr.clone());
         if err != "" {
-            let msg = format!("TypeExpression parsing failed for time. {:?}", err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed for time. {:?}", err);
         }
         let b = convert_polytype(typ_expr, &mut Fresher::default()).unwrap();
 

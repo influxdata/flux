@@ -2084,14 +2084,14 @@ fn test_ast_json_roundtrip() {
     let ast = ast_with_every_kind_of_node();
     let serialized = match serde_json::to_string(&ast) {
         Ok(str) => str,
-        Err(e) => panic!(format!("error serializing JSON: {}", e)),
+        Err(e) => panic!("error serializing JSON: {}", e),
     };
     let roundtrip_ast: Package = match serde_json::from_str(serialized.as_str()) {
         Ok(ast) => {
             println!("successfully deserialized AST");
             ast
         }
-        Err(e) => panic!(format!("error deserializing JSON: {}", e)),
+        Err(e) => panic!("error deserializing JSON: {}", e),
     };
     assert_eq!(ast, roundtrip_ast);
 }

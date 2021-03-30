@@ -88,20 +88,20 @@ re !~ /foo/
     let mut pkg = match convert::convert_with(pkg, &mut fresh::Fresher::default()) {
         Ok(pkg) => pkg,
         Err(e) => {
-            assert!(false, e);
+            assert!(false, "{}", e);
             return;
         }
     };
     let (vec, offset) = match super::serialize(&mut pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
-            assert!(false, e);
+            assert!(false, "{}", e);
             return;
         }
     };
     let fb = &vec.as_slice()[offset..];
     match compare_semantic_fb(&pkg, fb) {
-        Err(e) => assert!(false, e),
+        Err(e) => assert!(false, "{}", e),
         _ => (),
     }
 }

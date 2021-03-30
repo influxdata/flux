@@ -86,13 +86,13 @@ fn test_flatbuffers_serialize() {
     let (vec, offset) = match super::serialize(&pkg) {
         Ok((v, o)) => (v, o),
         Err(e) => {
-            assert!(false, e);
+            assert!(false, "{}", e);
             return;
         }
     };
     let fb = &vec.as_slice()[offset..];
     match compare_ast_fb(&pkg, fb) {
-        Err(e) => assert!(false, e),
+        Err(e) => assert!(false, "{}", e),
         _ => (),
     }
 }
@@ -106,7 +106,7 @@ fn test_serialize_all_flux_files() {
             let flux_script = match std::fs::read_to_string(entry.path()) {
                 Ok(s) => s,
                 Err(e) => {
-                    assert!(false, format!("{}", e));
+                    assert!(false, "{}", e);
                     return;
                 }
             };
@@ -117,7 +117,7 @@ fn test_serialize_all_flux_files() {
             };
             match serialize_and_compare(path, flux_script.as_str()) {
                 Ok(()) => (),
-                Err(e) => assert!(false, e),
+                Err(e) => assert!(false, "{}", e),
             };
         }
     }

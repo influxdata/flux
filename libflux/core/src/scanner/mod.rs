@@ -7,6 +7,7 @@ use std::vec::Vec;
 use derive_more::Display;
 
 #[rustfmt::skip]
+#[allow(warnings, missing_docs)]
 mod scanner_generated;
 use scanner_generated::scan;
 

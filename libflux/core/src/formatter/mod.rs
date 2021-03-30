@@ -750,7 +750,6 @@ impl Formatter {
     }
 
     fn format_testcase_statement(&mut self, n: &ast::TestCaseStmt) {
-        let sep = '\n';
         self.format_comments(&n.base.comments);
         self.write_string("testcase ");
         self.format_node(&Node::Identifier(&n.id));

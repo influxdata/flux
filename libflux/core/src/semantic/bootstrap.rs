@@ -365,10 +365,9 @@ mod tests {
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
-                        let msg = format!(
+                        panic!(
                             "TypeExpression parsing failed for int. {:?}", err
                         );
-                        panic!(msg)
                     }
                     convert_polytype(typ_expr, &mut Fresher::default())?
             },
@@ -388,10 +387,9 @@ mod tests {
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
-                        let msg = format!(
+                        panic!(
                             "TypeExpression parsing failed for int. {:?}", err
                         );
-                        panic!(msg)
                     }
                     convert_polytype(typ_expr, &mut Fresher::default())?
             },
@@ -400,10 +398,9 @@ mod tests {
                     let typ_expr = p.parse_type_expression();
                     let err = get_err_type_expression(typ_expr.clone());
                     if err != "" {
-                        let msg = format!(
+                        panic!(
                             "TypeExpression parsing failed for int. {:?}", err
                         );
-                        panic!(msg)
                     }
                     convert_polytype(typ_expr, &mut Fresher::default())?
             },

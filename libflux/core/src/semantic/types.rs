@@ -1328,8 +1328,7 @@ mod tests {
         let err = get_err_type_expression(typ_expr.clone());
 
         if err != "" {
-            let msg = format!("TypeExpression parsing failed for {}. {:?}", typ, err);
-            panic!(msg)
+            panic!("TypeExpression parsing failed for {}. {:?}", typ, err);
         }
         convert_polytype(typ_expr, &mut Fresher::default()).unwrap()
     }

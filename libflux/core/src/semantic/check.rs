@@ -313,11 +313,11 @@ mod tests {
 
     fn check_success(files: Vec<&str>) {
         let pkg = match parse_and_convert(files) {
-            Err(e) => panic!(e),
+            Err(e) => panic!("{}", e),
             Ok(pkg) => pkg,
         };
         if let Err(e) = check::check(&pkg) {
-            panic!(format!("check failed: {}", e))
+            panic!("check failed: {}", e)
         }
     }
 
@@ -326,10 +326,7 @@ mod tests {
             Ok(pkg) => pkg,
             Err(got_msg) => {
                 if !got_msg.contains(want_msg) {
-                    panic!(format!(
-                        r#"expected error "{}" but got "{}""#,
-                        want_msg, got_msg
-                    ));
+                    panic!(r#"expected error "{}" but got "{}""#, want_msg, got_msg);
                 } else {
                     return ();
                 }
@@ -337,14 +334,11 @@ mod tests {
         };
 
         match check::check(&pkg) {
-            Ok(()) => panic!(format!(r#"expected error "{}", got no error"#, want_msg)),
+            Ok(()) => panic!(r#"expected error "{}", got no error"#, want_msg),
             Err(e) => {
                 let got_msg = format!("{}", e);
                 if !got_msg.contains(want_msg) {
-                    panic!(format!(
-                        r#"expected error "{}", got error "{}""#,
-                        want_msg, got_msg
-                    ))
+                    panic!(r#"expected error "{}", got error "{}""#, want_msg, got_msg)
                 }
             }
         }

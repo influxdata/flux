@@ -763,7 +763,7 @@ impl Parser {
         let extends = match self.peek() {
             Token {
                 tok: TokenType::Ident,
-                lit: lit,
+                lit,
                 ..
             } if lit == "extends" => {
                 self.consume();
@@ -1756,7 +1756,7 @@ impl Parser {
                 let next = self.peek();
                 match next.tok {
                     TokenType::Arrow => {
-                        let mut params = vec![Property {
+                        let params = vec![Property {
                             base: self.base_node(key.base.location.clone()),
                             key: PropertyKey::Identifier(key),
                             value: None,
