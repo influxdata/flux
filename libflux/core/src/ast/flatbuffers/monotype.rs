@@ -40,7 +40,11 @@ fn build_base_node<'a>(
         builder.create_string(&s)
     });
     let errors = Some(builder.create_vector(errors.as_slice()));
-    fb::BaseNode::create(builder, &fb::BaseNodeArgs { loc, errors })
+    let comments = build_vec(base_node.comments, builder, |builder, s| {
+        builder.create_string(&s)
+    });
+    let comments = Some(builder.create_vector(comments.as_slice()));
+    fb::BaseNode::create(builder, &fb::BaseNodeArgs { loc, errors, comments})
 }
 
 fn build_loc<'a>(

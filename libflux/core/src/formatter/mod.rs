@@ -165,21 +165,20 @@ impl Formatter {
         self.temp_indent = false;
     }
 
-    fn format_comments(&mut self, mut comment: &ast::CommentList) {
-        while let Some(boxed) = comment {
+    fn format_comments(&mut self, mut comment: &Vec<String>) {
+        for c in comment {
             if !self.clear {
                 self.write_rune('\n');
                 self.temp_indent = true;
                 self.indent();
                 self.write_indent();
             }
-            self.write_string((*boxed).lit.as_str());
+            self.write_string(c.as_str());
             self.clear = true;
             self.write_indent();
-            comment = &(*boxed).next;
         }
     }
-
+    
     fn write_comment(&mut self, comment: &str) {
         self.write_string("// ");
         self.write_string(comment);
@@ -226,7 +225,7 @@ impl Formatter {
             prev = cur;
         }
 
-        if n.eof.is_some() {
+        if !n.eof.is_empty() {
             self.write_rune(sep);
             self.set_indent(0);
             self.clear = true;
@@ -311,8 +310,7 @@ impl Formatter {
         self.format_comments(&n.base.comments);
         self.write_string("builtin ");
         self.format_identifier(&n.id);
-        self.format_comments(&n.colon);
-        if n.colon == None {
+        if n.colon.is_empty() {
             self.write_rune(' ');
         }
         self.write_string(": ");
@@ -1014,7 +1012,7 @@ impl Formatter {
 
     fn format_binary(
         &mut self,
-        comments: &ast::CommentList,
+        comments: &Vec<String>,
         op: &str,
         parent: Node,
         left: Node,
@@ -1277,22 +1275,21 @@ fn needs_parenthesis(pvp: u32, pvc: u32, is_right: bool) -> bool {
 // Otherwise we skip formatting them because anytime they are needed they are explicitly
 // added back in.
 fn has_parens(n: &Node) -> bool {
-    match n {
-        Node::ParenExpr(p) => !matches!((&p.lparen, &p.rparen), (None, None)),
-        _ => false,
+    if let Node::ParenExpr(p) = &n {
+        return !p.lparen.is_empty() || !p.rparen.is_empty()
     }
+    return false
 }
 
 // strip_parens returns the expression removing any wrapping paren expressions
 // that do not have comments attached
 fn strip_parens(n: &ast::Expression) -> &ast::Expression {
-    match n {
-        ast::Expression::Paren(p) => match (&p.lparen, &p.rparen) {
-            (None, None) => strip_parens(&p.expression),
-            _ => n,
-        },
-        _ => n,
+    if let ast::Expression::Paren(p) = n {
+        if p.lparen.is_empty() && p.rparen.is_empty() {
+            return strip_parens(&p.expression);
+        }
     }
+    return n
 }
 
 // at_least_pipe_depth return true if the number of pipes that occur in sequence is greater than or
@@ -1311,7 +1308,7 @@ fn at_least_pipe_depth(depth: i32, p: &ast::PipeExpr) -> bool {
 // of the node.
 fn starts_with_comment(n: Node) -> bool {
     match n {
-        Node::Package(n) => n.base.comments.is_some(),
+        Node::Package(n) => !n.base.comments.is_empty(),
         Node::File(n) => {
             if let Some(pkg) = &n.package {
                 return starts_with_comment(Node::PackageClause(pkg));
@@ -1322,43 +1319,43 @@ fn starts_with_comment(n: Node) -> bool {
             if let Some(stmt) = &n.body.first() {
                 return starts_with_comment(Node::from_stmt(stmt));
             }
-            n.eof.is_some()
+            !n.eof.is_empty()
         }
-        Node::PackageClause(n) => n.base.comments.is_some(),
-        Node::ImportDeclaration(n) => n.base.comments.is_some(),
-        Node::Identifier(n) => n.base.comments.is_some(),
-        Node::ArrayExpr(n) => n.lbrack.is_some(),
-        Node::DictExpr(n) => n.lbrack.is_some(),
-        Node::FunctionExpr(n) => n.lparen.is_some(),
+        Node::PackageClause(n) => !n.base.comments.is_empty(),
+        Node::ImportDeclaration(n) => !n.base.comments.is_empty(),
+        Node::Identifier(n) => !n.base.comments.is_empty(),
+        Node::ArrayExpr(n) => !n.lbrack.is_empty(),
+        Node::DictExpr(n) => !n.lbrack.is_empty(),
+        Node::FunctionExpr(n) => !n.lparen.is_empty(),
         Node::LogicalExpr(n) => starts_with_comment(Node::from_expr(&n.left)),
-        Node::ObjectExpr(n) => n.lbrace.is_some(),
+        Node::ObjectExpr(n) => !n.lbrace.is_empty(),
         Node::MemberExpr(n) => starts_with_comment(Node::from_expr(&n.object)),
         Node::IndexExpr(n) => starts_with_comment(Node::from_expr(&n.array)),
         Node::BinaryExpr(n) => starts_with_comment(Node::from_expr(&n.left)),
-        Node::UnaryExpr(n) => n.base.comments.is_some(),
+        Node::UnaryExpr(n) => !n.base.comments.is_empty(),
         Node::PipeExpr(n) => starts_with_comment(Node::from_expr(&n.argument)),
         Node::CallExpr(n) => starts_with_comment(Node::from_expr(&n.callee)),
-        Node::ConditionalExpr(n) => n.tk_if.is_some(),
-        Node::StringExpr(n) => n.base.comments.is_some(),
-        Node::ParenExpr(n) => n.lparen.is_some(),
-        Node::IntegerLit(n) => n.base.comments.is_some(),
-        Node::FloatLit(n) => n.base.comments.is_some(),
-        Node::StringLit(n) => n.base.comments.is_some(),
-        Node::DurationLit(n) => n.base.comments.is_some(),
-        Node::UintLit(n) => n.base.comments.is_some(),
-        Node::BooleanLit(n) => n.base.comments.is_some(),
-        Node::DateTimeLit(n) => n.base.comments.is_some(),
-        Node::RegexpLit(n) => n.base.comments.is_some(),
-        Node::PipeLit(n) => n.base.comments.is_some(),
+        Node::ConditionalExpr(n) => !n.tk_if.is_empty(),
+        Node::StringExpr(n) => !n.base.comments.is_empty(),
+        Node::ParenExpr(n) => !n.lparen.is_empty(),
+        Node::IntegerLit(n) => !n.base.comments.is_empty(),
+        Node::FloatLit(n) => !n.base.comments.is_empty(),
+        Node::StringLit(n) => !n.base.comments.is_empty(),
+        Node::DurationLit(n) => !n.base.comments.is_empty(),
+        Node::UintLit(n) => !n.base.comments.is_empty(),
+        Node::BooleanLit(n) => !n.base.comments.is_empty(),
+        Node::DateTimeLit(n) => !n.base.comments.is_empty(),
+        Node::RegexpLit(n) => !n.base.comments.is_empty(),
+        Node::PipeLit(n) => !n.base.comments.is_empty(),
         Node::BadExpr(_) => false,
         Node::ExprStmt(n) => starts_with_comment(Node::from_expr(&n.expression)),
-        Node::OptionStmt(n) => n.base.comments.is_some(),
-        Node::ReturnStmt(n) => n.base.comments.is_some(),
+        Node::OptionStmt(n) => !n.base.comments.is_empty(),
+        Node::ReturnStmt(n) => !n.base.comments.is_empty(),
         Node::BadStmt(_) => false,
-        Node::TestStmt(n) => n.base.comments.is_some(),
-        Node::TestCaseStmt(n) => n.base.comments.is_some(),
-        Node::BuiltinStmt(n) => n.base.comments.is_some(),
-        Node::Block(n) => n.lbrace.is_some(),
+        Node::TestStmt(n) => !n.base.comments.is_empty(),
+        Node::TestCaseStmt(n) => !n.base.comments.is_empty(),
+        Node::BuiltinStmt(n) => !n.base.comments.is_empty(),
+        Node::Block(n) => !n.lbrace.is_empty(),
         Node::Property(_) => false,
         Node::TextPart(_) => false,
         Node::InterpolatedPart(_) => false,

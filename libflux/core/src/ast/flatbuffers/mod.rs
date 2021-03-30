@@ -927,9 +927,10 @@ impl<'a> SerializingVisitorState<'a> {
     ) -> Option<WIPOffset<fbast::BaseNode<'a>>> {
         let loc = self.create_loc(&base_node.location);
         let errors = self.create_base_node_errs(&base_node.errors);
+        let comments = self.create_base_node_cmts(&base_node.comments);
         Some(fbast::BaseNode::create(
             &mut self.builder,
-            &fbast::BaseNodeArgs { loc, errors },
+            &fbast::BaseNodeArgs { loc, errors, comments },
         ))
     }
 
@@ -965,6 +966,23 @@ impl<'a> SerializingVisitorState<'a> {
         Some(
             self.builder.create_vector_of_strings(
                 ast_errs
+                    .iter()
+                    .map(|s| s.as_str())
+                    .collect::<Vec<&str>>()
+                    .as_slice(),
+            ),
+        )
+    }
+
+    fn create_base_node_cmts(
+        &mut self,
+        ast_cmts: &[String],
+    ) -> Option<
+        flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
+    > {
+        Some(
+            self.builder.create_vector_of_strings(
+                ast_cmts
                     .iter()
                     .map(|s| s.as_str())
                     .collect::<Vec<&str>>()
