@@ -118,11 +118,10 @@ USER $UNAME
 ENV HOME=/home/$UNAME
 
 # The latest stable rust version
-# TODO: Update manually.
 ENV RUST_LATEST_VERSION=1.51.0
 
 # Install Rust
-RUN curl https://sh.rustup.rs -sSf | \
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
     sh -s -- --default-toolchain "$RUST_LATEST_VERSION" -y
 ENV PATH="$HOME/.cargo/bin:${PATH}"
 RUN rustup component add rustfmt clippy --toolchain $RUST_LATEST_VERSION
