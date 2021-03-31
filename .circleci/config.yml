@@ -88,6 +88,17 @@ jobs:
     steps:
       - checkout
       - run: make test-valgrind
+  static:
+    docker:
+      - image: returntocorp/semgrep
+    steps:
+      - checkout
+      - run: semgrep --error --config=p/ci .
+      - run: pwd
+      - run: ls -lsa
+      # These are currently experimental and informational. Run them so we know the
+      # config is in good shape.
+      - run: semgrep --config=/home/semgrep/project/.semgrep.yml stdlib/
 
   release:
     docker:
@@ -126,6 +137,7 @@ workflows:
       - test-race
       - test-bench
       - test-valgrind
+      - static
 
   release:
     jobs:

@@ -1,0 +1,8 @@
+rules:
+  - id: flux.loadStorage-deprecated
+    patterns:
+      - pattern-not-inside: 'test $NAME = () =>...({...input: ...})'
+      - pattern: '... testing.loadStorage(csv: ...) ...'
+    message: "testing.loadStorage is deprecated. Use testing.load instead"
+    languages: [generic]
+    severity: WARNING
