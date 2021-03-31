@@ -1,3 +1,4 @@
+stdlib/**/flux_gen.go binary merge=theirs
 internal/fbsemantic/semantic_generated.go binary merge=theirs
 ast/internal/fbast/ast_generated.go binary merge=theirs
 libflux/go/libflux/buildinfo.gen.go binary merge=theirs
