@@ -320,6 +320,11 @@ where
     seq.end()
 }
 
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+pub struct Comment {
+    pub text: String,
+}
+
 // BaseNode holds the attributes every expression or statement must have
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct BaseNode {
@@ -330,7 +335,8 @@ pub struct BaseNode {
     // terminal on the right hand side. This saves us populating the
     // type-specific AST nodes with comment lists when we can avoid it..
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub comments: Vec<String>,
+    #[serde(default)]
+    pub comments: Vec<Comment>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde(serialize_with = "serialize_errors")]
     #[serde(default)]
@@ -344,7 +350,7 @@ impl BaseNode {
     pub fn is_multiline(&self) -> bool {
         self.location.is_multiline()
     }
-    pub fn set_comments(&mut self, comments: Vec<String>) {
+    pub fn set_comments(&mut self, comments: Vec<Comment>) {
         self.comments = comments;
     }
 }
@@ -396,7 +402,8 @@ pub struct File {
     pub imports: Vec<ImportDeclaration>,
     pub body: Vec<Statement>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub eof: Vec<String>,
+    #[serde(default)]
+    pub eof: Vec<Comment>,
 }
 
 impl File {
@@ -441,10 +448,12 @@ pub struct Block {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lbrace: Vec<String>,
+    #[serde(default)]
+    pub lbrace: Vec<Comment>,
     pub body: Vec<Statement>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rbrace: Vec<String>,
+    #[serde(default)]
+    pub rbrace: Vec<Comment>,
 }
 
 // BadStmt is a placeholder for statements for which no correct statement nodes
@@ -497,7 +506,8 @@ pub struct BuiltinStmt {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub colon: Vec<String>,
+    #[serde(default)]
+    pub colon: Vec<Comment>,
     pub id: Identifier,
     pub ty: TypeExpression,
 }
@@ -936,10 +946,12 @@ pub struct ParenExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lparen: Vec<String>,
+    #[serde(default)]
+    pub lparen: Vec<Comment>,
     pub expression: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rparen: Vec<String>,
+    #[serde(default)]
+    pub rparen: Vec<Comment>,
 }
 
 // CallExpr represents a function call
@@ -951,12 +963,14 @@ pub struct CallExpr {
     pub base: BaseNode,
     pub callee: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lparen: Vec<String>,
+    #[serde(default)]
+    pub lparen: Vec<Comment>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     #[serde(default)]
     pub arguments: Vec<Expression>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rparen: Vec<String>,
+    #[serde(default)]
+    pub rparen: Vec<Comment>,
 }
 
 // PipeExpr represents a call expression using the pipe forward syntax.
@@ -979,10 +993,12 @@ pub struct MemberExpr {
     pub base: BaseNode,
     pub object: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lbrack: Vec<String>,
+    #[serde(default)]
+    pub lbrack: Vec<Comment>,
     pub property: PropertyKey,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rbrack: Vec<String>,
+    #[serde(default)]
+    pub rbrack: Vec<Comment>,
 }
 
 // IndexExpr represents indexing into an array
@@ -994,10 +1010,12 @@ pub struct IndexExpr {
     pub base: BaseNode,
     pub array: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lbrack: Vec<String>,
+    #[serde(default)]
+    pub lbrack: Vec<Comment>,
     pub index: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rbrack: Vec<String>,
+    #[serde(default)]
+    pub rbrack: Vec<Comment>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -1007,13 +1025,16 @@ pub struct FunctionExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lparen: Vec<String>,
+    #[serde(default)]
+    pub lparen: Vec<Comment>,
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub params: Vec<Property>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rparen: Vec<String>,
+    #[serde(default)]
+    pub rparen: Vec<Comment>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub arrow: Vec<String>,
+    #[serde(default)]
+    pub arrow: Vec<Comment>,
     pub body: FunctionBody,
 }
 
@@ -1254,7 +1275,8 @@ pub struct ArrayItem {
     #[serde(flatten)]
     pub expression: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub comma: Vec<String>,
+    #[serde(default)]
+    pub comma: Vec<Comment>,
 }
 
 // ArrayExpr is used to create and directly specify the elements of an array object
@@ -1265,11 +1287,13 @@ pub struct ArrayExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lbrack: Vec<String>,
+    #[serde(default)]
+    pub lbrack: Vec<Comment>,
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub elements: Vec<ArrayItem>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rbrack: Vec<String>,
+    #[serde(default)]
+    pub rbrack: Vec<Comment>,
 }
 
 // DictExpr represents a dictionary literal
@@ -1280,11 +1304,13 @@ pub struct DictExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lbrack: Vec<String>,
+    #[serde(default)]
+    pub lbrack: Vec<Comment>,
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub elements: Vec<DictItem>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rbrack: Vec<String>,
+    #[serde(default)]
+    pub rbrack: Vec<Comment>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -1292,7 +1318,8 @@ pub struct DictItem {
     pub key: Expression,
     pub val: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub comma: Vec<String>,
+    #[serde(default)]
+    pub comma: Vec<Comment>,
 }
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -1301,7 +1328,8 @@ pub struct WithSource {
     #[serde(flatten)]
     pub source: Identifier,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub with: Vec<String>,
+    #[serde(default)]
+    pub with: Vec<Comment>,
 }
 
 // ObjectExpr allows the declaration of an anonymous object within a declaration.
@@ -1312,14 +1340,16 @@ pub struct ObjectExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub lbrace: Vec<String>,
+    #[serde(default)]
+    pub lbrace: Vec<Comment>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(default)]
     pub with: Option<WithSource>,
     #[serde(deserialize_with = "deserialize_default_from_null")]
     pub properties: Vec<Property>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub rbrace: Vec<String>,
+    #[serde(default)]
+    pub rbrace: Vec<Comment>,
 }
 
 // ConditionalExpr selects one of two expressions, `Alternate` or `Consequent`
@@ -1331,13 +1361,16 @@ pub struct ConditionalExpr {
     #[serde(flatten)]
     pub base: BaseNode,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub tk_if: Vec<String>,
+    #[serde(default)]
+    pub tk_if: Vec<Comment>,
     pub test: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub tk_then: Vec<String>,
+    #[serde(default)]
+    pub tk_then: Vec<Comment>,
     pub consequent: Expression,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub tk_else: Vec<String>,
+    #[serde(default)]
+    pub tk_else: Vec<Comment>,
     pub alternate: Expression,
 }
 
@@ -1364,11 +1397,13 @@ pub struct Property {
     pub base: BaseNode,
     pub key: PropertyKey,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub separator: Vec<String>,
+    #[serde(default)]
+    pub separator: Vec<Comment>,
     // `value` is optional, because of the shortcut: {a} <--> {a: a}
     pub value: Option<Expression>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub comma: Vec<String>,
+    #[serde(default)]
+    pub comma: Vec<Comment>,
 }
 
 // Identifier represents a name that identifies a unique Node

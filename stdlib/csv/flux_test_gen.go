@@ -6,8 +6,9 @@ import ast "github.com/influxdata/flux/ast"
 
 var FluxTestPackages = []*ast.Package{&ast.Package{
 	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
+		Comments: nil,
+		Errors:   nil,
+		Loc:      nil,
 	},
 	Files:   []*ast.File{},
 	Package: "csv_test",

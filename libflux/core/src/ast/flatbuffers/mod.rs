@@ -976,7 +976,7 @@ impl<'a> SerializingVisitorState<'a> {
 
     fn create_base_node_cmts(
         &mut self,
-        ast_cmts: &[String],
+        ast_cmts: &[ast::Comment],
     ) -> Option<
         flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
     > {
@@ -984,7 +984,7 @@ impl<'a> SerializingVisitorState<'a> {
             self.builder.create_vector_of_strings(
                 ast_cmts
                     .iter()
-                    .map(|s| s.as_str())
+                    .map(|s| s.text.as_str())
                     .collect::<Vec<&str>>()
                     .as_slice(),
             ),

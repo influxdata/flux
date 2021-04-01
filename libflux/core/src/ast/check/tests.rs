@@ -118,7 +118,7 @@ fn test_check_collect_existing_error() {
                 value: 1,
             }),
         }))],
-        eof: None,
+        eof: vec![],
     };
     let got = check(walk::Node::File(&file));
     assert_eq!(3, got.len());

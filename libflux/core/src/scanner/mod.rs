@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::str;
 use std::vec::Vec;
 
+use crate::ast::Comment;
+
 use derive_more::Display;
 
 #[rustfmt::skip]
@@ -29,7 +31,7 @@ pub struct Scanner {
     checkpoint_last_newline: i32,
     token: TokenType,
     positions: HashMap<Position, u32>,
-    pub comments: Vec<String>,
+    pub comments: Vec<Comment>,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone, Hash)]
@@ -49,7 +51,7 @@ pub struct Token {
     pub end_offset: u32,
     pub start_pos: Position,
     pub end_pos: Position,
-    pub comments: Vec<String>,
+    pub comments: Vec<Comment>,
 }
 
 impl Scanner {
@@ -246,7 +248,7 @@ impl Scanner {
         *self.positions.get(pos).expect("position should be in map")
     }
 
-    pub fn set_comments(&mut self, t: &mut Vec<String>) {
+    pub fn set_comments(&mut self, t: &mut Vec<Comment>) {
         self.comments = t.to_vec();
     }
 }

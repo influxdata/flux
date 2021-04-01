@@ -133,6 +133,7 @@ table SourceLocation {
 table BaseNode {
   loc:SourceLocation;
   errors:[string];
+  comments:[string];
 }
 
 table Package {

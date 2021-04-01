@@ -165,7 +165,7 @@ impl Formatter {
         self.temp_indent = false;
     }
 
-    fn format_comments(&mut self, mut comment: &Vec<String>) {
+    fn format_comments(&mut self, mut comment: &Vec<ast::Comment>) {
         for c in comment {
             if !self.clear {
                 self.write_rune('\n');
@@ -173,7 +173,7 @@ impl Formatter {
                 self.indent();
                 self.write_indent();
             }
-            self.write_string(c.as_str());
+            self.write_string(c.text.as_str());
             self.clear = true;
             self.write_indent();
         }
@@ -1012,7 +1012,7 @@ impl Formatter {
 
     fn format_binary(
         &mut self,
-        comments: &Vec<String>,
+        comments: &Vec<ast::Comment>,
         op: &str,
         parent: Node,
         left: Node,

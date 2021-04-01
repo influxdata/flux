@@ -43,6 +43,12 @@ func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
 			b.Errors[i] = Error{string(buf.Errors(i))}
 		}
 	}
+	if buf.CommentsLength() != 0 {
+		b.Comments = make([]Comment, buf.CommentsLength())
+		for i := 0; i < buf.CommentsLength(); i++ {
+			b.Comments[i] = Comment{string(buf.Comments(i))}
+		}
+	}
 }
 
 func (t TypeExpression) FromBuf(buf *fbast.TypeExpression) *TypeExpression {

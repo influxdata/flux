@@ -242,11 +242,11 @@ fn generate_values(
     Ok(values)
 }
 
-fn comments_to_string(comments: &Vec<String>) -> String {
+fn comments_to_string(comments: &Vec<ast::Comment>) -> String {
     let mut s = String::new();
     if !comments.is_empty() {
         for c in comments {
-            s.push_str(c.as_str().strip_prefix("//").unwrap());
+            s.push_str(c.text.as_str().strip_prefix("//").unwrap());
         }
     }
     comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())

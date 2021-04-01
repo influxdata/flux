@@ -884,7 +884,7 @@ fn compare_base_errs(
 }
 
 fn compare_base_cmts(
-    ast_cmts: &Vec<String>,
+    ast_cmts: &Vec<ast::Comment>,
     fb_cmts: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<&str>>>,
 ) -> Result<(), String> {
     let fb_cmts = unwrap_or_fail("base comments", fb_cmts)?;
@@ -897,7 +897,7 @@ fn compare_base_cmts(
 
         let fb_cmt = fb_cmts.get(i);
         let ast_cmt = &ast_cmts[i];
-        compare_strings("base comments", ast_cmt, &Some(fb_cmt))?;
+        compare_strings("base comments", &ast_cmt.text, &Some(fb_cmt))?;
         i = i + 1;
     }
 }

@@ -1261,8 +1261,25 @@ func (rcv *BaseNode) ErrorsLength() int {
 	return 0
 }
 
+func (rcv *BaseNode) Comments(j int) []byte {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		a := rcv._tab.Vector(o)
+		return rcv._tab.ByteVector(a + flatbuffers.UOffsetT(j*4))
+	}
+	return nil
+}
+
+func (rcv *BaseNode) CommentsLength() int {
+	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
+	if o != 0 {
+		return rcv._tab.VectorLen(o)
+	}
+	return 0
+}
+
 func BaseNodeStart(builder *flatbuffers.Builder) {
-	builder.StartObject(2)
+	builder.StartObject(3)
 }
 func BaseNodeAddLoc(builder *flatbuffers.Builder, loc flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(loc), 0)
@@ -1271,6 +1288,12 @@ func BaseNodeAddErrors(builder *flatbuffers.Builder, errors flatbuffers.UOffsetT
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(errors), 0)
 }
 func BaseNodeStartErrorsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
+	return builder.StartVector(4, numElems, 4)
+}
+func BaseNodeAddComments(builder *flatbuffers.Builder, comments flatbuffers.UOffsetT) {
+	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(comments), 0)
+}
+func BaseNodeStartCommentsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
 func BaseNodeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {

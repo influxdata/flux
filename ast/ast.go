@@ -70,6 +70,7 @@ type Node interface {
 	Type() string // Type property is a string that contains the variant type of the node
 	Location() SourceLocation
 	Errs() []Error
+	Cmts() []Comment
 	Copy() Node
 
 	// All node must support json marshalling
@@ -136,8 +137,9 @@ func (*TypeExpression) node() {}
 
 // BaseNode holds the attributes every expression or statement should have
 type BaseNode struct {
-	Loc    *SourceLocation `json:"location,omitempty"`
-	Errors []Error         `json:"errors,omitempty"`
+	Loc      *SourceLocation `json:"location,omitempty"`
+	Errors   []Error         `json:"errors,omitempty"`
+	Comments []Comment       `json:"comments,omitempty"`
 }
 
 // Location is the source location of the Node
@@ -150,6 +152,10 @@ func (b BaseNode) Location() SourceLocation {
 
 func (b BaseNode) Errs() []Error {
 	return b.Errors
+}
+
+func (b BaseNode) Cmts() []Comment {
+	return b.Comments
 }
 
 func (b BaseNode) Copy() BaseNode {
@@ -171,6 +177,14 @@ type Error struct {
 
 func (e Error) Error() string {
 	return e.Msg
+}
+
+type Comment struct {
+	Text string `json:"text"`
+}
+
+func (c Comment) Comment() string {
+	return c.Text
 }
 
 type TypeExpression struct {
