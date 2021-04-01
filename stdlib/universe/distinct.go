@@ -19,13 +19,13 @@ type DistinctOpSpec struct {
 func init() {
 	distinctSignature := runtime.MustLookupBuiltinType("universe", "distinct")
 
-	runtime.RegisterPackageValue("universe", DistinctKind, flux.MustValue(flux.FunctionValue(DistinctKind, createDistinctOpSpec, distinctSignature)))
+	runtime.RegisterPackageValue("universe", DistinctKind, flux.MustValue(flux.FunctionValue(DistinctKind, CreateDistinctOpSpec, distinctSignature)))
 	flux.RegisterOpSpec(DistinctKind, newDistinctOp)
 	plan.RegisterProcedureSpec(DistinctKind, newDistinctProcedure, DistinctKind)
 	execute.RegisterTransformation(DistinctKind, createDistinctTransformation)
 }
 
-func createDistinctOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateDistinctOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

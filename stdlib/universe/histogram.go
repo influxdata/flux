@@ -31,7 +31,7 @@ type HistogramOpSpec struct {
 func init() {
 	histogramSignature := runtime.MustLookupBuiltinType("universe", "histogram")
 
-	runtime.RegisterPackageValue("universe", HistogramKind, flux.MustValue(flux.FunctionValue(HistogramKind, createHistogramOpSpec, histogramSignature)))
+	runtime.RegisterPackageValue("universe", HistogramKind, flux.MustValue(flux.FunctionValue(HistogramKind, CreateHistogramOpSpec, histogramSignature)))
 	runtime.RegisterPackageValue("universe", "linearBins", linearBins{})
 	runtime.RegisterPackageValue("universe", "logarithmicBins", logarithmicBins{})
 	flux.RegisterOpSpec(HistogramKind, newHistogramOp)
@@ -39,7 +39,7 @@ func init() {
 	execute.RegisterTransformation(HistogramKind, createHistogramTransformation)
 }
 
-func createHistogramOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateHistogramOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

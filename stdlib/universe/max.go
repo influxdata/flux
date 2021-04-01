@@ -19,13 +19,13 @@ type MaxOpSpec struct {
 func init() {
 	maxSignature := runtime.MustLookupBuiltinType("universe", "max")
 
-	runtime.RegisterPackageValue("universe", MaxKind, flux.MustValue(flux.FunctionValue(MaxKind, createMaxOpSpec, maxSignature)))
+	runtime.RegisterPackageValue("universe", MaxKind, flux.MustValue(flux.FunctionValue(MaxKind, CreateMaxOpSpec, maxSignature)))
 	flux.RegisterOpSpec(MaxKind, newMaxOp)
 	plan.RegisterProcedureSpec(MaxKind, newMaxProcedure, MaxKind)
 	execute.RegisterTransformation(MaxKind, createMaxTransformation)
 }
 
-func createMaxOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateMaxOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

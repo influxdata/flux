@@ -32,13 +32,13 @@ type FillOpSpec struct {
 func init() {
 	fillSignature := runtime.MustLookupBuiltinType("universe", "fill")
 
-	runtime.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, createFillOpSpec, fillSignature)))
+	runtime.RegisterPackageValue("universe", FillKind, flux.MustValue(flux.FunctionValue(FillKind, CreateFillOpSpec, fillSignature)))
 	flux.RegisterOpSpec(FillKind, newFillOp)
 	plan.RegisterProcedureSpec(FillKind, newFillProcedure, FillKind)
 	execute.RegisterTransformation(FillKind, createFillTransformation)
 }
 
-func createFillOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateFillOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
