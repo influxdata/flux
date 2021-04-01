@@ -1,198 +1,310 @@
 package strings_test
 
-import "testing"
+import "array"
 import "strings"
+import "testing"
 
 option now = () => (2030-01-01T00:00:00Z)
 
-inData = "
-#datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,
-,result,table,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:36Z,k9n  gm,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:46Z,b  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:54:06Z,cLnSkNMI  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:54:16Z,13F2  ,used_percent,disk,disk1,apfs,host.local,/
-"
-
+// leading and trailing whitespace is removed from a string
 testcase string_trim {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9n  gm,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with _value: strings.trimSpace(v: r._value)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "trailing  ",
+        _field: "_field",
+        _measurement: "_measurement",
+    }, {
+        _time: 2018-05-22T19:53:36Z,
+        _value: "   leading",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "trailing",
+        _field: "_field",
+        _measurement: "_measurement",
+    }, {
+        _time: 2018-05-22T19:53:36Z,
+        _value: "leading",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.trimSpace(v: r._value)}))
+    testing.diff(got:got, want: want)
 }
 
+// string is converted to uppercase
 testcase string_toUpper {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,K9N  GM,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,B  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2COTDE,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,CLNSKNMI  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2  ,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with _value: strings.toUpper(v: r._value)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "lowercase",
+        _field: "_field",
+        _measurement: "_measurement",
+    }, {
+        _time: 2018-05-22T19:53:36Z,
+        _value: "LoLlErCaSe",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "LOWERCASE",
+        _field: "_field",
+        _measurement: "_measurement",
+    }, {
+        _time: 2018-05-22T19:53:36Z,
+        _value: "LOLLERCASE",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.toUpper(v: r._value)}))
+    testing.diff(got:got, want: want)
 }
 
+// string is converted to lowercase
 testcase string_toLower {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9n  gm,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2cotde,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,clnsknmi  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13f2  ,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with _value: strings.toLower(v: r._value)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "uppercase",
+        _field: "_field",
+        _measurement: "_measurement",
+    }, {
+        _time: 2018-05-22T19:53:36Z,
+        _value: "LoLlErCaSe",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "uppercase",
+        _field: "_field",
+        _measurement: "_measurement",
+    }, {
+        _time: 2018-05-22T19:53:36Z,
+        _value: "lollercase",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.toLower(v: r._value)}))
+    testing.diff(got:got, want: want)
 }
 
+// string is converted to title case, e.g. This Is Title Case
 testcase string_title {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,K9n  Gm,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,B  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,CLnSkNMI  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2  ,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with _value: strings.title(v: r._value)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "the little blue truck",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "The Little Blue Truck",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.title(v: r._value)}))
+    testing.diff(got:got, want: want)
 }
 
-testcase string_subset {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,c,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,1,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with _value: strings.substring(v: r._value, start: 0, end: 1)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
-}
-
-testcase string_replaceAll {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9ngm,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) => ({r with _value: strings.replaceAll(v: r._value, t: " ", u: "")}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
-}
-
-testcase string_replace {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true
-#default,_result,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9n  gm,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,c NMI  ,used_percent,disk,disk1,apfs,host.local,/
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2  ,used_percent,disk,disk1,apfs,host.local,/
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with _value: strings.replace(v: r._value, t: "LnSk", u: " ", i: 1)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
-}
-
+// A substring is returned
 testcase string_substring {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,string
-#group,false,false,true,true,false,false,true,true,true,true,true,true,false
-#default,_result,,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,sub
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/,字
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9n  gm,used_percent,disk,disk1,apfs,host.local,/,m
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b  ,used_percent,disk,disk1,apfs,host.local,/, 
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/,e
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI  ,used_percent,disk,disk1,apfs,host.local,/, 
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2  ,used_percent,disk,disk1,apfs,host.local,/, 
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with sub: strings.substring(v: r._value, start: strings.strlen(v: r._value)-1, end: strings.strlen(v: r._value))}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "What's the Story, Morning Glory",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "Morning Glory",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.substring(v: r._value, start: 18, end: 31)}))
+    testing.diff(got:got, want: want)
 }
 
+// All instances of one string are replaced with another
+testcase string_replaceAll {
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "This sucks. Everything sucks.",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "This is fine. Everything is fine.",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.replaceAll(v: r._value, t: "sucks", u: "is fine")}))
+    testing.diff(got:got, want: want)
+}
+
+// A string is replaced by another the first specified number of times.
+testcase string_replace {
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "This sucks. Everything sucks.",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "This is fine. Everything sucks.",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
+    testing.diff(got:got, want: want)
+}
+
+// Calling replace in two different maps works in the correct order.
+testcase string_replace_twice {
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "This sucks. Everything sucks.",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    // XXX: rockstar (31 Mar 2021) - Adding `map` here, otherwise `testing.diff`
+    // gets a type error because it thinks it's missing a _value label.
+    // See https://github.com/influxdata/flux/issues/3443
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "This is fine. Everything is a-okay.",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+        |> map(fn: (r) =>
+            ({r with _value: r._value}))
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
+        |> map(fn: (r) =>
+            ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is a-okay", i: 1)}))
+    testing.diff(got:got, want: want)
+}
+
+
+// A string's length is returned
 testcase string_length {
-    outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,long
-#group,false,false,true,true,false,false,true,true,true,true,true,true,false
-#default,_result,,,,,,,,,,,,
-,result,table,_start,_stop,_time,_value,_field,_measurement,device,fstype,host,path,len
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,字,used_percent,disk,disk1,apfs,host.local,/,1
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:36Z,k9n  gm,used_percent,disk,disk1,apfs,host.local,/,7
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,b  ,used_percent,disk,disk1,apfs,host.local,/,3
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:56Z,2COTDe,used_percent,disk,disk1,apfs,host.local,/,6
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI  ,used_percent,disk,disk1,apfs,host.local,/,10
-,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2  ,used_percent,disk,disk1,apfs,host.local,/,6
-"
-    result = testing.loadStorage(csv: inData)
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) =>
-        			({r with len: strings.strlen(v: r._value)}))
-    testing.diff(got: result, want: testing.loadMem(csv: outData))
+    input = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "字",
+        _field: "_field",
+        _measurement: "_measurement",
+    }, {
+        _time: 2018-05-22T19:53:26Z,
+        _value: "Supercalifragilisticexpialidocious",
+        _field: "_field",
+        _measurement: "_measurement",
+    }])
+    want = array.from(rows: [{
+        _time: 2018-05-22T19:53:26Z,
+        _value: "字",
+        _field: "_field",
+        _measurement: "_measurement",
+        len: 1,
+    }, {
+        _time: 2018-05-22T19:53:26Z,
+        _value: "Supercalifragilisticexpialidocious",
+        _field: "_field",
+        _measurement: "_measurement",
+        len: 34,
+    }])
+
+    got = input
+        |> testing.load()
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> drop(columns: ["_start", "_stop"])
+        |> map(fn: (r) =>
+            ({r with len: strings.strlen(v: r._value)}))
+    testing.diff(got:got, want: want)
 }

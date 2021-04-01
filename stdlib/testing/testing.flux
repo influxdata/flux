@@ -13,6 +13,7 @@ option loadStorage = (csv) => c.from(csv: csv)
     _measurement: if exists r._measurement then r._measurement else die(msg: "test input table does not have _measurement column"),
     _time: if exists r._time then r._time else die(msg: "test input table does not have _time column")
     }))
+option load = (tables=<-) => tables
 
 option loadMem = (csv) => c.from(csv: csv)
 
@@ -34,6 +35,6 @@ run = (case) => {
 }
 
 benchmark = (case) => {
-	tc = case()
-	return tc.input |> tc.fn()
+    tc = case()
+    return tc.input |> tc.fn()
 }
