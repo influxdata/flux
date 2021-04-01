@@ -619,8 +619,8 @@ pub enum ParameterType {
     },
 }
 
-#[serde(tag = "type")]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
 pub struct TypeExpression {
     #[serde(skip_serializing_if = "BaseNode::is_empty")]
     #[serde(default)]
