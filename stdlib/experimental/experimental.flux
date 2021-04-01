@@ -83,3 +83,26 @@ builtin sum : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: 
 // An experimental version of kaufmansAMA.
 builtin kaufmansAMA : (<-tables: [{T with _value: A}], n: int) => [{T with _value: float}] where A: Numeric
 
+// An experimental version of distinct
+builtin distinct : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+
+// An experimental version of fill
+builtin fill : (<-tables: [{T with _value: A}], ?value: A, ?usePrevious: bool) => [{T with _value: A}]
+
+// An experimental version of first
+builtin first : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+
+// An experimental version of last
+builtin last : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+
+// An experimental version of max
+builtin max : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+
+// An experimental version of min
+builtin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+
+// An experimental version of unique
+builtin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
+
+// An experimental version of histogram
+builtin histogram : (<-tables:  [{T with _value: float}],  bins: [float], ?normalize: bool) => [{T with _value: float, le: float}]

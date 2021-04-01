@@ -18,13 +18,13 @@ type UniqueOpSpec struct {
 func init() {
 	uniqueSignature := runtime.MustLookupBuiltinType("universe", "unique")
 
-	runtime.RegisterPackageValue("universe", UniqueKind, flux.MustValue(flux.FunctionValue(UniqueKind, createUniqueOpSpec, uniqueSignature)))
+	runtime.RegisterPackageValue("universe", UniqueKind, flux.MustValue(flux.FunctionValue(UniqueKind, CreateUniqueOpSpec, uniqueSignature)))
 	flux.RegisterOpSpec(UniqueKind, newUniqueOp)
 	plan.RegisterProcedureSpec(UniqueKind, newUniqueProcedure, UniqueKind)
 	execute.RegisterTransformation(UniqueKind, createUniqueTransformation)
 }
 
-func createUniqueOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateUniqueOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

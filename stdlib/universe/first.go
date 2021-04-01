@@ -19,13 +19,13 @@ type FirstOpSpec struct {
 func init() {
 	firstSignature := runtime.MustLookupBuiltinType("universe", "first")
 
-	runtime.RegisterPackageValue("universe", FirstKind, flux.MustValue(flux.FunctionValue(FirstKind, createFirstOpSpec, firstSignature)))
+	runtime.RegisterPackageValue("universe", FirstKind, flux.MustValue(flux.FunctionValue(FirstKind, CreateFirstOpSpec, firstSignature)))
 	flux.RegisterOpSpec(FirstKind, newFirstOp)
 	plan.RegisterProcedureSpec(FirstKind, newFirstProcedure, FirstKind)
 	execute.RegisterTransformation(FirstKind, createFirstTransformation)
 }
 
-func createFirstOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateFirstOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}

@@ -19,13 +19,13 @@ type MinOpSpec struct {
 func init() {
 	minSignature := runtime.MustLookupBuiltinType("universe", "min")
 
-	runtime.RegisterPackageValue("universe", MinKind, flux.MustValue(flux.FunctionValue(MinKind, createMinOpSpec, minSignature)))
+	runtime.RegisterPackageValue("universe", MinKind, flux.MustValue(flux.FunctionValue(MinKind, CreateMinOpSpec, minSignature)))
 	flux.RegisterOpSpec(MinKind, newMinOp)
 	plan.RegisterProcedureSpec(MinKind, newMinProcedure, MinKind)
 	execute.RegisterTransformation(MinKind, createMinTransformation)
 }
 
-func createMinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
+func CreateMinOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
