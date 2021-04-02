@@ -49,6 +49,7 @@ outData = "
 
 t_min = (table=<-) =>
 	(table
+    |> range(start:2018-05-22T00:00:00Z)
 		|> experimental.min())
 		|> drop(columns: ["_start", "_stop"])
 
