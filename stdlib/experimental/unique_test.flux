@@ -38,6 +38,7 @@ outData = "
 
 t_unique = (table=<-) =>
 	(table
+    |> range(start:2018-05-22T00:00:00Z)
 		|> experimental.unique()
 		|> drop(columns: ["_start", "_stop"])
 	)

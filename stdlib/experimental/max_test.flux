@@ -49,6 +49,7 @@ outData = "
 
 t_max = (table=<-) =>
 	(table
+    |> range(start:2018-05-22T00:00:00Z)
 		|> experimental.max())
 		|> drop(columns: ["_start", "_stop"])
 

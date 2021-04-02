@@ -49,6 +49,7 @@ outData = "
 
 t_first = (table=<-) =>
 	(table
+    |> range(start:2018-05-22T00:00:00Z)
 		|> experimental.first())
 		|> drop(columns: ["_start", "_stop"])
 
