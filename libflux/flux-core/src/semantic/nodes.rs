@@ -635,8 +635,8 @@ impl StringExpr {
             if let StringExprPart::Interpolated(ref mut ip) = p {
                 let (e, cons) = ip.expression.infer(env, f)?;
                 constraints.append(&mut Vec::from(cons));
-                constraints.push(Constraint::Equal {
-                    exp: MonoType::String,
+                constraints.push(Constraint::Kind {
+                    exp: Kind::Stringable,
                     act: ip.expression.type_of(),
                     loc: ip.expression.loc().clone(),
                 });

@@ -92,6 +92,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Record => Kind::Record,
             fb::Kind::Negatable => Kind::Negatable,
             fb::Kind::Timeable => Kind::Timeable,
+            fb::Kind::Stringable => Kind::Stringable,
         }
     }
 }
@@ -109,6 +110,7 @@ impl From<Kind> for fb::Kind {
             Kind::Record => fb::Kind::Record,
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
+            Kind::Stringable => fb::Kind::Stringable,
         }
     }
 }

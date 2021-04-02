@@ -495,11 +495,14 @@ func (itrp *Interpreter) doStringPart(ctx context.Context, part semantic.StringE
 		} else if v.IsNull() {
 			return nil, errors.Newf(codes.Invalid, "%s: interpolated expression produced a null value",
 				p.Location())
-		} else if v.Type().Nature() != semantic.String {
-			return nil, errors.Newf(codes.Invalid, "%s: expected interpolated expression to have type %s, but it had type %s",
-				p.Location(), semantic.String, v.Type().Nature())
+		} else {
+			o, err := values.Stringify(v)
+			if err != nil {
+				return nil, errors.Newf(codes.Invalid, "%s: expected interpolated expression to have type %s, but it had type %s",
+					p.Location(), semantic.String, v.Type().Nature())
+			}
+			return o, nil
 		}
-		return v, nil
 	}
 	return nil, errors.New(codes.Internal, "expecting interpolated string part")
 }

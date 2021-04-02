@@ -323,8 +323,14 @@ Interpolation example:
     "the answer is not ${n+1}" // the answer is not 43
     "dollar sign opening curly bracket \${" // dollar sign opening curly bracket ${
 
-[IMPL#1775](https://github.com/influxdata/flux/issues/1775) Interpolate arbitrary expressions in string literals
+String interpolation expressions must satisfy the Stringable constraint.
 
+Arbitrary Expression Interpolation example:
+
+    n = duration(v: "1m")
+    "the answer is ${n}" // the answer is 1m
+    t0 = time(v: "2016-06-13T17:43:50.1004002Z")
+    "the answer is ${t0}" // the answer is 2016-06-13T17:43:50.1004002Z
 
 #### Regular expression literals
 
@@ -649,6 +655,11 @@ Int, Uint, Float, and Duration types are Negatable.
 ##### Timeable Constraint
 
 Duration and Time types are Timeable.
+
+##### Stringable Constraint
+
+Stringable types can be evaluated and expressed in string interpolation.
+String, Int, Uint, Float, Bool, Time, and Duration types are Stringable. 
 
 ### Blocks
 
@@ -1213,10 +1224,10 @@ These are builtin functions that all take a single `time` argument and return an
 
 #### truncate
 
-`date.truncate` takes in a time t and a Duration unit and returns the given time 
+`date.truncate` takes in a time t and a Duration unit and returns the given time
 truncated to the given unit.
 
-Examples: 
+Examples:
 - `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1s)` returns time `2019-06-03T13:59:01.000000000Z`
 - `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1m)` returns time `2019-06-03T13:59:00.000000000Z`
 - `truncate(t: "2019-06-03T13:59:01.000000000Z", unit: 1h)` returns time `2019-06-03T13:00:00.000000000Z`
@@ -1631,9 +1642,9 @@ Additionally exactly two columns must be provided to the `columns` property.
 
 Example:
 ```
-from(bucket: "telegraf/autogen") 
-    |> range(start: -5m) 
-    |> map(fn: (r) => ({r with x: r._value, y: r._value * r._value / 2})) 
+from(bucket: "telegraf/autogen")
+    |> range(start: -5m)
+    |> map(fn: (r) => ({r with x: r._value, y: r._value * r._value / 2}))
     |> covariance(columns: ["x", "y"])
 ```
 
@@ -1750,17 +1761,17 @@ from(bucket: "telegraf/autogen")
 
 ##### Mode
 
-Mode produces the mode for a given column. If there are multiple modes, all of them are returned in a table in sorted order. 
+Mode produces the mode for a given column. If there are multiple modes, all of them are returned in a table in sorted order.
 If there is no mode, null is returned. The following data types are supported: string, float64, int64, uint64, bool, time.
 Mode only considers non-null values.
 
-Mode has the following properties: 
+Mode has the following properties:
 
 | Name   | Type   | Description                                                                  |
 | ----   | ----   | -----------                                                                  |
 | column | string | Column is the column on which to track the mode.  Defaults to `_value`. |
 
-Example: 
+Example:
 ```
 from(bucket:"telegraf/autogen")
     |> filter(fn: (r) => r._measurement == "mem" AND
@@ -3079,7 +3090,7 @@ Difference has the following properties:
 | ----        | ----     | -----------                                                                                                                                                 |
 | nonNegative | bool     | NonNegative indicates if the difference is allowed to be negative. If a value is encountered which is less than the previous value then the result is null. |
 | columns     | []string | Columns is a list of columns on which to compute the difference. Defaults to `["_value"]`.                                                                  |
-| keepFirst   | bool     | KeepFirst indicates if the first row should be kept. If `true`, then the difference will be `null`. Defaults to `false`. 
+| keepFirst   | bool     | KeepFirst indicates if the first row should be kept. If `true`, then the difference will be `null`. Defaults to `false`.
 
 Rules for subtracting values for numeric types:
 
@@ -3135,10 +3146,10 @@ from(bucket: "telegraf/autogen")
 ```
 #### Elapsed
 
-Elapsed returns the elapsed time between subsequent records. 
+Elapsed returns the elapsed time between subsequent records.
 
-Given an input table, `elapsed` will return the same table with an additional `elapsed` column and without the first 
-record as elapsed time is not defined. 
+Given an input table, `elapsed` will return the same table with an additional `elapsed` column and without the first
+record as elapsed time is not defined.
 
 Elapsed has the following properties:
 
@@ -3148,7 +3159,7 @@ Elapsed has the following properties:
 | timeColumn  | string   | Name of the `flux.TTime` column on which to compute the elapsed time. Defaults to `_time`.|
 | columnName  | string   | Name of the column of elapsed times. Defaults to `elapsed`.
 
-Elapsed errors if the timeColumn cannot be found within the given table. 
+Elapsed errors if the timeColumn cannot be found within the given table.
 
 #### Increase
 
@@ -3182,8 +3193,8 @@ Given the following input table.
     | 00002 | 4      |
     | 00003 | 7      |
     | 00004 | 8      |
-    
-    
+
+
 ####  Moving Average
 
 Moving Average computes the moving average the `_value` column.
@@ -3200,7 +3211,7 @@ Rules for taking the moving average for numeric types:
  - the average over a period populated by only null values is null
  - moving averages that include null values skip over those values
  - if `n` is less than the number of records in a table, `movingAverage` returns the average of the available values
- 
+
 Examples of moving average (`n` = 2):
 
 | _time |   A  |   B  |   C  |   D  | tag |
@@ -3262,28 +3273,28 @@ It is a weighted moving average that gives more weighting to recent data as oppo
 
 Rules for taking the exponential moving average for numeric types:
  - the first value of an exponential moving average over `n` values is the algebraic mean of the first `n` values
- - subsequent values are calculated as `y(t) = x(t) * k + y(t-1) * (1 - k)`, where 
+ - subsequent values are calculated as `y(t) = x(t) * k + y(t-1) * (1 - k)`, where
     - the constant `k` is defined as `k = 2 / (1 + n)`
     - `y(t)` is defined as exponential moving average at time `t`
     - `x(t)` is defined as the value at time `t`
  - `exponentialMovingAverage` ignores ignores null values and does not count them in calculations
- 
+
  Examples (`n = 2`):
- 
+
  | _time |   A  |   B  |   C  | tag |
  |:-----:|:----:|:----:|:----:|:---:|
  |  0001 |   2  | null |   2  |  tv |
  |  0002 | null |  10  |   4  |  tv |
  |  0003 |   8  |  20  |   5  |  tv |
- 
+
  Result:
- 
+
  | _time |   A  |   B  |   C  | tag |
  |:-----:|:----:|:----:|:----:|:---:|
  |  0002 |   2  |  10  |   3  |  tv |
  |  0003 |   6  | 16.67| 4.33 |  tv |
- 
- 
+
+
 Example of script:
 ```
 // A 5 point exponential moving average would be called as such:
@@ -3320,9 +3331,9 @@ doubleEMA = (n, tables=<-) =>
 The behavior of the exponential moving averages used for calculating the double exponential moving average is the same as defined for `exponentialMovingAverage`
 
 A proper double exponential moving average requires at least `2 * n - 1` values.
- 
+
  Example (`n = 10`):
- 
+
  | _time |_value|result|
  |:-----:|:----:|:----:|
  |  0001 |   1  |   -  |
@@ -3354,7 +3365,7 @@ A proper double exponential moving average requires at least `2 * n - 1` values.
  |  0027 |   3  | 4.694|
  |  0028 |   2  | 3.506|
  |  0029 |   1  | 2.331|
- 
+
 Example of script:
 ```
 // A 5 point double exponential moving average would be called as such:
@@ -3395,9 +3406,9 @@ tripleEMA = (n, tables=<-) =>
 The behavior of the exponential moving averages used for calculating the triple exponential moving average is the same as defined for `exponentialMovingAverage`
 
 A proper double exponential moving average requires at least `3 * n - 2` values.
- 
+
  Example (`n = 4`):
- 
+
  | _time |_value|result|
  |:-----:|:----:|:----:|
  |  0001 |   1  |   -  |
@@ -3429,7 +3440,7 @@ A proper double exponential moving average requires at least `3 * n - 2` values.
  |  0027 |   3  | 2.950|
  |  0028 |   2  | 1.963|
  |  0029 |   1  | 0.973|
- 
+
 Example of script:
 ```
 // A 5 point triple exponential moving average would be called as such:
@@ -3444,7 +3455,7 @@ data input over the period of time. It prevents cycles that are shorter than the
 Triple exponential derivative oscillates around a zero line.
 
 When used as an oscillator, a positive value indicates an overbought market while a negative value indicates an oversold market.
-When used as a momentum indicator, a positive value suggests momentum is increasing while a negative value suggests momentum is decreasing. 
+When used as a momentum indicator, a positive value suggests momentum is increasing while a negative value suggests momentum is decreasing.
 It acts on the `_value` column.
 
  Name        | Type     | Description
@@ -3461,7 +3472,7 @@ The behavior of the exponential moving averages used for calculating the triple 
  - `tripleExponentialDerivative` ignores null values and does not count them in calculations
 
  Example (`n = 4`):
- 
+
  | _time |_value|result|
  |:-----:|:----:|:----:|
  |  0001 |   1  |   -  |
@@ -3493,7 +3504,7 @@ The behavior of the exponential moving averages used for calculating the triple 
  |  0027 |   3  | -11.1|
  |  0028 |   2  | -12.8|
  |  0029 |   1  | -15.0|
- 
+
   Example of script:
  ```
  // A 14 point triple exponential derivative would be called as such:
@@ -3503,7 +3514,7 @@ The behavior of the exponential moving averages used for calculating the triple 
  ```
 
 #### Relative Strength Index
-The relative strength index (RSI) is a momentum indicator that compares the magnitude of recent increases and decreases 
+The relative strength index (RSI) is a momentum indicator that compares the magnitude of recent increases and decreases
 over a specified time period to measure speed and change of data movements. It acts on the `_value` column.
 
  Name        | Type     | Description
@@ -3517,9 +3528,9 @@ Rules for calculating the relative strength index for numeric types:
     - `AVG GAIN` = `((PREVIOUS AVG GAIN) * (n - 1)) / n`
     - `AVG LOSS` = `((PREVIOUS AVG LOSS) * (n - 1)) / n`
  - `relativeStrengthIndex` ignores null values and skips over them
- 
+
  Example of relative strength index (`N` = 10):
- 
+
   | _time |   A  |   B  | tag |
   |:-----:|:----:|:----:|:---:|
   |  0001 |   1  |   1  |  tv |
@@ -3540,9 +3551,9 @@ Rules for calculating the relative strength index for numeric types:
   |  0016 |  16  |  16  |  tv |
   |  0017 |  17  | null |  tv |
   |  0018 |  18  |  17  |  tv |
-  
+
   Result:
-  
+
   | _time |   A  |   B  | tag |
   |:-----:|:----:|:----:|:---:|
   |  0011 | 100  | 100  |  tv |
@@ -3553,8 +3564,8 @@ Rules for calculating the relative strength index for numeric types:
   |  0016 |  90  |  90  |  tv |
   |  0017 |  81  |  90  |  tv |
   |  0018 | 72.9 |  81  |  tv |
- 
-  
+
+
  Example of script:
 ```
 // A 14 point relative search index plot would be called as such:
@@ -3574,7 +3585,7 @@ The default column `KaufmansER` takes in is "_value".
 | n           | int      | N specifies the period.
 
  Example:
- 
+
  | _time |_value|result|
  |:-----:|:----:|:----:|
  |  0001 |   1  |   -  |
@@ -3606,7 +3617,7 @@ The default column `KaufmansER` takes in is "_value".
  |  0027 |   3  |   1  |
  |  0028 |   2  |   1  |
  |  0029 |   1  |   1  |
- 
+
  Example of script:
  ```
  from(bucket: "telegraf/autogen"):
@@ -3624,7 +3635,7 @@ Kaufman's Adaptive Moving Average is designed to account for market noise or vol
 | column      | string | Column is the column that `KaufmansAMA` should be performed on and is assumed to be "_value" if left unspecified.
 
  Example:
- 
+
  | _time |_value|result|
  |:-----:|:----:|:----:|
  |  0001 |   1  |   -  |
@@ -3656,7 +3667,7 @@ Kaufman's Adaptive Moving Average is designed to account for market noise or vol
  |  0027 |   3  | 4.727736717272135  |
  |  0028 |   2  | 3.515409287373408  |
  |  0029 |   1  | 2.3974496040963373 |
- 
+
  Example of script:
  ```
  from(bucket: "telegraf/autogen"):
@@ -3729,8 +3740,8 @@ from(bucket: "waterhouse/autogen")
     |> window(every: inf)
     |> holtWinters(n: 10, seasonality: 4, interval: 379m)
 ```
- 
-#### Chande Momentum Oscillator 
+
+#### Chande Momentum Oscillator
 
 The Chande Momentum Oscillator (CMO) is a technical momentum indicator developed by Tushar Chande. The CMO indicator is created by calculating the difference between the sum of all recent higher data points and the sum of all recent lower data points, then dividing the result by the sum of all data movement over a given time period. The result is multiplied by 100 to give the -100 to +100 range.
 
@@ -3740,7 +3751,7 @@ The Chande Momentum Oscillator (CMO) is a technical momentum indicator developed
 | columns     | []string | Columns is list of all columns that `chandeMomentumOscillator` should be performed on.
 
  Example:
- 
+
  | _time |   A  |result|
  |:-----:|:----:|:----:|
  |  0001 |   1  |   -  |
@@ -3772,14 +3783,14 @@ The Chande Momentum Oscillator (CMO) is a technical momentum indicator developed
  |  0027 |   3  | -100 |
  |  0028 |   2  | -100 |
  |  0029 |   1  | -100 |
- 
+
  Example of script:
  ```
  from(bucket: "telegraf/autogen"):
      |> range(start: -7d)
      |> chandeMomentumOscillator(n: 10, columns: ["_value"])
  ```
- 
+
 #### Distinct
 
 Distinct produces the unique values for a given column. Null is considered its own distinct value if it is present.
@@ -3979,7 +3990,7 @@ Contains has the following parameters:
 | value   | bool, int, uint, float, string, time          | The value to search for.     |
 | set     | array of bool, int, uint, float, string, time | The set of values to search. |
 
-Example: 
+Example:
     `contains(value:1, set:[1,2,3])` will return `true`.
 
 #### Stream/table functions
@@ -4132,11 +4143,11 @@ r0 = from(bucket:"telegraf/autogen")
 x = r0._field + "--" + r0._measurement
 ```
 
-##### truncateTimeColumn 
+##### truncateTimeColumn
 
 Truncates all entries in a given time column to a specified unit.
 
-Example: 
+Example:
 ```
 from(bucket:"telegraph/autogen")
     |> truncateTimeColumn(unit: 1s)
@@ -4325,7 +4336,7 @@ Returns a new string consisting of i copies of the string v.
 
 Example: `repeat("v: na", i: 2)` returns string `nana`.
 
-##### replace 
+##### replace
 
 Returns a copy of the string v with the first i non-overlapping instances of t replaced by u.
 
@@ -4361,7 +4372,7 @@ Slices v into all substrings separated by t and returns a slice of the substring
 
 Example: `splitN(v: "a,b,c", t: ",", i: 2)` returns []string `["a" "b,c"]`.
 
-##### substring 
+##### substring
 
 Returns substring as specified by the given indices start and end, based on utf code points.
 
@@ -4444,7 +4455,7 @@ Example: `findString(r: regexp.compile("foo.?"), v: "seafood fool")` returns the
 ##### findStringIndex
 
 Returns a two-element slice of integers defining the location of the leftmost match in v of the regular expression.
- 
+
 Example: `findStringIndex(r: regexp.compile("ab?"), v: "tablett")` returns the int array `[1 3]`.
 
 ##### getString
@@ -4469,7 +4480,7 @@ Example: `replaceAllString(r: regexp.compile("a(x*)b"), v: "-ab-axxb-", t: "T")`
 
 Return a string that escapes all regular expression metacharacters inside the argument text; the returned string is a regular expression matching the literal text.
 
-Example: `quoteMeta("Escaping symbols like: .+*?()|[]{}^$")` returns string `Escaping symbols like: \.\+\*\?\(\)\|\[\]\{\}\^\$`. 
+Example: `quoteMeta("Escaping symbols like: .+*?()|[]{}^$")` returns string `Escaping symbols like: \.\+\*\?\(\)\|\[\]\{\}\^\$`.
 
 ##### splitRegexp
 
