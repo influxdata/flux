@@ -1,10 +1,10 @@
 #[macro_use]
 extern crate criterion;
-extern crate core;
+extern crate fluxcore;
 
 use criterion::{black_box, Criterion};
 
-use core::scanner;
+use fluxcore::scanner;
 
 const FLUX: &'static str = r#"from(bucket: "benchtest")
     # Here's a random comment

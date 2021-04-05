@@ -1,8 +1,8 @@
-use core::ast;
-use core::semantic::convert_source;
-use core::semantic::nodes::*;
-use core::semantic::types::{Function, MonoType, SemanticMap, Tvar};
-use core::semantic::walk::{walk_mut, NodeMut};
+use fluxcore::ast;
+use fluxcore::semantic::convert_source;
+use fluxcore::semantic::nodes::*;
+use fluxcore::semantic::types::{Function, MonoType, SemanticMap, Tvar};
+use fluxcore::semantic::walk::{walk_mut, NodeMut};
 
 use pretty_assertions::assert_eq;
 
@@ -19,7 +19,7 @@ f(a: s)
     )
     .unwrap();
     let f_type = Function {
-        req: core::semantic_map! {
+        req: fluxcore::semantic_map! {
             "a".to_string() => MonoType::Var(Tvar(4)),
         },
         opt: SemanticMap::new(),
@@ -27,7 +27,7 @@ f(a: s)
         retn: MonoType::Var(Tvar(4)),
     };
     let f_call_int_type = Function {
-        req: core::semantic_map! {
+        req: fluxcore::semantic_map! {
             "a".to_string() => MonoType::Int,
         },
         opt: SemanticMap::new(),
@@ -35,7 +35,7 @@ f(a: s)
         retn: MonoType::Int,
     };
     let f_call_string_type = Function {
-        req: core::semantic_map! {
+        req: fluxcore::semantic_map! {
             "a".to_string() => MonoType::String,
         },
         opt: SemanticMap::new(),

@@ -240,9 +240,9 @@ impl<'a> Node<'a> {
 /// Print out the nodes of a semantic graph:
 ///
 /// ```
-/// use core::ast;
-/// use core::semantic::walk::{Node, walk};
-/// use core::semantic::nodes::*;
+/// use fluxcore::ast;
+/// use fluxcore::semantic::walk::{Node, walk};
+/// use fluxcore::semantic::nodes::*;
 /// use std::rc::Rc;
 ///
 /// let mut pkg = Package {
@@ -259,9 +259,9 @@ impl<'a> Node<'a> {
 /// A "scoped" Visitor that errors if finds more than one addition operation in the same scope:
 ///
 /// ```
-/// use core::ast::Operator::AdditionOperator;
-/// use core::semantic::walk::{Node, Visitor};
-/// use core::semantic::nodes::*;
+/// use fluxcore::ast::Operator::AdditionOperator;
+/// use fluxcore::semantic::walk::{Node, Visitor};
+/// use fluxcore::semantic::nodes::*;
 /// use std::rc::Rc;
 ///
 /// struct RepeatedPlusChecker {

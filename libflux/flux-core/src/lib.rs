@@ -18,7 +18,6 @@ pub mod scanner;
 pub mod semantic;
 
 use std::error;
-pub use std::fmt;
 use std::hash::BuildHasherDefault;
 
 use derive_more::Display;

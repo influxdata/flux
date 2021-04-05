@@ -13,7 +13,7 @@ default = ["strict"]
 strict = []
 
 [dependencies]
-core = { path = "../core" }
+flux-core = { path = "../flux-core" }
 flatbuffers = "0.6.0"
 serde = "^1.0.59"
 serde_derive = "^1.0.59"
@@ -26,7 +26,7 @@ maplit = "1.0.2"
 criterion = "0.3.3"
 
 [build-dependencies]
-core = { path = "../core" }
+flux-core = { path = "../flux-core" }
 flatbuffers = "0.6.0"
 
 [[bench]]
@@ -39,9 +39,4 @@ harness = false
 
 [[bench]]
 name = "formatter"
-harness = false
-
-[[bench]]
-name = "bench_scanner"
-path = "benches/benchmarks.rs"
 harness = false

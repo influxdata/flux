@@ -1,9 +1,11 @@
+extern crate fluxcore;
+
 use std::{env, fs, io, io::Write, path};
 
-use core::semantic::bootstrap;
-use core::semantic::env::Environment;
-use core::semantic::flatbuffers::types as fb;
-use core::semantic::sub::Substitutable;
+use fluxcore::semantic::bootstrap;
+use fluxcore::semantic::env::Environment;
+use fluxcore::semantic::flatbuffers::types as fb;
+use fluxcore::semantic::sub::Substitutable;
 
 #[derive(Debug)]
 struct Error {
