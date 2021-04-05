@@ -1,6 +1,6 @@
 #![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
 
-//! The flux crate handles the parsing and semantic analysis of flux source
+//! The flux crate handles the parsing and semantic analysis of Flux source
 //! code.
 extern crate chrono;
 extern crate derive_more;
@@ -27,12 +27,12 @@ pub use ast::DEFAULT_PACKAGE_NAME;
 
 type DefaultHasher = BuildHasherDefault<FnvHasher>;
 
-/// An error that can occur due to problems in ast generation or semantic
+/// An error that can occur due to problems in AST generation or semantic
 /// analysis.
 #[derive(Debug, Display, Clone)]
 #[display(fmt = "{}", msg)]
 pub struct Error {
-    /// Message.
+    /// Contents of the error message.
     pub msg: String,
 }
 
