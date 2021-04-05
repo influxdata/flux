@@ -3,6 +3,7 @@ package json
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/influxdata/flux/codes"
@@ -100,7 +101,7 @@ func convertValue(v values.Value) (interface{}, error) {
 		return nil, errors.New(codes.Invalid, "cannot encode a function value")
 	case semantic.Dictionary:
 		dict := v.Dict()
-		d := make(map[interface{}]interface{}, dict.Len())
+		d := make(map[string]interface{}, dict.Len())
 		var rangeErr error
 		dict.Range(func(k, v values.Value) {
 			if rangeErr != nil {
@@ -116,7 +117,7 @@ func convertValue(v values.Value) (interface{}, error) {
 				rangeErr = err
 				return
 			}
-			d[key] = val
+			d[fmt.Sprintf("%v", key)] = val
 		})
 		if rangeErr != nil {
 			return nil, rangeErr
