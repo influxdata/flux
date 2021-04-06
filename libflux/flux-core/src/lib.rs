@@ -1,7 +1,20 @@
 #![cfg_attr(feature = "strict", deny(warnings, missing_docs))]
 
-//! The flux crate handles the parsing and semantic analysis of Flux source
-//! code.
+//! This crate performs parsing and semantic analysis of Flux source
+//! code. It forms the core of the compiler for the [Flux language].
+//! It is made up of five modules. Four of these handle the analysis
+//! of Flux code during compilation:
+//!
+//! - [`scanner`] produces tokens from plain source code;
+//! - [`parser`] forms the abstract syntax tree (AST);
+//! - [`ast`] defines the AST data structures and provides functions for its analysis; and
+//! - [`semantic`] performs semantic analysis, including type inference,
+//!   producing a semantic graph.
+//!
+//! In addition, the [`formatter`] module provides functions for code formatting utilities.
+//!
+//! [Flux language]: https://github.com/influxdata/flux
+
 extern crate chrono;
 extern crate derive_more;
 extern crate fnv;
