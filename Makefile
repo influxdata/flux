@@ -39,20 +39,20 @@ GENERATED_TARGETS = \
 	$(LIBFLUX_GENERATED_TARGETS)
 
 LIBFLUX_GENERATED_TARGETS = \
-	libflux/core/src/ast/flatbuffers/ast_generated.rs \
-	libflux/core/src/semantic/flatbuffers/semantic_generated.rs
+	libflux/flux-core/src/ast/flatbuffers/ast_generated.rs \
+	libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs
 
 generate: $(GENERATED_TARGETS)
 
 ast/internal/fbast/ast_generated.go: ast/ast.fbs
 	$(GO_GENERATE) ./ast
-libflux/core/src/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
-	flatc --rust -o libflux/core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
+libflux/flux-core/src/ast/flatbuffers/ast_generated.rs: ast/ast.fbs
+	flatc --rust -o libflux/flux-core/src/ast/flatbuffers ast/ast.fbs && rustfmt $@
 
 internal/fbsemantic/semantic_generated.go: internal/fbsemantic/semantic.fbs
 	$(GO_GENERATE) ./internal/fbsemantic
-libflux/core/src/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
-	flatc --rust -o libflux/core/src/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
+libflux/flux-core/src/semantic/flatbuffers/semantic_generated.rs: internal/fbsemantic/semantic.fbs
+	flatc --rust -o libflux/flux-core/src/semantic/flatbuffers internal/fbsemantic/semantic.fbs && rustfmt $@
 libflux/go/libflux/buildinfo.gen.go: $(LIBFLUX_GENERATED_TARGETS)
 	$(GO_GENERATE) ./libflux/go/libflux
 
@@ -128,9 +128,9 @@ bench: libflux-go
 	$(GO_TEST) -bench=. -run=^$$ ./...
 
 # This requires ragel 7.0.1.
-libflux/core/src/scanner/scanner_generated.rs: libflux/core/src/scanner/scanner.rl
-	ragel-rust -I libflux/core/src/scanner -o $@ $<
-	rm libflux/core/src/scanner/scanner_generated.ri
+libflux/flux-core/src/scanner/scanner_generated.rs: libflux/flux-core/src/scanner/scanner.rl
+	ragel-rust -I libflux/flux-core/src/scanner -o $@ $<
+	rm libflux/flux-core/src/scanner/scanner_generated.ri
 
 # This target generates a file that forces the go libflux wrapper
 # to recompile which forces pkg-config to run again.

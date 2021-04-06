@@ -1,26 +1,27 @@
 #![cfg_attr(feature = "strict", deny(warnings))]
 
+extern crate fluxcore;
 extern crate serde_aux;
 extern crate serde_derive;
 
-use core::parser::Parser;
-use core::semantic::check;
-use core::semantic::env::Environment;
-use core::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
-use core::semantic::flatbuffers::types::{build_env, build_type};
-use core::semantic::fresh::Fresher;
-use core::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
-use core::semantic::sub::Substitution;
+use fluxcore::parser::Parser;
+use fluxcore::semantic::check;
+use fluxcore::semantic::env::Environment;
+use fluxcore::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
+use fluxcore::semantic::flatbuffers::types::{build_env, build_type};
+use fluxcore::semantic::fresh::Fresher;
+use fluxcore::semantic::nodes::{infer_pkg_types, inject_pkg_types, Package};
+use fluxcore::semantic::sub::Substitution;
 
-pub use core::ast;
-pub use core::formatter;
-pub use core::parser;
-pub use core::scanner;
-pub use core::semantic;
-pub use core::*;
+pub use fluxcore::ast;
+pub use fluxcore::formatter;
+pub use fluxcore::parser;
+pub use fluxcore::scanner;
+pub use fluxcore::semantic;
+pub use fluxcore::*;
 
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic::MonoTypeHolderArgs;
-use core::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
+use fluxcore::semantic::types::{MonoType, PolyType, Tvar, TvarKinds};
 use std::error;
 use std::ffi::*;
 use std::os::raw::c_char;
@@ -396,14 +397,14 @@ pub struct SemanticAnalyzer {
     imports: Environment,
 }
 
-fn new_semantic_analyzer() -> Result<SemanticAnalyzer, core::Error> {
+fn new_semantic_analyzer() -> Result<SemanticAnalyzer, fluxcore::Error> {
     let env = match prelude() {
         Some(prelude) => Environment::new(prelude),
-        None => return Err(core::Error::from("missing prelude")),
+        None => return Err(fluxcore::Error::from("missing prelude")),
     };
     let imports = match imports() {
         Some(imports) => imports,
-        None => return Err(core::Error::from("missing stdlib imports")),
+        None => return Err(fluxcore::Error::from("missing stdlib imports")),
     };
     let f = fresher();
     Ok(SemanticAnalyzer { f, env, imports })
@@ -413,13 +414,13 @@ impl SemanticAnalyzer {
     fn analyze(
         &mut self,
         ast_pkg: ast::Package,
-    ) -> Result<core::semantic::nodes::Package, core::Error> {
+    ) -> Result<fluxcore::semantic::nodes::Package, fluxcore::Error> {
         let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
         if !errs.is_empty() {
-            return Err(core::Error::from(format!("{}", &errs[0])));
+            return Err(fluxcore::Error::from(format!("{}", &errs[0])));
         }
 
-        let mut sem_pkg = core::semantic::convert::convert_with(ast_pkg, &mut self.f)?;
+        let mut sem_pkg = fluxcore::semantic::convert::convert_with(ast_pkg, &mut self.f)?;
         check::check(&sem_pkg)?;
 
         // Clone the environment. The environment may not be returned but we need to maintain
@@ -453,15 +454,15 @@ impl SemanticAnalyzer {
 ///
 /// Ths function is unsafe because it dereferences a raw pointer.
 #[no_mangle]
-pub unsafe extern "C" fn flux_new_semantic_analyzer() -> Box<Result<SemanticAnalyzer, core::Error>>
-{
+pub unsafe extern "C" fn flux_new_semantic_analyzer(
+) -> Box<Result<SemanticAnalyzer, fluxcore::Error>> {
     Box::new(new_semantic_analyzer())
 }
 
 /// Free a previously allocated semantic analyzer
 #[no_mangle]
 pub extern "C" fn flux_free_semantic_analyzer(
-    _: Option<Box<Result<SemanticAnalyzer, core::Error>>>,
+    _: Option<Box<Result<SemanticAnalyzer, fluxcore::Error>>>,
 ) {
 }
 
@@ -471,7 +472,7 @@ pub extern "C" fn flux_free_semantic_analyzer(
 #[no_mangle]
 #[allow(clippy::boxed_local)]
 pub unsafe extern "C" fn flux_analyze_with(
-    analyzer: *mut Result<SemanticAnalyzer, core::Error>,
+    analyzer: *mut Result<SemanticAnalyzer, fluxcore::Error>,
     ast_pkg: Box<ast::Package>,
     out_sem_pkg: *mut Option<Box<semantic::nodes::Package>>,
 ) -> Option<Box<ErrorHandle>> {
@@ -514,23 +515,23 @@ pub fn infer_with_env(
     // First check to see if there are any errors in the AST.
     let errs = ast::check::check(ast::walk::Node::Package(&ast_pkg));
     if !errs.is_empty() {
-        return Err(core::Error::from(format!("{}", &errs[0])));
+        return Err(fluxcore::Error::from(format!("{}", &errs[0])));
     }
 
-    let mut sem_pkg = core::semantic::convert::convert_with(ast_pkg, &mut f)?;
+    let mut sem_pkg = fluxcore::semantic::convert::convert_with(ast_pkg, &mut f)?;
 
     check::check(&sem_pkg)?;
 
     let mut prelude = match prelude() {
         Some(prelude) => Environment::new(prelude),
-        None => return Err(core::Error::from("missing prelude")),
+        None => return Err(fluxcore::Error::from("missing prelude")),
     };
     if let Some(e) = env {
         prelude.copy_bindings_from(&e);
     }
     let imports = match imports() {
         Some(imports) => imports,
-        None => return Err(core::Error::from("missing stdlib imports")),
+        None => return Err(fluxcore::Error::from("missing stdlib imports")),
     };
 
     let (env, sub) = infer_pkg_types(&mut sem_pkg, prelude, &mut f, &imports)?;
@@ -591,15 +592,15 @@ pub unsafe extern "C" fn flux_get_env_stdlib(buf: *mut flux_buffer_t) {
 mod tests {
     use crate::parser;
     use crate::{analyze, find_var_type, flux_ast_get_error, merge_packages};
-    use core::ast;
-    use core::ast::get_err_type_expression;
-    use core::parser::Parser;
-    use core::semantic::convert::convert_file;
-    use core::semantic::convert::convert_polytype;
-    use core::semantic::env::Environment;
-    use core::semantic::fresh::Fresher;
-    use core::semantic::nodes::infer_file;
-    use core::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
+    use fluxcore::ast;
+    use fluxcore::ast::get_err_type_expression;
+    use fluxcore::parser::Parser;
+    use fluxcore::semantic::convert::convert_file;
+    use fluxcore::semantic::convert::convert_polytype;
+    use fluxcore::semantic::env::Environment;
+    use fluxcore::semantic::fresh::Fresher;
+    use fluxcore::semantic::nodes::infer_file;
+    use fluxcore::semantic::types::{MonoType, Property, Record, Tvar, TvarMap};
 
     pub struct MonoTypeNormalizer {
         tv_map: TvarMap,
@@ -993,7 +994,7 @@ from(bucket: v.bucket)
                 |> map(fn: (r) => ({r with _value: r._value + r._value}))
         "#;
 
-        let ast = core::parser::parse_string("main.flux", src);
+        let ast = fluxcore::parser::parse_string("main.flux", src);
         let mut f = super::fresher();
 
         let mut file = convert_file(ast, &mut f).unwrap();
@@ -1035,7 +1036,7 @@ from(bucket: v.bucket)
             c = union(tables: [a, b])
         "#;
 
-        let ast = core::parser::parse_string("main.flux", src);
+        let ast = fluxcore::parser::parse_string("main.flux", src);
         let mut f = super::fresher();
 
         let mut file = convert_file(ast, &mut f).unwrap();
@@ -1103,7 +1104,7 @@ from(bucket: v.bucket)
 
     #[test]
     fn analyze_error() {
-        let ast: ast::Package = core::parser::parse_string("", "x = ()").into();
+        let ast: ast::Package = fluxcore::parser::parse_string("", "x = ()").into();
         match analyze(ast) {
             Ok(_) => panic!("expected an error, got none"),
             Err(e) => {
