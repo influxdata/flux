@@ -22,7 +22,7 @@ var (
 	// to walk through. This is relative to the current
 	// directory.
 	walkRootPaths = []string{
-		"../../core",
+		"../../flux-core",
 		"../../flux",
 		"../../include",
 		"../../scanner.c",
