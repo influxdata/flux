@@ -13,12 +13,14 @@ func init() {
 
 var pkgAST = &ast.Package{
 	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
+		Comments: nil,
+		Errors:   nil,
+		Loc:      nil,
 	},
 	Files: []*ast.File{&ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 18,
@@ -34,7 +36,8 @@ var pkgAST = &ast.Package{
 		},
 		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
@@ -50,7 +53,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
@@ -68,7 +72,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.MemberExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
@@ -84,7 +89,8 @@ var pkgAST = &ast.Package{
 				},
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
@@ -102,7 +108,8 @@ var pkgAST = &ast.Package{
 				},
 				Property: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
@@ -123,7 +130,8 @@ var pkgAST = &ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
@@ -139,7 +147,8 @@ var pkgAST = &ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
@@ -160,7 +169,8 @@ var pkgAST = &ast.Package{
 		Name:     "array.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -176,7 +186,8 @@ var pkgAST = &ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,

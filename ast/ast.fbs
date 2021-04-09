@@ -130,9 +130,14 @@ table SourceLocation {
   source:string;
 }
 
+table Comment {
+  text:string;
+}
+
 table BaseNode {
   loc:SourceLocation;
   errors:[string];
+  comments:[Comment];
 }
 
 table Package {

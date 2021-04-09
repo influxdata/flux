@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::str;
 use std::vec::Vec;
 
+use crate::ast::Comment;
+
 use derive_more::Display;
 
 #[rustfmt::skip]
@@ -32,7 +34,7 @@ pub struct Scanner {
     checkpoint_last_newline: i32,
     token: TokenType,
     positions: HashMap<Position, u32, DefaultHasher>,
-    pub comments: Option<Box<Token>>,
+    pub comments: Vec<Comment>,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone, Hash)]
@@ -52,7 +54,7 @@ pub struct Token {
     pub end_offset: u32,
     pub start_pos: Position,
     pub end_pos: Position,
-    pub comments: Option<Box<Token>>,
+    pub comments: Vec<Comment>,
 }
 
 impl Scanner {
@@ -77,7 +79,7 @@ impl Scanner {
             checkpoint_line: 1,
             checkpoint_last_newline: 0,
             positions: HashMap::default(),
-            comments: None,
+            comments: Vec::new(),
         }
     }
 
@@ -147,7 +149,7 @@ impl Scanner {
                             line: token_start_line as u32,
                             column: (token_start_col + size as i32) as u32,
                         },
-                        comments: None,
+                        comments: vec![],
                     }
                 }
                 // This should be impossible as we would have produced an EOF token
@@ -175,7 +177,7 @@ impl Scanner {
                     line: token_end_line as u32,
                     column: token_end_col as u32,
                 },
-                comments: None,
+                comments: vec![],
             }
         };
 
@@ -203,7 +205,7 @@ impl Scanner {
                 line: self.cur_line as u32,
                 column: column as u32,
             },
-            comments: None,
+            comments: vec![],
         }
     }
 
@@ -214,10 +216,9 @@ impl Scanner {
             if token.tok != TokenType::Comment {
                 break;
             }
-            token.comments = self.comments.take();
-            self.comments = Some(Box::new(token));
+            self.comments.push(Comment { text: token.lit });
         }
-        token.comments = self.comments.take();
+        token.comments.append(&mut self.comments);
         token
     }
 
@@ -250,7 +251,7 @@ impl Scanner {
         *self.positions.get(pos).expect("position should be in map")
     }
 
-    pub fn set_comments(&mut self, t: &mut Option<Box<Token>>) {
-        self.comments = t.take();
+    pub fn set_comments(&mut self, t: &mut Vec<Comment>) {
+        self.comments.append(t);
     }
 }

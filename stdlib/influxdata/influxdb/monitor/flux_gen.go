@@ -13,12 +13,14 @@ func init() {
 
 var pkgAST = &ast.Package{
 	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
+		Comments: nil,
+		Errors:   nil,
+		Loc:      nil,
 	},
 	Files: []*ast.File{&ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 19,
@@ -34,7 +36,8 @@ var pkgAST = &ast.Package{
 		},
 		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 23,
@@ -50,7 +53,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -68,7 +72,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 23,
@@ -87,7 +92,8 @@ var pkgAST = &ast.Package{
 		}, &ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 72,
@@ -103,7 +109,8 @@ var pkgAST = &ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
@@ -121,7 +128,8 @@ var pkgAST = &ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 72,
@@ -138,7 +146,8 @@ var pkgAST = &ast.Package{
 					Body: &ast.PipeExpression{
 						Argument: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
@@ -155,7 +164,8 @@ var pkgAST = &ast.Package{
 							Name: "tables",
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 72,
@@ -172,7 +182,8 @@ var pkgAST = &ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 71,
@@ -188,7 +199,8 @@ var pkgAST = &ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 71,
@@ -204,7 +216,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 63,
@@ -222,7 +235,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 71,
@@ -242,7 +256,8 @@ var pkgAST = &ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 72,
@@ -258,7 +273,8 @@ var pkgAST = &ast.Package{
 							},
 							Callee: &ast.MemberExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 56,
@@ -274,7 +290,8 @@ var pkgAST = &ast.Package{
 								},
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 53,
@@ -292,7 +309,8 @@ var pkgAST = &ast.Package{
 								},
 								Property: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 56,
@@ -313,7 +331,8 @@ var pkgAST = &ast.Package{
 					},
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
@@ -329,7 +348,8 @@ var pkgAST = &ast.Package{
 						},
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
@@ -346,7 +366,8 @@ var pkgAST = &ast.Package{
 							Name: "tables",
 						},
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
@@ -364,7 +385,8 @@ var pkgAST = &ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Write persists the check statuses\n"}},
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 72,
@@ -381,7 +403,8 @@ var pkgAST = &ast.Package{
 		}, &ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 70,
@@ -397,7 +420,8 @@ var pkgAST = &ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -415,7 +439,8 @@ var pkgAST = &ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 70,
@@ -432,7 +457,8 @@ var pkgAST = &ast.Package{
 					Body: &ast.PipeExpression{
 						Argument: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
@@ -449,7 +475,8 @@ var pkgAST = &ast.Package{
 							Name: "tables",
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 70,
@@ -466,7 +493,8 @@ var pkgAST = &ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 69,
@@ -482,7 +510,8 @@ var pkgAST = &ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 69,
@@ -498,7 +527,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 61,
@@ -516,7 +546,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 69,
@@ -536,7 +567,8 @@ var pkgAST = &ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
@@ -552,7 +584,8 @@ var pkgAST = &ast.Package{
 							},
 							Callee: &ast.MemberExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
@@ -568,7 +601,8 @@ var pkgAST = &ast.Package{
 								},
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -586,7 +620,8 @@ var pkgAST = &ast.Package{
 								},
 								Property: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
@@ -607,7 +642,8 @@ var pkgAST = &ast.Package{
 					},
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
@@ -623,7 +659,8 @@ var pkgAST = &ast.Package{
 						},
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 21,
@@ -640,7 +677,8 @@ var pkgAST = &ast.Package{
 							Name: "tables",
 						},
 						Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
@@ -658,7 +696,8 @@ var pkgAST = &ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Log records notification events\n"}},
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 70,
@@ -674,7 +713,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 29,
@@ -690,7 +730,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// From retrieves the check statuses that have been stored.\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
@@ -708,7 +749,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 29,
@@ -729,7 +771,8 @@ var pkgAST = &ast.Package{
 								Argument: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -745,7 +788,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -761,7 +805,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
@@ -779,7 +824,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
@@ -799,7 +845,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
@@ -815,7 +862,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
@@ -831,7 +879,8 @@ var pkgAST = &ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 13,
@@ -849,7 +898,8 @@ var pkgAST = &ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -868,7 +918,8 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
@@ -885,7 +936,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -901,7 +953,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -917,7 +970,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 23,
@@ -935,7 +989,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -953,7 +1008,8 @@ var pkgAST = &ast.Package{
 											},
 										}, &ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -969,7 +1025,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
@@ -987,7 +1044,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
@@ -1007,7 +1065,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
@@ -1023,7 +1082,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
@@ -1042,7 +1102,8 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
@@ -1059,7 +1120,8 @@ var pkgAST = &ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
@@ -1075,7 +1137,8 @@ var pkgAST = &ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 58,
@@ -1091,7 +1154,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -1109,7 +1173,8 @@ var pkgAST = &ast.Package{
 										},
 										Value: &ast.FunctionExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
@@ -1125,7 +1190,8 @@ var pkgAST = &ast.Package{
 											},
 											Body: &ast.BinaryExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 58,
@@ -1141,7 +1207,8 @@ var pkgAST = &ast.Package{
 												},
 												Left: &ast.MemberExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 44,
@@ -1157,7 +1224,8 @@ var pkgAST = &ast.Package{
 													},
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 31,
@@ -1175,7 +1243,8 @@ var pkgAST = &ast.Package{
 													},
 													Property: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 44,
@@ -1195,7 +1264,8 @@ var pkgAST = &ast.Package{
 												Operator: 17,
 												Right: &ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 58,
@@ -1214,7 +1284,8 @@ var pkgAST = &ast.Package{
 											},
 											Params: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
@@ -1230,7 +1301,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 25,
@@ -1253,7 +1325,8 @@ var pkgAST = &ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
@@ -1269,7 +1342,8 @@ var pkgAST = &ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
@@ -1288,7 +1362,8 @@ var pkgAST = &ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
@@ -1305,7 +1380,8 @@ var pkgAST = &ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
@@ -1321,7 +1397,8 @@ var pkgAST = &ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
@@ -1337,7 +1414,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
@@ -1355,7 +1433,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
@@ -1375,7 +1454,8 @@ var pkgAST = &ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
@@ -1391,7 +1471,8 @@ var pkgAST = &ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
@@ -1410,7 +1491,8 @@ var pkgAST = &ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
@@ -1427,7 +1509,8 @@ var pkgAST = &ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
@@ -1443,7 +1526,8 @@ var pkgAST = &ast.Package{
 						},
 						Callee: &ast.MemberExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
@@ -1459,7 +1543,8 @@ var pkgAST = &ast.Package{
 							},
 							Object: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
@@ -1477,7 +1562,8 @@ var pkgAST = &ast.Package{
 							},
 							Property: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
@@ -1498,7 +1584,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -1514,7 +1601,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -1533,7 +1621,8 @@ var pkgAST = &ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
@@ -1549,7 +1638,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
@@ -1568,7 +1658,8 @@ var pkgAST = &ast.Package{
 					Value: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
@@ -1584,7 +1675,8 @@ var pkgAST = &ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
@@ -1603,7 +1695,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -1619,7 +1712,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
@@ -1637,7 +1731,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.FunctionExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -1653,7 +1748,8 @@ var pkgAST = &ast.Package{
 						},
 						Body: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
@@ -1671,7 +1767,8 @@ var pkgAST = &ast.Package{
 						},
 						Params: []*ast.Property{&ast.Property{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
@@ -1687,7 +1784,8 @@ var pkgAST = &ast.Package{
 							},
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
@@ -1710,7 +1808,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
@@ -1726,7 +1825,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// levels describing the result of a check\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
@@ -1744,7 +1844,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
@@ -1762,7 +1863,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
@@ -1778,7 +1880,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
@@ -1796,7 +1899,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
@@ -1814,7 +1918,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
@@ -1830,7 +1935,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
@@ -1848,7 +1954,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
@@ -1866,7 +1973,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
@@ -1882,7 +1990,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
@@ -1900,7 +2009,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
@@ -1918,7 +2028,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
@@ -1934,7 +2045,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
@@ -1952,7 +2064,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
@@ -1970,7 +2083,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -1986,7 +2100,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -2004,7 +2119,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -2020,7 +2136,8 @@ var pkgAST = &ast.Package{
 				},
 				Body: &ast.Block{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
@@ -2036,7 +2153,8 @@ var pkgAST = &ast.Package{
 					},
 					Body: []ast.Statement{&ast.VariableAssignment{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
@@ -2052,7 +2170,8 @@ var pkgAST = &ast.Package{
 						},
 						ID: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
@@ -2071,7 +2190,8 @@ var pkgAST = &ast.Package{
 						Init: &ast.ConditionalExpression{
 							Alternate: &ast.FunctionExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 51,
@@ -2087,7 +2207,8 @@ var pkgAST = &ast.Package{
 								},
 								Body: &ast.BinaryExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -2103,7 +2224,8 @@ var pkgAST = &ast.Package{
 									},
 									Left: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
@@ -2119,7 +2241,8 @@ var pkgAST = &ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -2137,7 +2260,8 @@ var pkgAST = &ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
@@ -2157,7 +2281,8 @@ var pkgAST = &ast.Package{
 									Operator: 17,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
@@ -2176,7 +2301,8 @@ var pkgAST = &ast.Package{
 								},
 								Params: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
@@ -2192,7 +2318,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
@@ -2212,7 +2339,8 @@ var pkgAST = &ast.Package{
 								}},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
@@ -2228,7 +2356,8 @@ var pkgAST = &ast.Package{
 							},
 							Consequent: &ast.FunctionExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 94,
@@ -2244,7 +2373,8 @@ var pkgAST = &ast.Package{
 								},
 								Body: &ast.LogicalExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 94,
@@ -2260,7 +2390,8 @@ var pkgAST = &ast.Package{
 									},
 									Left: &ast.BinaryExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 74,
@@ -2276,7 +2407,8 @@ var pkgAST = &ast.Package{
 										},
 										Left: &ast.MemberExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
@@ -2292,7 +2424,8 @@ var pkgAST = &ast.Package{
 											},
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 54,
@@ -2310,7 +2443,8 @@ var pkgAST = &ast.Package{
 											},
 											Property: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 61,
@@ -2330,7 +2464,8 @@ var pkgAST = &ast.Package{
 										Operator: 18,
 										Right: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 74,
@@ -2351,7 +2486,8 @@ var pkgAST = &ast.Package{
 									Right: &ast.UnaryExpression{
 										Argument: &ast.MemberExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 94,
@@ -2367,7 +2503,8 @@ var pkgAST = &ast.Package{
 											},
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 87,
@@ -2385,7 +2522,8 @@ var pkgAST = &ast.Package{
 											},
 											Property: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 94,
@@ -2403,7 +2541,8 @@ var pkgAST = &ast.Package{
 											},
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 94,
@@ -2422,7 +2561,8 @@ var pkgAST = &ast.Package{
 								},
 								Params: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
@@ -2438,7 +2578,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
@@ -2459,7 +2600,8 @@ var pkgAST = &ast.Package{
 							},
 							Test: &ast.BinaryExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
@@ -2475,7 +2617,8 @@ var pkgAST = &ast.Package{
 								},
 								Left: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -2494,7 +2637,8 @@ var pkgAST = &ast.Package{
 								Operator: 17,
 								Right: &ast.StringLiteral{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
@@ -2514,7 +2658,8 @@ var pkgAST = &ast.Package{
 						},
 					}, &ast.VariableAssignment{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
@@ -2530,7 +2675,8 @@ var pkgAST = &ast.Package{
 						},
 						ID: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
@@ -2549,7 +2695,8 @@ var pkgAST = &ast.Package{
 						Init: &ast.ConditionalExpression{
 							Alternate: &ast.FunctionExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
@@ -2565,7 +2712,8 @@ var pkgAST = &ast.Package{
 								},
 								Body: &ast.BinaryExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 53,
@@ -2581,7 +2729,8 @@ var pkgAST = &ast.Package{
 									},
 									Left: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
@@ -2597,7 +2746,8 @@ var pkgAST = &ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -2615,7 +2765,8 @@ var pkgAST = &ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
@@ -2635,7 +2786,8 @@ var pkgAST = &ast.Package{
 									Operator: 17,
 									Right: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
@@ -2654,7 +2806,8 @@ var pkgAST = &ast.Package{
 								},
 								Params: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
@@ -2670,7 +2823,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
@@ -2690,7 +2844,8 @@ var pkgAST = &ast.Package{
 								}},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
@@ -2706,7 +2861,8 @@ var pkgAST = &ast.Package{
 							},
 							Consequent: &ast.FunctionExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 96,
@@ -2722,7 +2878,8 @@ var pkgAST = &ast.Package{
 								},
 								Body: &ast.LogicalExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 96,
@@ -2738,7 +2895,8 @@ var pkgAST = &ast.Package{
 									},
 									Left: &ast.BinaryExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 76,
@@ -2754,7 +2912,8 @@ var pkgAST = &ast.Package{
 										},
 										Left: &ast.MemberExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
@@ -2770,7 +2929,8 @@ var pkgAST = &ast.Package{
 											},
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 58,
@@ -2788,7 +2948,8 @@ var pkgAST = &ast.Package{
 											},
 											Property: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
@@ -2808,7 +2969,8 @@ var pkgAST = &ast.Package{
 										Operator: 18,
 										Right: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 76,
@@ -2829,7 +2991,8 @@ var pkgAST = &ast.Package{
 									Right: &ast.UnaryExpression{
 										Argument: &ast.MemberExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 96,
@@ -2845,7 +3008,8 @@ var pkgAST = &ast.Package{
 											},
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 89,
@@ -2863,7 +3027,8 @@ var pkgAST = &ast.Package{
 											},
 											Property: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 96,
@@ -2881,7 +3046,8 @@ var pkgAST = &ast.Package{
 											},
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 96,
@@ -2900,7 +3066,8 @@ var pkgAST = &ast.Package{
 								},
 								Params: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 52,
@@ -2916,7 +3083,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 52,
@@ -2937,7 +3105,8 @@ var pkgAST = &ast.Package{
 							},
 							Test: &ast.BinaryExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
@@ -2953,7 +3122,8 @@ var pkgAST = &ast.Package{
 								},
 								Left: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
@@ -2972,7 +3142,8 @@ var pkgAST = &ast.Package{
 								Operator: 17,
 								Right: &ast.StringLiteral{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
@@ -3002,7 +3173,8 @@ var pkgAST = &ast.Package{
 														Argument: &ast.PipeExpression{
 															Argument: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
@@ -3019,7 +3191,8 @@ var pkgAST = &ast.Package{
 																Name: "tables",
 															},
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 60,
@@ -3036,7 +3209,8 @@ var pkgAST = &ast.Package{
 															Call: &ast.CallExpression{
 																Arguments: []ast.Expression{&ast.ObjectExpression{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 59,
@@ -3052,7 +3226,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Properties: []*ast.Property{&ast.Property{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 59,
@@ -3068,7 +3243,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Key: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 18,
@@ -3086,7 +3262,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Value: &ast.FunctionExpression{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 59,
@@ -3102,7 +3279,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Body: &ast.ParenExpression{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 59,
@@ -3118,7 +3296,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Expression: &ast.ObjectExpression{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 58,
@@ -3134,7 +3313,8 @@ var pkgAST = &ast.Package{
 																					},
 																					Properties: []*ast.Property{&ast.Property{
 																						BaseNode: ast.BaseNode{
-																							Errors: nil,
+																							Comments: nil,
+																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 57,
@@ -3150,7 +3330,8 @@ var pkgAST = &ast.Package{
 																						},
 																						Key: &ast.Identifier{
 																							BaseNode: ast.BaseNode{
-																								Errors: nil,
+																								Comments: nil,
+																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 47,
@@ -3171,7 +3352,8 @@ var pkgAST = &ast.Package{
 																								Alternate: &ast.UnaryExpression{
 																									Argument: &ast.IntegerLiteral{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 57,
@@ -3188,7 +3370,8 @@ var pkgAST = &ast.Package{
 																										Value: int64(10),
 																									},
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 57,
@@ -3205,7 +3388,8 @@ var pkgAST = &ast.Package{
 																									Operator: 6,
 																								},
 																								BaseNode: ast.BaseNode{
-																									Errors: nil,
+																									Comments: nil,
+																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 57,
@@ -3221,7 +3405,8 @@ var pkgAST = &ast.Package{
 																								},
 																								Consequent: &ast.IntegerLiteral{
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 85,
@@ -3240,7 +3425,8 @@ var pkgAST = &ast.Package{
 																								Test: &ast.CallExpression{
 																									Arguments: []ast.Expression{&ast.ObjectExpression{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 77,
@@ -3256,7 +3442,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Properties: []*ast.Property{&ast.Property{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 77,
@@ -3272,7 +3459,8 @@ var pkgAST = &ast.Package{
 																											},
 																											Key: &ast.Identifier{
 																												BaseNode: ast.BaseNode{
-																													Errors: nil,
+																													Comments: nil,
+																													Errors:   nil,
 																													Loc: &ast.SourceLocation{
 																														End: ast.Position{
 																															Column: 74,
@@ -3290,7 +3478,8 @@ var pkgAST = &ast.Package{
 																											},
 																											Value: &ast.Identifier{
 																												BaseNode: ast.BaseNode{
-																													Errors: nil,
+																													Comments: nil,
+																													Errors:   nil,
 																													Loc: &ast.SourceLocation{
 																														End: ast.Position{
 																															Column: 77,
@@ -3310,7 +3499,8 @@ var pkgAST = &ast.Package{
 																										With: nil,
 																									}},
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 78,
@@ -3326,7 +3516,8 @@ var pkgAST = &ast.Package{
 																									},
 																									Callee: &ast.Identifier{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 72,
@@ -3345,7 +3536,8 @@ var pkgAST = &ast.Package{
 																								},
 																							},
 																							BaseNode: ast.BaseNode{
-																								Errors: nil,
+																								Comments: nil,
+																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 57,
@@ -3361,7 +3553,8 @@ var pkgAST = &ast.Package{
 																							},
 																							Consequent: &ast.IntegerLiteral{
 																								BaseNode: ast.BaseNode{
-																									Errors: nil,
+																									Comments: nil,
+																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 78,
@@ -3380,7 +3573,8 @@ var pkgAST = &ast.Package{
 																							Test: &ast.CallExpression{
 																								Arguments: []ast.Expression{&ast.ObjectExpression{
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 70,
@@ -3396,7 +3590,8 @@ var pkgAST = &ast.Package{
 																									},
 																									Properties: []*ast.Property{&ast.Property{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 70,
@@ -3412,7 +3607,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Key: &ast.Identifier{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 67,
@@ -3430,7 +3626,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Value: &ast.Identifier{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 70,
@@ -3450,7 +3647,8 @@ var pkgAST = &ast.Package{
 																									With: nil,
 																								}},
 																								BaseNode: ast.BaseNode{
-																									Errors: nil,
+																									Comments: nil,
+																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 71,
@@ -3466,7 +3664,8 @@ var pkgAST = &ast.Package{
 																								},
 																								Callee: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 65,
@@ -3487,7 +3686,8 @@ var pkgAST = &ast.Package{
 																					}},
 																					With: &ast.Identifier{
 																						BaseNode: ast.BaseNode{
-																							Errors: nil,
+																							Comments: nil,
+																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 30,
@@ -3507,7 +3707,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Params: []*ast.Property{&ast.Property{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 22,
@@ -3523,7 +3724,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Key: &ast.Identifier{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
@@ -3546,7 +3748,8 @@ var pkgAST = &ast.Package{
 																	With: nil,
 																}},
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 60,
@@ -3562,7 +3765,8 @@ var pkgAST = &ast.Package{
 																},
 																Callee: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 15,
@@ -3581,7 +3785,8 @@ var pkgAST = &ast.Package{
 															},
 														},
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 65,
@@ -3598,7 +3803,8 @@ var pkgAST = &ast.Package{
 														Call: &ast.CallExpression{
 															Arguments: []ast.Expression{&ast.ObjectExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 64,
@@ -3614,7 +3820,8 @@ var pkgAST = &ast.Package{
 																},
 																Properties: []*ast.Property{&ast.Property{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 38,
@@ -3630,7 +3837,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Key: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
@@ -3648,7 +3856,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Value: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 38,
@@ -3666,7 +3875,8 @@ var pkgAST = &ast.Package{
 																	},
 																}, &ast.Property{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 64,
@@ -3682,7 +3892,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Key: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 42,
@@ -3700,7 +3911,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Value: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 64,
@@ -3720,7 +3932,8 @@ var pkgAST = &ast.Package{
 																With: nil,
 															}},
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 65,
@@ -3736,7 +3949,8 @@ var pkgAST = &ast.Package{
 															},
 															Callee: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 21,
@@ -3755,7 +3969,8 @@ var pkgAST = &ast.Package{
 														},
 													},
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
@@ -3772,7 +3987,8 @@ var pkgAST = &ast.Package{
 													Call: &ast.CallExpression{
 														Arguments: []ast.Expression{&ast.ObjectExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 36,
@@ -3788,7 +4004,8 @@ var pkgAST = &ast.Package{
 															},
 															Properties: []*ast.Property{&ast.Property{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 36,
@@ -3804,7 +4021,8 @@ var pkgAST = &ast.Package{
 																},
 																Key: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 24,
@@ -3822,7 +4040,8 @@ var pkgAST = &ast.Package{
 																},
 																Value: &ast.ArrayExpression{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 36,
@@ -3838,7 +4057,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Elements: []ast.Expression{&ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 35,
@@ -3859,7 +4079,8 @@ var pkgAST = &ast.Package{
 															With: nil,
 														}},
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
@@ -3875,7 +4096,8 @@ var pkgAST = &ast.Package{
 														},
 														Callee: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 16,
@@ -3894,7 +4116,8 @@ var pkgAST = &ast.Package{
 													},
 												},
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 61,
@@ -3911,7 +4134,8 @@ var pkgAST = &ast.Package{
 												Call: &ast.CallExpression{
 													Arguments: []ast.Expression{&ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 60,
@@ -3927,7 +4151,8 @@ var pkgAST = &ast.Package{
 														},
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 60,
@@ -3943,7 +4168,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 26,
@@ -3961,7 +4187,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.ObjectExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 60,
@@ -3977,7 +4204,8 @@ var pkgAST = &ast.Package{
 																},
 																Properties: []*ast.Property{&ast.Property{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 59,
@@ -3993,7 +4221,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Key: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 49,
@@ -4011,7 +4240,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Value: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 59,
@@ -4034,7 +4264,8 @@ var pkgAST = &ast.Package{
 														With: nil,
 													}},
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 61,
@@ -4050,7 +4281,8 @@ var pkgAST = &ast.Package{
 													},
 													Callee: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 18,
@@ -4069,7 +4301,8 @@ var pkgAST = &ast.Package{
 												},
 											},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
@@ -4086,7 +4319,8 @@ var pkgAST = &ast.Package{
 											Call: &ast.CallExpression{
 												Arguments: []ast.Expression{&ast.ObjectExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 60,
@@ -4102,7 +4336,8 @@ var pkgAST = &ast.Package{
 													},
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
@@ -4118,7 +4353,8 @@ var pkgAST = &ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
@@ -4136,7 +4372,8 @@ var pkgAST = &ast.Package{
 														},
 														Value: &ast.ArrayExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 47,
@@ -4152,7 +4389,8 @@ var pkgAST = &ast.Package{
 															},
 															Elements: []ast.Expression{&ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 46,
@@ -4171,7 +4409,8 @@ var pkgAST = &ast.Package{
 														},
 													}, &ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 60,
@@ -4187,7 +4426,8 @@ var pkgAST = &ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 53,
@@ -4205,7 +4445,8 @@ var pkgAST = &ast.Package{
 														},
 														Value: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 60,
@@ -4225,7 +4466,8 @@ var pkgAST = &ast.Package{
 													With: nil,
 												}},
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 61,
@@ -4241,7 +4483,8 @@ var pkgAST = &ast.Package{
 												},
 												Callee: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 16,
@@ -4260,7 +4503,8 @@ var pkgAST = &ast.Package{
 											},
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
@@ -4277,7 +4521,8 @@ var pkgAST = &ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 47,
@@ -4293,7 +4538,8 @@ var pkgAST = &ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 47,
@@ -4309,7 +4555,8 @@ var pkgAST = &ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -4327,7 +4574,8 @@ var pkgAST = &ast.Package{
 													},
 													Value: &ast.ArrayExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
@@ -4343,7 +4591,8 @@ var pkgAST = &ast.Package{
 														},
 														Elements: []ast.Expression{&ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 46,
@@ -4364,7 +4613,8 @@ var pkgAST = &ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
@@ -4380,7 +4630,8 @@ var pkgAST = &ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
@@ -4399,7 +4650,8 @@ var pkgAST = &ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
@@ -4416,7 +4668,8 @@ var pkgAST = &ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
@@ -4432,7 +4685,8 @@ var pkgAST = &ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 48,
@@ -4448,7 +4702,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
@@ -4466,7 +4721,8 @@ var pkgAST = &ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 48,
@@ -4482,7 +4738,8 @@ var pkgAST = &ast.Package{
 													},
 													Body: &ast.BinaryExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 48,
@@ -4498,7 +4755,8 @@ var pkgAST = &ast.Package{
 														},
 														Left: &ast.MemberExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 43,
@@ -4514,7 +4772,8 @@ var pkgAST = &ast.Package{
 															},
 															Object: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
@@ -4532,7 +4791,8 @@ var pkgAST = &ast.Package{
 															},
 															Property: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 43,
@@ -4552,7 +4812,8 @@ var pkgAST = &ast.Package{
 														Operator: 17,
 														Right: &ast.IntegerLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 48,
@@ -4571,7 +4832,8 @@ var pkgAST = &ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
@@ -4587,7 +4849,8 @@ var pkgAST = &ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
@@ -4610,7 +4873,8 @@ var pkgAST = &ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
@@ -4626,7 +4890,8 @@ var pkgAST = &ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -4645,7 +4910,8 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
@@ -4662,7 +4928,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
@@ -4678,7 +4945,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
@@ -4694,7 +4962,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
@@ -4712,7 +4981,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -4728,7 +4998,8 @@ var pkgAST = &ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 40,
@@ -4749,7 +5020,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
@@ -4765,7 +5037,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
@@ -4784,7 +5057,8 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 67,
@@ -4801,7 +5075,8 @@ var pkgAST = &ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
@@ -4817,7 +5092,8 @@ var pkgAST = &ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
@@ -4833,7 +5109,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
@@ -4851,7 +5128,8 @@ var pkgAST = &ast.Package{
 										},
 										Value: &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
@@ -4869,7 +5147,8 @@ var pkgAST = &ast.Package{
 										},
 									}, &ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 66,
@@ -4885,7 +5164,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 54,
@@ -4903,7 +5183,8 @@ var pkgAST = &ast.Package{
 										},
 										Value: &ast.ArrayExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 66,
@@ -4919,7 +5200,8 @@ var pkgAST = &ast.Package{
 											},
 											Elements: []ast.Expression{&ast.StringLiteral{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
@@ -4940,7 +5222,8 @@ var pkgAST = &ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 67,
@@ -4956,7 +5239,8 @@ var pkgAST = &ast.Package{
 								},
 								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
@@ -4972,7 +5256,8 @@ var pkgAST = &ast.Package{
 									},
 									Object: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
@@ -4990,7 +5275,8 @@ var pkgAST = &ast.Package{
 									},
 									Property: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
@@ -5010,7 +5296,8 @@ var pkgAST = &ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 67,
@@ -5028,7 +5315,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
@@ -5044,7 +5332,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
@@ -5062,7 +5351,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
@@ -5080,7 +5370,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 48,
@@ -5096,7 +5387,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -5114,7 +5406,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
@@ -5132,7 +5425,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
@@ -5148,7 +5442,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
@@ -5165,7 +5460,8 @@ var pkgAST = &ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
@@ -5183,7 +5479,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -5199,7 +5496,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// stateChangesOnly takes a stream of tables that contains a _level column and\n"}, ast.Comment{Text: "// returns a stream of tables where each record in a table represents a state change\n"}, ast.Comment{Text: "// of the _level column.\n"}, ast.Comment{Text: "// Statuses are sorted by source timestamp, because default sort order of statuses may differ\n"}, ast.Comment{Text: "// (`_time` column holds the time when check was executed) and that could result in detecting\n"}, ast.Comment{Text: "// status changes at the wrong time or even false changes.\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -5217,7 +5515,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -5233,7 +5532,8 @@ var pkgAST = &ast.Package{
 				},
 				Body: &ast.Block{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
@@ -5259,7 +5559,8 @@ var pkgAST = &ast.Package{
 														Argument: &ast.PipeExpression{
 															Argument: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
@@ -5276,7 +5577,8 @@ var pkgAST = &ast.Package{
 																Name: "tables",
 															},
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 58,
@@ -5293,7 +5595,8 @@ var pkgAST = &ast.Package{
 															Call: &ast.CallExpression{
 																Arguments: []ast.Expression{&ast.ObjectExpression{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 57,
@@ -5309,7 +5612,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Properties: []*ast.Property{&ast.Property{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 57,
@@ -5325,7 +5629,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Key: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 18,
@@ -5343,7 +5648,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Value: &ast.FunctionExpression{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 57,
@@ -5359,7 +5665,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Body: &ast.ParenExpression{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 57,
@@ -5375,7 +5682,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Expression: &ast.ObjectExpression{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 56,
@@ -5391,7 +5699,8 @@ var pkgAST = &ast.Package{
 																					},
 																					Properties: []*ast.Property{&ast.Property{
 																						BaseNode: ast.BaseNode{
-																							Errors: nil,
+																							Comments: nil,
+																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 55,
@@ -5407,7 +5716,8 @@ var pkgAST = &ast.Package{
 																						},
 																						Key: &ast.Identifier{
 																							BaseNode: ast.BaseNode{
-																								Errors: nil,
+																								Comments: nil,
+																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 47,
@@ -5429,7 +5739,8 @@ var pkgAST = &ast.Package{
 																									Alternate: &ast.ConditionalExpression{
 																										Alternate: &ast.IntegerLiteral{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 55,
@@ -5446,7 +5757,8 @@ var pkgAST = &ast.Package{
 																											Value: int64(0),
 																										},
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 55,
@@ -5462,7 +5774,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Consequent: &ast.IntegerLiteral{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 83,
@@ -5480,7 +5793,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Test: &ast.BinaryExpression{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 76,
@@ -5496,7 +5810,8 @@ var pkgAST = &ast.Package{
 																											},
 																											Left: &ast.MemberExpression{
 																												BaseNode: ast.BaseNode{
-																													Errors: nil,
+																													Comments: nil,
+																													Errors:   nil,
 																													Loc: &ast.SourceLocation{
 																														End: ast.Position{
 																															Column: 65,
@@ -5512,7 +5827,8 @@ var pkgAST = &ast.Package{
 																												},
 																												Object: &ast.Identifier{
 																													BaseNode: ast.BaseNode{
-																														Errors: nil,
+																														Comments: nil,
+																														Errors:   nil,
 																														Loc: &ast.SourceLocation{
 																															End: ast.Position{
 																																Column: 58,
@@ -5530,7 +5846,8 @@ var pkgAST = &ast.Package{
 																												},
 																												Property: &ast.Identifier{
 																													BaseNode: ast.BaseNode{
-																														Errors: nil,
+																														Comments: nil,
+																														Errors:   nil,
 																														Loc: &ast.SourceLocation{
 																															End: ast.Position{
 																																Column: 65,
@@ -5550,7 +5867,8 @@ var pkgAST = &ast.Package{
 																											Operator: 17,
 																											Right: &ast.Identifier{
 																												BaseNode: ast.BaseNode{
-																													Errors: nil,
+																													Comments: nil,
+																													Errors:   nil,
 																													Loc: &ast.SourceLocation{
 																														End: ast.Position{
 																															Column: 76,
@@ -5569,7 +5887,8 @@ var pkgAST = &ast.Package{
 																										},
 																									},
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 55,
@@ -5585,7 +5904,8 @@ var pkgAST = &ast.Package{
 																									},
 																									Consequent: &ast.IntegerLiteral{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 85,
@@ -5603,7 +5923,8 @@ var pkgAST = &ast.Package{
 																									},
 																									Test: &ast.BinaryExpression{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 78,
@@ -5619,7 +5940,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Left: &ast.MemberExpression{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 65,
@@ -5635,7 +5957,8 @@ var pkgAST = &ast.Package{
 																											},
 																											Object: &ast.Identifier{
 																												BaseNode: ast.BaseNode{
-																													Errors: nil,
+																													Comments: nil,
+																													Errors:   nil,
 																													Loc: &ast.SourceLocation{
 																														End: ast.Position{
 																															Column: 58,
@@ -5653,7 +5976,8 @@ var pkgAST = &ast.Package{
 																											},
 																											Property: &ast.Identifier{
 																												BaseNode: ast.BaseNode{
-																													Errors: nil,
+																													Comments: nil,
+																													Errors:   nil,
 																													Loc: &ast.SourceLocation{
 																														End: ast.Position{
 																															Column: 65,
@@ -5673,7 +5997,8 @@ var pkgAST = &ast.Package{
 																										Operator: 17,
 																										Right: &ast.Identifier{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 78,
@@ -5692,7 +6017,8 @@ var pkgAST = &ast.Package{
 																									},
 																								},
 																								BaseNode: ast.BaseNode{
-																									Errors: nil,
+																									Comments: nil,
+																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 55,
@@ -5708,7 +6034,8 @@ var pkgAST = &ast.Package{
 																								},
 																								Consequent: &ast.IntegerLiteral{
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 85,
@@ -5726,7 +6053,8 @@ var pkgAST = &ast.Package{
 																								},
 																								Test: &ast.BinaryExpression{
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 78,
@@ -5742,7 +6070,8 @@ var pkgAST = &ast.Package{
 																									},
 																									Left: &ast.MemberExpression{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 65,
@@ -5758,7 +6087,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Object: &ast.Identifier{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 58,
@@ -5776,7 +6106,8 @@ var pkgAST = &ast.Package{
 																										},
 																										Property: &ast.Identifier{
 																											BaseNode: ast.BaseNode{
-																												Errors: nil,
+																												Comments: nil,
+																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
 																														Column: 65,
@@ -5796,7 +6127,8 @@ var pkgAST = &ast.Package{
 																									Operator: 17,
 																									Right: &ast.Identifier{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 78,
@@ -5815,7 +6147,8 @@ var pkgAST = &ast.Package{
 																								},
 																							},
 																							BaseNode: ast.BaseNode{
-																								Errors: nil,
+																								Comments: nil,
+																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 55,
@@ -5831,7 +6164,8 @@ var pkgAST = &ast.Package{
 																							},
 																							Consequent: &ast.IntegerLiteral{
 																								BaseNode: ast.BaseNode{
-																									Errors: nil,
+																									Comments: nil,
+																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 80,
@@ -5849,7 +6183,8 @@ var pkgAST = &ast.Package{
 																							},
 																							Test: &ast.BinaryExpression{
 																								BaseNode: ast.BaseNode{
-																									Errors: nil,
+																									Comments: nil,
+																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 73,
@@ -5865,7 +6200,8 @@ var pkgAST = &ast.Package{
 																								},
 																								Left: &ast.MemberExpression{
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 60,
@@ -5881,7 +6217,8 @@ var pkgAST = &ast.Package{
 																									},
 																									Object: &ast.Identifier{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 53,
@@ -5899,7 +6236,8 @@ var pkgAST = &ast.Package{
 																									},
 																									Property: &ast.Identifier{
 																										BaseNode: ast.BaseNode{
-																											Errors: nil,
+																											Comments: nil,
+																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
 																													Column: 60,
@@ -5919,7 +6257,8 @@ var pkgAST = &ast.Package{
 																								Operator: 17,
 																								Right: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
-																										Errors: nil,
+																										Comments: nil,
+																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
 																												Column: 73,
@@ -5940,7 +6279,8 @@ var pkgAST = &ast.Package{
 																					}},
 																					With: &ast.Identifier{
 																						BaseNode: ast.BaseNode{
-																							Errors: nil,
+																							Comments: nil,
+																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 30,
@@ -5960,7 +6300,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Params: []*ast.Property{&ast.Property{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 22,
@@ -5976,7 +6317,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Key: &ast.Identifier{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 22,
@@ -5999,7 +6341,8 @@ var pkgAST = &ast.Package{
 																	With: nil,
 																}},
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 58,
@@ -6015,7 +6358,8 @@ var pkgAST = &ast.Package{
 																},
 																Callee: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 15,
@@ -6034,7 +6378,8 @@ var pkgAST = &ast.Package{
 															},
 														},
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 65,
@@ -6051,7 +6396,8 @@ var pkgAST = &ast.Package{
 														Call: &ast.CallExpression{
 															Arguments: []ast.Expression{&ast.ObjectExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 64,
@@ -6067,7 +6413,8 @@ var pkgAST = &ast.Package{
 																},
 																Properties: []*ast.Property{&ast.Property{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 38,
@@ -6083,7 +6430,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Key: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
@@ -6101,7 +6449,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Value: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 38,
@@ -6119,7 +6468,8 @@ var pkgAST = &ast.Package{
 																	},
 																}, &ast.Property{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 64,
@@ -6135,7 +6485,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Key: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 42,
@@ -6153,7 +6504,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Value: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 64,
@@ -6173,7 +6525,8 @@ var pkgAST = &ast.Package{
 																With: nil,
 															}},
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 65,
@@ -6189,7 +6542,8 @@ var pkgAST = &ast.Package{
 															},
 															Callee: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 21,
@@ -6208,7 +6562,8 @@ var pkgAST = &ast.Package{
 														},
 													},
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
@@ -6225,7 +6580,8 @@ var pkgAST = &ast.Package{
 													Call: &ast.CallExpression{
 														Arguments: []ast.Expression{&ast.ObjectExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 36,
@@ -6241,7 +6597,8 @@ var pkgAST = &ast.Package{
 															},
 															Properties: []*ast.Property{&ast.Property{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 36,
@@ -6257,7 +6614,8 @@ var pkgAST = &ast.Package{
 																},
 																Key: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 24,
@@ -6275,7 +6633,8 @@ var pkgAST = &ast.Package{
 																},
 																Value: &ast.ArrayExpression{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 36,
@@ -6291,7 +6650,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Elements: []ast.Expression{&ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 35,
@@ -6312,7 +6672,8 @@ var pkgAST = &ast.Package{
 															With: nil,
 														}},
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
@@ -6328,7 +6689,8 @@ var pkgAST = &ast.Package{
 														},
 														Callee: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 16,
@@ -6347,7 +6709,8 @@ var pkgAST = &ast.Package{
 													},
 												},
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 61,
@@ -6364,7 +6727,8 @@ var pkgAST = &ast.Package{
 												Call: &ast.CallExpression{
 													Arguments: []ast.Expression{&ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 60,
@@ -6380,7 +6744,8 @@ var pkgAST = &ast.Package{
 														},
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 60,
@@ -6396,7 +6761,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 26,
@@ -6414,7 +6780,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.ObjectExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 60,
@@ -6430,7 +6797,8 @@ var pkgAST = &ast.Package{
 																},
 																Properties: []*ast.Property{&ast.Property{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 59,
@@ -6446,7 +6814,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Key: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 49,
@@ -6464,7 +6833,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Value: &ast.StringLiteral{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 59,
@@ -6487,7 +6857,8 @@ var pkgAST = &ast.Package{
 														With: nil,
 													}},
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 61,
@@ -6503,7 +6874,8 @@ var pkgAST = &ast.Package{
 													},
 													Callee: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 18,
@@ -6522,7 +6894,8 @@ var pkgAST = &ast.Package{
 												},
 											},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
@@ -6539,7 +6912,8 @@ var pkgAST = &ast.Package{
 											Call: &ast.CallExpression{
 												Arguments: []ast.Expression{&ast.ObjectExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 60,
@@ -6555,7 +6929,8 @@ var pkgAST = &ast.Package{
 													},
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
@@ -6571,7 +6946,8 @@ var pkgAST = &ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 24,
@@ -6589,7 +6965,8 @@ var pkgAST = &ast.Package{
 														},
 														Value: &ast.ArrayExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 47,
@@ -6605,7 +6982,8 @@ var pkgAST = &ast.Package{
 															},
 															Elements: []ast.Expression{&ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 46,
@@ -6624,7 +7002,8 @@ var pkgAST = &ast.Package{
 														},
 													}, &ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 60,
@@ -6640,7 +7019,8 @@ var pkgAST = &ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 53,
@@ -6658,7 +7038,8 @@ var pkgAST = &ast.Package{
 														},
 														Value: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 60,
@@ -6678,7 +7059,8 @@ var pkgAST = &ast.Package{
 													With: nil,
 												}},
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 61,
@@ -6694,7 +7076,8 @@ var pkgAST = &ast.Package{
 												},
 												Callee: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 16,
@@ -6713,7 +7096,8 @@ var pkgAST = &ast.Package{
 											},
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
@@ -6730,7 +7114,8 @@ var pkgAST = &ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 47,
@@ -6746,7 +7131,8 @@ var pkgAST = &ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 47,
@@ -6762,7 +7148,8 @@ var pkgAST = &ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -6780,7 +7167,8 @@ var pkgAST = &ast.Package{
 													},
 													Value: &ast.ArrayExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
@@ -6796,7 +7184,8 @@ var pkgAST = &ast.Package{
 														},
 														Elements: []ast.Expression{&ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 46,
@@ -6817,7 +7206,8 @@ var pkgAST = &ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
@@ -6833,7 +7223,8 @@ var pkgAST = &ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
@@ -6852,7 +7243,8 @@ var pkgAST = &ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
@@ -6869,7 +7261,8 @@ var pkgAST = &ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
@@ -6885,7 +7278,8 @@ var pkgAST = &ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 48,
@@ -6901,7 +7295,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
@@ -6919,7 +7314,8 @@ var pkgAST = &ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 48,
@@ -6935,7 +7331,8 @@ var pkgAST = &ast.Package{
 													},
 													Body: &ast.BinaryExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 48,
@@ -6951,7 +7348,8 @@ var pkgAST = &ast.Package{
 														},
 														Left: &ast.MemberExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 43,
@@ -6967,7 +7365,8 @@ var pkgAST = &ast.Package{
 															},
 															Object: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
@@ -6985,7 +7384,8 @@ var pkgAST = &ast.Package{
 															},
 															Property: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 43,
@@ -7005,7 +7405,8 @@ var pkgAST = &ast.Package{
 														Operator: 18,
 														Right: &ast.IntegerLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 48,
@@ -7024,7 +7425,8 @@ var pkgAST = &ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
@@ -7040,7 +7442,8 @@ var pkgAST = &ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
@@ -7063,7 +7466,8 @@ var pkgAST = &ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
@@ -7079,7 +7483,8 @@ var pkgAST = &ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -7098,7 +7503,8 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
@@ -7115,7 +7521,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
@@ -7131,7 +7538,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
@@ -7147,7 +7555,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
@@ -7165,7 +7574,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -7181,7 +7591,8 @@ var pkgAST = &ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 40,
@@ -7202,7 +7613,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
@@ -7218,7 +7630,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
@@ -7237,7 +7650,8 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 67,
@@ -7254,7 +7668,8 @@ var pkgAST = &ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
@@ -7270,7 +7685,8 @@ var pkgAST = &ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
@@ -7286,7 +7702,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
@@ -7304,7 +7721,8 @@ var pkgAST = &ast.Package{
 										},
 										Value: &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
@@ -7322,7 +7740,8 @@ var pkgAST = &ast.Package{
 										},
 									}, &ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 66,
@@ -7338,7 +7757,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 54,
@@ -7356,7 +7776,8 @@ var pkgAST = &ast.Package{
 										},
 										Value: &ast.ArrayExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 66,
@@ -7372,7 +7793,8 @@ var pkgAST = &ast.Package{
 											},
 											Elements: []ast.Expression{&ast.StringLiteral{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
@@ -7393,7 +7815,8 @@ var pkgAST = &ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 67,
@@ -7409,7 +7832,8 @@ var pkgAST = &ast.Package{
 								},
 								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
@@ -7425,7 +7849,8 @@ var pkgAST = &ast.Package{
 									},
 									Object: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
@@ -7443,7 +7868,8 @@ var pkgAST = &ast.Package{
 									},
 									Property: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
@@ -7463,7 +7889,8 @@ var pkgAST = &ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 67,
@@ -7481,7 +7908,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -7497,7 +7925,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
@@ -7514,7 +7943,8 @@ var pkgAST = &ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -7532,7 +7962,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -7548,7 +7979,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// StateChanges takes a stream of tables, fromLevel, and toLevel and returns\n"}, ast.Comment{Text: "// a stream of tables where status has gone from fromLevel to toLevel.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// StateChanges only operates on data with data where r._level exists.\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
@@ -7566,7 +7998,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -7582,7 +8015,8 @@ var pkgAST = &ast.Package{
 				},
 				Body: &ast.Block{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
@@ -7601,7 +8035,8 @@ var pkgAST = &ast.Package{
 							Alternate: &ast.PipeExpression{
 								Argument: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
@@ -7618,7 +8053,8 @@ var pkgAST = &ast.Package{
 									Name: "tables",
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
@@ -7635,7 +8071,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
@@ -7651,7 +8088,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
@@ -7667,7 +8105,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
@@ -7685,7 +8124,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 61,
@@ -7703,7 +8143,8 @@ var pkgAST = &ast.Package{
 											},
 										}, &ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 79,
@@ -7719,7 +8160,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 70,
@@ -7737,7 +8179,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 79,
@@ -7757,7 +8200,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
@@ -7773,7 +8217,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
@@ -7792,7 +8237,8 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 80,
@@ -7809,7 +8255,8 @@ var pkgAST = &ast.Package{
 							Consequent: &ast.PipeExpression{
 								Argument: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
@@ -7826,7 +8273,8 @@ var pkgAST = &ast.Package{
 									Name: "tables",
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 88,
@@ -7843,7 +8291,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: nil,
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 88,
@@ -7859,7 +8308,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 86,
@@ -7879,7 +8329,8 @@ var pkgAST = &ast.Package{
 							},
 							Test: &ast.LogicalExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
@@ -7895,7 +8346,8 @@ var pkgAST = &ast.Package{
 								},
 								Left: &ast.BinaryExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
@@ -7911,7 +8363,8 @@ var pkgAST = &ast.Package{
 									},
 									Left: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
@@ -7930,7 +8383,8 @@ var pkgAST = &ast.Package{
 									Operator: 17,
 									Right: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -7950,7 +8404,8 @@ var pkgAST = &ast.Package{
 								Operator: 1,
 								Right: &ast.BinaryExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
@@ -7966,7 +8421,8 @@ var pkgAST = &ast.Package{
 									},
 									Left: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
@@ -7985,7 +8441,8 @@ var pkgAST = &ast.Package{
 									Operator: 17,
 									Right: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
@@ -8005,7 +8462,8 @@ var pkgAST = &ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 80,
@@ -8023,7 +8481,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
@@ -8039,7 +8498,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
@@ -8057,7 +8517,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
@@ -8075,7 +8536,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 47,
@@ -8091,7 +8553,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
@@ -8109,7 +8572,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
@@ -8127,7 +8591,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 58,
@@ -8143,7 +8608,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
@@ -8160,7 +8626,8 @@ var pkgAST = &ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 58,
@@ -8178,7 +8645,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -8194,7 +8662,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// Notify will call the endpoint and log the results.\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -8212,7 +8681,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -8234,7 +8704,8 @@ var pkgAST = &ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
@@ -8251,7 +8722,8 @@ var pkgAST = &ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
@@ -8268,7 +8740,8 @@ var pkgAST = &ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
@@ -8284,7 +8757,8 @@ var pkgAST = &ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
@@ -8300,7 +8774,8 @@ var pkgAST = &ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -8318,7 +8793,8 @@ var pkgAST = &ast.Package{
 													},
 													Value: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 36,
@@ -8338,7 +8814,8 @@ var pkgAST = &ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 37,
@@ -8354,7 +8831,8 @@ var pkgAST = &ast.Package{
 											},
 											Callee: &ast.MemberExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 28,
@@ -8370,7 +8848,8 @@ var pkgAST = &ast.Package{
 												},
 												Object: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
@@ -8388,7 +8867,8 @@ var pkgAST = &ast.Package{
 												},
 												Property: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 28,
@@ -8408,7 +8888,8 @@ var pkgAST = &ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 89,
@@ -8425,7 +8906,8 @@ var pkgAST = &ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 88,
@@ -8441,7 +8923,8 @@ var pkgAST = &ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
@@ -8457,7 +8940,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
@@ -8475,7 +8959,8 @@ var pkgAST = &ast.Package{
 												},
 												Value: &ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
@@ -8493,7 +8978,8 @@ var pkgAST = &ast.Package{
 												},
 											}, &ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 88,
@@ -8509,7 +8995,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 54,
@@ -8528,7 +9015,8 @@ var pkgAST = &ast.Package{
 												Value: &ast.CallExpression{
 													Arguments: []ast.Expression{&ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 87,
@@ -8544,7 +9032,8 @@ var pkgAST = &ast.Package{
 														},
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 87,
@@ -8560,7 +9049,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 81,
@@ -8578,7 +9068,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 87,
@@ -8598,7 +9089,8 @@ var pkgAST = &ast.Package{
 														With: nil,
 													}},
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 88,
@@ -8614,7 +9106,8 @@ var pkgAST = &ast.Package{
 													},
 													Callee: &ast.MemberExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 79,
@@ -8630,7 +9123,8 @@ var pkgAST = &ast.Package{
 														},
 														Object: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 68,
@@ -8648,7 +9142,8 @@ var pkgAST = &ast.Package{
 														},
 														Property: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 79,
@@ -8670,7 +9165,8 @@ var pkgAST = &ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 89,
@@ -8686,7 +9182,8 @@ var pkgAST = &ast.Package{
 										},
 										Callee: &ast.MemberExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -8702,7 +9199,8 @@ var pkgAST = &ast.Package{
 											},
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
@@ -8720,7 +9218,8 @@ var pkgAST = &ast.Package{
 											},
 											Property: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -8740,7 +9239,8 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
@@ -8757,7 +9257,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
@@ -8773,7 +9274,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
@@ -8789,7 +9291,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 18,
@@ -8807,7 +9310,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.FunctionExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
@@ -8823,7 +9327,8 @@ var pkgAST = &ast.Package{
 												},
 												Body: &ast.ParenExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 11,
@@ -8839,7 +9344,8 @@ var pkgAST = &ast.Package{
 													},
 													Expression: &ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 10,
@@ -8855,7 +9361,8 @@ var pkgAST = &ast.Package{
 														},
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 42,
@@ -8871,7 +9378,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
@@ -8889,7 +9397,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 42,
@@ -8907,7 +9416,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 47,
@@ -8923,7 +9433,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 30,
@@ -8942,7 +9453,8 @@ var pkgAST = &ast.Package{
 															Value: &ast.CallExpression{
 																Arguments: []ast.Expression{&ast.ObjectExpression{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 46,
@@ -8958,7 +9470,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Properties: []*ast.Property{&ast.Property{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 46,
@@ -8974,7 +9487,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Key: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 37,
@@ -8992,7 +9506,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Value: &ast.MemberExpression{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 46,
@@ -9008,7 +9523,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Object: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 40,
@@ -9026,7 +9542,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Property: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 46,
@@ -9047,7 +9564,8 @@ var pkgAST = &ast.Package{
 																	With: nil,
 																}},
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 47,
@@ -9063,7 +9581,8 @@ var pkgAST = &ast.Package{
 																},
 																Callee: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 35,
@@ -9082,7 +9601,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
@@ -9098,7 +9618,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
@@ -9117,7 +9638,8 @@ var pkgAST = &ast.Package{
 															Value: &ast.CallExpression{
 																Arguments: nil,
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
@@ -9133,7 +9655,8 @@ var pkgAST = &ast.Package{
 																},
 																Callee: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 23,
@@ -9153,7 +9676,8 @@ var pkgAST = &ast.Package{
 														}},
 														With: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 30,
@@ -9173,7 +9697,8 @@ var pkgAST = &ast.Package{
 												},
 												Params: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
@@ -9189,7 +9714,8 @@ var pkgAST = &ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 22,
@@ -9212,7 +9738,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -9228,7 +9755,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
@@ -9247,7 +9775,8 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
@@ -9264,7 +9793,8 @@ var pkgAST = &ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
@@ -9280,7 +9810,8 @@ var pkgAST = &ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
@@ -9299,7 +9830,8 @@ var pkgAST = &ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 66,
@@ -9316,7 +9848,8 @@ var pkgAST = &ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 65,
@@ -9332,7 +9865,8 @@ var pkgAST = &ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -9348,7 +9882,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
@@ -9366,7 +9901,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
@@ -9384,7 +9920,8 @@ var pkgAST = &ast.Package{
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 65,
@@ -9400,7 +9937,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
@@ -9418,7 +9956,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.ArrayExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
@@ -9434,7 +9973,8 @@ var pkgAST = &ast.Package{
 										},
 										Elements: []ast.Expression{&ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 64,
@@ -9455,7 +9995,8 @@ var pkgAST = &ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 66,
@@ -9471,7 +10012,8 @@ var pkgAST = &ast.Package{
 							},
 							Callee: &ast.MemberExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
@@ -9487,7 +10029,8 @@ var pkgAST = &ast.Package{
 								},
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
@@ -9505,7 +10048,8 @@ var pkgAST = &ast.Package{
 								},
 								Property: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
@@ -9525,7 +10069,8 @@ var pkgAST = &ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
@@ -9542,7 +10087,8 @@ var pkgAST = &ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
@@ -9558,7 +10104,8 @@ var pkgAST = &ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -9578,7 +10125,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
@@ -9594,7 +10142,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
@@ -9611,7 +10160,8 @@ var pkgAST = &ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
@@ -9627,7 +10177,8 @@ var pkgAST = &ast.Package{
 					}},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -9643,7 +10194,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
@@ -9662,7 +10214,8 @@ var pkgAST = &ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
@@ -9678,7 +10231,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
@@ -9699,7 +10253,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 29,
@@ -9715,7 +10270,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// Logs retrieves notification events that have been logged.\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
@@ -9733,7 +10289,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 29,
@@ -9754,7 +10311,8 @@ var pkgAST = &ast.Package{
 								Argument: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -9770,7 +10328,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -9786,7 +10345,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
@@ -9804,7 +10364,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
@@ -9824,7 +10385,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
@@ -9840,7 +10402,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
@@ -9856,7 +10419,8 @@ var pkgAST = &ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 13,
@@ -9874,7 +10438,8 @@ var pkgAST = &ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -9893,7 +10458,8 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
@@ -9910,7 +10476,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -9926,7 +10493,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -9942,7 +10510,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 23,
@@ -9960,7 +10529,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -9978,7 +10548,8 @@ var pkgAST = &ast.Package{
 											},
 										}, &ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -9994,7 +10565,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
@@ -10012,7 +10584,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
@@ -10032,7 +10605,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
@@ -10048,7 +10622,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
@@ -10067,7 +10642,8 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 64,
@@ -10084,7 +10660,8 @@ var pkgAST = &ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 63,
@@ -10100,7 +10677,8 @@ var pkgAST = &ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 63,
@@ -10116,7 +10694,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -10134,7 +10713,8 @@ var pkgAST = &ast.Package{
 										},
 										Value: &ast.FunctionExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 63,
@@ -10150,7 +10730,8 @@ var pkgAST = &ast.Package{
 											},
 											Body: &ast.BinaryExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 63,
@@ -10166,7 +10747,8 @@ var pkgAST = &ast.Package{
 												},
 												Left: &ast.MemberExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 44,
@@ -10182,7 +10764,8 @@ var pkgAST = &ast.Package{
 													},
 													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 31,
@@ -10200,7 +10783,8 @@ var pkgAST = &ast.Package{
 													},
 													Property: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 44,
@@ -10220,7 +10804,8 @@ var pkgAST = &ast.Package{
 												Operator: 17,
 												Right: &ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 63,
@@ -10239,7 +10824,8 @@ var pkgAST = &ast.Package{
 											},
 											Params: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
@@ -10255,7 +10841,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 25,
@@ -10278,7 +10865,8 @@ var pkgAST = &ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 64,
@@ -10294,7 +10882,8 @@ var pkgAST = &ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
@@ -10313,7 +10902,8 @@ var pkgAST = &ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
@@ -10330,7 +10920,8 @@ var pkgAST = &ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
@@ -10346,7 +10937,8 @@ var pkgAST = &ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
@@ -10362,7 +10954,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
@@ -10380,7 +10973,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
@@ -10400,7 +10994,8 @@ var pkgAST = &ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
@@ -10416,7 +11011,8 @@ var pkgAST = &ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
@@ -10435,7 +11031,8 @@ var pkgAST = &ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
@@ -10452,7 +11049,8 @@ var pkgAST = &ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
@@ -10468,7 +11066,8 @@ var pkgAST = &ast.Package{
 						},
 						Callee: &ast.MemberExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
@@ -10484,7 +11083,8 @@ var pkgAST = &ast.Package{
 							},
 							Object: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
@@ -10502,7 +11102,8 @@ var pkgAST = &ast.Package{
 							},
 							Property: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
@@ -10523,7 +11124,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -10539,7 +11141,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -10558,7 +11161,8 @@ var pkgAST = &ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
@@ -10574,7 +11178,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
@@ -10593,7 +11198,8 @@ var pkgAST = &ast.Package{
 					Value: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
@@ -10609,7 +11215,8 @@ var pkgAST = &ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
@@ -10628,7 +11235,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -10644,7 +11252,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
@@ -10665,7 +11274,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 54,
@@ -10681,7 +11291,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// Deadman takes in a stream of tables and reports which tables\n"}, ast.Comment{Text: "// were observed strictly before t and which were observed after.\n"}, ast.Comment{Text: "//\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
@@ -10699,7 +11310,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
@@ -10717,7 +11329,8 @@ var pkgAST = &ast.Package{
 					Argument: &ast.PipeExpression{
 						Argument: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
@@ -10734,7 +11347,8 @@ var pkgAST = &ast.Package{
 							Name: "tables",
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
@@ -10751,7 +11365,8 @@ var pkgAST = &ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
@@ -10767,7 +11382,8 @@ var pkgAST = &ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
@@ -10783,7 +11399,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
@@ -10801,7 +11418,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
@@ -10821,7 +11439,8 @@ var pkgAST = &ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
@@ -10837,7 +11456,8 @@ var pkgAST = &ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
@@ -10856,7 +11476,8 @@ var pkgAST = &ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
@@ -10873,7 +11494,8 @@ var pkgAST = &ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: []ast.Expression{&ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
@@ -10889,7 +11511,8 @@ var pkgAST = &ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
@@ -10905,7 +11528,8 @@ var pkgAST = &ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
@@ -10923,7 +11547,8 @@ var pkgAST = &ast.Package{
 								},
 								Value: &ast.FunctionExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 53,
@@ -10939,7 +11564,8 @@ var pkgAST = &ast.Package{
 									},
 									Body: &ast.ParenExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
@@ -10955,7 +11581,8 @@ var pkgAST = &ast.Package{
 										},
 										Expression: &ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 51,
@@ -10971,7 +11598,8 @@ var pkgAST = &ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
@@ -10987,7 +11615,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
@@ -11005,7 +11634,8 @@ var pkgAST = &ast.Package{
 												},
 												Value: &ast.BinaryExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
@@ -11021,7 +11651,8 @@ var pkgAST = &ast.Package{
 													},
 													Left: &ast.MemberExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 46,
@@ -11037,7 +11668,8 @@ var pkgAST = &ast.Package{
 														},
 														Object: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 40,
@@ -11055,7 +11687,8 @@ var pkgAST = &ast.Package{
 														},
 														Property: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 46,
@@ -11075,7 +11708,8 @@ var pkgAST = &ast.Package{
 													Operator: 8,
 													Right: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 50,
@@ -11095,7 +11729,8 @@ var pkgAST = &ast.Package{
 											}},
 											With: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
@@ -11115,7 +11750,8 @@ var pkgAST = &ast.Package{
 									},
 									Params: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
@@ -11131,7 +11767,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -11154,7 +11791,8 @@ var pkgAST = &ast.Package{
 							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
@@ -11170,7 +11808,8 @@ var pkgAST = &ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
@@ -11190,7 +11829,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
@@ -11206,7 +11846,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
@@ -11225,7 +11866,8 @@ var pkgAST = &ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
@@ -11241,7 +11883,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
@@ -11258,7 +11901,8 @@ var pkgAST = &ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
@@ -11276,7 +11920,8 @@ var pkgAST = &ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
@@ -11292,7 +11937,8 @@ var pkgAST = &ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// Check performs a check against its input using the given ok, info, warn and crit functions\n"}, ast.Comment{Text: "// and writes the result to a system bucket.\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -11310,7 +11956,8 @@ var pkgAST = &ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
@@ -11332,7 +11979,8 @@ var pkgAST = &ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
@@ -11349,7 +11997,8 @@ var pkgAST = &ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -11366,7 +12015,8 @@ var pkgAST = &ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -11382,7 +12032,8 @@ var pkgAST = &ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -11398,7 +12049,8 @@ var pkgAST = &ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -11416,7 +12068,8 @@ var pkgAST = &ast.Package{
 													},
 													Value: &ast.MemberExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -11432,7 +12085,8 @@ var pkgAST = &ast.Package{
 														},
 														Object: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 36,
@@ -11450,7 +12104,8 @@ var pkgAST = &ast.Package{
 														},
 														Property: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 41,
@@ -11471,7 +12126,8 @@ var pkgAST = &ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -11487,7 +12143,8 @@ var pkgAST = &ast.Package{
 											},
 											Callee: &ast.MemberExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 28,
@@ -11503,7 +12160,8 @@ var pkgAST = &ast.Package{
 												},
 												Object: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 24,
@@ -11521,7 +12179,8 @@ var pkgAST = &ast.Package{
 												},
 												Property: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 28,
@@ -11541,7 +12200,8 @@ var pkgAST = &ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 94,
@@ -11558,7 +12218,8 @@ var pkgAST = &ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 93,
@@ -11574,7 +12235,8 @@ var pkgAST = &ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
@@ -11590,7 +12252,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
@@ -11608,7 +12271,8 @@ var pkgAST = &ast.Package{
 												},
 												Value: &ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
@@ -11626,7 +12290,8 @@ var pkgAST = &ast.Package{
 												},
 											}, &ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 93,
@@ -11642,7 +12307,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 54,
@@ -11661,7 +12327,8 @@ var pkgAST = &ast.Package{
 												Value: &ast.CallExpression{
 													Arguments: []ast.Expression{&ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 92,
@@ -11677,7 +12344,8 @@ var pkgAST = &ast.Package{
 														},
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 92,
@@ -11693,7 +12361,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 81,
@@ -11711,7 +12380,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 92,
@@ -11727,7 +12397,8 @@ var pkgAST = &ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 87,
@@ -11745,7 +12416,8 @@ var pkgAST = &ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 92,
@@ -11766,7 +12438,8 @@ var pkgAST = &ast.Package{
 														With: nil,
 													}},
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 93,
@@ -11782,7 +12455,8 @@ var pkgAST = &ast.Package{
 													},
 													Callee: &ast.MemberExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 79,
@@ -11798,7 +12472,8 @@ var pkgAST = &ast.Package{
 														},
 														Object: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 68,
@@ -11816,7 +12491,8 @@ var pkgAST = &ast.Package{
 														},
 														Property: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 79,
@@ -11838,7 +12514,8 @@ var pkgAST = &ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 94,
@@ -11854,7 +12531,8 @@ var pkgAST = &ast.Package{
 										},
 										Callee: &ast.MemberExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -11870,7 +12548,8 @@ var pkgAST = &ast.Package{
 											},
 											Object: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
@@ -11888,7 +12567,8 @@ var pkgAST = &ast.Package{
 											},
 											Property: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -11908,7 +12588,8 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
@@ -11925,7 +12606,8 @@ var pkgAST = &ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
@@ -11941,7 +12623,8 @@ var pkgAST = &ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
@@ -11957,7 +12640,8 @@ var pkgAST = &ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 18,
@@ -11975,7 +12659,8 @@ var pkgAST = &ast.Package{
 											},
 											Value: &ast.FunctionExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
@@ -11991,7 +12676,8 @@ var pkgAST = &ast.Package{
 												},
 												Body: &ast.ParenExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 11,
@@ -12007,7 +12693,8 @@ var pkgAST = &ast.Package{
 													},
 													Expression: &ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 10,
@@ -12023,7 +12710,8 @@ var pkgAST = &ast.Package{
 														},
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 37,
@@ -12039,7 +12727,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
@@ -12057,7 +12746,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
@@ -12075,7 +12765,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 48,
@@ -12091,7 +12782,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 32,
@@ -12109,7 +12801,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 48,
@@ -12125,7 +12818,8 @@ var pkgAST = &ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 35,
@@ -12143,7 +12837,8 @@ var pkgAST = &ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 48,
@@ -12162,7 +12857,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 30,
@@ -12178,7 +12874,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
@@ -12196,7 +12893,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 30,
@@ -12212,7 +12910,8 @@ var pkgAST = &ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 24,
@@ -12230,7 +12929,8 @@ var pkgAST = &ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
@@ -12249,7 +12949,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 39,
@@ -12265,7 +12966,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 22,
@@ -12283,7 +12985,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 39,
@@ -12299,7 +13002,8 @@ var pkgAST = &ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 29,
@@ -12317,7 +13021,8 @@ var pkgAST = &ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 39,
@@ -12336,7 +13041,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 42,
@@ -12352,7 +13058,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 24,
@@ -12370,7 +13077,8 @@ var pkgAST = &ast.Package{
 															},
 															Value: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 42,
@@ -12386,7 +13094,8 @@ var pkgAST = &ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
@@ -12404,7 +13113,8 @@ var pkgAST = &ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 42,
@@ -12423,7 +13133,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 34,
@@ -12439,7 +13150,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 19,
@@ -12461,7 +13173,8 @@ var pkgAST = &ast.Package{
 																		Alternate: &ast.ConditionalExpression{
 																			Alternate: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 34,
@@ -12478,7 +13191,8 @@ var pkgAST = &ast.Package{
 																				Name: "levelUnknown",
 																			},
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 34,
@@ -12494,7 +13208,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Consequent: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 46,
@@ -12513,7 +13228,8 @@ var pkgAST = &ast.Package{
 																			Test: &ast.CallExpression{
 																				Arguments: []ast.Expression{&ast.ObjectExpression{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 32,
@@ -12529,7 +13245,8 @@ var pkgAST = &ast.Package{
 																					},
 																					Properties: []*ast.Property{&ast.Property{
 																						BaseNode: ast.BaseNode{
-																							Errors: nil,
+																							Comments: nil,
+																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 32,
@@ -12545,7 +13262,8 @@ var pkgAST = &ast.Package{
 																						},
 																						Key: &ast.Identifier{
 																							BaseNode: ast.BaseNode{
-																								Errors: nil,
+																								Comments: nil,
+																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 29,
@@ -12563,7 +13281,8 @@ var pkgAST = &ast.Package{
 																						},
 																						Value: &ast.Identifier{
 																							BaseNode: ast.BaseNode{
-																								Errors: nil,
+																								Comments: nil,
+																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
 																										Column: 32,
@@ -12583,7 +13302,8 @@ var pkgAST = &ast.Package{
 																					With: nil,
 																				}},
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 33,
@@ -12599,7 +13319,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Callee: &ast.Identifier{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 27,
@@ -12618,7 +13339,8 @@ var pkgAST = &ast.Package{
 																			},
 																		},
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 34,
@@ -12634,7 +13356,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Consequent: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 50,
@@ -12653,7 +13376,8 @@ var pkgAST = &ast.Package{
 																		Test: &ast.CallExpression{
 																			Arguments: []ast.Expression{&ast.ObjectExpression{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 34,
@@ -12669,7 +13393,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Properties: []*ast.Property{&ast.Property{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 34,
@@ -12685,7 +13410,8 @@ var pkgAST = &ast.Package{
 																					},
 																					Key: &ast.Identifier{
 																						BaseNode: ast.BaseNode{
-																							Errors: nil,
+																							Comments: nil,
+																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 31,
@@ -12703,7 +13429,8 @@ var pkgAST = &ast.Package{
 																					},
 																					Value: &ast.Identifier{
 																						BaseNode: ast.BaseNode{
-																							Errors: nil,
+																							Comments: nil,
+																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
 																									Column: 34,
@@ -12723,7 +13450,8 @@ var pkgAST = &ast.Package{
 																				With: nil,
 																			}},
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 35,
@@ -12739,7 +13467,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Callee: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 29,
@@ -12758,7 +13487,8 @@ var pkgAST = &ast.Package{
 																		},
 																	},
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
@@ -12774,7 +13504,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Consequent: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 50,
@@ -12793,7 +13524,8 @@ var pkgAST = &ast.Package{
 																	Test: &ast.CallExpression{
 																		Arguments: []ast.Expression{&ast.ObjectExpression{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 34,
@@ -12809,7 +13541,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Properties: []*ast.Property{&ast.Property{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 34,
@@ -12825,7 +13558,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Key: &ast.Identifier{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 31,
@@ -12843,7 +13577,8 @@ var pkgAST = &ast.Package{
 																				},
 																				Value: &ast.Identifier{
 																					BaseNode: ast.BaseNode{
-																						Errors: nil,
+																						Comments: nil,
+																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 34,
@@ -12863,7 +13598,8 @@ var pkgAST = &ast.Package{
 																			With: nil,
 																		}},
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 35,
@@ -12879,7 +13615,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Callee: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 29,
@@ -12898,7 +13635,8 @@ var pkgAST = &ast.Package{
 																	},
 																},
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 34,
@@ -12914,7 +13652,8 @@ var pkgAST = &ast.Package{
 																},
 																Consequent: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 45,
@@ -12933,7 +13672,8 @@ var pkgAST = &ast.Package{
 																Test: &ast.CallExpression{
 																	Arguments: []ast.Expression{&ast.ObjectExpression{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 29,
@@ -12949,7 +13689,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Properties: []*ast.Property{&ast.Property{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 29,
@@ -12965,7 +13706,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Key: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 26,
@@ -12983,7 +13725,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Value: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 29,
@@ -13003,7 +13746,8 @@ var pkgAST = &ast.Package{
 																		With: nil,
 																	}},
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 30,
@@ -13019,7 +13763,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Callee: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 24,
@@ -13039,7 +13784,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 46,
@@ -13055,7 +13801,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 30,
@@ -13074,7 +13821,8 @@ var pkgAST = &ast.Package{
 															Value: &ast.CallExpression{
 																Arguments: []ast.Expression{&ast.ObjectExpression{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 45,
@@ -13090,7 +13838,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Properties: []*ast.Property{&ast.Property{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 45,
@@ -13106,7 +13855,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Key: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 37,
@@ -13124,7 +13874,8 @@ var pkgAST = &ast.Package{
 																		},
 																		Value: &ast.MemberExpression{
 																			BaseNode: ast.BaseNode{
-																				Errors: nil,
+																				Comments: nil,
+																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 45,
@@ -13140,7 +13891,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Object: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 39,
@@ -13158,7 +13910,8 @@ var pkgAST = &ast.Package{
 																			},
 																			Property: &ast.Identifier{
 																				BaseNode: ast.BaseNode{
-																					Errors: nil,
+																					Comments: nil,
+																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 45,
@@ -13179,7 +13932,8 @@ var pkgAST = &ast.Package{
 																	With: nil,
 																}},
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 46,
@@ -13195,7 +13949,8 @@ var pkgAST = &ast.Package{
 																},
 																Callee: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 35,
@@ -13214,7 +13969,8 @@ var pkgAST = &ast.Package{
 															},
 														}, &ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
@@ -13230,7 +13986,8 @@ var pkgAST = &ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 18,
@@ -13249,7 +14006,8 @@ var pkgAST = &ast.Package{
 															Value: &ast.CallExpression{
 																Arguments: nil,
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 25,
@@ -13265,7 +14023,8 @@ var pkgAST = &ast.Package{
 																},
 																Callee: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 23,
@@ -13285,7 +14044,8 @@ var pkgAST = &ast.Package{
 														}},
 														With: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 30,
@@ -13305,7 +14065,8 @@ var pkgAST = &ast.Package{
 												},
 												Params: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
@@ -13321,7 +14082,8 @@ var pkgAST = &ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 22,
@@ -13344,7 +14106,8 @@ var pkgAST = &ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -13360,7 +14123,8 @@ var pkgAST = &ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
@@ -13379,7 +14143,8 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -13396,7 +14161,8 @@ var pkgAST = &ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
@@ -13412,7 +14178,8 @@ var pkgAST = &ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
@@ -13428,7 +14195,8 @@ var pkgAST = &ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -13446,7 +14214,8 @@ var pkgAST = &ast.Package{
 										},
 										Value: &ast.FunctionExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
@@ -13462,7 +14231,8 @@ var pkgAST = &ast.Package{
 											},
 											Body: &ast.ParenExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 11,
@@ -13478,7 +14248,8 @@ var pkgAST = &ast.Package{
 												},
 												Expression: &ast.ObjectExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 10,
@@ -13494,7 +14265,8 @@ var pkgAST = &ast.Package{
 													},
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 38,
@@ -13510,7 +14282,8 @@ var pkgAST = &ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -13529,7 +14302,8 @@ var pkgAST = &ast.Package{
 														Value: &ast.CallExpression{
 															Arguments: []ast.Expression{&ast.ObjectExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
@@ -13545,7 +14319,8 @@ var pkgAST = &ast.Package{
 																},
 																Properties: []*ast.Property{&ast.Property{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 37,
@@ -13561,7 +14336,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Key: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 34,
@@ -13579,7 +14355,8 @@ var pkgAST = &ast.Package{
 																	},
 																	Value: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 37,
@@ -13599,7 +14376,8 @@ var pkgAST = &ast.Package{
 																With: nil,
 															}},
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
@@ -13615,7 +14393,8 @@ var pkgAST = &ast.Package{
 															},
 															Callee: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 32,
@@ -13635,7 +14414,8 @@ var pkgAST = &ast.Package{
 													}},
 													With: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -13655,7 +14435,8 @@ var pkgAST = &ast.Package{
 											},
 											Params: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
@@ -13671,7 +14452,8 @@ var pkgAST = &ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
@@ -13694,7 +14476,8 @@ var pkgAST = &ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
@@ -13710,7 +14493,8 @@ var pkgAST = &ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
@@ -13729,7 +14513,8 @@ var pkgAST = &ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 127,
@@ -13746,7 +14531,8 @@ var pkgAST = &ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 126,
@@ -13762,7 +14548,8 @@ var pkgAST = &ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -13778,7 +14565,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
@@ -13796,7 +14584,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
@@ -13814,7 +14603,8 @@ var pkgAST = &ast.Package{
 									},
 								}, &ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 126,
@@ -13830,7 +14620,8 @@ var pkgAST = &ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
@@ -13848,7 +14639,8 @@ var pkgAST = &ast.Package{
 									},
 									Value: &ast.ArrayExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 126,
@@ -13864,7 +14656,8 @@ var pkgAST = &ast.Package{
 										},
 										Elements: []ast.Expression{&ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 78,
@@ -13881,7 +14674,8 @@ var pkgAST = &ast.Package{
 											Value: "_source_measurement",
 										}, &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 87,
@@ -13898,7 +14692,8 @@ var pkgAST = &ast.Package{
 											Value: "_type",
 										}, &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 100,
@@ -13915,7 +14710,8 @@ var pkgAST = &ast.Package{
 											Value: "_check_id",
 										}, &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 115,
@@ -13932,7 +14728,8 @@ var pkgAST = &ast.Package{
 											Value: "_check_name",
 										}, &ast.StringLiteral{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 125,
@@ -13953,7 +14750,8 @@ var pkgAST = &ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 127,
@@ -13969,7 +14767,8 @@ var pkgAST = &ast.Package{
 							},
 							Callee: &ast.MemberExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
@@ -13985,7 +14784,8 @@ var pkgAST = &ast.Package{
 								},
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
@@ -14003,7 +14803,8 @@ var pkgAST = &ast.Package{
 								},
 								Property: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
@@ -14023,7 +14824,8 @@ var pkgAST = &ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
@@ -14040,7 +14842,8 @@ var pkgAST = &ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
@@ -14056,7 +14859,8 @@ var pkgAST = &ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
@@ -14076,7 +14880,8 @@ var pkgAST = &ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -14092,7 +14897,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 11,
@@ -14109,7 +14915,8 @@ var pkgAST = &ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -14125,7 +14932,8 @@ var pkgAST = &ast.Package{
 					}},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 9,
@@ -14141,7 +14949,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
@@ -14160,7 +14969,8 @@ var pkgAST = &ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -14176,7 +14986,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -14195,7 +15006,8 @@ var pkgAST = &ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
@@ -14211,7 +15023,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
@@ -14229,7 +15042,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.FunctionExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
@@ -14245,7 +15059,8 @@ var pkgAST = &ast.Package{
 						},
 						Body: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
@@ -14263,7 +15078,8 @@ var pkgAST = &ast.Package{
 						},
 						Params: []*ast.Property{&ast.Property{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -14279,7 +15095,8 @@ var pkgAST = &ast.Package{
 							},
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
@@ -14300,7 +15117,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
@@ -14316,7 +15134,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
@@ -14334,7 +15153,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.FunctionExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
@@ -14350,7 +15170,8 @@ var pkgAST = &ast.Package{
 						},
 						Body: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
@@ -14368,7 +15189,8 @@ var pkgAST = &ast.Package{
 						},
 						Params: []*ast.Property{&ast.Property{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -14384,7 +15206,8 @@ var pkgAST = &ast.Package{
 							},
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
@@ -14405,7 +15228,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
@@ -14421,7 +15245,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 9,
@@ -14439,7 +15264,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.FunctionExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
@@ -14455,7 +15281,8 @@ var pkgAST = &ast.Package{
 						},
 						Body: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
@@ -14473,7 +15300,8 @@ var pkgAST = &ast.Package{
 						},
 						Params: []*ast.Property{&ast.Property{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -14489,7 +15317,8 @@ var pkgAST = &ast.Package{
 							},
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
@@ -14510,7 +15339,8 @@ var pkgAST = &ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
@@ -14526,7 +15356,8 @@ var pkgAST = &ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
@@ -14544,7 +15375,8 @@ var pkgAST = &ast.Package{
 					},
 					Value: &ast.FunctionExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
@@ -14560,7 +15392,8 @@ var pkgAST = &ast.Package{
 						},
 						Body: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
@@ -14578,7 +15411,8 @@ var pkgAST = &ast.Package{
 						},
 						Params: []*ast.Property{&ast.Property{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
@@ -14594,7 +15428,8 @@ var pkgAST = &ast.Package{
 							},
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 10,
@@ -14619,7 +15454,8 @@ var pkgAST = &ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 22,
@@ -14635,7 +15471,8 @@ var pkgAST = &ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 22,
@@ -14654,7 +15491,8 @@ var pkgAST = &ast.Package{
 		}, &ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 32,
@@ -14670,7 +15508,8 @@ var pkgAST = &ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 32,
@@ -14689,7 +15528,8 @@ var pkgAST = &ast.Package{
 		}, &ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 29,
@@ -14705,7 +15545,8 @@ var pkgAST = &ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 29,
@@ -14726,7 +15567,8 @@ var pkgAST = &ast.Package{
 		Name:     "monitor.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
@@ -14742,7 +15584,8 @@ var pkgAST = &ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,

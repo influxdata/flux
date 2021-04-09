@@ -9,12 +9,14 @@ import (
 
 var FluxTestPackages = []*ast.Package{&ast.Package{
 	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
+		Comments: nil,
+		Errors:   nil,
+		Loc:      nil,
 	},
 	Files: []*ast.File{&ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 108,
@@ -31,7 +33,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
@@ -47,7 +50,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -65,7 +69,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -81,7 +86,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -97,7 +103,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.DateTimeLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
@@ -118,7 +125,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 42,
@@ -134,7 +142,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -150,7 +159,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -168,7 +178,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -186,7 +197,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -202,7 +214,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
@@ -220,7 +233,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -238,7 +252,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 23,
@@ -254,7 +269,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
@@ -272,7 +288,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 23,
@@ -288,7 +305,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Body: &ast.ParenExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
@@ -307,7 +325,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Argument: &ast.PipeExpression{
 								Argument: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 8,
@@ -324,7 +343,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Name: "table",
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 68,
@@ -341,7 +361,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 67,
@@ -357,7 +378,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 39,
@@ -373,7 +395,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
@@ -391,7 +414,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.DateTimeLiteral{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
@@ -409,7 +433,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										}, &ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 67,
@@ -425,7 +450,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
@@ -443,7 +469,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.DateTimeLiteral{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 67,
@@ -463,7 +490,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 68,
@@ -479,7 +507,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
@@ -498,7 +527,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
@@ -515,7 +545,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
@@ -531,7 +562,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.MemberExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
@@ -547,7 +579,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Object: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 8,
@@ -565,7 +598,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Property: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
@@ -585,7 +619,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
@@ -602,7 +637,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
@@ -618,7 +654,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
@@ -634,7 +671,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
@@ -652,7 +690,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
@@ -672,7 +711,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
@@ -688,7 +728,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
@@ -709,7 +750,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
@@ -725,7 +767,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
@@ -742,7 +785,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "table",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
@@ -761,7 +805,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 108,
@@ -777,7 +822,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
@@ -795,7 +841,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 108,
@@ -811,7 +858,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 108,
@@ -827,7 +875,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 107,
@@ -843,7 +892,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
@@ -859,7 +909,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
@@ -878,7 +929,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -894,7 +946,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -910,7 +963,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
@@ -928,7 +982,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
@@ -948,7 +1003,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
@@ -964,7 +1020,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
@@ -980,7 +1037,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -998,7 +1056,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -1018,7 +1077,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
@@ -1034,7 +1094,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
@@ -1053,7 +1114,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
@@ -1069,7 +1131,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 79,
@@ -1085,7 +1148,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 70,
@@ -1103,7 +1167,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 79,
@@ -1123,7 +1188,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
@@ -1139,7 +1205,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 66,
@@ -1155,7 +1222,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
@@ -1173,7 +1241,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 66,
@@ -1193,7 +1262,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 106,
@@ -1209,7 +1279,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 84,
@@ -1227,7 +1298,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 106,
@@ -1251,7 +1323,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 108,
@@ -1269,7 +1342,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -1285,7 +1359,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -1304,7 +1379,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 32,
@@ -1320,7 +1396,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 32,
@@ -1341,7 +1418,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "influxFieldsAsCols_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -1357,7 +1435,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -1376,7 +1455,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
@@ -1393,7 +1473,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
@@ -1409,7 +1490,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -1427,7 +1509,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
@@ -1443,7 +1526,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.DateTimeLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
@@ -1463,7 +1547,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 40,
@@ -1479,7 +1564,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -1495,7 +1581,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -1513,7 +1600,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -1531,7 +1619,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -1547,7 +1636,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
@@ -1565,7 +1655,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -1583,7 +1674,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 44,
@@ -1599,7 +1691,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// select load1, load15\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
@@ -1617,7 +1710,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 44,
@@ -1638,7 +1732,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Argument: &ast.PipeExpression{
 									Argument: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 9,
@@ -1655,7 +1750,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Name: "stream",
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
@@ -1672,7 +1768,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 37,
@@ -1688,7 +1785,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
@@ -1704,7 +1802,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 19,
@@ -1722,7 +1821,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 25,
@@ -1740,7 +1840,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 											}, &ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -1756,7 +1857,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
@@ -1774,7 +1876,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
@@ -1794,7 +1897,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
@@ -1810,7 +1914,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 13,
@@ -1829,7 +1934,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 99,
@@ -1846,7 +1952,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 98,
@@ -1862,7 +1969,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 98,
@@ -1878,7 +1986,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
@@ -1896,7 +2005,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.FunctionExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 98,
@@ -1912,7 +2022,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Body: &ast.LogicalExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 98,
@@ -1928,7 +2039,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Left: &ast.BinaryExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 55,
@@ -1944,7 +2056,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Left: &ast.MemberExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 40,
@@ -1960,7 +2073,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Object: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 27,
@@ -1978,7 +2092,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Property: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 40,
@@ -1998,7 +2113,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Operator: 17,
 														Right: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 55,
@@ -2019,7 +2135,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Right: &ast.CallExpression{
 														Arguments: []ast.Expression{&ast.ObjectExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 97,
@@ -2035,7 +2152,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Properties: []*ast.Property{&ast.Property{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 84,
@@ -2051,7 +2169,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Key: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 74,
@@ -2069,7 +2188,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Value: &ast.MemberExpression{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 84,
@@ -2085,7 +2205,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																	Object: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 77,
@@ -2103,7 +2224,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	},
 																	Property: &ast.Identifier{
 																		BaseNode: ast.BaseNode{
-																			Errors: nil,
+																			Comments: nil,
+																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 84,
@@ -2122,7 +2244,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 															}, &ast.Property{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 97,
@@ -2138,7 +2261,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Key: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 89,
@@ -2156,7 +2280,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Value: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 97,
@@ -2176,7 +2301,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															With: nil,
 														}},
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 98,
@@ -2192,7 +2318,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Callee: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 68,
@@ -2212,7 +2339,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Params: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
@@ -2228,7 +2356,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -2251,7 +2380,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 99,
@@ -2267,7 +2397,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
@@ -2286,7 +2417,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
@@ -2303,7 +2435,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
@@ -2319,7 +2452,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
@@ -2335,7 +2469,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -2353,7 +2488,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -2371,7 +2507,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									}, &ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
@@ -2387,7 +2524,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
@@ -2405,7 +2543,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 46,
@@ -2425,7 +2564,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
@@ -2441,7 +2581,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -2460,7 +2601,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
@@ -2477,7 +2619,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: nil,
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
@@ -2493,7 +2636,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.MemberExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
@@ -2509,7 +2653,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
@@ -2527,7 +2672,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Property: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
@@ -2547,7 +2693,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 44,
@@ -2564,7 +2711,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: []ast.Expression{&ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 43,
@@ -2580,7 +2728,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
@@ -2596,7 +2745,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
@@ -2614,7 +2764,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
@@ -2632,7 +2783,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
@@ -2648,7 +2800,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
@@ -2666,7 +2819,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
@@ -2686,7 +2840,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							With: nil,
 						}},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
@@ -2702,7 +2857,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
@@ -2722,7 +2878,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
@@ -2738,7 +2895,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
@@ -2755,7 +2913,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "stream",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
@@ -2771,7 +2930,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					}},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
@@ -2787,7 +2947,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
@@ -2806,7 +2967,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
@@ -2822,7 +2984,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
@@ -2841,7 +3004,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 48,
@@ -2857,7 +3021,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
@@ -2876,7 +3041,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Value: nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 59,
@@ -2892,7 +3058,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
@@ -2910,7 +3077,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Value: &ast.ArrayExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
@@ -2928,7 +3096,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 88,
@@ -2944,7 +3113,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 68,
@@ -2962,7 +3132,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Value: &ast.ArrayExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 88,
@@ -2978,7 +3149,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Elements: []ast.Expression{&ast.StringLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 77,
@@ -2995,7 +3167,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Value: "_time",
 						}, &ast.StringLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 87,
@@ -3014,7 +3187,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 108,
@@ -3030,7 +3204,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 99,
@@ -3048,7 +3223,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 108,
@@ -3066,7 +3242,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 119,
@@ -3082,7 +3259,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 115,
@@ -3100,7 +3278,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 119,
@@ -3118,7 +3297,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 130,
@@ -3134,7 +3314,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 127,
@@ -3152,7 +3333,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Value: &ast.DurationLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 130,
@@ -3176,7 +3358,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
@@ -3192,7 +3375,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
@@ -3210,7 +3394,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
@@ -3226,7 +3411,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
@@ -3242,7 +3428,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
@@ -3258,7 +3445,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
@@ -3274,7 +3462,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 10,
@@ -3293,7 +3482,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
@@ -3309,7 +3499,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
@@ -3325,7 +3516,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 35,
@@ -3343,7 +3535,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 43,
@@ -3363,7 +3556,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
@@ -3379,7 +3573,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -3395,7 +3590,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
@@ -3413,7 +3609,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 31,
@@ -3433,7 +3630,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
@@ -3449,7 +3647,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
@@ -3468,7 +3667,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
@@ -3484,7 +3684,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 39,
@@ -3500,7 +3701,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -3518,7 +3720,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
@@ -3538,7 +3741,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
@@ -3554,7 +3758,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
@@ -3570,7 +3775,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
@@ -3588,7 +3794,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
@@ -3608,7 +3815,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 157,
@@ -3624,7 +3832,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 7,
@@ -3642,7 +3851,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.FunctionExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 157,
@@ -3659,7 +3869,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Body: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 28,
@@ -3676,7 +3887,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "table",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 157,
@@ -3693,7 +3905,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 156,
@@ -3709,7 +3922,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 62,
@@ -3725,7 +3939,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 52,
@@ -3743,7 +3958,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.StringLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 62,
@@ -3761,7 +3977,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												}, &ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 99,
@@ -3777,7 +3994,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 69,
@@ -3795,7 +4013,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.ArrayExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 99,
@@ -3811,7 +4030,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Elements: []ast.Expression{&ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 79,
@@ -3828,7 +4048,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: "load1",
 														}, &ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 89,
@@ -3845,7 +4066,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Value: "load15",
 														}, &ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 98,
@@ -3864,7 +4086,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												}, &ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 128,
@@ -3880,7 +4103,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 106,
@@ -3898,7 +4122,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 128,
@@ -3916,7 +4141,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												}, &ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 156,
@@ -3932,7 +4158,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 134,
@@ -3950,7 +4177,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 156,
@@ -3970,7 +4198,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 157,
@@ -3986,7 +4215,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 40,
@@ -4006,7 +4236,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Params: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
@@ -4022,7 +4253,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
@@ -4039,7 +4271,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "table",
 										},
 										Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
@@ -4063,7 +4296,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
@@ -4081,7 +4315,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -4097,7 +4332,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -4116,7 +4352,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 32,
@@ -4132,7 +4369,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 32,
@@ -4153,7 +4391,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "influxRawQuery_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -4169,7 +4408,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -4188,7 +4428,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 103,
@@ -4204,7 +4445,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -4220,7 +4462,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -4238,7 +4481,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -4256,7 +4500,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -4272,7 +4517,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -4290,7 +4536,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -4308,7 +4555,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -4324,7 +4572,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
@@ -4342,7 +4591,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -4364,7 +4614,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 39,
@@ -4381,7 +4632,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
@@ -4398,7 +4650,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 69,
@@ -4414,7 +4667,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -4430,7 +4684,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -4448,7 +4703,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -4466,7 +4722,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												}, &ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
@@ -4482,7 +4739,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
@@ -4500,7 +4758,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 69,
@@ -4520,7 +4779,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 70,
@@ -4536,7 +4796,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -4555,7 +4816,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -4572,7 +4834,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -4588,7 +4851,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -4604,7 +4868,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -4622,7 +4887,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
@@ -4638,7 +4904,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -4656,7 +4923,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -4672,7 +4940,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -4695,7 +4964,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -4711,7 +4981,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -4730,7 +5001,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
@@ -4747,7 +5019,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
@@ -4763,7 +5036,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
@@ -4779,7 +5053,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -4797,7 +5072,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
@@ -4813,7 +5089,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
@@ -4834,7 +5111,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
@@ -4850,7 +5128,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -4869,7 +5148,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -4886,7 +5166,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -4902,7 +5183,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -4921,7 +5203,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
@@ -4938,7 +5221,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
@@ -4954,7 +5238,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
@@ -4970,7 +5255,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -4988,7 +5274,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -5008,7 +5295,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
@@ -5024,7 +5312,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -5043,7 +5332,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -5060,7 +5350,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -5076,7 +5367,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -5096,7 +5388,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
@@ -5112,7 +5405,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
@@ -5129,7 +5423,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
@@ -5148,7 +5443,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 103,
@@ -5164,7 +5460,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
@@ -5182,7 +5479,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 103,
@@ -5198,7 +5496,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 103,
@@ -5214,7 +5513,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 102,
@@ -5230,7 +5530,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -5246,7 +5547,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -5265,7 +5567,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -5281,7 +5584,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -5297,7 +5601,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -5315,7 +5620,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -5335,7 +5641,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -5351,7 +5658,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -5367,7 +5675,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -5385,7 +5694,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -5405,7 +5715,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -5421,7 +5732,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -5440,7 +5752,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -5456,7 +5769,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -5472,7 +5786,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -5490,7 +5805,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -5510,7 +5826,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -5526,7 +5843,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -5542,7 +5860,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -5560,7 +5879,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -5580,7 +5900,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 101,
@@ -5596,7 +5917,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -5614,7 +5936,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 101,
@@ -5638,7 +5961,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 103,
@@ -5656,7 +5980,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -5672,7 +5997,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -5693,7 +6019,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_fields_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -5709,7 +6036,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -5728,7 +6056,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 103,
@@ -5744,7 +6073,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -5760,7 +6090,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -5778,7 +6109,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -5796,7 +6128,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -5812,7 +6145,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -5830,7 +6164,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -5848,7 +6183,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -5864,7 +6200,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
@@ -5882,7 +6219,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -5905,7 +6243,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Argument: &ast.PipeExpression{
 											Argument: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
@@ -5922,7 +6261,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Name: "tables",
 											},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 70,
@@ -5939,7 +6279,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Call: &ast.CallExpression{
 												Arguments: []ast.Expression{&ast.ObjectExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
@@ -5955,7 +6296,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Properties: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -5971,7 +6313,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 19,
@@ -5989,7 +6332,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Value: &ast.DateTimeLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 41,
@@ -6007,7 +6351,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 													}, &ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 69,
@@ -6023,7 +6368,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 47,
@@ -6041,7 +6387,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Value: &ast.DateTimeLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 69,
@@ -6061,7 +6408,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													With: nil,
 												}},
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 70,
@@ -6077,7 +6425,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Callee: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 13,
@@ -6096,7 +6445,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 50,
@@ -6113,7 +6463,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
@@ -6129,7 +6480,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 49,
@@ -6145,7 +6497,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 17,
@@ -6163,7 +6516,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.FunctionExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 49,
@@ -6179,7 +6533,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Body: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 49,
@@ -6195,7 +6550,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 40,
@@ -6211,7 +6567,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 27,
@@ -6229,7 +6586,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 40,
@@ -6249,7 +6607,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Operator: 17,
 															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 49,
@@ -6268,7 +6627,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Params: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -6284,7 +6644,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 21,
@@ -6307,7 +6668,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 50,
@@ -6323,7 +6685,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
@@ -6342,7 +6705,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 49,
@@ -6359,7 +6723,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 48,
@@ -6375,7 +6740,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 48,
@@ -6391,7 +6757,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -6409,7 +6776,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 48,
@@ -6425,7 +6793,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.BinaryExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 48,
@@ -6441,7 +6810,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Left: &ast.MemberExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 32,
@@ -6457,7 +6827,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Object: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 27,
@@ -6475,7 +6846,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Property: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 32,
@@ -6495,7 +6867,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Operator: 17,
 														Right: &ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 48,
@@ -6514,7 +6887,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -6530,7 +6904,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -6553,7 +6928,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
@@ -6569,7 +6945,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -6588,7 +6965,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
@@ -6605,7 +6983,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
@@ -6621,7 +7000,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
@@ -6637,7 +7017,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -6655,7 +7036,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
@@ -6671,7 +7053,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
@@ -6692,7 +7075,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
@@ -6708,7 +7092,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -6727,7 +7112,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -6744,7 +7130,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -6760,7 +7147,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -6779,7 +7167,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
@@ -6796,7 +7185,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
@@ -6812,7 +7202,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
@@ -6828,7 +7219,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -6846,7 +7238,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -6866,7 +7259,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
@@ -6882,7 +7276,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -6901,7 +7296,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -6918,7 +7314,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -6934,7 +7331,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -6954,7 +7352,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
@@ -6970,7 +7369,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
@@ -6987,7 +7387,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
@@ -7006,7 +7407,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 103,
@@ -7022,7 +7424,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
@@ -7040,7 +7443,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 103,
@@ -7056,7 +7460,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 103,
@@ -7072,7 +7477,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 102,
@@ -7088,7 +7494,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -7104,7 +7511,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -7123,7 +7531,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -7139,7 +7548,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -7155,7 +7565,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -7173,7 +7584,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -7193,7 +7605,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -7209,7 +7622,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -7225,7 +7639,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -7243,7 +7658,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -7263,7 +7679,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -7279,7 +7696,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -7298,7 +7716,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -7314,7 +7733,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -7330,7 +7750,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -7348,7 +7769,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -7368,7 +7790,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -7384,7 +7807,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -7400,7 +7824,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -7418,7 +7843,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -7438,7 +7864,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 101,
@@ -7454,7 +7881,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -7472,7 +7900,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 101,
@@ -7496,7 +7925,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 103,
@@ -7514,7 +7944,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -7530,7 +7961,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -7551,7 +7983,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_fields_with_pred_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -7567,7 +8000,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -7586,7 +8020,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 109,
@@ -7602,7 +8037,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -7618,7 +8054,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -7636,7 +8073,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -7654,7 +8092,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -7670,7 +8109,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -7688,7 +8128,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -7706,7 +8147,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -7722,7 +8164,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
@@ -7740,7 +8183,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -7762,7 +8206,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
@@ -7779,7 +8224,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
@@ -7796,7 +8242,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 69,
@@ -7812,7 +8259,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -7828,7 +8276,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -7846,7 +8295,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -7864,7 +8314,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												}, &ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
@@ -7880,7 +8331,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
@@ -7898,7 +8350,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 69,
@@ -7918,7 +8371,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 70,
@@ -7934,7 +8388,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -7953,7 +8408,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -7970,7 +8426,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -7986,7 +8443,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -8002,7 +8460,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -8020,7 +8479,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
@@ -8036,7 +8496,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -8054,7 +8515,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -8070,7 +8532,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -8093,7 +8556,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -8109,7 +8573,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -8128,7 +8593,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
@@ -8145,7 +8611,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
@@ -8161,7 +8628,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
@@ -8177,7 +8645,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -8195,7 +8664,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
@@ -8211,7 +8681,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
@@ -8232,7 +8703,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
@@ -8248,7 +8720,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -8267,7 +8740,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -8284,7 +8758,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -8300,7 +8775,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -8319,7 +8795,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
@@ -8336,7 +8813,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
@@ -8352,7 +8830,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
@@ -8368,7 +8847,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -8386,7 +8866,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
@@ -8406,7 +8887,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
@@ -8422,7 +8904,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -8441,7 +8924,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -8458,7 +8942,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -8474,7 +8959,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -8494,7 +8980,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
@@ -8510,7 +8997,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
@@ -8527,7 +9015,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
@@ -8546,7 +9035,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 109,
@@ -8562,7 +9052,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
@@ -8580,7 +9071,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 109,
@@ -8596,7 +9088,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 109,
@@ -8612,7 +9105,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 108,
@@ -8628,7 +9122,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -8644,7 +9139,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -8663,7 +9159,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -8679,7 +9176,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -8695,7 +9193,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -8713,7 +9212,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -8733,7 +9233,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -8749,7 +9250,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -8765,7 +9267,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -8783,7 +9286,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -8803,7 +9307,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -8819,7 +9324,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -8838,7 +9344,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -8854,7 +9361,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -8870,7 +9378,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -8888,7 +9397,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -8908,7 +9418,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -8924,7 +9435,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -8940,7 +9452,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -8958,7 +9471,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -8978,7 +9492,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 107,
@@ -8994,7 +9509,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -9012,7 +9528,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 107,
@@ -9036,7 +9553,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 109,
@@ -9054,7 +9572,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -9070,7 +9589,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -9091,7 +9611,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_measurements_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -9107,7 +9628,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -9126,7 +9648,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 109,
@@ -9143,7 +9666,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
@@ -9159,7 +9683,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -9177,7 +9702,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -9193,7 +9719,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -9209,7 +9736,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.DateTimeLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
@@ -9230,7 +9758,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 42,
@@ -9246,7 +9775,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -9262,7 +9792,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -9280,7 +9811,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -9298,7 +9830,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -9314,7 +9847,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -9332,7 +9866,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -9350,7 +9885,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -9366,7 +9902,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
@@ -9384,7 +9921,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -9406,7 +9944,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
@@ -9423,7 +9962,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -9440,7 +9980,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -9456,7 +9997,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -9472,7 +10014,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -9490,7 +10033,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -9510,7 +10054,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -9526,7 +10071,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -9545,7 +10091,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -9562,7 +10109,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -9578,7 +10126,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -9594,7 +10143,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -9612,7 +10162,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 80,
@@ -9628,7 +10179,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.LogicalExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 80,
@@ -9644,7 +10196,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Left: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 50,
@@ -9660,7 +10213,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 34,
@@ -9676,7 +10230,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 27,
@@ -9694,7 +10249,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
@@ -9714,7 +10270,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Operator: 17,
 															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 50,
@@ -9734,7 +10291,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Operator: 1,
 														Right: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 80,
@@ -9750,7 +10308,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 61,
@@ -9766,7 +10325,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 56,
@@ -9784,7 +10344,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 61,
@@ -9804,7 +10365,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Operator: 17,
 															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 80,
@@ -9824,7 +10386,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -9840,7 +10403,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -9863,7 +10427,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 81,
@@ -9879,7 +10444,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -9898,7 +10464,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
@@ -9915,7 +10482,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
@@ -9931,7 +10499,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
@@ -9947,7 +10516,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -9965,7 +10535,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
@@ -9981,7 +10552,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
@@ -10002,7 +10574,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
@@ -10018,7 +10591,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -10037,7 +10611,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -10054,7 +10629,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -10070,7 +10646,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -10089,7 +10666,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
@@ -10106,7 +10684,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
@@ -10122,7 +10701,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
@@ -10138,7 +10718,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -10156,7 +10737,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
@@ -10176,7 +10758,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
@@ -10192,7 +10775,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -10211,7 +10795,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -10228,7 +10813,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -10244,7 +10830,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -10264,7 +10851,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
@@ -10280,7 +10868,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
@@ -10297,7 +10886,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
@@ -10316,7 +10906,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 109,
@@ -10332,7 +10923,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
@@ -10350,7 +10942,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 109,
@@ -10366,7 +10959,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 109,
@@ -10382,7 +10976,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 108,
@@ -10398,7 +10993,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -10414,7 +11010,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -10433,7 +11030,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -10449,7 +11047,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -10465,7 +11064,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -10483,7 +11083,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -10503,7 +11104,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -10519,7 +11121,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -10535,7 +11138,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -10553,7 +11157,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -10573,7 +11178,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -10589,7 +11195,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -10608,7 +11215,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -10624,7 +11232,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -10640,7 +11249,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -10658,7 +11268,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -10678,7 +11289,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -10694,7 +11306,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -10710,7 +11323,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -10728,7 +11342,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -10748,7 +11363,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 107,
@@ -10764,7 +11380,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -10782,7 +11399,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 107,
@@ -10806,7 +11424,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 109,
@@ -10824,7 +11443,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -10840,7 +11460,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -10861,7 +11482,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_measurements_with_many_preds_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -10877,7 +11499,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -10896,7 +11519,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 109,
@@ -10913,7 +11537,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
@@ -10929,7 +11554,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -10947,7 +11573,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -10963,7 +11590,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -10979,7 +11607,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.DateTimeLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
@@ -11000,7 +11629,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 42,
@@ -11016,7 +11646,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -11032,7 +11663,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -11050,7 +11682,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -11068,7 +11701,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -11084,7 +11718,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -11102,7 +11737,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -11120,7 +11756,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -11136,7 +11773,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
@@ -11154,7 +11792,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -11176,7 +11815,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
@@ -11193,7 +11833,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -11210,7 +11851,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -11226,7 +11868,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -11242,7 +11885,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -11260,7 +11904,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -11280,7 +11925,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -11296,7 +11942,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -11315,7 +11962,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -11332,7 +11980,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 50,
@@ -11348,7 +11997,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
@@ -11364,7 +12014,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -11382,7 +12033,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
@@ -11398,7 +12050,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.BinaryExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 50,
@@ -11414,7 +12067,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Left: &ast.MemberExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 34,
@@ -11430,7 +12084,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Object: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 27,
@@ -11448,7 +12103,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Property: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 34,
@@ -11468,7 +12124,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Operator: 17,
 														Right: &ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 50,
@@ -11487,7 +12144,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -11503,7 +12161,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -11526,7 +12185,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
@@ -11542,7 +12202,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -11561,7 +12222,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
@@ -11578,7 +12240,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
@@ -11594,7 +12257,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
@@ -11610,7 +12274,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -11628,7 +12293,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
@@ -11644,7 +12310,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
@@ -11665,7 +12332,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
@@ -11681,7 +12349,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -11700,7 +12369,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -11717,7 +12387,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -11733,7 +12404,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -11752,7 +12424,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
@@ -11769,7 +12442,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
@@ -11785,7 +12459,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
@@ -11801,7 +12476,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -11819,7 +12495,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 39,
@@ -11839,7 +12516,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
@@ -11855,7 +12533,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -11874,7 +12553,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -11891,7 +12571,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -11907,7 +12588,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -11927,7 +12609,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
@@ -11943,7 +12626,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
@@ -11960,7 +12644,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
@@ -11979,7 +12664,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 109,
@@ -11995,7 +12681,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
@@ -12013,7 +12700,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 109,
@@ -12029,7 +12717,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 109,
@@ -12045,7 +12734,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 108,
@@ -12061,7 +12751,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -12077,7 +12768,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -12096,7 +12788,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -12112,7 +12805,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -12128,7 +12822,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -12146,7 +12841,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -12166,7 +12862,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -12182,7 +12879,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -12198,7 +12896,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -12216,7 +12915,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -12236,7 +12936,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -12252,7 +12953,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -12271,7 +12973,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -12287,7 +12990,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -12303,7 +13007,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -12321,7 +13026,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -12341,7 +13047,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -12357,7 +13064,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -12373,7 +13081,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -12391,7 +13100,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -12411,7 +13121,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 107,
@@ -12427,7 +13138,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -12445,7 +13157,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 107,
@@ -12469,7 +13182,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 109,
@@ -12487,7 +13201,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -12503,7 +13218,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -12524,7 +13240,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_measurements_with_pred_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -12540,7 +13257,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -12559,7 +13277,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 105,
@@ -12575,7 +13294,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 		Body: []ast.Statement{&ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -12591,7 +13311,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -12609,7 +13330,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -12627,7 +13349,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -12643,7 +13366,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -12661,7 +13385,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -12679,7 +13404,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -12695,7 +13421,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -12713,7 +13440,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -12735,7 +13463,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
@@ -12752,7 +13481,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
@@ -12769,7 +13499,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 69,
@@ -12785,7 +13516,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -12801,7 +13533,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -12819,7 +13552,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -12837,7 +13571,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 												}, &ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
@@ -12853,7 +13588,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 47,
@@ -12871,7 +13607,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 69,
@@ -12891,7 +13628,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 70,
@@ -12907,7 +13645,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -12926,7 +13665,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -12943,7 +13683,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -12959,7 +13700,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -12975,7 +13717,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -12993,7 +13736,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
@@ -13009,7 +13753,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -13027,7 +13772,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -13043,7 +13789,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -13066,7 +13813,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -13082,7 +13830,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -13101,7 +13850,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
@@ -13118,7 +13868,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: nil,
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
@@ -13134,7 +13885,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -13153,7 +13905,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
@@ -13170,7 +13923,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
@@ -13186,7 +13940,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
@@ -13202,7 +13957,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
@@ -13220,7 +13976,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: &ast.ArrayExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
@@ -13236,7 +13993,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Elements: []ast.Expression{&ast.StringLiteral{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 31,
@@ -13257,7 +14015,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
@@ -13273,7 +14032,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -13292,7 +14052,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
@@ -13309,7 +14070,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: nil,
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
@@ -13325,7 +14087,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -13344,7 +14107,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -13361,7 +14125,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -13377,7 +14142,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -13397,7 +14163,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -13413,7 +14180,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
@@ -13430,7 +14198,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -13449,7 +14218,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 105,
@@ -13465,7 +14235,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
@@ -13483,7 +14254,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 105,
@@ -13499,7 +14271,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 105,
@@ -13515,7 +14288,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 104,
@@ -13531,7 +14305,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -13547,7 +14322,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -13566,7 +14342,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -13582,7 +14359,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -13598,7 +14376,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -13616,7 +14395,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -13636,7 +14416,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -13652,7 +14433,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -13668,7 +14450,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -13686,7 +14469,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -13706,7 +14490,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -13722,7 +14507,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -13741,7 +14527,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -13757,7 +14544,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -13773,7 +14561,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -13791,7 +14580,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -13811,7 +14601,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -13827,7 +14618,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -13843,7 +14635,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -13861,7 +14654,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -13881,7 +14675,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 103,
@@ -13897,7 +14692,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -13915,7 +14711,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 103,
@@ -13939,7 +14736,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 105,
@@ -13957,7 +14755,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -13973,7 +14772,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -13994,7 +14794,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_tag_keys_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -14010,7 +14811,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -14029,7 +14831,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 105,
@@ -14046,7 +14849,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
@@ -14062,7 +14866,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -14080,7 +14885,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -14096,7 +14902,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -14112,7 +14919,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.DateTimeLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
@@ -14133,7 +14941,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 42,
@@ -14149,7 +14958,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -14165,7 +14975,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -14183,7 +14994,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -14201,7 +15013,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -14217,7 +15030,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -14235,7 +15049,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -14253,7 +15068,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -14269,7 +15085,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -14287,7 +15104,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -14309,7 +15127,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
@@ -14326,7 +15145,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -14343,7 +15163,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -14359,7 +15180,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -14375,7 +15197,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -14393,7 +15216,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -14413,7 +15237,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -14429,7 +15254,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -14448,7 +15274,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -14465,7 +15292,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 50,
@@ -14481,7 +15309,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
@@ -14497,7 +15326,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -14515,7 +15345,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
@@ -14531,7 +15362,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.BinaryExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 50,
@@ -14547,7 +15379,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Left: &ast.MemberExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 34,
@@ -14563,7 +15396,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Object: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 27,
@@ -14581,7 +15415,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Property: &ast.Identifier{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 34,
@@ -14601,7 +15436,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Operator: 17,
 														Right: &ast.StringLiteral{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 50,
@@ -14620,7 +15456,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -14636,7 +15473,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -14659,7 +15497,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
@@ -14675,7 +15514,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -14694,7 +15534,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
@@ -14711,7 +15552,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: nil,
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
@@ -14727,7 +15569,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -14746,7 +15589,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
@@ -14763,7 +15607,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: []ast.Expression{&ast.ObjectExpression{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
@@ -14779,7 +15624,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
@@ -14795,7 +15641,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
@@ -14813,7 +15660,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Value: &ast.ArrayExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
@@ -14829,7 +15677,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Elements: []ast.Expression{&ast.StringLiteral{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 31,
@@ -14850,7 +15699,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									With: nil,
 								}},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
@@ -14866,7 +15716,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -14885,7 +15736,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
@@ -14902,7 +15754,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: nil,
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
@@ -14918,7 +15771,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -14937,7 +15791,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -14954,7 +15809,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -14970,7 +15826,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -14990,7 +15847,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -15006,7 +15864,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
@@ -15023,7 +15882,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
@@ -15042,7 +15902,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 105,
@@ -15058,7 +15919,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
@@ -15076,7 +15938,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 105,
@@ -15092,7 +15955,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 105,
@@ -15108,7 +15972,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 104,
@@ -15124,7 +15989,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -15140,7 +16006,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -15159,7 +16026,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -15175,7 +16043,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -15191,7 +16060,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -15209,7 +16079,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -15229,7 +16100,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -15245,7 +16117,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -15261,7 +16134,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -15279,7 +16153,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -15299,7 +16174,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -15315,7 +16191,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -15334,7 +16211,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -15350,7 +16228,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -15366,7 +16245,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -15384,7 +16264,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -15404,7 +16285,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -15420,7 +16302,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -15436,7 +16319,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -15454,7 +16338,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -15474,7 +16359,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 103,
@@ -15490,7 +16376,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -15508,7 +16395,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 103,
@@ -15532,7 +16420,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 105,
@@ -15550,7 +16439,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -15566,7 +16456,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -15587,7 +16478,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_tag_keys_with_pred_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -15603,7 +16495,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -15622,7 +16515,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 107,
@@ -15639,7 +16533,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
@@ -15655,7 +16550,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -15673,7 +16569,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -15689,7 +16586,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -15705,7 +16603,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.DateTimeLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
@@ -15726,7 +16625,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 42,
@@ -15742,7 +16642,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -15758,7 +16659,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -15776,7 +16678,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -15794,7 +16697,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -15810,7 +16714,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -15828,7 +16733,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -15846,7 +16752,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -15862,7 +16769,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// Predicate will filter out everything\n"}, ast.Comment{Text: "// (this is a regression test for a panic that would occur here)\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
@@ -15880,7 +16788,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -15902,7 +16811,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
@@ -15919,7 +16829,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -15936,7 +16847,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -15952,7 +16864,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -15968,7 +16881,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -15986,7 +16900,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -16006,7 +16921,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -16022,7 +16938,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -16041,7 +16958,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 72,
@@ -16058,7 +16976,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 71,
@@ -16074,7 +16993,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 71,
@@ -16090,7 +17010,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -16108,7 +17029,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 71,
@@ -16124,7 +17046,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.LogicalExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 71,
@@ -16140,7 +17063,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Left: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 49,
@@ -16156,7 +17080,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 40,
@@ -16172,7 +17097,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 27,
@@ -16190,7 +17116,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 40,
@@ -16210,7 +17137,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Operator: 17,
 															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 49,
@@ -16230,7 +17158,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Operator: 1,
 														Right: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 71,
@@ -16246,7 +17175,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 62,
@@ -16262,7 +17192,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 55,
@@ -16280,7 +17211,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 62,
@@ -16300,7 +17232,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Operator: 17,
 															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 71,
@@ -16320,7 +17253,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -16336,7 +17270,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -16359,7 +17294,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 72,
@@ -16375,7 +17311,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -16394,7 +17331,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
@@ -16411,7 +17349,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
@@ -16427,7 +17366,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -16443,7 +17383,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -16461,7 +17402,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -16477,7 +17419,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 29,
@@ -16498,7 +17441,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -16514,7 +17458,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -16533,7 +17478,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -16550,7 +17496,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -16566,7 +17513,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -16585,7 +17533,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
@@ -16602,7 +17551,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
@@ -16618,7 +17568,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -16634,7 +17585,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -16652,7 +17604,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -16672,7 +17625,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
@@ -16688,7 +17642,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -16707,7 +17662,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -16724,7 +17680,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -16740,7 +17697,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -16760,7 +17718,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
@@ -16776,7 +17735,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
@@ -16793,7 +17753,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
@@ -16812,7 +17773,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 107,
@@ -16828,7 +17790,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
@@ -16846,7 +17809,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 107,
@@ -16862,7 +17826,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 107,
@@ -16878,7 +17843,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 106,
@@ -16894,7 +17860,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -16910,7 +17877,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -16929,7 +17897,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -16945,7 +17914,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -16961,7 +17931,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -16979,7 +17950,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -16999,7 +17971,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -17015,7 +17988,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -17031,7 +18005,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -17049,7 +18024,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -17069,7 +18045,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -17085,7 +18062,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -17104,7 +18082,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -17120,7 +18099,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -17136,7 +18116,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -17154,7 +18135,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -17174,7 +18156,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -17190,7 +18173,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -17206,7 +18190,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -17224,7 +18209,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -17244,7 +18230,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 105,
@@ -17260,7 +18247,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -17278,7 +18266,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 105,
@@ -17302,7 +18291,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 107,
@@ -17320,7 +18310,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -17336,7 +18327,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -17357,7 +18349,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_tag_values_empty_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -17373,7 +18366,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -17392,7 +18386,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 107,
@@ -17409,7 +18404,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
@@ -17425,7 +18421,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -17443,7 +18440,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -17459,7 +18457,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -17475,7 +18474,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.DateTimeLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
@@ -17496,7 +18496,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 42,
@@ -17512,7 +18513,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -17528,7 +18530,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -17546,7 +18549,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -17564,7 +18568,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -17580,7 +18585,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -17598,7 +18604,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -17616,7 +18623,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -17632,7 +18640,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
@@ -17650,7 +18659,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -17672,7 +18682,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
@@ -17689,7 +18700,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -17706,7 +18718,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -17722,7 +18735,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -17738,7 +18752,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -17756,7 +18771,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -17776,7 +18792,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -17792,7 +18809,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -17811,7 +18829,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -17828,7 +18847,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -17844,7 +18864,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -17860,7 +18881,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -17878,7 +18900,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
@@ -17894,7 +18917,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
@@ -17912,7 +18936,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -17928,7 +18953,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -17951,7 +18977,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -17967,7 +18994,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -17986,7 +19014,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
@@ -18003,7 +19032,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
@@ -18019,7 +19049,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -18035,7 +19066,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -18053,7 +19085,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -18069,7 +19102,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 29,
@@ -18090,7 +19124,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -18106,7 +19141,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -18125,7 +19161,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -18142,7 +19179,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -18158,7 +19196,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -18177,7 +19216,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
@@ -18194,7 +19234,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
@@ -18210,7 +19251,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -18226,7 +19268,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -18244,7 +19287,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -18264,7 +19308,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
@@ -18280,7 +19325,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -18299,7 +19345,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -18316,7 +19363,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -18332,7 +19380,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -18352,7 +19401,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
@@ -18368,7 +19418,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
@@ -18385,7 +19436,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
@@ -18404,7 +19456,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 107,
@@ -18420,7 +19473,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
@@ -18438,7 +19492,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 107,
@@ -18454,7 +19509,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 107,
@@ -18470,7 +19526,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 106,
@@ -18486,7 +19543,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -18502,7 +19560,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -18521,7 +19580,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -18537,7 +19597,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -18553,7 +19614,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -18571,7 +19633,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -18591,7 +19654,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -18607,7 +19671,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -18623,7 +19688,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -18641,7 +19707,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -18661,7 +19728,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -18677,7 +19745,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -18696,7 +19765,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -18712,7 +19782,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -18728,7 +19799,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -18746,7 +19818,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -18766,7 +19839,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -18782,7 +19856,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -18798,7 +19873,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -18816,7 +19892,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -18836,7 +19913,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 105,
@@ -18852,7 +19930,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -18870,7 +19949,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 105,
@@ -18894,7 +19974,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 107,
@@ -18912,7 +19993,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -18928,7 +20010,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -18949,7 +20032,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_tag_values_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -18965,7 +20049,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
@@ -18984,7 +20069,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		},
 	}, &ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 107,
@@ -19001,7 +20087,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 42,
@@ -19017,7 +20104,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
@@ -19035,7 +20123,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
@@ -19051,7 +20140,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
@@ -19067,7 +20157,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.DateTimeLiteral{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
@@ -19088,7 +20179,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 42,
@@ -19104,7 +20196,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -19120,7 +20213,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
@@ -19138,7 +20232,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -19156,7 +20251,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
@@ -19172,7 +20268,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
@@ -19190,7 +20287,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
@@ -19208,7 +20306,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
@@ -19224,7 +20323,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: []ast.Comment{ast.Comment{Text: "// This should return \"euterpe.local\" and not \"mnemosyne.local\"\n"}},
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
@@ -19242,7 +20342,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Init: &ast.FunctionExpression{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
@@ -19264,7 +20365,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Argument: &ast.PipeExpression{
 										Argument: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
@@ -19281,7 +20383,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Name: "tables",
 										},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
@@ -19298,7 +20401,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Call: &ast.CallExpression{
 											Arguments: []ast.Expression{&ast.ObjectExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
@@ -19314,7 +20418,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Properties: []*ast.Property{&ast.Property{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
@@ -19330,7 +20435,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Key: &ast.Identifier{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 19,
@@ -19348,7 +20454,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Value: &ast.DateTimeLiteral{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
@@ -19368,7 +20475,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												With: nil,
 											}},
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
@@ -19384,7 +20492,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Callee: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 13,
@@ -19403,7 +20512,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 79,
@@ -19420,7 +20530,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Call: &ast.CallExpression{
 										Arguments: []ast.Expression{&ast.ObjectExpression{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 78,
@@ -19436,7 +20547,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 78,
@@ -19452,7 +20564,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 17,
@@ -19470,7 +20583,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Value: &ast.FunctionExpression{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 78,
@@ -19486,7 +20600,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Body: &ast.LogicalExpression{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 78,
@@ -19502,7 +20617,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Left: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 50,
@@ -19518,7 +20634,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 34,
@@ -19534,7 +20651,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 27,
@@ -19552,7 +20670,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
@@ -19572,7 +20691,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Operator: 17,
 															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 50,
@@ -19592,7 +20712,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Operator: 1,
 														Right: &ast.BinaryExpression{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 78,
@@ -19608,7 +20729,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															},
 															Left: &ast.MemberExpression{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 69,
@@ -19624,7 +20746,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Object: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 56,
@@ -19642,7 +20765,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																},
 																Property: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
-																		Errors: nil,
+																		Comments: nil,
+																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 69,
@@ -19662,7 +20786,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Operator: 17,
 															Right: &ast.StringLiteral{
 																BaseNode: ast.BaseNode{
-																	Errors: nil,
+																	Comments: nil,
+																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 78,
@@ -19682,7 +20807,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													},
 													Params: []*ast.Property{&ast.Property{
 														BaseNode: ast.BaseNode{
-															Errors: nil,
+															Comments: nil,
+															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 21,
@@ -19698,7 +20824,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														},
 														Key: &ast.Identifier{
 															BaseNode: ast.BaseNode{
-																Errors: nil,
+																Comments: nil,
+																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
@@ -19721,7 +20848,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											With: nil,
 										}},
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 79,
@@ -19737,7 +20865,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Callee: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
@@ -19756,7 +20885,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
@@ -19773,7 +20903,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Call: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
@@ -19789,7 +20920,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
@@ -19805,7 +20937,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
@@ -19823,7 +20956,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.ArrayExpression{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
@@ -19839,7 +20973,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												},
 												Elements: []ast.Expression{&ast.StringLiteral{
 													BaseNode: ast.BaseNode{
-														Errors: nil,
+														Comments: nil,
+														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 29,
@@ -19860,7 +20995,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -19876,7 +21012,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 12,
@@ -19895,7 +21032,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
@@ -19912,7 +21050,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Call: &ast.CallExpression{
 								Arguments: nil,
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
@@ -19928,7 +21067,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Callee: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
@@ -19947,7 +21087,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
@@ -19964,7 +21105,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Call: &ast.CallExpression{
 							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
@@ -19980,7 +21122,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
@@ -19996,7 +21139,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
@@ -20014,7 +21158,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Value: &ast.StringLiteral{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
@@ -20034,7 +21179,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								With: nil,
 							}},
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
@@ -20050,7 +21196,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Callee: &ast.Identifier{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
@@ -20069,7 +21216,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
@@ -20086,7 +21234,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Call: &ast.CallExpression{
 						Arguments: nil,
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
@@ -20102,7 +21251,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Callee: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
@@ -20122,7 +21272,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
@@ -20138,7 +21289,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
@@ -20155,7 +21307,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Name: "tables",
 					},
 					Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
@@ -20174,7 +21327,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		}, &ast.TestStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 107,
@@ -20190,7 +21344,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
@@ -20208,7 +21363,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 				Init: &ast.FunctionExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 107,
@@ -20224,7 +21380,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					},
 					Body: &ast.ParenExpression{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 107,
@@ -20240,7 +21397,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 						Expression: &ast.ObjectExpression{
 							BaseNode: ast.BaseNode{
-								Errors: nil,
+								Comments: nil,
+								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 106,
@@ -20256,7 +21414,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
@@ -20272,7 +21431,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
@@ -20291,7 +21451,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
@@ -20307,7 +21468,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
@@ -20323,7 +21485,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
@@ -20341,7 +21504,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
@@ -20361,7 +21525,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 45,
@@ -20377,7 +21542,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
@@ -20393,7 +21559,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
@@ -20411,7 +21578,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
@@ -20431,7 +21599,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
@@ -20447,7 +21616,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
@@ -20466,7 +21636,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Value: &ast.CallExpression{
 									Arguments: []ast.Expression{&ast.ObjectExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
@@ -20482,7 +21653,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Properties: []*ast.Property{&ast.Property{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 80,
@@ -20498,7 +21670,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Key: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 72,
@@ -20516,7 +21689,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											},
 											Value: &ast.Identifier{
 												BaseNode: ast.BaseNode{
-													Errors: nil,
+													Comments: nil,
+													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 80,
@@ -20536,7 +21710,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										With: nil,
 									}},
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
@@ -20552,7 +21727,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									},
 									Callee: &ast.MemberExpression{
 										BaseNode: ast.BaseNode{
-											Errors: nil,
+											Comments: nil,
+											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 68,
@@ -20568,7 +21744,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Object: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
@@ -20586,7 +21763,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										},
 										Property: &ast.Identifier{
 											BaseNode: ast.BaseNode{
-												Errors: nil,
+												Comments: nil,
+												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 68,
@@ -20606,7 +21784,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							}, &ast.Property{
 								BaseNode: ast.BaseNode{
-									Errors: nil,
+									Comments: nil,
+									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 105,
@@ -20622,7 +21801,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 85,
@@ -20640,7 +21820,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Errors: nil,
+										Comments: nil,
+										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 105,
@@ -20664,7 +21845,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 107,
@@ -20682,7 +21864,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -20698,7 +21881,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Path: &ast.StringLiteral{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
@@ -20719,7 +21903,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 		Name:     "show_tag_values_with_pred_test.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: nil,
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
@@ -20735,7 +21920,8 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,

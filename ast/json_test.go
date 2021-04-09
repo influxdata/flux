@@ -780,6 +780,16 @@ func TestJSONMarshal(t *testing.T) {
 			},
 			want: `{"type":"ObjectExpression","location":{"file":"foo.flux","start":{"line":1,"column":1},"end":{"line":1,"column":13},"source":"{a: \"hello\"}"},"properties":[{"type":"Property","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":12},"source":"a: \"hello\""},"errors":[{"msg":"an error"}],"key":{"type":"Identifier","location":{"file":"foo.flux","start":{"line":1,"column":2},"end":{"line":1,"column":3},"source":"a"},"name":"a"},"value":{"type":"StringLiteral","location":{"file":"foo.flux","start":{"line":1,"column":5},"end":{"line":1,"column":12},"source":"\"hello\""},"errors":[{"msg":"an error"},{"msg":"another error"}],"value":"hello"}}]}`,
 		},
+		{
+			name: "Comments in BaseNode",
+			node: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{{Text: "This is a comment"}},
+				},
+				Name: "A",
+			},
+			want: `{"type":"Identifier","comments":[{"text":"This is a comment"}],"name":"A"}`,
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc

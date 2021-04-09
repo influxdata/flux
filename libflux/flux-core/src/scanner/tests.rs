@@ -13,7 +13,7 @@ fn test_scan() {
             end_offset: 4,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 5 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -25,7 +25,7 @@ fn test_scan() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -40,7 +40,7 @@ fn test_scan() {
                 line: 1,
                 column: 12
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -58,7 +58,7 @@ fn test_scan() {
                 line: 1,
                 column: 13
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -76,7 +76,7 @@ fn test_scan() {
                 line: 1,
                 column: 18
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -94,7 +94,7 @@ fn test_scan() {
                 line: 1,
                 column: 19
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -112,7 +112,7 @@ fn test_scan() {
                 line: 1,
                 column: 22
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -130,7 +130,7 @@ fn test_scan() {
                 line: 1,
                 column: 28
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -148,7 +148,7 @@ fn test_scan() {
                 line: 1,
                 column: 29
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -166,7 +166,7 @@ fn test_scan() {
                 line: 1,
                 column: 34
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -184,7 +184,7 @@ fn test_scan() {
                 line: 1,
                 column: 35
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -202,7 +202,7 @@ fn test_scan() {
                 line: 1,
                 column: 37
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -220,7 +220,7 @@ fn test_scan() {
                 line: 1,
                 column: 39
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -238,7 +238,7 @@ fn test_scan() {
                 line: 1,
                 column: 40
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -256,7 +256,7 @@ fn test_scan() {
                 line: 1,
                 column: 40
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -274,7 +274,7 @@ fn scan_invalid_unicode_single_quotes() {
             end_offset: 3,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 4 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -286,7 +286,7 @@ fn scan_invalid_unicode_single_quotes() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 4 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -301,7 +301,7 @@ fn scan_invalid_unicode_single_quotes() {
                 line: 1,
                 column: 15
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -319,7 +319,7 @@ fn scan_invalid_unicode_single_quotes() {
                 line: 1,
                 column: 18
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -337,7 +337,7 @@ fn scan_invalid_unicode_single_quotes() {
                 line: 1,
                 column: 18
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -355,7 +355,7 @@ fn scan_invalid_unicode_double_quotes() {
             end_offset: 3,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 4 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -367,7 +367,7 @@ fn scan_invalid_unicode_double_quotes() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 4 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -382,7 +382,7 @@ fn scan_invalid_unicode_double_quotes() {
                 line: 1,
                 column: 15
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -400,7 +400,7 @@ fn scan_invalid_unicode_double_quotes() {
                 line: 1,
                 column: 18
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -418,7 +418,7 @@ fn scan_invalid_unicode_double_quotes() {
                 line: 1,
                 column: 18
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -436,7 +436,7 @@ fn scan_invalid_unicode_register() {
             end_offset: 2,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 3 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -448,7 +448,7 @@ fn scan_invalid_unicode_register() {
             end_offset: 6,
             start_pos: Position { line: 1, column: 3 },
             end_pos: Position { line: 1, column: 7 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -463,7 +463,7 @@ fn scan_invalid_unicode_register() {
                 line: 1,
                 column: 14
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -481,7 +481,7 @@ fn scan_invalid_unicode_register() {
                 line: 1,
                 column: 16
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -499,7 +499,7 @@ fn scan_invalid_unicode_register() {
                 line: 1,
                 column: 16
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -517,7 +517,7 @@ fn test_scan_with_regex() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -529,7 +529,7 @@ fn test_scan_with_regex() {
             end_offset: 3,
             start_pos: Position { line: 1, column: 3 },
             end_pos: Position { line: 1, column: 4 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -541,7 +541,7 @@ fn test_scan_with_regex() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -553,7 +553,7 @@ fn test_scan_with_regex() {
             end_offset: 8,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 9 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -571,7 +571,7 @@ fn test_scan_with_regex() {
                 line: 1,
                 column: 19
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -589,7 +589,7 @@ fn test_scan_with_regex() {
                 line: 1,
                 column: 21
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -607,7 +607,7 @@ fn test_scan_with_regex() {
                 line: 1,
                 column: 23
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -625,7 +625,7 @@ fn test_scan_with_regex() {
                 line: 1,
                 column: 23
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -643,7 +643,7 @@ fn test_scan_string_expr_simple() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -655,7 +655,7 @@ fn test_scan_string_expr_simple() {
             end_offset: 3,
             start_pos: Position { line: 1, column: 2 },
             end_pos: Position { line: 1, column: 4 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -670,7 +670,7 @@ fn test_scan_string_expr_simple() {
                 line: 1,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -688,7 +688,7 @@ fn test_scan_string_expr_simple() {
                 line: 1,
                 column: 11
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -706,7 +706,7 @@ fn test_scan_string_expr_start_with_text() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -721,7 +721,7 @@ fn test_scan_string_expr_start_with_text() {
                 line: 1,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -739,7 +739,7 @@ fn test_scan_string_expr_start_with_text() {
                 line: 1,
                 column: 12
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -757,7 +757,7 @@ fn test_scan_string_expr_start_with_text() {
                 line: 1,
                 column: 18
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -775,7 +775,7 @@ fn test_scan_string_expr_start_with_text() {
                 line: 1,
                 column: 19
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -793,7 +793,7 @@ fn test_scan_string_expr_multiple() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -808,7 +808,7 @@ fn test_scan_string_expr_multiple() {
                 line: 1,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -826,7 +826,7 @@ fn test_scan_string_expr_multiple() {
                 line: 1,
                 column: 12
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -844,7 +844,7 @@ fn test_scan_string_expr_multiple() {
                 line: 1,
                 column: 31
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -862,7 +862,7 @@ fn test_scan_string_expr_multiple() {
                 line: 1,
                 column: 33
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -880,7 +880,7 @@ fn test_scan_string_expr_multiple() {
                 line: 1,
                 column: 39
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -898,7 +898,7 @@ fn test_scan_string_expr_multiple() {
                 line: 1,
                 column: 40
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -916,7 +916,7 @@ fn test_scan_string_expr_end_with_text() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -931,7 +931,7 @@ fn test_scan_string_expr_end_with_text() {
                 line: 1,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -949,7 +949,7 @@ fn test_scan_string_expr_end_with_text() {
                 line: 1,
                 column: 12
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -967,7 +967,7 @@ fn test_scan_string_expr_end_with_text() {
                 line: 1,
                 column: 32
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -985,7 +985,7 @@ fn test_scan_string_expr_end_with_text() {
                 line: 1,
                 column: 33
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -1003,7 +1003,7 @@ fn test_scan_string_expr_escaped_quotes() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1018,7 +1018,7 @@ fn test_scan_string_expr_escaped_quotes() {
                 line: 1,
                 column: 31
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1036,7 +1036,7 @@ fn test_scan_string_expr_escaped_quotes() {
                 line: 1,
                 column: 32
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -1054,7 +1054,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1066,7 +1066,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
             end_offset: 6,
             start_pos: Position { line: 1, column: 2 },
             end_pos: Position { line: 1, column: 7 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1078,7 +1078,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1093,7 +1093,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
                 line: 1,
                 column: 32
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1111,7 +1111,7 @@ fn test_scan_string_expr_not_escaped_quotes() {
                 line: 1,
                 column: 33
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -1129,7 +1129,7 @@ fn test_scan_unread() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     s.unread();
@@ -1142,7 +1142,7 @@ fn test_scan_unread() {
             end_offset: 1,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
 
@@ -1155,7 +1155,7 @@ fn test_scan_unread() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 3 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     s.unread();
@@ -1168,7 +1168,7 @@ fn test_scan_unread() {
             end_offset: 3,
             start_pos: Position { line: 1, column: 3 },
             end_pos: Position { line: 1, column: 4 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1180,7 +1180,7 @@ fn test_scan_unread() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1192,7 +1192,7 @@ fn test_scan_unread() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1207,7 +1207,7 @@ fn test_scan_unread() {
                 line: 1,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
     // test unread idempotence
@@ -1228,7 +1228,7 @@ fn test_scan_unread() {
                 line: 1,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1246,7 +1246,7 @@ fn test_scan_unread() {
                 line: 1,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -1267,7 +1267,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1279,7 +1279,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1291,7 +1291,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 11,
             start_pos: Position { line: 4, column: 1 },
             end_pos: Position { line: 4, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     s.unread();
@@ -1304,7 +1304,7 @@ fn test_scan_unread_with_newlines() {
             end_offset: 15,
             start_pos: Position { line: 4, column: 1 },
             end_pos: Position { line: 4, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -1337,7 +1337,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 1,
                 start_pos: Position { line: 1, column: 1 },
                 end_pos: Position { line: 1, column: 2 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Mul,
@@ -1346,7 +1346,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 3,
                 start_pos: Position { line: 1, column: 3 },
                 end_pos: Position { line: 1, column: 4 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Div,
@@ -1355,7 +1355,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 5,
                 start_pos: Position { line: 1, column: 5 },
                 end_pos: Position { line: 1, column: 6 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Div,
@@ -1364,7 +1364,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 5,
                 start_pos: Position { line: 1, column: 5 },
                 end_pos: Position { line: 1, column: 6 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Int,
@@ -1373,7 +1373,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 7,
                 start_pos: Position { line: 1, column: 7 },
                 end_pos: Position { line: 1, column: 8 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Ident,
@@ -1388,7 +1388,7 @@ fn test_scan_with_regex_unread() {
                     line: 2,
                     column: 11
                 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Eof,
@@ -1397,7 +1397,7 @@ fn test_scan_with_regex_unread() {
                 end_offset: 23,
                 start_pos: Position { line: 3, column: 5 },
                 end_pos: Position { line: 3, column: 5 },
-                comments: None,
+                comments: vec![],
             },
         ],
         toks
@@ -1427,7 +1427,7 @@ fn test_unclosed_quote() {
                 end_offset: 1,
                 start_pos: Position { line: 1, column: 1 },
                 end_pos: Position { line: 1, column: 2 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Assign,
@@ -1436,7 +1436,7 @@ fn test_unclosed_quote() {
                 end_offset: 3,
                 start_pos: Position { line: 1, column: 3 },
                 end_pos: Position { line: 1, column: 4 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Quote,
@@ -1445,7 +1445,7 @@ fn test_unclosed_quote() {
                 end_offset: 5,
                 start_pos: Position { line: 1, column: 5 },
                 end_pos: Position { line: 1, column: 6 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Ident,
@@ -1454,7 +1454,7 @@ fn test_unclosed_quote() {
                 end_offset: 8,
                 start_pos: Position { line: 1, column: 6 },
                 end_pos: Position { line: 1, column: 9 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Ident,
@@ -1466,7 +1466,7 @@ fn test_unclosed_quote() {
                     line: 2,
                     column: 12,
                 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Ident,
@@ -1478,7 +1478,7 @@ fn test_unclosed_quote() {
                     line: 3,
                     column: 12,
                 },
-                comments: None,
+                comments: vec![],
             },
             Token {
                 tok: TokenType::Eof,
@@ -1493,7 +1493,7 @@ fn test_unclosed_quote() {
                     line: 3,
                     column: 12
                 },
-                comments: None,
+                comments: vec![],
             }
         ],
         toks
@@ -1519,15 +1519,9 @@ a
             end_offset: 23,
             start_pos: Position { line: 2, column: 1 },
             end_pos: Position { line: 2, column: 2 },
-            comments: Some(Box::new(Token {
-                tok: TokenType::Comment,
-                lit: String::from("// this is a comment.\n"),
-                start_offset: 0,
-                end_offset: 22,
-                start_pos: Position { line: 1, column: 1 },
-                end_pos: Position { line: 2, column: 1 },
-                comments: None
-            })),
+            comments: vec![Comment {
+                text: String::from("// this is a comment.\n"),
+            }],
         }
     );
     assert_eq!(
@@ -1539,31 +1533,17 @@ a
             end_offset: 96,
             start_pos: Position { line: 6, column: 1 },
             end_pos: Position { line: 6, column: 2 },
-            comments: Some(Box::new(Token {
-                tok: TokenType::Comment,
-                lit: String::from("// last but not least.\n"),
-                start_offset: 72,
-                end_offset: 95,
-                start_pos: Position { line: 5, column: 1 },
-                end_pos: Position { line: 6, column: 1 },
-                comments: Some(Box::new(Token {
-                    tok: TokenType::Comment,
-                    lit: String::from("// one more.\n"),
-                    start_offset: 59,
-                    end_offset: 72,
-                    start_pos: Position { line: 4, column: 1 },
-                    end_pos: Position { line: 5, column: 1 },
-                    comments: Some(Box::new(Token {
-                        tok: TokenType::Comment,
-                        lit: String::from("// comment with // nested comment.\n"),
-                        start_offset: 24,
-                        end_offset: 59,
-                        start_pos: Position { line: 3, column: 1 },
-                        end_pos: Position { line: 4, column: 1 },
-                        comments: None,
-                    }))
-                }))
-            }))
+            comments: vec![
+                Comment {
+                    text: String::from("// comment with // nested comment.\n"),
+                },
+                Comment {
+                    text: String::from("// one more.\n"),
+                },
+                Comment {
+                    text: String::from("// last but not least.\n"),
+                },
+            ]
         }
     );
     assert_eq!(
@@ -1581,18 +1561,9 @@ a
                 line: 7,
                 column: 18
             },
-            comments: Some(Box::new(Token {
-                tok: TokenType::Comment,
-                lit: String::from("// ok, that\'s it."),
-                start_offset: 97,
-                end_offset: 114,
-                start_pos: Position { line: 7, column: 1 },
-                end_pos: Position {
-                    line: 7,
-                    column: 18
-                },
-                comments: None
-            }))
+            comments: vec![Comment {
+                text: String::from("// ok, that\'s it."),
+            }]
         }
     );
 
@@ -1607,15 +1578,9 @@ a
             end_offset: 23,
             start_pos: Position { line: 2, column: 1 },
             end_pos: Position { line: 2, column: 2 },
-            comments: Some(Box::new(Token {
-                tok: TokenType::Comment,
-                lit: String::from("// this is a comment.\n"),
-                start_offset: 0,
-                end_offset: 22,
-                start_pos: Position { line: 1, column: 1 },
-                end_pos: Position { line: 2, column: 1 },
-                comments: None
-            })),
+            comments: vec![Comment {
+                text: String::from("// this is a comment.\n"),
+            }],
         }
     );
     assert_eq!(
@@ -1627,31 +1592,17 @@ a
             end_offset: 96,
             start_pos: Position { line: 6, column: 1 },
             end_pos: Position { line: 6, column: 2 },
-            comments: Some(Box::new(Token {
-                tok: TokenType::Comment,
-                lit: String::from("// last but not least.\n"),
-                start_offset: 72,
-                end_offset: 95,
-                start_pos: Position { line: 5, column: 1 },
-                end_pos: Position { line: 6, column: 1 },
-                comments: Some(Box::new(Token {
-                    tok: TokenType::Comment,
-                    lit: String::from("// one more.\n"),
-                    start_offset: 59,
-                    end_offset: 72,
-                    start_pos: Position { line: 4, column: 1 },
-                    end_pos: Position { line: 5, column: 1 },
-                    comments: Some(Box::new(Token {
-                        tok: TokenType::Comment,
-                        lit: String::from("// comment with // nested comment.\n"),
-                        start_offset: 24,
-                        end_offset: 59,
-                        start_pos: Position { line: 3, column: 1 },
-                        end_pos: Position { line: 4, column: 1 },
-                        comments: None
-                    }))
-                }))
-            }))
+            comments: vec![
+                Comment {
+                    text: String::from("// comment with // nested comment.\n"),
+                },
+                Comment {
+                    text: String::from("// one more.\n"),
+                },
+                Comment {
+                    text: String::from("// last but not least.\n"),
+                },
+            ]
         }
     );
     assert_eq!(
@@ -1669,18 +1620,9 @@ a
                 line: 7,
                 column: 18
             },
-            comments: Some(Box::new(Token {
-                tok: TokenType::Comment,
-                lit: String::from("// ok, that\'s it."),
-                start_offset: 97,
-                end_offset: 114,
-                start_pos: Position { line: 7, column: 1 },
-                end_pos: Position {
-                    line: 7,
-                    column: 18
-                },
-                comments: None
-            }))
+            comments: vec![Comment {
+                text: String::from("// ok, that\'s it."),
+            }]
         }
     );
 }
@@ -1699,7 +1641,7 @@ fn test_scan_eof() {
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 1 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1711,7 +1653,7 @@ fn test_scan_eof() {
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 1 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1723,7 +1665,7 @@ fn test_scan_eof() {
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 1 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1735,7 +1677,7 @@ fn test_scan_eof() {
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 1 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1747,7 +1689,7 @@ fn test_scan_eof() {
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 1 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1759,7 +1701,7 @@ fn test_scan_eof() {
             end_offset: 0,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 1 },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -1784,7 +1726,7 @@ fn test_scan_eof_trailing_spaces() {
             end_offset: 7,
             start_pos: Position { line: 2, column: 5 },
             end_pos: Position { line: 2, column: 5 },
-            comments: None,
+            comments: vec![],
         }
     );
 
@@ -1798,7 +1740,7 @@ fn test_scan_eof_trailing_spaces() {
             end_offset: 7,
             start_pos: Position { line: 2, column: 5 },
             end_pos: Position { line: 2, column: 5 },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -1816,7 +1758,7 @@ fn test_illegal() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1828,7 +1770,7 @@ fn test_illegal() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1843,7 +1785,7 @@ fn test_illegal() {
                 line: 1,
                 column: 16
             },
-            comments: None,
+            comments: vec![],
         }
     );
 
@@ -1858,7 +1800,7 @@ fn test_illegal() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1870,7 +1812,7 @@ fn test_illegal() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     s.unread();
@@ -1883,7 +1825,7 @@ fn test_illegal() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1898,7 +1840,7 @@ fn test_illegal() {
                 line: 1,
                 column: 16
             },
-            comments: None,
+            comments: vec![],
         }
     );
 
@@ -1913,7 +1855,7 @@ fn test_illegal() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1925,7 +1867,7 @@ fn test_illegal() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1940,7 +1882,7 @@ fn test_illegal() {
                 line: 1,
                 column: 16
             },
-            comments: None,
+            comments: vec![],
         }
     );
 
@@ -1955,7 +1897,7 @@ fn test_illegal() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1967,7 +1909,7 @@ fn test_illegal() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     s.unread();
@@ -1980,7 +1922,7 @@ fn test_illegal() {
             end_offset: 7,
             start_pos: Position { line: 1, column: 7 },
             end_pos: Position { line: 1, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -1995,7 +1937,7 @@ fn test_illegal() {
                 line: 1,
                 column: 16
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -2013,7 +1955,7 @@ fn test_scan_duration() {
             end_offset: 3,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 4 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -2025,7 +1967,7 @@ fn test_scan_duration() {
             end_offset: 5,
             start_pos: Position { line: 1, column: 5 },
             end_pos: Position { line: 1, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -2040,7 +1982,7 @@ fn test_scan_duration() {
                 line: 1,
                 column: 34
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
@@ -2058,7 +2000,7 @@ fn test_scan_duration() {
                 line: 1,
                 column: 34
             },
-            comments: None,
+            comments: vec![],
         }
     );
 }
@@ -2087,7 +2029,7 @@ c = 1 + 2
             end_offset: 2,
             start_pos: Position { line: 1, column: 1 },
             end_pos: Position { line: 1, column: 3 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(0, s.offset(&Position { line: 1, column: 1 }));
@@ -2100,7 +2042,7 @@ c = 1 + 2
             end_offset: 4,
             start_pos: Position { line: 1, column: 4 },
             end_pos: Position { line: 1, column: 5 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(3, s.offset(&Position { line: 1, column: 4 }));
@@ -2113,7 +2055,7 @@ c = 1 + 2
             end_offset: 24,
             start_pos: Position { line: 1, column: 6 },
             end_pos: Position { line: 3, column: 2 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(5, s.offset(&Position { line: 1, column: 6 }));
@@ -2127,15 +2069,9 @@ c = 1 + 2
             end_offset: 39,
             start_pos: Position { line: 7, column: 1 },
             end_pos: Position { line: 7, column: 2 },
-            comments: Some(Box::new(Token {
-                tok: TokenType::Comment,
-                lit: String::from("// comment\n"),
-                start_offset: 26,
-                end_offset: 37,
-                start_pos: Position { line: 5, column: 1 },
-                end_pos: Position { line: 6, column: 1 },
-                comments: None
-            }))
+            comments: vec![Comment {
+                text: String::from("// comment\n"),
+            }]
         }
     );
     assert_eq!(38, s.offset(&Position { line: 7, column: 1 }));
@@ -2148,7 +2084,7 @@ c = 1 + 2
             end_offset: 41,
             start_pos: Position { line: 7, column: 3 },
             end_pos: Position { line: 7, column: 4 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(40, s.offset(&Position { line: 7, column: 3 }));
@@ -2161,7 +2097,7 @@ c = 1 + 2
             end_offset: 43,
             start_pos: Position { line: 7, column: 5 },
             end_pos: Position { line: 7, column: 6 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(42, s.offset(&Position { line: 7, column: 5 }));
@@ -2174,7 +2110,7 @@ c = 1 + 2
             end_offset: 45,
             start_pos: Position { line: 7, column: 7 },
             end_pos: Position { line: 7, column: 8 },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(44, s.offset(&Position { line: 7, column: 7 }));
@@ -2190,7 +2126,7 @@ c = 1 + 2
                 line: 7,
                 column: 10
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(46, s.offset(&Position { line: 7, column: 9 }));
@@ -2209,7 +2145,7 @@ c = 1 + 2
                 line: 12,
                 column: 1
             },
-            comments: None,
+            comments: vec![],
         }
     );
     assert_eq!(
