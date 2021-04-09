@@ -2726,6 +2726,83 @@ pub mod fbast {
         }
     }
 
+    pub enum CommentOffset {}
+    #[derive(Copy, Clone, Debug, PartialEq)]
+
+    pub struct Comment<'a> {
+        pub _tab: flatbuffers::Table<'a>,
+    }
+
+    impl<'a> flatbuffers::Follow<'a> for Comment<'a> {
+        type Inner = Comment<'a>;
+        #[inline]
+        fn follow(buf: &'a [u8], loc: usize) -> Self::Inner {
+            Self {
+                _tab: flatbuffers::Table { buf: buf, loc: loc },
+            }
+        }
+    }
+
+    impl<'a> Comment<'a> {
+        #[inline]
+        pub fn init_from_table(table: flatbuffers::Table<'a>) -> Self {
+            Comment { _tab: table }
+        }
+        #[allow(unused_mut)]
+        pub fn create<'bldr: 'args, 'args: 'mut_bldr, 'mut_bldr>(
+            _fbb: &'mut_bldr mut flatbuffers::FlatBufferBuilder<'bldr>,
+            args: &'args CommentArgs<'args>,
+        ) -> flatbuffers::WIPOffset<Comment<'bldr>> {
+            let mut builder = CommentBuilder::new(_fbb);
+            if let Some(x) = args.text {
+                builder.add_text(x);
+            }
+            builder.finish()
+        }
+
+        pub const VT_TEXT: flatbuffers::VOffsetT = 4;
+
+        #[inline]
+        pub fn text(&self) -> Option<&'a str> {
+            self._tab
+                .get::<flatbuffers::ForwardsUOffset<&str>>(Comment::VT_TEXT, None)
+        }
+    }
+
+    pub struct CommentArgs<'a> {
+        pub text: Option<flatbuffers::WIPOffset<&'a str>>,
+    }
+    impl<'a> Default for CommentArgs<'a> {
+        #[inline]
+        fn default() -> Self {
+            CommentArgs { text: None }
+        }
+    }
+    pub struct CommentBuilder<'a: 'b, 'b> {
+        fbb_: &'b mut flatbuffers::FlatBufferBuilder<'a>,
+        start_: flatbuffers::WIPOffset<flatbuffers::TableUnfinishedWIPOffset>,
+    }
+    impl<'a: 'b, 'b> CommentBuilder<'a, 'b> {
+        #[inline]
+        pub fn add_text(&mut self, text: flatbuffers::WIPOffset<&'b str>) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(Comment::VT_TEXT, text);
+        }
+        #[inline]
+        pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> CommentBuilder<'a, 'b> {
+            let start = _fbb.start_table();
+            CommentBuilder {
+                fbb_: _fbb,
+                start_: start,
+            }
+        }
+        #[inline]
+        pub fn finish(self) -> flatbuffers::WIPOffset<Comment<'a>> {
+            let o = self.fbb_.end_table(self.start_);
+            flatbuffers::WIPOffset::new(o.value())
+        }
+    }
+
     pub enum BaseNodeOffset {}
     #[derive(Copy, Clone, Debug, PartialEq)]
 
@@ -2754,6 +2831,9 @@ pub mod fbast {
             args: &'args BaseNodeArgs<'args>,
         ) -> flatbuffers::WIPOffset<BaseNode<'bldr>> {
             let mut builder = BaseNodeBuilder::new(_fbb);
+            if let Some(x) = args.comments {
+                builder.add_comments(x);
+            }
             if let Some(x) = args.errors {
                 builder.add_errors(x);
             }
@@ -2765,6 +2845,7 @@ pub mod fbast {
 
         pub const VT_LOC: flatbuffers::VOffsetT = 4;
         pub const VT_ERRORS: flatbuffers::VOffsetT = 6;
+        pub const VT_COMMENTS: flatbuffers::VOffsetT = 8;
 
         #[inline]
         pub fn loc(&self) -> Option<SourceLocation<'a>> {
@@ -2779,12 +2860,25 @@ pub mod fbast {
                 flatbuffers::Vector<flatbuffers::ForwardsUOffset<&'a str>>,
             >>(BaseNode::VT_ERRORS, None)
         }
+        #[inline]
+        pub fn comments(
+            &self,
+        ) -> Option<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Comment<'a>>>> {
+            self._tab.get::<flatbuffers::ForwardsUOffset<
+                flatbuffers::Vector<flatbuffers::ForwardsUOffset<Comment<'a>>>,
+            >>(BaseNode::VT_COMMENTS, None)
+        }
     }
 
     pub struct BaseNodeArgs<'a> {
         pub loc: Option<flatbuffers::WIPOffset<SourceLocation<'a>>>,
         pub errors: Option<
             flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<&'a str>>>,
+        >,
+        pub comments: Option<
+            flatbuffers::WIPOffset<
+                flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<Comment<'a>>>,
+            >,
         >,
     }
     impl<'a> Default for BaseNodeArgs<'a> {
@@ -2793,6 +2887,7 @@ pub mod fbast {
             BaseNodeArgs {
                 loc: None,
                 errors: None,
+                comments: None,
             }
         }
     }
@@ -2815,6 +2910,16 @@ pub mod fbast {
         ) {
             self.fbb_
                 .push_slot_always::<flatbuffers::WIPOffset<_>>(BaseNode::VT_ERRORS, errors);
+        }
+        #[inline]
+        pub fn add_comments(
+            &mut self,
+            comments: flatbuffers::WIPOffset<
+                flatbuffers::Vector<'b, flatbuffers::ForwardsUOffset<Comment<'b>>>,
+            >,
+        ) {
+            self.fbb_
+                .push_slot_always::<flatbuffers::WIPOffset<_>>(BaseNode::VT_COMMENTS, comments);
         }
         #[inline]
         pub fn new(_fbb: &'b mut flatbuffers::FlatBufferBuilder<'a>) -> BaseNodeBuilder<'a, 'b> {

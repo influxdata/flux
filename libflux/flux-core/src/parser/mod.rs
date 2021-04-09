@@ -222,25 +222,9 @@ impl Parser {
         }
     }
 
-    // Makes a comment list from a token. The comments in the Token struct are
-    // in reverse order, so we restore proper order here.
-    fn make_comments(&mut self, token: &scanner::Token) -> Option<Box<ast::Comment>> {
-        let mut reversed = None;
-        let mut head = &(*token).comments;
-        while let Some(boxed_head) = head {
-            reversed = Some(Box::new(Comment {
-                lit: (*boxed_head).lit.clone(),
-                next: reversed.take(),
-            }));
-
-            head = &(*boxed_head).comments;
-        }
-        reversed
-    }
-
     fn base_node_from_token(&mut self, tok: &Token) -> BaseNode {
         let mut base = self.base_node_from_tokens(tok, tok);
-        base.set_comments(self.make_comments(&tok));
+        base.set_comments(tok.comments.clone());
         base
     }
 
@@ -271,7 +255,7 @@ impl Parser {
         let mut base = self.base_node(
             self.source_location(&ast::Position::from(&start.start_pos), &end.location.end),
         );
-        base.set_comments(self.make_comments(&comments_from));
+        base.set_comments(comments_from.comments.clone());
         base
     }
 
@@ -286,7 +270,7 @@ impl Parser {
         comments_from: &Token,
     ) -> BaseNode {
         let mut base = self.base_node_from_pos(&start.location.start, &end.location.end);
-        base.set_comments(self.make_comments(&comments_from));
+        base.set_comments(comments_from.comments.clone());
         base
     }
 
@@ -339,7 +323,7 @@ impl Parser {
             package: pkg,
             imports,
             body,
-            eof: self.make_comments(&eof),
+            eof: eof.comments,
         }
     }
 
@@ -462,9 +446,9 @@ impl Parser {
                     member: MemberExpr {
                         base: self.base_node_from_others(&id.base, &prop.base),
                         object: Expression::Identifier(id),
-                        lbrack: self.make_comments(&t),
+                        lbrack: t.comments,
                         property: PropertyKey::Identifier(prop),
-                        rbrack: None,
+                        rbrack: vec![],
                     },
                     init,
                 })))
@@ -479,7 +463,7 @@ impl Parser {
         let _type = self.parse_type_expression();
         Statement::Builtin(Box::new(BuiltinStmt {
             base: self.base_node_from_other_end_c(&t, &id.base, &t),
-            colon: self.make_comments(&colon),
+            colon: colon.comments,
             id,
             ty: _type,
         }))
@@ -827,9 +811,9 @@ impl Parser {
         let end = self.close(TokenType::RBrace);
         Block {
             base: self.base_node_from_tokens(&start, &end),
-            lbrace: self.make_comments(&start),
+            lbrace: start.comments,
             body: stmts,
-            rbrace: self.make_comments(&end),
+            rbrace: end.comments,
         }
     }
     fn parse_expression(&mut self) -> Expression {
@@ -905,11 +889,11 @@ impl Parser {
             let alt = self.parse_expression();
             return Expression::Conditional(Box::new(ConditionalExpr {
                 base: self.base_node_from_other_end(&t, alt.base()),
-                tk_if: self.make_comments(&if_tok),
+                tk_if: if_tok.comments,
                 test,
-                tk_then: self.make_comments(&then_tok),
+                tk_then: then_tok.comments,
                 consequent: cons,
-                tk_else: self.make_comments(&else_tok),
+                tk_else: else_tok.comments,
                 alternate: alt,
             }));
         }
@@ -1185,9 +1169,9 @@ impl Parser {
                     let call = CallExpr {
                         base: self.base_node(rhs.base().location.clone()),
                         callee: rhs,
-                        lparen: None,
+                        lparen: vec![],
                         arguments: vec![],
-                        rparen: None,
+                        rparen: vec![],
                     };
                     res = Expression::PipeExpr(Box::new(PipeExpr {
                         base: self.base_node_from_others_c(res.base(), &call.base, &t),
@@ -1257,9 +1241,9 @@ impl Parser {
         Expression::Member(Box::new(MemberExpr {
             base: self.base_node_from_others(expr.base(), &id.base),
             object: expr,
-            lbrack: self.make_comments(&dot),
+            lbrack: dot.comments,
             property: PropertyKey::Identifier(id),
-            rbrack: None,
+            rbrack: vec![],
         }))
     }
     fn parse_call_expression(&mut self, expr: Expression) -> Expression {
@@ -1269,9 +1253,9 @@ impl Parser {
         let mut call = CallExpr {
             base: self.base_node_from_other_start(expr.base(), &end),
             callee: expr,
-            lparen: self.make_comments(&lparen),
+            lparen: lparen.comments,
             arguments: vec![],
-            rparen: self.make_comments(&end),
+            rparen: end.comments,
         };
         if !params.is_empty() {
             call.arguments.push(Expression::Object(Box::new(ObjectExpr {
@@ -1279,10 +1263,10 @@ impl Parser {
                     &params.first().expect("len > 0, impossible").base,
                     &params.last().expect("len > 0, impossible").base,
                 ),
-                lbrace: None,
+                lbrace: vec![],
                 with: None,
                 properties: params,
-                rbrace: None,
+                rbrace: vec![],
             })));
         }
         Expression::Call(Box::new(call))
@@ -1295,16 +1279,16 @@ impl Parser {
             Some(Expression::StringLit(sl)) => Expression::Member(Box::new(MemberExpr {
                 base: self.base_node_from_other_start(expr.base(), &end),
                 object: expr,
-                lbrack: self.make_comments(&start),
+                lbrack: start.comments,
                 property: PropertyKey::StringLit(sl),
-                rbrack: self.make_comments(&end),
+                rbrack: end.comments,
             })),
             Some(e) => Expression::Index(Box::new(IndexExpr {
                 base: self.base_node_from_other_start(expr.base(), &end),
                 array: expr,
-                lbrack: self.make_comments(&start),
+                lbrack: start.comments,
                 index: e,
-                rbrack: self.make_comments(&end),
+                rbrack: end.comments,
             })),
             // Return a bad node.
             None => {
@@ -1313,12 +1297,12 @@ impl Parser {
                 Expression::Index(Box::new(IndexExpr {
                     base: self.base_node_from_other_start(expr.base(), &end),
                     array: expr,
-                    lbrack: None,
+                    lbrack: vec![],
                     index: Expression::Integer(IntegerLit {
                         base: self.base_node_from_tokens(&start, &end),
                         value: -1,
                     }),
-                    rbrack: None,
+                    rbrack: vec![],
                 }))
             }
         }
@@ -1557,8 +1541,8 @@ impl Parser {
                 let end = self.close(TokenType::RBrack);
                 let base = self.base_node_from_tokens(start, &end);
                 let elements = Vec::new();
-                let lbrack = self.make_comments(start);
-                let rbrack = self.make_comments(&end);
+                let lbrack = start.comments.clone();
+                let rbrack = end.comments;
                 Expression::Dict(Box::new(DictExpr {
                     base,
                     elements,
@@ -1571,8 +1555,8 @@ impl Parser {
                 let end = self.close(TokenType::RBrack);
                 let base = self.base_node_from_tokens(start, &end);
                 let elements = Vec::new();
-                let lbrack = self.make_comments(start);
-                let rbrack = self.make_comments(&end);
+                let lbrack = start.comments.clone();
+                let rbrack = end.comments;
                 Expression::Array(Box::new(ArrayExpr {
                     base,
                     elements,
@@ -1601,19 +1585,19 @@ impl Parser {
                 let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {
                     base: self.base_node_from_tokens(start, &end),
-                    lbrack: self.make_comments(start),
+                    lbrack: start.comments.clone(),
                     elements: vec![ArrayItem {
                         expression: init,
-                        comma: None,
+                        comma: vec![],
                     }],
-                    rbrack: self.make_comments(&end),
+                    rbrack: end.comments,
                 }))
             }
             _ => {
                 let comma = self.expect(TokenType::Comma);
                 let mut items = vec![ArrayItem {
                     expression: init,
-                    comma: self.make_comments(&comma),
+                    comma: comma.comments,
                 }];
                 // keep track of the last token's byte offsets
                 let mut last = self.peek().start_offset;
@@ -1622,9 +1606,9 @@ impl Parser {
                     let comma = match self.peek().tok {
                         TokenType::Comma => {
                             let comma = self.scan();
-                            self.make_comments(&comma)
+                            comma.comments
                         }
-                        _ => None,
+                        _ => vec![],
                     };
                     items.push(ArrayItem { expression, comma });
 
@@ -1640,9 +1624,9 @@ impl Parser {
                 let end = self.close(TokenType::RBrack);
                 Expression::Array(Box::new(ArrayExpr {
                     base: self.base_node_from_tokens(start, &end),
-                    lbrack: self.make_comments(start),
+                    lbrack: start.comments.clone(),
                     elements: items,
-                    rbrack: self.make_comments(&end),
+                    rbrack: end.comments,
                 }))
             }
         }
@@ -1658,19 +1642,22 @@ impl Parser {
                 let end = self.close(TokenType::RBrack);
                 Expression::Dict(Box::new(DictExpr {
                     base: self.base_node_from_tokens(start, &end),
-                    lbrack: self.make_comments(start),
+                    lbrack: start.comments.clone(),
                     elements: vec![DictItem {
                         key,
                         val,
-                        comma: None,
+                        comma: vec![],
                     }],
-                    rbrack: self.make_comments(&end),
+                    rbrack: end.comments,
                 }))
             }
             _ => {
                 let comma = self.expect(TokenType::Comma);
-                let comma = self.make_comments(&comma);
-                let mut items = vec![DictItem { key, val, comma }];
+                let mut items = vec![DictItem {
+                    key,
+                    val,
+                    comma: comma.comments,
+                }];
                 while self.more() {
                     let key = self.parse_expression();
                     self.expect(TokenType::Colon);
@@ -1678,18 +1665,18 @@ impl Parser {
                     let comma = match self.peek().tok {
                         TokenType::Comma => {
                             let comma = self.scan();
-                            self.make_comments(&comma)
+                            comma.comments
                         }
-                        _ => None,
+                        _ => vec![],
                     };
                     items.push(DictItem { key, val, comma });
                 }
                 let end = self.close(TokenType::RBrack);
                 Expression::Dict(Box::new(DictExpr {
                     base: self.base_node_from_tokens(start, &end),
-                    lbrack: self.make_comments(start),
+                    lbrack: start.comments.clone(),
                     elements: items,
-                    rbrack: self.make_comments(&end),
+                    rbrack: end.comments,
                 }))
             }
         }
@@ -1699,8 +1686,8 @@ impl Parser {
         let mut obj = self.parse_object_body();
         let end = self.close(TokenType::RBrace);
         obj.base = self.base_node_from_tokens(&start, &end);
-        obj.lbrace = self.make_comments(&start);
-        obj.rbrace = self.make_comments(&end);
+        obj.lbrace = start.comments;
+        obj.rbrace = end.comments;
         obj
     }
     fn parse_paren_expression(&mut self) -> Expression {
@@ -1741,9 +1728,9 @@ impl Parser {
                 let rparen = self.close(TokenType::RParen);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
-                    lparen: self.make_comments(&lparen),
+                    lparen: lparen.comments,
                     expression: expr.expect("must be Some at this point"),
-                    rparen: self.make_comments(&rparen),
+                    rparen: rparen.comments,
                 }))
             }
         }
@@ -1760,16 +1747,16 @@ impl Parser {
                             base: self.base_node(key.base.location.clone()),
                             key: PropertyKey::Identifier(key),
                             value: None,
-                            comma: None,
-                            separator: None,
+                            comma: vec![],
+                            separator: vec![],
                         }];
                         self.parse_function_expression(lparen, t, params)
                     }
                     _ => Expression::Paren(Box::new(ParenExpr {
                         base: self.base_node_from_tokens(&lparen, &t),
-                        lparen: self.make_comments(&lparen),
+                        lparen: lparen.comments,
                         expression: Expression::Identifier(key),
-                        rparen: self.make_comments(&t),
+                        rparen: t.comments,
                     })),
                 }
             }
@@ -1780,12 +1767,12 @@ impl Parser {
                     base: self.base_node_from_others(&key.base, value.base()),
                     key: PropertyKey::Identifier(key),
                     value: Some(value),
-                    separator: self.make_comments(&t),
-                    comma: None,
+                    separator: t.comments,
+                    comma: vec![],
                 }];
                 if self.peek().tok == TokenType::Comma {
                     let comma = self.scan();
-                    params[0].comma = self.make_comments(&comma);
+                    params[0].comma = comma.comments;
                     let others = &mut self.parse_parameter_list();
                     params.append(others);
                 }
@@ -1798,8 +1785,8 @@ impl Parser {
                     base: self.base_node(key.base.location.clone()),
                     key: PropertyKey::Identifier(key),
                     value: None,
-                    separator: None,
-                    comma: self.make_comments(&t),
+                    separator: vec![],
+                    comma: t.comments,
                 }];
                 let others = &mut self.parse_parameter_list();
                 params.append(others);
@@ -1830,9 +1817,9 @@ impl Parser {
                 let rparen = self.close(TokenType::RParen);
                 Expression::Paren(Box::new(ParenExpr {
                     base: self.base_node_from_tokens(&lparen, &rparen),
-                    lparen: self.make_comments(&lparen),
+                    lparen: lparen.comments,
                     expression: expr,
-                    rparen: self.make_comments(&rparen),
+                    rparen: rparen.comments,
                 }))
             }
         }
@@ -1850,19 +1837,19 @@ impl Parser {
                 ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
-                    lbrace: None,
+                    lbrace: vec![],
                     with: None,
                     properties: props,
-                    rbrace: None,
+                    rbrace: vec![],
                 }
             }
             _ => ObjectExpr {
                 // `base` will be overridden by `parse_object_literal`.
                 base: BaseNode::default(),
-                lbrace: None,
+                lbrace: vec![],
                 with: None,
                 properties: self.parse_property_list(),
-                rbrace: None,
+                rbrace: vec![],
             },
         }
     }
@@ -1878,13 +1865,13 @@ impl Parser {
                 ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
-                    lbrace: None,
+                    lbrace: vec![],
                     with: Some(WithSource {
                         source: ident,
-                        with: self.make_comments(&t),
+                        with: t.comments,
                     }),
                     properties: props,
-                    rbrace: None,
+                    rbrace: vec![],
                 }
             }
             _ => {
@@ -1892,10 +1879,10 @@ impl Parser {
                 ObjectExpr {
                     // `base` will be overridden by `parse_object_literal`.
                     base: BaseNode::default(),
-                    lbrace: None,
+                    lbrace: vec![],
                     with: None,
                     properties: props,
-                    rbrace: None,
+                    rbrace: vec![],
                 }
             }
         }
@@ -1915,7 +1902,7 @@ impl Parser {
             ))
         } else {
             let last = props.len() - 1;
-            props[last].comma = self.make_comments(&t);
+            props[last].comma = t.comments;
             self.consume();
         }
         props.append(&mut self.parse_property_list());
@@ -1924,7 +1911,6 @@ impl Parser {
     fn parse_property_list(&mut self) -> Vec<Property> {
         let mut params = Vec::new();
         let mut errs = Vec::new();
-        let mut last_comma_comments = None;
         while self.more() {
             let mut p: Property;
             let t = self.peek();
@@ -1933,8 +1919,6 @@ impl Parser {
                 TokenType::String => p = self.parse_string_property(),
                 _ => p = self.parse_invalid_property(),
             }
-            p.comma = last_comma_comments.take();
-
             if self.more() {
                 let t = self.peek();
                 if t.tok != TokenType::Comma {
@@ -1943,7 +1927,7 @@ impl Parser {
                         format!("{}", t.tok)
                     ))
                 } else {
-                    p.comma = self.make_comments(&t);
+                    p.comma = t.comments;
                     self.consume();
                 }
             }
@@ -1963,12 +1947,12 @@ impl Parser {
     }
     fn parse_property_suffix(&mut self, key: PropertyKey) -> Property {
         let mut value = None;
-        let mut separator = None;
+        let mut separator = vec![];
         let t = self.peek();
         if t.tok == TokenType::Colon {
             self.consume();
             value = self.parse_property_value();
-            separator = self.make_comments(&t);
+            separator = t.comments;
         };
         let value_base = match &value {
             Some(v) => v.base(),
@@ -1978,7 +1962,7 @@ impl Parser {
             base: self.base_node_from_others(key.base(), value_base),
             key,
             value,
-            comma: None,
+            comma: vec![],
             separator,
         }
     }
@@ -2026,8 +2010,8 @@ impl Parser {
                 value: "<invalid>".to_string(),
             }),
             value,
-            comma: None,
-            separator: None,
+            comma: vec![],
+            separator: vec![],
         }
     }
     fn parse_property_value(&mut self) -> Option<Expression> {
@@ -2044,7 +2028,7 @@ impl Parser {
             let mut p = self.parse_parameter();
             if self.peek().tok == TokenType::Comma {
                 let t = self.scan();
-                p.comma = self.make_comments(&t);
+                p.comma = t.comments;
             };
             params.push(p);
         }
@@ -2053,10 +2037,10 @@ impl Parser {
     fn parse_parameter(&mut self) -> Property {
         let key = self.parse_identifier();
         let base: BaseNode;
-        let mut separator = None;
+        let mut separator = vec![];
         let value = if self.peek().tok == TokenType::Assign {
             let t = self.scan();
-            separator = self.make_comments(&t);
+            separator = t.comments;
             let v = self.parse_expression();
             base = self.base_node_from_others(&key.base, v.base());
             Some(v)
@@ -2068,7 +2052,7 @@ impl Parser {
             base,
             key: PropertyKey::Identifier(key),
             value,
-            comma: None,
+            comma: vec![],
             separator,
         }
     }
@@ -2094,10 +2078,10 @@ impl Parser {
                 let block = self.parse_block();
                 Expression::Function(Box::new(FunctionExpr {
                     base: self.base_node_from_other_end(&lparen, &block.base),
-                    lparen: self.make_comments(&lparen),
+                    lparen: lparen.comments,
                     params,
-                    rparen: self.make_comments(&rparen),
-                    arrow: self.make_comments(&arrow),
+                    rparen: rparen.comments,
+                    arrow: arrow.comments,
                     body: FunctionBody::Block(block),
                 }))
             }
@@ -2105,10 +2089,10 @@ impl Parser {
                 let expr = self.parse_expression();
                 Expression::Function(Box::new(FunctionExpr {
                     base: self.base_node_from_other_end(&lparen, expr.base()),
-                    lparen: self.make_comments(&lparen),
+                    lparen: lparen.comments,
                     params,
-                    rparen: self.make_comments(&rparen),
-                    arrow: self.make_comments(&arrow),
+                    rparen: rparen.comments,
+                    arrow: arrow.comments,
                     body: FunctionBody::Expr(expr),
                 }))
             }

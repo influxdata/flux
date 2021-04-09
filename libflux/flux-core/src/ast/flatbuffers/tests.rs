@@ -829,6 +829,7 @@ fn compare_base(ast_base: &ast::BaseNode, fb_base: &Option<fbast::BaseNode>) -> 
     let fb_base = unwrap_or_fail("base node", fb_base)?;
     compare_loc(&ast_base.location, &fb_base.loc())?;
     compare_base_errs(&ast_base.errors, &fb_base.errors())?;
+    compare_base_cmts(&ast_base.comments, &fb_base.comments())?;
     Ok(())
 }
 
@@ -878,6 +879,25 @@ fn compare_base_errs(
         let fb_err = fb_errs.get(i);
         let ast_err = &ast_errs[i];
         compare_strings("base error", ast_err, &Some(fb_err))?;
+        i = i + 1;
+    }
+}
+
+fn compare_base_cmts(
+    ast_cmts: &Vec<ast::Comment>,
+    fb_cmts: &Option<flatbuffers::Vector<flatbuffers::ForwardsUOffset<fbast::Comment>>>,
+) -> Result<(), String> {
+    let fb_cmts = unwrap_or_fail("base comments", fb_cmts)?;
+    compare_vec_len(ast_cmts, fb_cmts)?;
+    let mut i: usize = 0;
+    loop {
+        if i >= fb_cmts.len() {
+            break Ok(());
+        }
+
+        let fb_cmt = fb_cmts.get(i).text().unwrap();
+        let ast_cmt = &ast_cmts[i];
+        compare_strings("base comments", &ast_cmt.text, &Some(fb_cmt))?;
         i = i + 1;
     }
 }

@@ -13,12 +13,14 @@ func init() {
 
 var pkgAST = &ast.Package{
 	BaseNode: ast.BaseNode{
-		Errors: nil,
-		Loc:    nil,
+		Comments: nil,
+		Errors:   nil,
+		Loc:      nil,
 	},
 	Files: []*ast.File{&ast.File{
 		BaseNode: ast.BaseNode{
-			Errors: nil,
+			Comments: nil,
+			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 31,
@@ -35,7 +37,8 @@ var pkgAST = &ast.Package{
 		Body: []ast.Statement{&ast.OptionStatement{
 			Assignment: &ast.VariableAssignment{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 31,
@@ -51,7 +54,8 @@ var pkgAST = &ast.Package{
 				},
 				ID: &ast.Identifier{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
@@ -69,7 +73,8 @@ var pkgAST = &ast.Package{
 				},
 				Init: &ast.ArrayExpression{
 					BaseNode: ast.BaseNode{
-						Errors: nil,
+						Comments: nil,
+						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
@@ -85,7 +90,8 @@ var pkgAST = &ast.Package{
 					},
 					Elements: []ast.Expression{&ast.StringLiteral{
 						BaseNode: ast.BaseNode{
-							Errors: nil,
+							Comments: nil,
+							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
@@ -104,7 +110,8 @@ var pkgAST = &ast.Package{
 				},
 			},
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// EnabledProfilers sets a list of profilers that should be enabled during execution.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Available profilers are:\n"}, ast.Comment{Text: "//   * query - Profiles time spent in the various phases of query execution.\n"}, ast.Comment{Text: "//   * operator - Profiles time spent in each operator of the query.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Example:\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "//    import \"profiler\"\n"}, ast.Comment{Text: "//    option profiler.enabledProfilers = [\"query\", \"operator\"]\n"}, ast.Comment{Text: "//\n"}},
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 31,
@@ -124,7 +131,8 @@ var pkgAST = &ast.Package{
 		Name:     "profiler.flux",
 		Package: &ast.PackageClause{
 			BaseNode: ast.BaseNode{
-				Errors: nil,
+				Comments: []ast.Comment{ast.Comment{Text: "// Profiler exposes an API to profile queries.\n"}, ast.Comment{Text: "// Profile results are returned as an extra result in the response named according to the profiles which are enabled.\n"}},
+				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
@@ -140,7 +148,8 @@ var pkgAST = &ast.Package{
 			},
 			Name: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Errors: nil,
+					Comments: nil,
+					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,

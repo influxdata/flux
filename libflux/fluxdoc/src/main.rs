@@ -244,20 +244,16 @@ fn generate_values(
     Ok(values)
 }
 
-fn comments_to_string(comments: &ast::CommentList) -> String {
+fn comments_to_string(comments: &[ast::Comment]) -> String {
     let mut s = String::new();
-    _comments_to_string(&mut s, comments);
+    if !comments.is_empty() {
+        for c in comments {
+            s.push_str(c.text.as_str().strip_prefix("//").unwrap());
+        }
+    }
     comrak::markdown_to_html(s.as_str(), &comrak::ComrakOptions::default())
 }
-fn _comments_to_string(s: &mut String, comments: &ast::CommentList) {
-    match comments {
-        Some(c) => {
-            s.push_str(c.lit.as_str().strip_prefix("//").unwrap());
-            _comments_to_string(s, &c.next);
-        }
-        None => {}
-    }
-}
+
 lazy_static! {
     pub static ref TEMPLATES: Tera = {
         let mut tera = match Tera::new("fluxdoc/templates/*.html") {

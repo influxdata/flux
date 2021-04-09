@@ -5,6 +5,7 @@ use crate::ast::flatbuffers::ast_generated::fbast as fb;
 #[rustfmt::skip]
 use crate::ast::{
     SourceLocation,
+    Comment,
     BaseNode,
     TypeExpression,
     TypeConstraint,
@@ -40,7 +41,15 @@ fn build_base_node<'a>(
         builder.create_string(&s)
     });
     let errors = Some(builder.create_vector(errors.as_slice()));
-    fb::BaseNode::create(builder, &fb::BaseNodeArgs { loc, errors })
+    let comments = Some(build_comments(builder, &base_node.comments));
+    fb::BaseNode::create(
+        builder,
+        &fb::BaseNodeArgs {
+            loc,
+            errors,
+            comments,
+        },
+    )
 }
 
 fn build_loc<'a>(
@@ -70,6 +79,20 @@ fn build_loc<'a>(
             source,
         },
     )
+}
+
+fn build_comments<'a>(
+    builder: &mut flatbuffers::FlatBufferBuilder<'a>,
+    ast_cmts: &[Comment],
+) -> flatbuffers::WIPOffset<flatbuffers::Vector<'a, flatbuffers::ForwardsUOffset<fb::Comment<'a>>>>
+{
+    let mut cmt_vec: Vec<flatbuffers::WIPOffset<fb::Comment>> = Vec::with_capacity(ast_cmts.len());
+    for cmt in ast_cmts {
+        let text = Some(builder.create_string(&cmt.text));
+        let fb_cmt = fb::Comment::create(builder, &fb::CommentArgs { text });
+        cmt_vec.push(fb_cmt);
+    }
+    builder.create_vector(cmt_vec.as_slice())
 }
 
 fn build_type_expression<'a>(

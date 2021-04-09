@@ -29,6 +29,11 @@ func (l SourceLocation) FromBuf(buf *fbast.SourceLocation) *SourceLocation {
 	return &l
 }
 
+func (c Comment) FromBuf(buf *fbast.Comment) Comment {
+	c.Text = string(buf.Text())
+	return c
+}
+
 func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
 	if buf == nil {
 		return
@@ -41,6 +46,15 @@ func (b *BaseNode) FromBuf(buf *fbast.BaseNode) {
 		b.Errors = make([]Error, buf.ErrorsLength())
 		for i := 0; i < buf.ErrorsLength(); i++ {
 			b.Errors[i] = Error{string(buf.Errors(i))}
+		}
+	}
+	if buf.CommentsLength() != 0 {
+		var comment fbast.Comment
+		b.Comments = make([]Comment, buf.CommentsLength())
+		for i := 0; i < buf.CommentsLength(); i++ {
+			if buf.Comments(&comment, i) {
+				b.Comments[i] = Comment{}.FromBuf(&comment)
+			}
 		}
 	}
 }
