@@ -35,13 +35,21 @@ type TransformationSpec interface {
 	CreateTransformation(id execute.DatasetID, a execute.Administration) (execute.Transformation, execute.Dataset, error)
 }
 
+type ArgumentReader interface {
+	ReadArgs(args flux.Arguments, a *flux.Administration) error
+}
+
 type specFactory struct {
 	t reflect.Type
 }
 
 func (f *specFactory) createOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
 	ptr := reflect.New(f.t)
-	if err := function.ReadArgs(ptr.Interface(), args, a); err != nil {
+	if ar, ok := ptr.Interface().(ArgumentReader); ok {
+		if err := ar.ReadArgs(args, a); err != nil {
+			return nil, err
+		}
+	} else if err := function.ReadArgs(ptr.Interface(), args, a); err != nil {
 		return nil, err
 	}
 	return &operationSpec{
