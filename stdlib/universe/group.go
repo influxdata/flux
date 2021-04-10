@@ -5,16 +5,17 @@ import (
 	"sort"
 
 	"github.com/apache/arrow/go/arrow/array"
+	arrowmem "github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/execute/dataset"
+	"github.com/influxdata/flux/internal/execute/execkit"
 	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -26,52 +27,19 @@ const (
 	groupModeExcept = "except"
 )
 
-type GroupOpSpec struct {
-	Mode    string   `json:"mode"`
-	Columns []string `json:"columns"`
+type GroupMode flux.GroupMode
+
+func (g *GroupMode) ReadArg(name string, arg values.Value, a *flux.Administration) error {
+	mode, err := validateGroupMode(arg.Str())
+	if err != nil {
+		return err
+	}
+	*g = GroupMode(mode)
+	return nil
 }
 
 func init() {
-	groupSignature := runtime.MustLookupBuiltinType("universe", "group")
-
-	runtime.RegisterPackageValue("universe", GroupKind, flux.MustValue(flux.FunctionValue(GroupKind, createGroupOpSpec, groupSignature)))
-	flux.RegisterOpSpec(GroupKind, newGroupOp)
-	plan.RegisterProcedureSpec(GroupKind, newGroupProcedure, GroupKind)
-	plan.RegisterLogicalRules(MergeGroupRule{})
-	execute.RegisterTransformation(GroupKind, createGroupTransformation)
-}
-
-func createGroupOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	if err := a.AddParentFromArgs(args); err != nil {
-		return nil, err
-	}
-
-	spec := new(GroupOpSpec)
-
-	if mode, ok, err := args.GetString("mode"); err != nil {
-		return nil, err
-	} else if ok {
-		if _, err := validateGroupMode(mode); err != nil {
-			return nil, err
-		}
-
-		spec.Mode = mode
-	} else {
-		spec.Mode = groupModeBy
-	}
-
-	if columns, ok, err := args.GetArray("columns", semantic.String); err != nil {
-		return nil, err
-	} else if ok {
-		spec.Columns, err = interpreter.ToStringArray(columns)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		spec.Columns = []string{}
-	}
-
-	return spec, nil
+	execkit.RegisterTransformation(&GroupProcedureSpec{})
 }
 
 func validateGroupMode(mode string) (flux.GroupMode, error) {
@@ -85,112 +53,100 @@ func validateGroupMode(mode string) (flux.GroupMode, error) {
 	}
 }
 
-func newGroupOp() flux.OperationSpec {
-	return new(GroupOpSpec)
-}
-
-func (s *GroupOpSpec) Kind() flux.OperationKind {
-	return GroupKind
-}
-
 type GroupProcedureSpec struct {
-	plan.DefaultCost
-	GroupMode flux.GroupMode
-	GroupKeys []string
+	GroupMode flux.GroupMode `flux:"mode"`
+	GroupKeys []string       `flux:"columns"`
 }
 
-func newGroupProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*GroupOpSpec)
-	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
+func (s *GroupProcedureSpec) CreateTransformation(id execute.DatasetID, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	t, d := NewGroupTransformation(s, id, a.Allocator())
+	return t, d, nil
+}
+
+func (s *GroupProcedureSpec) ReadArgs(args flux.Arguments, a *flux.Administration) error {
+	if err := a.AddParentFromArgs(args); err != nil {
+		return err
 	}
 
-	mode, err := validateGroupMode(spec.Mode)
-	if err != nil {
-		return nil, err
+	if mode, ok, err := args.GetString("mode"); err != nil {
+		return err
+	} else if ok {
+		m, err := validateGroupMode(mode)
+		if err != nil {
+			return err
+		}
+		s.GroupMode = m
+	} else {
+		s.GroupMode = flux.GroupModeBy
 	}
 
-	p := &GroupProcedureSpec{
-		GroupMode: mode,
-		GroupKeys: spec.Columns,
+	if columns, ok, err := args.GetArray("columns", semantic.String); err != nil {
+		return err
+	} else if ok {
+		s.GroupKeys, err = interpreter.ToStringArray(columns)
+		if err != nil {
+			return err
+		}
+	} else {
+		s.GroupKeys = []string{}
 	}
-	return p, nil
+
+	return nil
 }
 
 func (s *GroupProcedureSpec) Kind() plan.ProcedureKind {
 	return GroupKind
 }
+
 func (s *GroupProcedureSpec) Copy() plan.ProcedureSpec {
-	ns := new(GroupProcedureSpec)
-
-	ns.GroupMode = s.GroupMode
-
+	ns := *s
 	ns.GroupKeys = make([]string, len(s.GroupKeys))
 	copy(ns.GroupKeys, s.GroupKeys)
-
-	return ns
-}
-
-func createGroupTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	s, ok := spec.(*GroupProcedureSpec)
-	if !ok {
-		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
-	}
-	t, d := NewGroupTransformation(s, id, a.Allocator())
-	return t, d, nil
+	return &ns
 }
 
 type groupTransformation struct {
-	execute.ExecutionNode
-	d     execute.Dataset
-	cache table.BuilderCache
-	mem   *memory.Allocator
-
 	mode flux.GroupMode
 	keys []string
 }
 
 func NewGroupTransformation(spec *GroupProcedureSpec, id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
-	t := &groupTransformation{
-		cache: table.BuilderCache{
-			New: func(key flux.GroupKey) table.Builder {
-				return table.NewBufferedBuilder(key, mem)
-			},
-		},
-		mem:  mem,
+	sort.Strings(spec.GroupKeys)
+	t, d, _ := execkit.NewGroupTransformation(id, &groupTransformation{
 		mode: spec.GroupMode,
 		keys: spec.GroupKeys,
-	}
-	t.d = dataset.New(id, &t.cache)
-	sort.Strings(t.keys)
-	return t, t.d
+	}, mem)
+	return t, d
 }
 
-func (t *groupTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
-
-func (t *groupTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+func (t *groupTransformation) Process(view table.View, d *execkit.Dataset, mem arrowmem.Allocator) error {
 	// Determine the group key of this table if the grouped columns
 	// are all part of the group key.
-	if key, ok, err := t.getTableKey(tbl); err != nil {
+	if key, ok, err := t.getTableKey(view); err != nil {
 		return err
 	} else if ok {
-		ab, _ := table.GetBufferedBuilder(key, &t.cache)
-		return t.appendTable(ab, tbl)
+		buffer := arrow.TableBuffer{
+			GroupKey: key,
+			Columns:  view.Cols(),
+			Values:   make([]array.Interface, view.NCols()),
+		}
+		for j := range buffer.Values {
+			buffer.Values[j] = view.Values(j)
+		}
+		return d.Process(table.ViewFromBuffer(buffer))
 	}
 
 	// We are grouping by something that is not within the group key,
 	// so we have to determine which row goes in which column.
 	// TODO(jsternberg): This can probably be optimized for memory, but
 	// not going to do that at the moment.
-	return t.groupByRow(tbl)
+	return t.groupByRow(view, d, mem)
 }
 
 // getTableKey returns the table key if the entire table matches
 // the same table key. If the entire table does not match the key,
 // this will return false and no key will be returned.
-func (t *groupTransformation) getTableKey(tbl flux.Table) (flux.GroupKey, bool, error) {
+func (t *groupTransformation) getTableKey(tbl table.View) (flux.GroupKey, bool, error) {
 	var indices []int
 	switch t.mode {
 	case flux.GroupModeBy:
@@ -237,14 +193,9 @@ func (t *groupTransformation) getTableKey(tbl flux.Table) (flux.GroupKey, bool, 
 	return execute.NewGroupKey(cols, vs), true, nil
 }
 
-func (t *groupTransformation) appendTable(ab *table.BufferedBuilder, tbl flux.Table) error {
-	// Read the table and append each of the columns.
-	return ab.AppendTable(tbl)
-}
-
 // groupByRow will determine which table each row belongs to
 // and to append them to that table.
-func (t *groupTransformation) groupByRow(tbl flux.Table) error {
+func (t *groupTransformation) groupByRow(tbl table.View, d *execkit.Dataset, mem arrowmem.Allocator) error {
 	var on map[string]bool
 	switch t.mode {
 	case flux.GroupModeBy:
@@ -264,37 +215,32 @@ func (t *groupTransformation) groupByRow(tbl flux.Table) error {
 	// Construct a builder cache for the built tables.
 	cache := table.BuilderCache{
 		New: func(key flux.GroupKey) table.Builder {
-			return table.NewArrowBuilder(key, t.mem)
+			return table.NewArrowBuilder(key, mem)
 		},
 	}
-	if err := tbl.Do(func(cr flux.ColReader) error {
-		for i, l := 0, cr.Len(); i < l; i++ {
-			key := execute.GroupKeyForRowOn(i, cr, on)
-			ab, created := table.GetArrowBuilder(key, &cache)
-			if created {
-				for _, c := range cr.Cols() {
-					_, _ = ab.AddCol(c)
-				}
-			}
-			for j := range cr.Cols() {
-				if err := t.appendValueFromRow(ab.Builders[j], cr, i, j); err != nil {
-					return err
-				}
+	buffer := tbl.Buffer()
+	for i, l := 0, buffer.Len(); i < l; i++ {
+		key := execute.GroupKeyForRowOn(i, &buffer, on)
+		ab, created := table.GetArrowBuilder(key, &cache)
+		if created {
+			for _, c := range buffer.Cols() {
+				_, _ = ab.AddCol(c)
 			}
 		}
-		return nil
-	}); err != nil {
-		return err
+		for j := range buffer.Cols() {
+			if err := t.appendValueFromRow(ab.Builders[j], &buffer, i, j); err != nil {
+				return err
+			}
+		}
 	}
 
+	// Pass a view of each table we grouped to the downstream datasets.
 	return cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
-		tbl, err := builder.Table()
+		buf, err := builder.(*table.ArrowBuilder).Buffer()
 		if err != nil {
 			return err
 		}
-
-		ab, _ := table.GetBufferedBuilder(key, &t.cache)
-		return t.appendTable(ab, tbl)
+		return d.Process(table.ViewFromBuffer(buf))
 	})
 }
 
@@ -352,18 +298,6 @@ func (t *groupTransformation) appendValueFromRow(b array.Builder, cr flux.ColRea
 		return errors.New(codes.Internal, "invalid builder type")
 	}
 	return nil
-}
-
-func (t *groupTransformation) UpdateWatermark(id execute.DatasetID, ts execute.Time) error {
-	return t.d.UpdateWatermark(ts)
-}
-
-func (t *groupTransformation) UpdateProcessingTime(id execute.DatasetID, ts execute.Time) error {
-	return t.d.UpdateProcessingTime(ts)
-}
-
-func (t *groupTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
 }
 
 // `MergeGroupRule` merges two group operations and keeps only the last one
