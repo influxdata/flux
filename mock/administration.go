@@ -12,10 +12,15 @@ import (
 // This may be used for tests that require implementation of this interface.
 type Administration struct {
 	ctx context.Context
+	mem *memory.Allocator
 }
 
-func AdministrationWithContext(ctx context.Context) *Administration {
-	return &Administration{ctx: ctx}
+func AdministrationWithContext(ctx context.Context, mem ...*memory.Allocator) *Administration {
+	a := &Administration{ctx: ctx}
+	if len(mem) > 0 {
+		a.mem = mem[0]
+	}
+	return a
 }
 
 func (a *Administration) Context() context.Context {
@@ -31,6 +36,9 @@ func (a *Administration) StreamContext() execute.StreamContext {
 }
 
 func (a *Administration) Allocator() *memory.Allocator {
+	if a.mem != nil {
+		return a.mem
+	}
 	return &memory.Allocator{}
 }
 

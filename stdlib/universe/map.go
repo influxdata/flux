@@ -4,14 +4,17 @@ import (
 	"context"
 	"sort"
 
+	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/execute/execkit"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
-	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
@@ -24,48 +27,7 @@ type MapOpSpec struct {
 }
 
 func init() {
-	mapSignature := runtime.MustLookupBuiltinType("universe", "map")
-
-	runtime.RegisterPackageValue("universe", MapKind, flux.MustValue(flux.FunctionValue(MapKind, createMapOpSpec, mapSignature)))
-	flux.RegisterOpSpec(MapKind, newMapOp)
-	plan.RegisterProcedureSpec(MapKind, newMapProcedure, MapKind)
-	execute.RegisterTransformation(MapKind, createMapTransformation)
-}
-
-func createMapOpSpec(args flux.Arguments, a *flux.Administration) (flux.OperationSpec, error) {
-	if err := a.AddParentFromArgs(args); err != nil {
-		return nil, err
-	}
-
-	spec := new(MapOpSpec)
-
-	if f, err := args.GetRequiredFunction("fn"); err != nil {
-		return nil, err
-	} else {
-		fn, err := interpreter.ResolveFunction(f)
-		if err != nil {
-			return nil, err
-		}
-		spec.Fn = fn
-	}
-
-	if m, ok, err := args.GetBool("mergeKey"); err != nil {
-		return nil, err
-	} else if ok {
-		spec.MergeKey = m
-	} else {
-		// deprecated parameter: default is now false.
-		spec.MergeKey = false
-	}
-	return spec, nil
-}
-
-func newMapOp() flux.OperationSpec {
-	return new(MapOpSpec)
-}
-
-func (s *MapOpSpec) Kind() flux.OperationKind {
-	return MapKind
+	execkit.RegisterTransformation(&MapProcedureSpec{})
 }
 
 type MapProcedureSpec struct {
@@ -74,16 +36,38 @@ type MapProcedureSpec struct {
 	MergeKey bool
 }
 
-func newMapProcedure(qs flux.OperationSpec, pa plan.Administration) (plan.ProcedureSpec, error) {
-	spec, ok := qs.(*MapOpSpec)
-	if !ok {
-		return nil, errors.Newf(codes.Internal, "invalid spec type %T", qs)
+func (s *MapProcedureSpec) CreateTransformation(id execute.DatasetID, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
+	t, err := NewMapTransformation(a.Context(), s, a.Allocator())
+	if err != nil {
+		return nil, nil, err
+	}
+	return execkit.NewGroupTransformation(id, t, a.Allocator())
+}
+
+func (s *MapProcedureSpec) ReadArgs(args flux.Arguments, a *flux.Administration) error {
+	if err := a.AddParentFromArgs(args); err != nil {
+		return err
 	}
 
-	return &MapProcedureSpec{
-		Fn:       spec.Fn,
-		MergeKey: spec.MergeKey,
-	}, nil
+	if f, err := args.GetRequiredFunction("fn"); err != nil {
+		return err
+	} else {
+		fn, err := interpreter.ResolveFunction(f)
+		if err != nil {
+			return err
+		}
+		s.Fn = fn
+	}
+
+	if m, ok, err := args.GetBool("mergeKey"); err != nil {
+		return err
+	} else if ok {
+		s.MergeKey = m
+	} else {
+		// deprecated parameter: default is now false.
+		s.MergeKey = false
+	}
+	return nil
 }
 
 func (s *MapProcedureSpec) Kind() plan.ProcedureKind {
@@ -96,48 +80,27 @@ func (s *MapProcedureSpec) Copy() plan.ProcedureSpec {
 	return ns
 }
 
-func createMapTransformation(id execute.DatasetID, mode execute.AccumulationMode, spec plan.ProcedureSpec, a execute.Administration) (execute.Transformation, execute.Dataset, error) {
-	s, ok := spec.(*MapProcedureSpec)
-	if !ok {
-		return nil, nil, errors.Newf(codes.Internal, "invalid spec type %T", spec)
-	}
-	cache := execute.NewTableBuilderCache(a.Allocator())
-	d := execute.NewDataset(id, mode, cache)
-	t, err := NewMapTransformation(a.Context(), s, d, cache)
-
-	if err != nil {
-		return nil, nil, err
-	}
-	return t, d, nil
-}
-
 type mapTransformation struct {
 	execute.ExecutionNode
-	d        execute.Dataset
-	cache    execute.TableBuilderCache
 	ctx      context.Context
 	fn       *execute.RowMapFn
 	mergeKey bool
+	mem      memory.Allocator
 }
 
-func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, d execute.Dataset, cache execute.TableBuilderCache) (*mapTransformation, error) {
+func NewMapTransformation(ctx context.Context, spec *MapProcedureSpec, mem memory.Allocator) (*mapTransformation, error) {
 	fn := execute.NewRowMapFn(spec.Fn.Fn, compiler.ToScope(spec.Fn.Scope))
 	return &mapTransformation{
-		d:        d,
-		cache:    cache,
 		fn:       fn,
 		ctx:      ctx,
 		mergeKey: spec.MergeKey,
+		mem:      mem,
 	}, nil
 }
 
-func (t *mapTransformation) RetractTable(id execute.DatasetID, key flux.GroupKey) error {
-	return t.d.RetractTable(key)
-}
-
-func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
+func (t *mapTransformation) Process(view table.View, d *execkit.Dataset, mem memory.Allocator) error {
 	// Prepare the functions for the column types.
-	cols := tbl.Cols()
+	cols := view.Cols()
 	fn, err := t.fn.Prepare(cols)
 	if err != nil {
 		// TODO(nathanielc): Should we not fail the query for failed compilation?
@@ -148,53 +111,72 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 	// didn't really use type inference at all so I removed its usage
 	// in favor of the real returned type.
 
+	buf := view.Buffer()
+	cache := table.BuilderCache{
+		New: func(key flux.GroupKey) table.Builder {
+			return table.NewArrowBuilder(key, t.mem)
+		},
+		Tables: execute.NewRandomAccessGroupLookup(),
+	}
+
 	var on map[string]bool
-	return tbl.Do(func(cr flux.ColReader) error {
-		l := cr.Len()
-		for i := 0; i < l; i++ {
-			m, err := fn.Eval(t.ctx, i, cr)
+	l := view.Len()
+	for i := 0; i < l; i++ {
+		m, err := fn.Eval(t.ctx, i, &buf)
+		if err != nil {
+			return errors.Wrap(err, codes.Invalid, "failed to evaluate map function")
+		}
+
+		// If we haven't determined the columns to group on, do that now.
+		if on == nil {
+			var err error
+			on, err = t.groupOn(view.Key(), m.Type())
 			if err != nil {
-				return errors.Wrap(err, codes.Invalid, "failed to evaluate map function")
-			}
-
-			// If we haven't determined the columns to group on, do that now.
-			if on == nil {
-				var err error
-				on, err = t.groupOn(tbl.Key(), m.Type())
-				if err != nil {
-					return err
-				}
-			}
-
-			key := groupKeyForObject(i, cr, m, on)
-			builder, created := t.cache.TableBuilder(key)
-			if created {
-				if err := t.createSchema(fn, builder, m); err != nil {
-					return err
-				}
-			}
-
-			for j, c := range builder.Cols() {
-				v, ok := m.Get(c.Label)
-				if !ok {
-					if idx := execute.ColIdx(c.Label, tbl.Key().Cols()); t.mergeKey && idx >= 0 {
-						v = tbl.Key().Value(idx)
-					} else {
-						// This should be unreachable
-						return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
-					}
-				}
-				if !v.IsNull() && c.Type.String() != v.Type().Nature().String() {
-					return errors.Newf(codes.Internal, "column %s:%s is not of type %v",
-						c.Label, c.Type, v.Type(),
-					)
-				}
-				if err := builder.AppendValue(j, v); err != nil {
-					return err
-				}
+				return err
 			}
 		}
-		return nil
+
+		key := groupKeyForObject(i, &buf, m, on)
+		builder, created := table.GetArrowBuilder(key, &cache)
+		if created {
+			if err := t.createSchema(fn, builder, m); err != nil {
+				return err
+			}
+		}
+
+		for j, c := range builder.Cols() {
+			v, ok := m.Get(c.Label)
+			if !ok {
+				if idx := execute.ColIdx(c.Label, view.Key().Cols()); t.mergeKey && idx >= 0 {
+					v = view.Key().Value(idx)
+				} else {
+					// This should be unreachable
+					return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
+				}
+			}
+			b := builder.Builders[j]
+			if !v.IsNull() && c.Type.String() != v.Type().Nature().String() {
+				return errors.Newf(codes.Internal, "column %s:%s is not of type %v",
+					c.Label, c.Type, v.Type(),
+				)
+			}
+			if err := arrow.AppendValue(b, v); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Send all of the tables that we constructed downstream.
+	return cache.ForEach(func(key flux.GroupKey, builder table.Builder) error {
+		tbl, err := builder.Table()
+		if err != nil {
+			return err
+		}
+		return tbl.Do(func(cr flux.ColReader) error {
+			view := table.ViewFromReader(cr)
+			view.Retain()
+			return d.Process(view)
+		})
 	})
 }
 
@@ -237,10 +219,12 @@ func (t *mapTransformation) groupOn(key flux.GroupKey, m semantic.MonoType) (map
 // should be rewritten to use the inferred type from type inference
 // and it should be capable of consolidating schemas from non-uniform
 // tables.
-func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b execute.TableBuilder, m values.Object) error {
+func (t *mapTransformation) createSchema(fn *execute.RowMapPreparedFn, b *table.ArrowBuilder, m values.Object) error {
 	if t.mergeKey {
-		if err := execute.AddTableKeyCols(b.Key(), b); err != nil {
-			return err
+		for _, col := range b.Key().Cols() {
+			if _, err := b.AddCol(col); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -335,14 +319,4 @@ func groupKeyForObject(i int, cr flux.ColReader, obj values.Object, on map[strin
 		}
 	}
 	return execute.NewGroupKey(cols, vs)
-}
-
-func (t *mapTransformation) UpdateWatermark(id execute.DatasetID, mark execute.Time) error {
-	return t.d.UpdateWatermark(mark)
-}
-func (t *mapTransformation) UpdateProcessingTime(id execute.DatasetID, pt execute.Time) error {
-	return t.d.UpdateProcessingTime(pt)
-}
-func (t *mapTransformation) Finish(id execute.DatasetID, err error) {
-	t.d.Finish(err)
 }

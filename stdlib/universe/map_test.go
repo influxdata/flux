@@ -10,108 +10,12 @@ import (
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
 	"github.com/influxdata/flux/interpreter"
-	"github.com/influxdata/flux/querytest"
+	"github.com/influxdata/flux/memory"
+	"github.com/influxdata/flux/mock"
 	"github.com/influxdata/flux/runtime"
-	"github.com/influxdata/flux/stdlib/influxdata/influxdb"
 	"github.com/influxdata/flux/stdlib/universe"
 	"github.com/influxdata/flux/values"
-	"github.com/influxdata/flux/values/valuestest"
 )
-
-func TestMap_NewQuery(t *testing.T) {
-	tests := []querytest.NewQueryTestCase{
-		{
-			Name: "simple static map",
-			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "map1",
-						Spec: &universe.MapOpSpec{
-							Fn: interpreter.ResolvedFunction{
-								Fn:    executetest.FunctionExpression(t, "(r) => r._value + 1"),
-								Scope: valuestest.Scope(),
-							},
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "map1"},
-				},
-			},
-		},
-		{
-			Name: "simple static map mergeKey=true",
-			Raw:  `from(bucket:"mybucket") |> map(fn: (r) => r._value + 1, mergeKey:true)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "map1",
-						Spec: &universe.MapOpSpec{
-							MergeKey: true,
-							Fn: interpreter.ResolvedFunction{
-								Fn:    executetest.FunctionExpression(t, "(r) => r._value + 1"),
-								Scope: valuestest.Scope(),
-							},
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "map1"},
-				},
-			},
-		},
-		{
-			Name: "resolve map",
-			Raw:  `x = 2 from(bucket:"mybucket") |> map(fn: (r) => r._value + x)`,
-			Want: &flux.Spec{
-				Operations: []*flux.Operation{
-					{
-						ID: "from0",
-						Spec: &influxdb.FromOpSpec{
-							Bucket: influxdb.NameOrID{Name: "mybucket"},
-						},
-					},
-					{
-						ID: "map1",
-						Spec: &universe.MapOpSpec{
-							Fn: interpreter.ResolvedFunction{
-								Fn: executetest.FunctionExpression(t, "(r) => r._value + 2"),
-								Scope: func() values.Scope {
-									scope := valuestest.Scope()
-									scope.Set("x", values.NewInt(2))
-									return scope
-								}(),
-							},
-						},
-					},
-				},
-				Edges: []flux.Edge{
-					{Parent: "from0", Child: "map1"},
-				},
-			},
-		},
-	}
-	for _, tc := range tests {
-		tc := tc
-		t.Run(tc.Name, func(t *testing.T) {
-			t.Parallel()
-			querytest.NewQueryTestHelper(t, tc)
-		})
-	}
-}
 
 func TestMap_Process(t *testing.T) {
 	builtIns := runtime.Prelude()
@@ -1000,18 +904,19 @@ f
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			executetest.ProcessTestHelper(
+			executetest.ProcessTestHelper2(
 				t,
 				tc.data,
 				tc.want,
 				tc.wantErr,
-				func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
+				func(id execute.DatasetID, mem *memory.Allocator) (execute.Transformation, execute.Dataset) {
 					ctx := dependenciestest.Default().Inject(context.Background())
-					f, err := universe.NewMapTransformation(ctx, tc.spec, d, c)
+					a := mock.AdministrationWithContext(ctx, mem)
+					tr, d, err := tc.spec.CreateTransformation(id, a)
 					if err != nil {
 						t.Fatal(err)
 					}
-					return f
+					return tr, d
 				},
 			)
 		})
