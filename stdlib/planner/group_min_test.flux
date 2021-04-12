@@ -178,3 +178,4 @@ testcase group_min_agg_window_empty {
 
     testing.diff(got: result, want: testing.loadMem(csv: out_min_agg_window_empty)) |> yield()
 }
+
