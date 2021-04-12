@@ -619,7 +619,6 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 }
 
 func (b *ColListTableBuilder) LevelColumns() error {
-
 	for idx, c := range b.colMeta {
 		switch c.Type {
 		case flux.TBool:

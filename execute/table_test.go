@@ -18,6 +18,34 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+func TestTables_UnevenColumns(t *testing.T) {
+	alloc := memory.Allocator{}
+	b := execute.NewColListTableBuilder(execute.NewGroupKey(
+		[]flux.ColMeta{},
+		[]values.Value{},
+	), &alloc)
+	b.AddCol(flux.ColMeta{Label: "bools", Type: flux.TBool})
+	b.AddCol(flux.ColMeta{Label: "floats", Type: flux.TFloat})
+
+	bools := []bool{true, false, false, true} // 4 values
+	for _, bl := range bools {
+		b.AppendBool(0, bl)
+	}
+
+	floats := []float64{0.1, 0.2, 0.3, 0.4, 0.5} // 5 values
+	for _, float := range floats {
+		b.AppendFloat(1, float)
+	}
+
+	tbl, _ := b.Table()
+	cr := tbl.(*execute.ColListTable)
+	// length of the table should be 5, but the 'bools' column should only have 4 items in it
+	fmt.Printf("cr.Len(): %d\n", cr.Len())
+	fmt.Printf("bools: %v\n", cr.Bools(0))
+	val := execute.ValueForRow(cr, cr.Len()-1, 0)
+	fmt.Printf("value: %v\n", val)
+}
+
 func TestTablesEqual(t *testing.T) {
 
 	testCases := []struct {
