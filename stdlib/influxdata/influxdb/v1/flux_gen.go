@@ -51,6 +51,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -383,6 +384,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 			},
+			Colon: nil,
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
 					Comments: nil,
@@ -1265,6 +1267,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1303,6 +1306,7 @@ var pkgAST = &ast.Package{
 					},
 					Name: "fieldsAsCols",
 				},
+				Rbrack: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1357,6 +1361,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1395,6 +1400,7 @@ var pkgAST = &ast.Package{
 					},
 					Name: "tagValues",
 				},
+				Rbrack: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1449,6 +1455,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1487,6 +1494,7 @@ var pkgAST = &ast.Package{
 					},
 					Name: "measurementTagValues",
 				},
+				Rbrack: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1541,6 +1549,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1579,6 +1588,7 @@ var pkgAST = &ast.Package{
 					},
 					Name: "tagKeys",
 				},
+				Rbrack: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1633,6 +1643,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1671,6 +1682,7 @@ var pkgAST = &ast.Package{
 					},
 					Name: "measurementTagKeys",
 				},
+				Rbrack: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1725,6 +1737,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1763,6 +1776,7 @@ var pkgAST = &ast.Package{
 					},
 					Name: "fieldKeys",
 				},
+				Rbrack: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1817,6 +1831,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1855,6 +1870,7 @@ var pkgAST = &ast.Package{
 					},
 					Name: "measurementFieldKeys",
 				},
+				Rbrack: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1909,6 +1925,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1947,8 +1964,10 @@ var pkgAST = &ast.Package{
 					},
 					Name: "measurements",
 				},
+				Rbrack: nil,
 			},
 		}},
+		Eof: []ast.Comment{ast.Comment{Text: "// Maintain backwards compatibility by mapping the functions into the schema package.\n"}},
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{

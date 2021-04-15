@@ -465,6 +465,7 @@ type File struct {
 	Package  *PackageClause       `json:"package"`
 	Imports  []*ImportDeclaration `json:"imports"`
 	Body     []Statement          `json:"body"`
+	Eof      []Comment            `json:"eof,omitempty"`
 }
 
 // Type is the abstract type
@@ -541,7 +542,9 @@ func (d *ImportDeclaration) Copy() Node {
 // Block is a set of statements
 type Block struct {
 	BaseNode
-	Body []Statement `json:"body"`
+	Lbrace []Comment   `json:"lbrace,omitempty"`
+	Body   []Statement `json:"body"`
+	Rbrace []Comment   `json:"rbrace,omitempty"`
 }
 
 // Type is the abstract type
@@ -683,8 +686,9 @@ func (s *OptionStatement) Copy() Node {
 // BuiltinStatement declares a builtin identifier and its type
 type BuiltinStatement struct {
 	BaseNode
-	ID *Identifier    `json:"id"`
-	Ty TypeExpression `json:"ty"`
+	Colon []Comment      `json:"colon,omitempty"`
+	ID    *Identifier    `json:"id"`
+	Ty    TypeExpression `json:"ty"`
 }
 
 // Type is the abstract type
@@ -914,7 +918,9 @@ func (p *InterpolatedPart) Copy() Node {
 // It has no semantic meaning, rather it only communicates information about the syntax of the source code.
 type ParenExpression struct {
 	BaseNode
+	Lparen     []Comment  `json:"lparen,omitempty"`
 	Expression Expression `json:"expression"`
+	Rparen     []Comment  `json:"rparen,omitempty"`
 }
 
 func (*ParenExpression) Type() string { return "ParenExpression" }
@@ -937,7 +943,9 @@ func (e *ParenExpression) Copy() Node {
 type CallExpression struct {
 	BaseNode
 	Callee    Expression   `json:"callee"`
+	Lparen    []Comment    `json:"lparen,omitempty"`
 	Arguments []Expression `json:"arguments,omitempty"`
+	Rparen    []Comment    `json:"rparen,omitempty"`
 }
 
 // Type is the abstract type
@@ -994,7 +1002,9 @@ func (e *PipeExpression) Copy() Node {
 type MemberExpression struct {
 	BaseNode
 	Object   Expression  `json:"object"`
+	Lbrack   []Comment   `json:"lbrack,omitempty"`
 	Property PropertyKey `json:"property"`
+	Rbrack   []Comment   `json:"rbrack,omitempty"`
 }
 
 // Type is the abstract type
@@ -1021,8 +1031,10 @@ func (e *MemberExpression) Copy() Node {
 // IndexExpression represents indexing into an array
 type IndexExpression struct {
 	BaseNode
-	Array Expression `json:"array"`
-	Index Expression `json:"index"`
+	Array  Expression `json:"array"`
+	Lbrack []Comment  `json:"lbrack,omitempty"`
+	Index  Expression `json:"index"`
+	Rbrack []Comment  `json:"rbrack,omitempty"`
 }
 
 func (*IndexExpression) Type() string { return "IndexExpression" }
@@ -1046,7 +1058,10 @@ func (e *IndexExpression) Copy() Node {
 
 type FunctionExpression struct {
 	BaseNode
+	Lparen []Comment   `json:"lparen,omitempty"`
 	Params []*Property `json:"params"`
+	Rparan []Comment   `json:"rparen,omitempty"`
+	Arrow  []Comment   `json:"arrow,omitempty"`
 	Body   Node        `json:"body"`
 }
 
@@ -1254,10 +1269,18 @@ func (e *LogicalExpression) Copy() Node {
 	return ne
 }
 
+// ArrayExpr is used to create and directly specify the elements of an array object
+type ArrayItem struct {
+	Expression
+	Comma []Comment `json:"comma,omitempty"`
+}
+
 // ArrayExpression is used to create and directly specify the elements of an array object
 type ArrayExpression struct {
 	BaseNode
+	Lbrack   []Comment    `json:"lbrack,omitempty"`
 	Elements []Expression `json:"elements"`
+	Rbrack   []Comment    `json:"rbrack,omitempty"`
 }
 
 // Type is the abstract type
@@ -1284,7 +1307,9 @@ func (e *ArrayExpression) Copy() Node {
 // DictExpression represents dictionary literals
 type DictExpression struct {
 	BaseNode
+	Lbrack   []Comment   `json:"lbrack,omitempty"`
 	Elements []*DictItem `json:"elements"`
+	Rbrack   []Comment   `json:"rbrack,omitempty"`
 }
 
 // Type is the abstract type
@@ -1313,17 +1338,25 @@ func (e *DictExpression) Copy() Node {
 
 // DictItem represents a key value pair of a dictionary literal
 type DictItem struct {
-	Key Expression `json:"key"`
-	Val Expression `json:"val"`
+	Key   Expression `json:"key"`
+	Val   Expression `json:"val"`
+	Comma []Comment  `json:"comma,omitempty"`
 }
 
 func (*DictItem) Type() string { return "DictItem" }
 
+type WithSource struct {
+	Source *Identifier `json:"source"`
+	With   []Comment   `json:"with,omitempty"`
+}
+
 // ObjectExpression allows the declaration of an anonymous object within a declaration.
 type ObjectExpression struct {
 	BaseNode
+	Lbrace     []Comment   `json:"lbrace,omitempty"`
 	With       *Identifier `json:"with,omitempty"`
 	Properties []*Property `json:"properties"`
+	Rbrace     []Comment   `json:"rbrace,omitempty"`
 }
 
 // Type is the abstract type
@@ -1351,8 +1384,11 @@ func (e *ObjectExpression) Copy() Node {
 // depending on a third, boolean, expression, `Test`.
 type ConditionalExpression struct {
 	BaseNode
+	Tk_if      []Comment  `json:"tk_if,omitempty"`
 	Test       Expression `json:"test"`
+	Tk_then    []Comment  `json:"tk_then,omitempty"`
 	Consequent Expression `json:"consequent"`
+	Tk_else    []Comment  `json:"tk_else,omitempty"`
 	Alternate  Expression `json:"alternate"`
 }
 
@@ -1389,8 +1425,10 @@ type PropertyKey interface {
 // A property's key can be either an identifier or string literal.
 type Property struct {
 	BaseNode
-	Key   PropertyKey `json:"key"`
-	Value Expression  `json:"value"`
+	Key       PropertyKey `json:"key"`
+	Separator []Comment   `json:"separator,omitempty"`
+	Value     Expression  `json:"value"`
+	Comma     []Comment   `json:"comma,omitempty"`
 }
 
 func (p *Property) Copy() Node {

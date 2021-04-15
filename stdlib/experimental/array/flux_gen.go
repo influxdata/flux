@@ -87,6 +87,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 				},
+				Lbrack: nil,
 				Object: &ast.Identifier{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -125,8 +126,10 @@ var pkgAST = &ast.Package{
 					},
 					Name: "from",
 				},
+				Rbrack: nil,
 			},
 		}},
+		Eof: nil,
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{

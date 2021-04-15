@@ -33,18 +33,18 @@ type ASTPkg struct {
 // ASTHandle makes sure that this type implements the flux.ASTHandle interface.
 func (p ASTPkg) ASTHandle() {}
 
-func (p ASTPkg) Format() string {
+func (p ASTPkg) Format() (string, error) {
 	var buf C.struct_flux_buffer_t
 	if err := C.flux_ast_format(p.ptr, &buf); err != nil {
 		defer C.flux_free_error(err)
 		cstr := C.flux_error_str(err)
 		str := C.GoString(cstr)
-		return fmt.Sprintf("%v", errors.Newf(codes.Invalid, str))
+		return "", errors.Newf(codes.Invalid, "%v", str)
 	}
 	runtime.KeepAlive(p.ptr)
 
 	defer C.flux_free_bytes(buf.data)
-	return C.GoStringN(buf.data, C.int(buf.len))
+	return C.GoStringN(buf.data, C.int(buf.len)), nil
 }
 
 // GetError will return the first error in the AST, if any

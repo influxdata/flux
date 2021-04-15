@@ -17,7 +17,7 @@ type Runtime interface {
 	// JSONToHandle takes JSON data and returns an AST handle.
 	JSONToHandle(json []byte) (ASTHandle, error)
 
-	// MargePackages removes all the files from src and appends them to the list
+	// MergePackages removes all the files from src and appends them to the list
 	// of files in dst.
 	MergePackages(dst, src ASTHandle) error
 
@@ -38,6 +38,9 @@ type ASTHandle interface {
 	// ASTHandle is a no-op method whose purpose is to avoid types unintentionally
 	// implementing this interface.
 	ASTHandle()
+
+	// Format the AST to a string.
+	Format() (string, error)
 
 	// GetError will return the first error encountered when parsing Flux source code,
 	// if any.

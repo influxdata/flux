@@ -46,7 +46,20 @@ func TestASTPkg_Format(t *testing.T) {
 	ast := libflux.ParseString(src)
 	defer ast.Free()
 
-	if want, got := `x = 1 + 2`, ast.Format(); want != got {
+	if want, got := `x = 1 + 2`, MustFormat(t, ast); want != got {
+		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
+	}
+}
+
+func TestASTPkg_FormatWithComments(t *testing.T) {
+	src := `// add two numbers
+
+x=1+2`
+	ast := libflux.ParseString(src)
+	defer ast.Free()
+
+	if want, got := `// add two numbers
+x = 1 + 2`, MustFormat(t, ast); want != got {
 		t.Errorf("unexpected formatted file -want/+got:\n\t- %q\n\t+ %q", want, got)
 	}
 }
@@ -302,4 +315,12 @@ func compareIndentedJSON(t *testing.T, jsonA, jsonB []byte) {
 	if diff := cmp.Diff(string(mustIndent(t, jsonA)), string(mustIndent(t, jsonB))); diff != "" {
 		t.Errorf("JSON A and JSON B differed; -a/+b:\n%v", diff)
 	}
+}
+
+func MustFormat(t testing.TB, f *libflux.ASTPkg) string {
+	s, err := f.Format()
+	if err != nil {
+		t.Error(err)
+	}
+	return s
 }

@@ -144,6 +144,7 @@ var pkgAST = &ast.Package{
 				Name: "pushData",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -230,6 +231,7 @@ var pkgAST = &ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -247,6 +249,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.StringLiteral{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -266,6 +269,7 @@ var pkgAST = &ast.Package{
 									},
 									Value: "Access-Token",
 								},
+								Separator: nil,
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -302,6 +306,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.StringLiteral{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -321,6 +326,7 @@ var pkgAST = &ast.Package{
 									},
 									Value: "Content-Type",
 								},
+								Separator: nil,
 								Value: &ast.StringLiteral{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -341,7 +347,8 @@ var pkgAST = &ast.Package{
 									Value: "application/json",
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						},
 					}, &ast.VariableAssignment{
 						BaseNode: ast.BaseNode{
@@ -397,6 +404,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Lbrace: nil,
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -414,6 +422,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -433,6 +442,7 @@ var pkgAST = &ast.Package{
 										},
 										Name: "v",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -453,7 +463,8 @@ var pkgAST = &ast.Package{
 										Name: "data",
 									},
 								}},
-								With: nil,
+								Rbrace: nil,
+								With:   nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -488,6 +499,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Lbrack: nil,
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -526,7 +538,10 @@ var pkgAST = &ast.Package{
 									},
 									Name: "encode",
 								},
+								Rbrack: nil,
 							},
+							Lparen: nil,
+							Rparen: nil,
 						},
 					}, &ast.ReturnStatement{
 						Argument: &ast.CallExpression{
@@ -547,6 +562,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Lbrace: nil,
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -564,6 +580,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -583,6 +600,7 @@ var pkgAST = &ast.Package{
 										},
 										Name: "headers",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -619,6 +637,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -638,6 +657,7 @@ var pkgAST = &ast.Package{
 										},
 										Name: "url",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -674,6 +694,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -693,6 +714,7 @@ var pkgAST = &ast.Package{
 										},
 										Name: "data",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -713,7 +735,8 @@ var pkgAST = &ast.Package{
 										Name: "enc",
 									},
 								}},
-								With: nil,
+								Rbrace: nil,
+								With:   nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -748,6 +771,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Lbrack: nil,
 								Object: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -786,7 +810,10 @@ var pkgAST = &ast.Package{
 									},
 									Name: "post",
 								},
+								Rbrack: nil,
 							},
+							Lparen: nil,
+							Rparen: nil,
 						},
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -805,7 +832,10 @@ var pkgAST = &ast.Package{
 							},
 						},
 					}},
+					Lbrace: nil,
+					Rbrace: nil,
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -823,6 +853,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -842,6 +873,7 @@ var pkgAST = &ast.Package{
 						},
 						Name: "url",
 					},
+					Separator: nil,
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -878,6 +910,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -897,6 +930,7 @@ var pkgAST = &ast.Package{
 						},
 						Name: "token",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -933,6 +967,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -952,8 +987,10 @@ var pkgAST = &ast.Package{
 						},
 						Name: "data",
 					},
-					Value: nil,
+					Separator: nil,
+					Value:     nil,
 				}},
+				Rparan: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -992,6 +1029,7 @@ var pkgAST = &ast.Package{
 				Name: "pushNote",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -1078,6 +1116,7 @@ var pkgAST = &ast.Package{
 									},
 								},
 							},
+							Lbrace: nil,
 							Properties: []*ast.Property{&ast.Property{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -1095,6 +1134,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -1114,6 +1154,7 @@ var pkgAST = &ast.Package{
 									},
 									Name: "type",
 								},
+								Separator: nil,
 								Value: &ast.StringLiteral{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -1150,6 +1191,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -1169,6 +1211,7 @@ var pkgAST = &ast.Package{
 									},
 									Name: "title",
 								},
+								Separator: nil,
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -1205,6 +1248,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -1224,6 +1268,7 @@ var pkgAST = &ast.Package{
 									},
 									Name: "body",
 								},
+								Separator: nil,
 								Value: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -1244,7 +1289,8 @@ var pkgAST = &ast.Package{
 									Name: "text",
 								},
 							}},
-							With: nil,
+							Rbrace: nil,
+							With:   nil,
 						},
 					}, &ast.ReturnStatement{
 						Argument: &ast.CallExpression{
@@ -1265,6 +1311,7 @@ var pkgAST = &ast.Package{
 										},
 									},
 								},
+								Lbrace: nil,
 								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
@@ -1282,6 +1329,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -1301,6 +1349,7 @@ var pkgAST = &ast.Package{
 										},
 										Name: "token",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -1337,6 +1386,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -1356,6 +1406,7 @@ var pkgAST = &ast.Package{
 										},
 										Name: "url",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -1392,6 +1443,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Comma: nil,
 									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -1411,6 +1463,7 @@ var pkgAST = &ast.Package{
 										},
 										Name: "data",
 									},
+									Separator: nil,
 									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -1431,7 +1484,8 @@ var pkgAST = &ast.Package{
 										Name: "data",
 									},
 								}},
-								With: nil,
+								Rbrace: nil,
+								With:   nil,
 							}},
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -1468,6 +1522,8 @@ var pkgAST = &ast.Package{
 								},
 								Name: "pushData",
 							},
+							Lparen: nil,
+							Rparen: nil,
 						},
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -1486,7 +1542,10 @@ var pkgAST = &ast.Package{
 							},
 						},
 					}},
+					Lbrace: nil,
+					Rbrace: nil,
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1504,6 +1563,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -1523,6 +1583,7 @@ var pkgAST = &ast.Package{
 						},
 						Name: "url",
 					},
+					Separator: nil,
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -1559,6 +1620,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -1578,6 +1640,7 @@ var pkgAST = &ast.Package{
 						},
 						Name: "token",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -1614,6 +1677,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -1633,7 +1697,8 @@ var pkgAST = &ast.Package{
 						},
 						Name: "title",
 					},
-					Value: nil,
+					Separator: nil,
+					Value:     nil,
 				}, &ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -1651,6 +1716,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -1670,8 +1736,10 @@ var pkgAST = &ast.Package{
 						},
 						Name: "text",
 					},
-					Value: nil,
+					Separator: nil,
+					Value:     nil,
 				}},
+				Rparan: nil,
 			},
 		}, &ast.VariableAssignment{
 			BaseNode: ast.BaseNode{
@@ -1710,6 +1778,7 @@ var pkgAST = &ast.Package{
 				Name: "endpoint",
 			},
 			Init: &ast.FunctionExpression{
+				Arrow: nil,
 				BaseNode: ast.BaseNode{
 					Comments: nil,
 					Errors:   nil,
@@ -1727,6 +1796,7 @@ var pkgAST = &ast.Package{
 					},
 				},
 				Body: &ast.FunctionExpression{
+					Arrow: nil,
 					BaseNode: ast.BaseNode{
 						Comments: nil,
 						Errors:   nil,
@@ -1744,6 +1814,7 @@ var pkgAST = &ast.Package{
 						},
 					},
 					Body: &ast.FunctionExpression{
+						Arrow: nil,
 						BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
@@ -1814,6 +1885,7 @@ var pkgAST = &ast.Package{
 											},
 										},
 									},
+									Lbrace: nil,
 									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
@@ -1831,6 +1903,7 @@ var pkgAST = &ast.Package{
 												},
 											},
 										},
+										Comma: nil,
 										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
@@ -1850,7 +1923,9 @@ var pkgAST = &ast.Package{
 											},
 											Name: "fn",
 										},
+										Separator: nil,
 										Value: &ast.FunctionExpression{
+											Arrow: nil,
 											BaseNode: ast.BaseNode{
 												Comments: nil,
 												Errors:   nil,
@@ -1938,6 +2013,7 @@ var pkgAST = &ast.Package{
 																	},
 																},
 															},
+															Lbrace: nil,
 															Properties: []*ast.Property{&ast.Property{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -1955,6 +2031,7 @@ var pkgAST = &ast.Package{
 																		},
 																	},
 																},
+																Comma: nil,
 																Key: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
 																		Comments: nil,
@@ -1974,6 +2051,7 @@ var pkgAST = &ast.Package{
 																	},
 																	Name: "r",
 																},
+																Separator: nil,
 																Value: &ast.Identifier{
 																	BaseNode: ast.BaseNode{
 																		Comments: nil,
@@ -1994,7 +2072,8 @@ var pkgAST = &ast.Package{
 																	Name: "r",
 																},
 															}},
-															With: nil,
+															Rbrace: nil,
+															With:   nil,
 														}},
 														BaseNode: ast.BaseNode{
 															Comments: nil,
@@ -2031,6 +2110,8 @@ var pkgAST = &ast.Package{
 															},
 															Name: "mapFn",
 														},
+														Lparen: nil,
+														Rparen: nil,
 													},
 												}, &ast.ReturnStatement{
 													Argument: &ast.ObjectExpression{
@@ -2050,6 +2131,7 @@ var pkgAST = &ast.Package{
 																},
 															},
 														},
+														Lbrace: nil,
 														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -2067,6 +2149,7 @@ var pkgAST = &ast.Package{
 																	},
 																},
 															},
+															Comma: nil,
 															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -2086,6 +2169,7 @@ var pkgAST = &ast.Package{
 																},
 																Name: "_sent",
 															},
+															Separator: nil,
 															Value: &ast.CallExpression{
 																Arguments: []ast.Expression{&ast.ObjectExpression{
 																	BaseNode: ast.BaseNode{
@@ -2104,6 +2188,7 @@ var pkgAST = &ast.Package{
 																			},
 																		},
 																	},
+																	Lbrace: nil,
 																	Properties: []*ast.Property{&ast.Property{
 																		BaseNode: ast.BaseNode{
 																			Comments: nil,
@@ -2121,6 +2206,7 @@ var pkgAST = &ast.Package{
 																				},
 																			},
 																		},
+																		Comma: nil,
 																		Key: &ast.Identifier{
 																			BaseNode: ast.BaseNode{
 																				Comments: nil,
@@ -2140,6 +2226,7 @@ var pkgAST = &ast.Package{
 																			},
 																			Name: "v",
 																		},
+																		Separator: nil,
 																		Value: &ast.BinaryExpression{
 																			BaseNode: ast.BaseNode{
 																				Comments: nil,
@@ -2212,6 +2299,7 @@ var pkgAST = &ast.Package{
 																								},
 																							},
 																						},
+																						Lbrace: nil,
 																						Properties: []*ast.Property{&ast.Property{
 																							BaseNode: ast.BaseNode{
 																								Comments: nil,
@@ -2229,6 +2317,7 @@ var pkgAST = &ast.Package{
 																									},
 																								},
 																							},
+																							Comma: nil,
 																							Key: &ast.Identifier{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2248,6 +2337,7 @@ var pkgAST = &ast.Package{
 																								},
 																								Name: "url",
 																							},
+																							Separator: nil,
 																							Value: &ast.Identifier{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2284,6 +2374,7 @@ var pkgAST = &ast.Package{
 																									},
 																								},
 																							},
+																							Comma: nil,
 																							Key: &ast.Identifier{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2303,6 +2394,7 @@ var pkgAST = &ast.Package{
 																								},
 																								Name: "token",
 																							},
+																							Separator: nil,
 																							Value: &ast.Identifier{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2339,6 +2431,7 @@ var pkgAST = &ast.Package{
 																									},
 																								},
 																							},
+																							Comma: nil,
 																							Key: &ast.Identifier{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2358,6 +2451,7 @@ var pkgAST = &ast.Package{
 																								},
 																								Name: "title",
 																							},
+																							Separator: nil,
 																							Value: &ast.MemberExpression{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2375,6 +2469,7 @@ var pkgAST = &ast.Package{
 																										},
 																									},
 																								},
+																								Lbrack: nil,
 																								Object: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
 																										Comments: nil,
@@ -2413,6 +2508,7 @@ var pkgAST = &ast.Package{
 																									},
 																									Name: "title",
 																								},
+																								Rbrack: nil,
 																							},
 																						}, &ast.Property{
 																							BaseNode: ast.BaseNode{
@@ -2431,6 +2527,7 @@ var pkgAST = &ast.Package{
 																									},
 																								},
 																							},
+																							Comma: nil,
 																							Key: &ast.Identifier{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2450,6 +2547,7 @@ var pkgAST = &ast.Package{
 																								},
 																								Name: "text",
 																							},
+																							Separator: nil,
 																							Value: &ast.MemberExpression{
 																								BaseNode: ast.BaseNode{
 																									Comments: nil,
@@ -2467,6 +2565,7 @@ var pkgAST = &ast.Package{
 																										},
 																									},
 																								},
+																								Lbrack: nil,
 																								Object: &ast.Identifier{
 																									BaseNode: ast.BaseNode{
 																										Comments: nil,
@@ -2505,9 +2604,11 @@ var pkgAST = &ast.Package{
 																									},
 																									Name: "text",
 																								},
+																								Rbrack: nil,
 																							},
 																						}},
-																						With: nil,
+																						Rbrace: nil,
+																						With:   nil,
 																					}},
 																					BaseNode: ast.BaseNode{
 																						Comments: nil,
@@ -2544,6 +2645,8 @@ var pkgAST = &ast.Package{
 																						},
 																						Name: "pushNote",
 																					},
+																					Lparen: nil,
+																					Rparen: nil,
 																				},
 																				Operator: 2,
 																				Right: &ast.IntegerLiteral{
@@ -2568,7 +2671,8 @@ var pkgAST = &ast.Package{
 																			},
 																		},
 																	}},
-																	With: nil,
+																	Rbrace: nil,
+																	With:   nil,
 																}},
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
@@ -2605,8 +2709,11 @@ var pkgAST = &ast.Package{
 																	},
 																	Name: "string",
 																},
+																Lparen: nil,
+																Rparen: nil,
 															},
 														}},
+														Rbrace: nil,
 														With: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
@@ -2644,7 +2751,10 @@ var pkgAST = &ast.Package{
 														},
 													},
 												}},
+												Lbrace: nil,
+												Rbrace: nil,
 											},
+											Lparen: nil,
 											Params: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
@@ -2662,6 +2772,7 @@ var pkgAST = &ast.Package{
 														},
 													},
 												},
+												Comma: nil,
 												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
@@ -2681,11 +2792,14 @@ var pkgAST = &ast.Package{
 													},
 													Name: "r",
 												},
-												Value: nil,
+												Separator: nil,
+												Value:     nil,
 											}},
+											Rparan: nil,
 										},
 									}},
-									With: nil,
+									Rbrace: nil,
+									With:   nil,
 								}},
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -2722,8 +2836,11 @@ var pkgAST = &ast.Package{
 									},
 									Name: "map",
 								},
+								Lparen: nil,
+								Rparen: nil,
 							},
 						},
+						Lparen: nil,
 						Params: []*ast.Property{&ast.Property{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -2741,6 +2858,7 @@ var pkgAST = &ast.Package{
 									},
 								},
 							},
+							Comma: nil,
 							Key: &ast.Identifier{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
@@ -2760,6 +2878,7 @@ var pkgAST = &ast.Package{
 								},
 								Name: "tables",
 							},
+							Separator: nil,
 							Value: &ast.PipeLiteral{BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
@@ -2777,7 +2896,9 @@ var pkgAST = &ast.Package{
 								},
 							}},
 						}},
+						Rparan: nil,
 					},
+					Lparen: nil,
 					Params: []*ast.Property{&ast.Property{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -2795,6 +2916,7 @@ var pkgAST = &ast.Package{
 								},
 							},
 						},
+						Comma: nil,
 						Key: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
@@ -2814,9 +2936,12 @@ var pkgAST = &ast.Package{
 							},
 							Name: "mapFn",
 						},
-						Value: nil,
+						Separator: nil,
+						Value:     nil,
 					}},
+					Rparan: nil,
 				},
+				Lparen: nil,
 				Params: []*ast.Property{&ast.Property{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -2834,6 +2959,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -2853,6 +2979,7 @@ var pkgAST = &ast.Package{
 						},
 						Name: "url",
 					},
+					Separator: nil,
 					Value: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -2889,6 +3016,7 @@ var pkgAST = &ast.Package{
 							},
 						},
 					},
+					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -2908,6 +3036,7 @@ var pkgAST = &ast.Package{
 						},
 						Name: "token",
 					},
+					Separator: nil,
 					Value: &ast.StringLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
@@ -2928,8 +3057,10 @@ var pkgAST = &ast.Package{
 						Value: "",
 					},
 				}},
+				Rparan: nil,
 			},
 		}},
+		Eof: nil,
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
