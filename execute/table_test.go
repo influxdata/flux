@@ -42,7 +42,7 @@ func TestTables_UnevenColumns(t *testing.T) {
 	if err == nil {
 		t.Errorf("Expected error - got nil")
 	} else if err.Error() != expErr {
-		t.Errorf("Expected error message \"%s\" - got %s", expErr, err.Error())
+		t.Errorf("Expected error message \"%s\" - got \"%s\"", expErr, err.Error())
 	}
 }
 
