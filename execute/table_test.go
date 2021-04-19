@@ -19,6 +19,7 @@ import (
 )
 
 func TestTables_UnevenColumns(t *testing.T) {
+	expErr := "column bools of type bool has length 4 in table of length 5"
 	alloc := memory.Allocator{}
 	b := execute.NewColListTableBuilder(execute.NewGroupKey(
 		[]flux.ColMeta{},
@@ -32,18 +33,17 @@ func TestTables_UnevenColumns(t *testing.T) {
 		b.AppendBool(0, bl)
 	}
 
-	floats := []float64{0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9}
+	floats := []float64{0.1, 0.2, 0.3, 0.4, 0.5}
 	for _, float := range floats {
 		b.AppendFloat(1, float)
 	}
 
-	tbl, _ := b.Table()
-	cr := tbl.(*execute.ColListTable)
-	// length of the table should be 5, but the 'bools' column should only have 4 items in it
-	fmt.Printf("cr.Len(): %d\n", cr.Len())
-	fmt.Printf("bools: %v\n", cr.Bools(0))
-	val := execute.ValueForRow(cr, cr.Len()-1, 0)
-	fmt.Printf("value: %v\n", val)
+	_, err := b.Table()
+	if err == nil {
+		t.Errorf("Expected error - got nil")
+	} else if err.Error() != expErr {
+		t.Errorf("Expected error message \"%s\" - got %s", expErr, err.Error())
+	}
 }
 
 func TestTablesEqual(t *testing.T) {

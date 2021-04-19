@@ -239,10 +239,6 @@ func processMessage(ctx context.Context, t Transformation, m Message) (finished 
 		err = t.RetractTable(m.SrcDatasetID(), m.Key())
 	case ProcessMsg:
 		b := m.Table()
-		err = b.CheckLevelColumns()
-		if err != nil {
-			return
-		}
 		_, span := StartSpanFromContext(ctx, reflect.TypeOf(t).String(), t.Label())
 		err = t.Process(m.SrcDatasetID(), b)
 		if span != nil {

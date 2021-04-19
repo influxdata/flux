@@ -2,7 +2,6 @@ package table
 
 import (
 	"context"
-	"fmt"
 	"sync/atomic"
 
 	"github.com/apache/arrow/go/arrow/array"
@@ -155,32 +154,6 @@ type streamTable struct {
 	ch     <-chan streamBuffer
 	done   <-chan struct{}
 	empty  bool
-}
-
-func (s *streamTable) CheckLevelColumns() error {
-	for j, col := range s.first.Cols() {
-		var rowLen int
-		switch col.Type {
-		case flux.TBool:
-			rowLen = s.first.Bools(j).Len()
-		case flux.TInt:
-			rowLen = s.first.Ints(j).Len()
-		case flux.TUInt:
-			rowLen = s.first.UInts(j).Len()
-		case flux.TFloat:
-			rowLen = s.first.Floats(j).Len()
-		case flux.TString:
-			rowLen = s.first.Strings(j).Len()
-		case flux.TTime:
-			rowLen = s.first.Times(j).Len()
-		}
-		if s.first.Len() != rowLen {
-			return fmt.Errorf("column %s of type %s has length %d in table of length %d",
-				col.Label, col.Type, rowLen, s.first.Len(),
-			)
-		}
-	}
-	return nil
 }
 
 func (s *streamTable) Key() flux.GroupKey {
