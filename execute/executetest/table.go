@@ -48,6 +48,11 @@ type Table struct {
 	IsDone bool
 }
 
+func (t *Table) CheckLevelColumns() error {
+	// TODO(sean): implement this
+	return nil
+}
+
 // Normalize ensures all fields of the table are set correctly.
 func (t *Table) Normalize() {
 	if t.GroupKey == nil {

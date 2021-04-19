@@ -80,6 +80,10 @@ func (m *maskTable) Empty() bool {
 	return m.table.Empty()
 }
 
+func (m *maskTable) CheckLevelColumns() error {
+	return m.table.CheckLevelColumns()
+}
+
 type maskTableView struct {
 	key     flux.GroupKey
 	cols    []flux.ColMeta

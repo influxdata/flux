@@ -618,6 +618,18 @@ func (b *ColListTableBuilder) AddCol(c flux.ColMeta) (int, error) {
 	return newIdx, nil
 }
 
+func (b *ColListTableBuilder) checkLevelColumns() error {
+	for idx, c := range b.colMeta {
+		diffLen := b.NRows() - b.cols[idx].Len()
+		if diffLen != 0 {
+			return fmt.Errorf("column %s of type %s has length %d in table of length %d",
+				c.Label, c.Type, b.cols[idx].Len(), b.NRows,
+			)
+		}
+	}
+	return nil
+}
+
 func (b *ColListTableBuilder) LevelColumns() error {
 	for idx, c := range b.colMeta {
 		switch c.Type {
@@ -1196,6 +1208,7 @@ func (b *ColListTableBuilder) Table() (flux.Table, error) {
 		colMeta:  b.colMeta,
 		nrows:    b.nrows,
 		refCount: 1,
+		levelErr: b.checkLevelColumns(),
 	}
 
 	if t.nrows > 0 {
@@ -1288,6 +1301,11 @@ type ColListTable struct {
 
 	used     int32
 	refCount int32
+	levelErr error
+}
+
+func (t *ColListTable) CheckLevelColumns() error {
+	return t.levelErr
 }
 
 func (t *ColListTable) RefCount(n int) {
@@ -2154,4 +2172,8 @@ func (t *emptyTable) Done() {
 
 func (t *emptyTable) Empty() bool {
 	return true
+}
+
+func (t *emptyTable) CheckLevelColumns() error {
+	return nil
 }

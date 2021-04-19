@@ -1,6 +1,7 @@
 package table
 
 import (
+	"fmt"
 	"sync/atomic"
 
 	"github.com/influxdata/flux"
@@ -15,6 +16,34 @@ type BufferedTable struct {
 	GroupKey flux.GroupKey
 	Columns  []flux.ColMeta
 	Buffers  []flux.ColReader
+}
+
+func (b *BufferedTable) CheckLevelColumns() error {
+	for _, cr := range b.Buffers {
+		for j, col := range cr.Cols() {
+			var rowLen int
+			switch col.Type {
+			case flux.TBool:
+				rowLen = cr.Bools(j).Len()
+			case flux.TInt:
+				rowLen = cr.Ints(j).Len()
+			case flux.TUInt:
+				rowLen = cr.UInts(j).Len()
+			case flux.TFloat:
+				rowLen = cr.Floats(j).Len()
+			case flux.TString:
+				rowLen = cr.Strings(j).Len()
+			case flux.TTime:
+				rowLen = cr.Times(j).Len()
+			}
+			if cr.Len() != rowLen {
+				return fmt.Errorf("column %s of type %s has length %d in table of length %d",
+					col.Label, col.Type, rowLen, cr.Len(),
+				)
+			}
+		}
+	}
+	return nil
 }
 
 // FromBuffer constructs a flux.Table from a single flux.ColReader.

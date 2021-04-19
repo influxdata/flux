@@ -48,6 +48,8 @@ type Table interface {
 	// Empty returns whether the table contains no records.
 	// This should not return true when the table is empty because of an error.
 	Empty() bool
+
+	CheckLevelColumns() error
 }
 
 // BufferedTable is an implementation of Table that has all of its

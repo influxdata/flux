@@ -1,6 +1,10 @@
 package table
 
-import "github.com/influxdata/flux"
+import (
+	"fmt"
+
+	"github.com/influxdata/flux"
+)
 
 // Copy returns a buffered copy of the table and consumes the
 // input table. If the input table is already buffered, it "consumes"
@@ -98,4 +102,32 @@ func (tb *tableBuffer) Copy() flux.BufferedTable {
 		i:       tb.i,
 		buffers: tb.buffers,
 	}
+}
+
+func (tb *tableBuffer) CheckLevelColumns() error {
+	for _, cr := range tb.buffers {
+		for j, col := range cr.Cols() {
+			var rowLen int
+			switch col.Type {
+			case flux.TBool:
+				rowLen = cr.Bools(j).Len()
+			case flux.TInt:
+				rowLen = cr.Ints(j).Len()
+			case flux.TUInt:
+				rowLen = cr.UInts(j).Len()
+			case flux.TFloat:
+				rowLen = cr.Floats(j).Len()
+			case flux.TString:
+				rowLen = cr.Strings(j).Len()
+			case flux.TTime:
+				rowLen = cr.Times(j).Len()
+			}
+			if cr.Len() != rowLen {
+				return fmt.Errorf("column %s of type %s has length %d in table of length %d",
+					col.Label, col.Type, rowLen, cr.Len(),
+				)
+			}
+		}
+	}
+	return nil
 }
