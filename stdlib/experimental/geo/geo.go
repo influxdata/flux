@@ -278,6 +278,9 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 		if !latOk || !lonOk {
 			return nil, errors.Newf(codes.Invalid, "invalid point specification - must have lat, lon fields")
 		}
+		if lat.IsNull() || lon.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "invalid point specification - lat, lon cannot be null")
+		}
 
 		geom = point{
 			lat: lat.Float(),
@@ -294,6 +297,9 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 
 		if !minLatOk || !minLonOk || !maxLatOk || !maxLonOk {
 			return nil, errors.Newf(codes.Invalid, "invalid box specification - must have minLat, minLon, maxLat, maxLon fields")
+		}
+		if minLat.IsNull() || minLon.IsNull() || maxLat.IsNull() || maxLon.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "invalid box specification - minLat, minLon, maxLat, maxLon cannot be null")
 		}
 
 		// fix user mistakes
@@ -321,6 +327,9 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 		if !centerLatOk || !centerLonOk || !radiusOk {
 			return nil, errors.Newf(codes.Invalid, "invalid circle specification - must have lat, lon, radius fields")
 		}
+		if centerLat.IsNull() || centerLon.IsNull() || radius.IsNull() {
+			return nil, errors.Newf(codes.Invalid, "invalid circle specification - lat, lon, radius cannot be null")
+		}
 
 		geom = circle{
 			point: point{
@@ -346,6 +355,9 @@ func parseGeometryArgument(name string, arg values.Object, units *units) (geom i
 
 			if !latOk || !lonOk {
 				return nil, errors.Newf(codes.Invalid, "invalid polygon point specification - must have lat, lon fields")
+			}
+			if lat.IsNull() || lon.IsNull() {
+				return nil, errors.Newf(codes.Invalid, "invalid polygon point specification - lat, lon cannot be null")
 			}
 
 			s2points[i] = s2.PointFromLatLng(s2.LatLngFromDegrees(lat.Float(), lon.Float()))
