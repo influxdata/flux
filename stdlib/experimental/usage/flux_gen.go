@@ -23,19 +23,4101 @@ var pkgAST = &ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 14,
-					Line:   1,
+					Column: 2,
+					Line:   63,
 				},
 				File:   "usage.flux",
-				Source: "package usage",
+				Source: "package usage\n\nimport \"experimental/influxdb\"\nimport \"csv\"\nimport \"experimental/json\"\n\n// errTemplate for formatting HTTP error responses\nerrTemplate = \"#datatype,string,long,string\n#group,false,false,false\n#default,,,\n,result,table,column\n,,0,*\n\"\n\n// formatError formats an HTTP response as a table.\nformatError = (response) => {\n    return csv.from(csv: errTemplate)\n        |> map(fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })\n    )\n}\n\n// from returns an organization's usage data. The time range to query is\n// bounded by start and stop arguments. Optional orgID, host and token arguments\n// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n// return raw usage data rather than the downsampled data returned by default.\n//\n// Note that unlike the range function, the stop argument is required here,\n// pending implementation of https://github.com/influxdata/flux/issues/3629.\nfrom = (start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n    result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))\n\n\treturn result\n}\n\n// limits returns an organization's usage limits. Optional orgID, host\n// and token arguments allow cross-org and/or cross-cluster calls.\nlimits = (host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\tresult = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)\n\n\treturn result\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
 				},
 			},
 		},
-		Body:     []ast.Statement{},
-		Imports:  nil,
+		Body: []ast.Statement{&ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   13,
+					},
+					File:   "usage.flux",
+					Source: "errTemplate = \"#datatype,string,long,string\n#group,false,false,false\n#default,,,\n,result,table,column\n,,0,*\n\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   8,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// errTemplate for formatting HTTP error responses\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   8,
+						},
+						File:   "usage.flux",
+						Source: "errTemplate",
+						Start: ast.Position{
+							Column: 1,
+							Line:   8,
+						},
+					},
+				},
+				Name: "errTemplate",
+			},
+			Init: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   13,
+						},
+						File:   "usage.flux",
+						Source: "\"#datatype,string,long,string\n#group,false,false,false\n#default,,,\n,result,table,column\n,,0,*\n\"",
+						Start: ast.Position{
+							Column: 15,
+							Line:   8,
+						},
+					},
+				},
+				Value: "#datatype,string,long,string\n#group,false,false,false\n#default,,,\n,result,table,column\n,,0,*\n",
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   23,
+					},
+					File:   "usage.flux",
+					Source: "formatError = (response) => {\n    return csv.from(csv: errTemplate)\n        |> map(fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })\n    )\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   16,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// formatError formats an HTTP response as a table.\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 12,
+							Line:   16,
+						},
+						File:   "usage.flux",
+						Source: "formatError",
+						Start: ast.Position{
+							Column: 1,
+							Line:   16,
+						},
+					},
+				},
+				Name: "formatError",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   23,
+						},
+						File:   "usage.flux",
+						Source: "(response) => {\n    return csv.from(csv: errTemplate)\n        |> map(fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })\n    )\n}",
+						Start: ast.Position{
+							Column: 15,
+							Line:   16,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   23,
+							},
+							File:   "usage.flux",
+							Source: "{\n    return csv.from(csv: errTemplate)\n        |> map(fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })\n    )\n}",
+							Start: ast.Position{
+								Column: 29,
+								Line:   16,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.ReturnStatement{
+						Argument: &ast.PipeExpression{
+							Argument: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 37,
+												Line:   17,
+											},
+											File:   "usage.flux",
+											Source: "csv: errTemplate",
+											Start: ast.Position{
+												Column: 21,
+												Line:   17,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 37,
+													Line:   17,
+												},
+												File:   "usage.flux",
+												Source: "csv: errTemplate",
+												Start: ast.Position{
+													Column: 21,
+													Line:   17,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 24,
+														Line:   17,
+													},
+													File:   "usage.flux",
+													Source: "csv",
+													Start: ast.Position{
+														Column: 21,
+														Line:   17,
+													},
+												},
+											},
+											Name: "csv",
+										},
+										Separator: nil,
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 37,
+														Line:   17,
+													},
+													File:   "usage.flux",
+													Source: "errTemplate",
+													Start: ast.Position{
+														Column: 26,
+														Line:   17,
+													},
+												},
+											},
+											Name: "errTemplate",
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   17,
+										},
+										File:   "usage.flux",
+										Source: "csv.from(csv: errTemplate)",
+										Start: ast.Position{
+											Column: 12,
+											Line:   17,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 20,
+												Line:   17,
+											},
+											File:   "usage.flux",
+											Source: "csv.from",
+											Start: ast.Position{
+												Column: 12,
+												Line:   17,
+											},
+										},
+									},
+									Lbrack: nil,
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   17,
+												},
+												File:   "usage.flux",
+												Source: "csv",
+												Start: ast.Position{
+													Column: 12,
+													Line:   17,
+												},
+											},
+										},
+										Name: "csv",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 20,
+													Line:   17,
+												},
+												File:   "usage.flux",
+												Source: "from",
+												Start: ast.Position{
+													Column: 16,
+													Line:   17,
+												},
+											},
+										},
+										Name: "from",
+									},
+									Rbrack: nil,
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 6,
+										Line:   22,
+									},
+									File:   "usage.flux",
+									Source: "csv.from(csv: errTemplate)\n        |> map(fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })\n    )",
+									Start: ast.Position{
+										Column: 12,
+										Line:   17,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 11,
+												Line:   21,
+											},
+											File:   "usage.flux",
+											Source: "fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })",
+											Start: ast.Position{
+												Column: 16,
+												Line:   18,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 11,
+													Line:   21,
+												},
+												File:   "usage.flux",
+												Source: "fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })",
+												Start: ast.Position{
+													Column: 16,
+													Line:   18,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 18,
+														Line:   18,
+													},
+													File:   "usage.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 16,
+														Line:   18,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Separator: nil,
+										Value: &ast.FunctionExpression{
+											Arrow: nil,
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 11,
+														Line:   21,
+													},
+													File:   "usage.flux",
+													Source: "(r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })",
+													Start: ast.Position{
+														Column: 20,
+														Line:   18,
+													},
+												},
+											},
+											Body: &ast.ParenExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 11,
+															Line:   21,
+														},
+														File:   "usage.flux",
+														Source: "({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })",
+														Start: ast.Position{
+															Column: 27,
+															Line:   18,
+														},
+													},
+												},
+												Expression: &ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 10,
+																Line:   21,
+															},
+															File:   "usage.flux",
+															Source: "{\n            error: string(v: response.body),\n            code: response.statusCode,\n        }",
+															Start: ast.Position{
+																Column: 28,
+																Line:   18,
+															},
+														},
+													},
+													Lbrace: nil,
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 44,
+																	Line:   19,
+																},
+																File:   "usage.flux",
+																Source: "error: string(v: response.body)",
+																Start: ast.Position{
+																	Column: 13,
+																	Line:   19,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 18,
+																		Line:   19,
+																	},
+																	File:   "usage.flux",
+																	Source: "error",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   19,
+																	},
+																},
+															},
+															Name: "error",
+														},
+														Separator: nil,
+														Value: &ast.CallExpression{
+															Arguments: []ast.Expression{&ast.ObjectExpression{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 43,
+																			Line:   19,
+																		},
+																		File:   "usage.flux",
+																		Source: "v: response.body",
+																		Start: ast.Position{
+																			Column: 27,
+																			Line:   19,
+																		},
+																	},
+																},
+																Lbrace: nil,
+																Properties: []*ast.Property{&ast.Property{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 43,
+																				Line:   19,
+																			},
+																			File:   "usage.flux",
+																			Source: "v: response.body",
+																			Start: ast.Position{
+																				Column: 27,
+																				Line:   19,
+																			},
+																		},
+																	},
+																	Comma: nil,
+																	Key: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 28,
+																					Line:   19,
+																				},
+																				File:   "usage.flux",
+																				Source: "v",
+																				Start: ast.Position{
+																					Column: 27,
+																					Line:   19,
+																				},
+																			},
+																		},
+																		Name: "v",
+																	},
+																	Separator: nil,
+																	Value: &ast.MemberExpression{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 43,
+																					Line:   19,
+																				},
+																				File:   "usage.flux",
+																				Source: "response.body",
+																				Start: ast.Position{
+																					Column: 30,
+																					Line:   19,
+																				},
+																			},
+																		},
+																		Lbrack: nil,
+																		Object: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 38,
+																						Line:   19,
+																					},
+																					File:   "usage.flux",
+																					Source: "response",
+																					Start: ast.Position{
+																						Column: 30,
+																						Line:   19,
+																					},
+																				},
+																			},
+																			Name: "response",
+																		},
+																		Property: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 43,
+																						Line:   19,
+																					},
+																					File:   "usage.flux",
+																					Source: "body",
+																					Start: ast.Position{
+																						Column: 39,
+																						Line:   19,
+																					},
+																				},
+																			},
+																			Name: "body",
+																		},
+																		Rbrack: nil,
+																	},
+																}},
+																Rbrace: nil,
+																With:   nil,
+															}},
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 44,
+																		Line:   19,
+																	},
+																	File:   "usage.flux",
+																	Source: "string(v: response.body)",
+																	Start: ast.Position{
+																		Column: 20,
+																		Line:   19,
+																	},
+																},
+															},
+															Callee: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 26,
+																			Line:   19,
+																		},
+																		File:   "usage.flux",
+																		Source: "string",
+																		Start: ast.Position{
+																			Column: 20,
+																			Line:   19,
+																		},
+																	},
+																},
+																Name: "string",
+															},
+															Lparen: nil,
+															Rparen: nil,
+														},
+													}, &ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 38,
+																	Line:   20,
+																},
+																File:   "usage.flux",
+																Source: "code: response.statusCode",
+																Start: ast.Position{
+																	Column: 13,
+																	Line:   20,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 17,
+																		Line:   20,
+																	},
+																	File:   "usage.flux",
+																	Source: "code",
+																	Start: ast.Position{
+																		Column: 13,
+																		Line:   20,
+																	},
+																},
+															},
+															Name: "code",
+														},
+														Separator: nil,
+														Value: &ast.MemberExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 38,
+																		Line:   20,
+																	},
+																	File:   "usage.flux",
+																	Source: "response.statusCode",
+																	Start: ast.Position{
+																		Column: 19,
+																		Line:   20,
+																	},
+																},
+															},
+															Lbrack: nil,
+															Object: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 27,
+																			Line:   20,
+																		},
+																		File:   "usage.flux",
+																		Source: "response",
+																		Start: ast.Position{
+																			Column: 19,
+																			Line:   20,
+																		},
+																	},
+																},
+																Name: "response",
+															},
+															Property: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 38,
+																			Line:   20,
+																		},
+																		File:   "usage.flux",
+																		Source: "statusCode",
+																		Start: ast.Position{
+																			Column: 28,
+																			Line:   20,
+																		},
+																	},
+																},
+																Name: "statusCode",
+															},
+															Rbrack: nil,
+														},
+													}},
+													Rbrace: nil,
+													With:   nil,
+												},
+												Lparen: nil,
+												Rparen: nil,
+											},
+											Lparen: nil,
+											Params: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 22,
+															Line:   18,
+														},
+														File:   "usage.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 21,
+															Line:   18,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 22,
+																Line:   18,
+															},
+															File:   "usage.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 21,
+																Line:   18,
+															},
+														},
+													},
+													Name: "r",
+												},
+												Separator: nil,
+												Value:     nil,
+											}},
+											Rparan: nil,
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 6,
+											Line:   22,
+										},
+										File:   "usage.flux",
+										Source: "map(fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })\n    )",
+										Start: ast.Position{
+											Column: 12,
+											Line:   18,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   18,
+											},
+											File:   "usage.flux",
+											Source: "map",
+											Start: ast.Position{
+												Column: 12,
+												Line:   18,
+											},
+										},
+									},
+									Name: "map",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 6,
+									Line:   22,
+								},
+								File:   "usage.flux",
+								Source: "return csv.from(csv: errTemplate)\n        |> map(fn: (r) => ({\n            error: string(v: response.body),\n            code: response.statusCode,\n        })\n    )",
+								Start: ast.Position{
+									Column: 5,
+									Line:   17,
+								},
+							},
+						},
+					}},
+					Lbrace: nil,
+					Rbrace: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 24,
+								Line:   16,
+							},
+							File:   "usage.flux",
+							Source: "response",
+							Start: ast.Position{
+								Column: 16,
+								Line:   16,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 24,
+									Line:   16,
+								},
+								File:   "usage.flux",
+								Source: "response",
+								Start: ast.Position{
+									Column: 16,
+									Line:   16,
+								},
+							},
+						},
+						Name: "response",
+					},
+					Separator: nil,
+					Value:     nil,
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   48,
+					},
+					File:   "usage.flux",
+					Source: "from = (start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n    result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))\n\n\treturn result\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   32,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// from returns an organization's usage data. The time range to query is\n"}, ast.Comment{Text: "// bounded by start and stop arguments. Optional orgID, host and token arguments\n"}, ast.Comment{Text: "// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n"}, ast.Comment{Text: "// return raw usage data rather than the downsampled data returned by default.\n"}, ast.Comment{Text: "//\n"}, ast.Comment{Text: "// Note that unlike the range function, the stop argument is required here,\n"}, ast.Comment{Text: "// pending implementation of https://github.com/influxdata/flux/issues/3629.\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 5,
+							Line:   32,
+						},
+						File:   "usage.flux",
+						Source: "from",
+						Start: ast.Position{
+							Column: 1,
+							Line:   32,
+						},
+					},
+				},
+				Name: "from",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   48,
+						},
+						File:   "usage.flux",
+						Source: "(start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n    result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))\n\n\treturn result\n}",
+						Start: ast.Position{
+							Column: 8,
+							Line:   32,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   48,
+							},
+							File:   "usage.flux",
+							Source: "{\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n    result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))\n\n\treturn result\n}",
+							Start: ast.Position{
+								Column: 72,
+								Line:   32,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 3,
+									Line:   43,
+								},
+								File:   "usage.flux",
+								Source: "response = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)",
+								Start: ast.Position{
+									Column: 2,
+									Line:   33,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   33,
+									},
+									File:   "usage.flux",
+									Source: "response",
+									Start: ast.Position{
+										Column: 2,
+										Line:   33,
+									},
+								},
+							},
+							Name: "response",
+						},
+						Init: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 10,
+											Line:   42,
+										},
+										File:   "usage.flux",
+										Source: "method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        }",
+										Start: ast.Position{
+											Column: 9,
+											Line:   34,
+										},
+									},
+								},
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   34,
+											},
+											File:   "usage.flux",
+											Source: "method: \"get\"",
+											Start: ast.Position{
+												Column: 9,
+												Line:   34,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   34,
+												},
+												File:   "usage.flux",
+												Source: "method",
+												Start: ast.Position{
+													Column: 9,
+													Line:   34,
+												},
+											},
+										},
+										Name: "method",
+									},
+									Separator: nil,
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 22,
+													Line:   34,
+												},
+												File:   "usage.flux",
+												Source: "\"get\"",
+												Start: ast.Position{
+													Column: 17,
+													Line:   34,
+												},
+											},
+										},
+										Value: "get",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 43,
+												Line:   35,
+											},
+											File:   "usage.flux",
+											Source: "path: \"/api/v2/orgs/\" + orgID + \"/usage\"",
+											Start: ast.Position{
+												Column: 3,
+												Line:   35,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   35,
+												},
+												File:   "usage.flux",
+												Source: "path",
+												Start: ast.Position{
+													Column: 3,
+													Line:   35,
+												},
+											},
+										},
+										Name: "path",
+									},
+									Separator: nil,
+									Value: &ast.BinaryExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 43,
+													Line:   35,
+												},
+												File:   "usage.flux",
+												Source: "\"/api/v2/orgs/\" + orgID + \"/usage\"",
+												Start: ast.Position{
+													Column: 9,
+													Line:   35,
+												},
+											},
+										},
+										Left: &ast.BinaryExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 32,
+														Line:   35,
+													},
+													File:   "usage.flux",
+													Source: "\"/api/v2/orgs/\" + orgID",
+													Start: ast.Position{
+														Column: 9,
+														Line:   35,
+													},
+												},
+											},
+											Left: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   35,
+														},
+														File:   "usage.flux",
+														Source: "\"/api/v2/orgs/\"",
+														Start: ast.Position{
+															Column: 9,
+															Line:   35,
+														},
+													},
+												},
+												Value: "/api/v2/orgs/",
+											},
+											Operator: 5,
+											Right: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 32,
+															Line:   35,
+														},
+														File:   "usage.flux",
+														Source: "orgID",
+														Start: ast.Position{
+															Column: 27,
+															Line:   35,
+														},
+													},
+												},
+												Name: "orgID",
+											},
+										},
+										Operator: 5,
+										Right: &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 43,
+														Line:   35,
+													},
+													File:   "usage.flux",
+													Source: "\"/usage\"",
+													Start: ast.Position{
+														Column: 35,
+														Line:   35,
+													},
+												},
+											},
+											Value: "/usage",
+										},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   36,
+											},
+											File:   "usage.flux",
+											Source: "host: host",
+											Start: ast.Position{
+												Column: 3,
+												Line:   36,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   36,
+												},
+												File:   "usage.flux",
+												Source: "host",
+												Start: ast.Position{
+													Column: 3,
+													Line:   36,
+												},
+											},
+										},
+										Name: "host",
+									},
+									Separator: nil,
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   36,
+												},
+												File:   "usage.flux",
+												Source: "host",
+												Start: ast.Position{
+													Column: 9,
+													Line:   36,
+												},
+											},
+										},
+										Name: "host",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   37,
+											},
+											File:   "usage.flux",
+											Source: "token: token",
+											Start: ast.Position{
+												Column: 3,
+												Line:   37,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   37,
+												},
+												File:   "usage.flux",
+												Source: "token",
+												Start: ast.Position{
+													Column: 3,
+													Line:   37,
+												},
+											},
+										},
+										Name: "token",
+									},
+									Separator: nil,
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   37,
+												},
+												File:   "usage.flux",
+												Source: "token",
+												Start: ast.Position{
+													Column: 10,
+													Line:   37,
+												},
+											},
+										},
+										Name: "token",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 10,
+												Line:   42,
+											},
+											File:   "usage.flux",
+											Source: "query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        }",
+											Start: ast.Position{
+												Column: 9,
+												Line:   38,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 14,
+													Line:   38,
+												},
+												File:   "usage.flux",
+												Source: "query",
+												Start: ast.Position{
+													Column: 9,
+													Line:   38,
+												},
+											},
+										},
+										Name: "query",
+									},
+									Separator: nil,
+									Value: &ast.ObjectExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 10,
+													Line:   42,
+												},
+												File:   "usage.flux",
+												Source: "{\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        }",
+												Start: ast.Position{
+													Column: 16,
+													Line:   38,
+												},
+											},
+										},
+										Lbrace: nil,
+										Properties: []*ast.Property{&ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 40,
+														Line:   39,
+													},
+													File:   "usage.flux",
+													Source: "start: string(v: start)",
+													Start: ast.Position{
+														Column: 17,
+														Line:   39,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 22,
+															Line:   39,
+														},
+														File:   "usage.flux",
+														Source: "start",
+														Start: ast.Position{
+															Column: 17,
+															Line:   39,
+														},
+													},
+												},
+												Name: "start",
+											},
+											Separator: nil,
+											Value: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 39,
+																Line:   39,
+															},
+															File:   "usage.flux",
+															Source: "v: start",
+															Start: ast.Position{
+																Column: 31,
+																Line:   39,
+															},
+														},
+													},
+													Lbrace: nil,
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 39,
+																	Line:   39,
+																},
+																File:   "usage.flux",
+																Source: "v: start",
+																Start: ast.Position{
+																	Column: 31,
+																	Line:   39,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 32,
+																		Line:   39,
+																	},
+																	File:   "usage.flux",
+																	Source: "v",
+																	Start: ast.Position{
+																		Column: 31,
+																		Line:   39,
+																	},
+																},
+															},
+															Name: "v",
+														},
+														Separator: nil,
+														Value: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 39,
+																		Line:   39,
+																	},
+																	File:   "usage.flux",
+																	Source: "start",
+																	Start: ast.Position{
+																		Column: 34,
+																		Line:   39,
+																	},
+																},
+															},
+															Name: "start",
+														},
+													}},
+													Rbrace: nil,
+													With:   nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 40,
+															Line:   39,
+														},
+														File:   "usage.flux",
+														Source: "string(v: start)",
+														Start: ast.Position{
+															Column: 24,
+															Line:   39,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 30,
+																Line:   39,
+															},
+															File:   "usage.flux",
+															Source: "string",
+															Start: ast.Position{
+																Column: 24,
+																Line:   39,
+															},
+														},
+													},
+													Name: "string",
+												},
+												Lparen: nil,
+												Rparen: nil,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 38,
+														Line:   40,
+													},
+													File:   "usage.flux",
+													Source: "stop: string(v: stop)",
+													Start: ast.Position{
+														Column: 17,
+														Line:   40,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 21,
+															Line:   40,
+														},
+														File:   "usage.flux",
+														Source: "stop",
+														Start: ast.Position{
+															Column: 17,
+															Line:   40,
+														},
+													},
+												},
+												Name: "stop",
+											},
+											Separator: nil,
+											Value: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 37,
+																Line:   40,
+															},
+															File:   "usage.flux",
+															Source: "v: stop",
+															Start: ast.Position{
+																Column: 30,
+																Line:   40,
+															},
+														},
+													},
+													Lbrace: nil,
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 37,
+																	Line:   40,
+																},
+																File:   "usage.flux",
+																Source: "v: stop",
+																Start: ast.Position{
+																	Column: 30,
+																	Line:   40,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 31,
+																		Line:   40,
+																	},
+																	File:   "usage.flux",
+																	Source: "v",
+																	Start: ast.Position{
+																		Column: 30,
+																		Line:   40,
+																	},
+																},
+															},
+															Name: "v",
+														},
+														Separator: nil,
+														Value: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 37,
+																		Line:   40,
+																	},
+																	File:   "usage.flux",
+																	Source: "stop",
+																	Start: ast.Position{
+																		Column: 33,
+																		Line:   40,
+																	},
+																},
+															},
+															Name: "stop",
+														},
+													}},
+													Rbrace: nil,
+													With:   nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 38,
+															Line:   40,
+														},
+														File:   "usage.flux",
+														Source: "string(v: stop)",
+														Start: ast.Position{
+															Column: 23,
+															Line:   40,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 29,
+																Line:   40,
+															},
+															File:   "usage.flux",
+															Source: "string",
+															Start: ast.Position{
+																Column: 23,
+																Line:   40,
+															},
+														},
+													},
+													Name: "string",
+												},
+												Lparen: nil,
+												Rparen: nil,
+											},
+										}, &ast.Property{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 36,
+														Line:   41,
+													},
+													File:   "usage.flux",
+													Source: "raw: string(v: raw)",
+													Start: ast.Position{
+														Column: 17,
+														Line:   41,
+													},
+												},
+											},
+											Comma: nil,
+											Key: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 20,
+															Line:   41,
+														},
+														File:   "usage.flux",
+														Source: "raw",
+														Start: ast.Position{
+															Column: 17,
+															Line:   41,
+														},
+													},
+												},
+												Name: "raw",
+											},
+											Separator: nil,
+											Value: &ast.CallExpression{
+												Arguments: []ast.Expression{&ast.ObjectExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 35,
+																Line:   41,
+															},
+															File:   "usage.flux",
+															Source: "v: raw",
+															Start: ast.Position{
+																Column: 29,
+																Line:   41,
+															},
+														},
+													},
+													Lbrace: nil,
+													Properties: []*ast.Property{&ast.Property{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 35,
+																	Line:   41,
+																},
+																File:   "usage.flux",
+																Source: "v: raw",
+																Start: ast.Position{
+																	Column: 29,
+																	Line:   41,
+																},
+															},
+														},
+														Comma: nil,
+														Key: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 30,
+																		Line:   41,
+																	},
+																	File:   "usage.flux",
+																	Source: "v",
+																	Start: ast.Position{
+																		Column: 29,
+																		Line:   41,
+																	},
+																},
+															},
+															Name: "v",
+														},
+														Separator: nil,
+														Value: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 35,
+																		Line:   41,
+																	},
+																	File:   "usage.flux",
+																	Source: "raw",
+																	Start: ast.Position{
+																		Column: 32,
+																		Line:   41,
+																	},
+																},
+															},
+															Name: "raw",
+														},
+													}},
+													Rbrace: nil,
+													With:   nil,
+												}},
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 36,
+															Line:   41,
+														},
+														File:   "usage.flux",
+														Source: "string(v: raw)",
+														Start: ast.Position{
+															Column: 22,
+															Line:   41,
+														},
+													},
+												},
+												Callee: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 28,
+																Line:   41,
+															},
+															File:   "usage.flux",
+															Source: "string",
+															Start: ast.Position{
+																Column: 22,
+																Line:   41,
+															},
+														},
+													},
+													Name: "string",
+												},
+												Lparen: nil,
+												Rparen: nil,
+											},
+										}},
+										Rbrace: nil,
+										With:   nil,
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 3,
+										Line:   43,
+									},
+									File:   "usage.flux",
+									Source: "influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)",
+									Start: ast.Position{
+										Column: 13,
+										Line:   33,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   33,
+										},
+										File:   "usage.flux",
+										Source: "influxdb.api",
+										Start: ast.Position{
+											Column: 13,
+											Line:   33,
+										},
+									},
+								},
+								Lbrack: nil,
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   33,
+											},
+											File:   "usage.flux",
+											Source: "influxdb",
+											Start: ast.Position{
+												Column: 13,
+												Line:   33,
+											},
+										},
+									},
+									Name: "influxdb",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   33,
+											},
+											File:   "usage.flux",
+											Source: "api",
+											Start: ast.Position{
+												Column: 22,
+												Line:   33,
+											},
+										},
+									},
+									Name: "api",
+								},
+								Rbrack: nil,
+							},
+							Lparen: nil,
+							Rparen: nil,
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 114,
+									Line:   45,
+								},
+								File:   "usage.flux",
+								Source: "result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))",
+								Start: ast.Position{
+									Column: 5,
+									Line:   45,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 11,
+										Line:   45,
+									},
+									File:   "usage.flux",
+									Source: "result",
+									Start: ast.Position{
+										Column: 5,
+										Line:   45,
+									},
+								},
+							},
+							Name: "result",
+						},
+						Init: &ast.ConditionalExpression{
+							Alternate: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 113,
+												Line:   45,
+											},
+											File:   "usage.flux",
+											Source: "csv: string(v: response.body)",
+											Start: ast.Position{
+												Column: 84,
+												Line:   45,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 113,
+													Line:   45,
+												},
+												File:   "usage.flux",
+												Source: "csv: string(v: response.body)",
+												Start: ast.Position{
+													Column: 84,
+													Line:   45,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 87,
+														Line:   45,
+													},
+													File:   "usage.flux",
+													Source: "csv",
+													Start: ast.Position{
+														Column: 84,
+														Line:   45,
+													},
+												},
+											},
+											Name: "csv",
+										},
+										Separator: nil,
+										Value: &ast.CallExpression{
+											Arguments: []ast.Expression{&ast.ObjectExpression{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 112,
+															Line:   45,
+														},
+														File:   "usage.flux",
+														Source: "v: response.body",
+														Start: ast.Position{
+															Column: 96,
+															Line:   45,
+														},
+													},
+												},
+												Lbrace: nil,
+												Properties: []*ast.Property{&ast.Property{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 112,
+																Line:   45,
+															},
+															File:   "usage.flux",
+															Source: "v: response.body",
+															Start: ast.Position{
+																Column: 96,
+																Line:   45,
+															},
+														},
+													},
+													Comma: nil,
+													Key: &ast.Identifier{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 97,
+																	Line:   45,
+																},
+																File:   "usage.flux",
+																Source: "v",
+																Start: ast.Position{
+																	Column: 96,
+																	Line:   45,
+																},
+															},
+														},
+														Name: "v",
+													},
+													Separator: nil,
+													Value: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 112,
+																	Line:   45,
+																},
+																File:   "usage.flux",
+																Source: "response.body",
+																Start: ast.Position{
+																	Column: 99,
+																	Line:   45,
+																},
+															},
+														},
+														Lbrack: nil,
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 107,
+																		Line:   45,
+																	},
+																	File:   "usage.flux",
+																	Source: "response",
+																	Start: ast.Position{
+																		Column: 99,
+																		Line:   45,
+																	},
+																},
+															},
+															Name: "response",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 112,
+																		Line:   45,
+																	},
+																	File:   "usage.flux",
+																	Source: "body",
+																	Start: ast.Position{
+																		Column: 108,
+																		Line:   45,
+																	},
+																},
+															},
+															Name: "body",
+														},
+														Rbrack: nil,
+													},
+												}},
+												Rbrace: nil,
+												With:   nil,
+											}},
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 113,
+														Line:   45,
+													},
+													File:   "usage.flux",
+													Source: "string(v: response.body)",
+													Start: ast.Position{
+														Column: 89,
+														Line:   45,
+													},
+												},
+											},
+											Callee: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 95,
+															Line:   45,
+														},
+														File:   "usage.flux",
+														Source: "string",
+														Start: ast.Position{
+															Column: 89,
+															Line:   45,
+														},
+													},
+												},
+												Name: "string",
+											},
+											Lparen: nil,
+											Rparen: nil,
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 114,
+											Line:   45,
+										},
+										File:   "usage.flux",
+										Source: "csv.from(csv: string(v: response.body))",
+										Start: ast.Position{
+											Column: 75,
+											Line:   45,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 83,
+												Line:   45,
+											},
+											File:   "usage.flux",
+											Source: "csv.from",
+											Start: ast.Position{
+												Column: 75,
+												Line:   45,
+											},
+										},
+									},
+									Lbrack: nil,
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 78,
+													Line:   45,
+												},
+												File:   "usage.flux",
+												Source: "csv",
+												Start: ast.Position{
+													Column: 75,
+													Line:   45,
+												},
+											},
+										},
+										Name: "csv",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 83,
+													Line:   45,
+												},
+												File:   "usage.flux",
+												Source: "from",
+												Start: ast.Position{
+													Column: 79,
+													Line:   45,
+												},
+											},
+										},
+										Name: "from",
+									},
+									Rbrack: nil,
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 114,
+										Line:   45,
+									},
+									File:   "usage.flux",
+									Source: "if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))",
+									Start: ast.Position{
+										Column: 14,
+										Line:   45,
+									},
+								},
+							},
+							Consequent: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 68,
+												Line:   45,
+											},
+											File:   "usage.flux",
+											Source: "response",
+											Start: ast.Position{
+												Column: 60,
+												Line:   45,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 68,
+													Line:   45,
+												},
+												File:   "usage.flux",
+												Source: "response",
+												Start: ast.Position{
+													Column: 60,
+													Line:   45,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 68,
+														Line:   45,
+													},
+													File:   "usage.flux",
+													Source: "response",
+													Start: ast.Position{
+														Column: 60,
+														Line:   45,
+													},
+												},
+											},
+											Name: "response",
+										},
+										Separator: nil,
+										Value:     nil,
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 69,
+											Line:   45,
+										},
+										File:   "usage.flux",
+										Source: "formatError(response)",
+										Start: ast.Position{
+											Column: 48,
+											Line:   45,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 59,
+												Line:   45,
+											},
+											File:   "usage.flux",
+											Source: "formatError",
+											Start: ast.Position{
+												Column: 48,
+												Line:   45,
+											},
+										},
+									},
+									Name: "formatError",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+							Test: &ast.BinaryExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 42,
+											Line:   45,
+										},
+										File:   "usage.flux",
+										Source: "response.statusCode > 299",
+										Start: ast.Position{
+											Column: 17,
+											Line:   45,
+										},
+									},
+								},
+								Left: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 36,
+												Line:   45,
+											},
+											File:   "usage.flux",
+											Source: "response.statusCode",
+											Start: ast.Position{
+												Column: 17,
+												Line:   45,
+											},
+										},
+									},
+									Lbrack: nil,
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 25,
+													Line:   45,
+												},
+												File:   "usage.flux",
+												Source: "response",
+												Start: ast.Position{
+													Column: 17,
+													Line:   45,
+												},
+											},
+										},
+										Name: "response",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 36,
+													Line:   45,
+												},
+												File:   "usage.flux",
+												Source: "statusCode",
+												Start: ast.Position{
+													Column: 26,
+													Line:   45,
+												},
+											},
+										},
+										Name: "statusCode",
+									},
+									Rbrack: nil,
+								},
+								Operator: 10,
+								Right: &ast.IntegerLiteral{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 42,
+												Line:   45,
+											},
+											File:   "usage.flux",
+											Source: "299",
+											Start: ast.Position{
+												Column: 39,
+												Line:   45,
+											},
+										},
+									},
+									Value: int64(299),
+								},
+							},
+							Tk_else: nil,
+							Tk_if:   nil,
+							Tk_then: nil,
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   47,
+									},
+									File:   "usage.flux",
+									Source: "result",
+									Start: ast.Position{
+										Column: 9,
+										Line:   47,
+									},
+								},
+							},
+							Name: "result",
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   47,
+								},
+								File:   "usage.flux",
+								Source: "return result",
+								Start: ast.Position{
+									Column: 2,
+									Line:   47,
+								},
+							},
+						},
+					}},
+					Lbrace: nil,
+					Rbrace: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 14,
+								Line:   32,
+							},
+							File:   "usage.flux",
+							Source: "start",
+							Start: ast.Position{
+								Column: 9,
+								Line:   32,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 14,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "start",
+								Start: ast.Position{
+									Column: 9,
+									Line:   32,
+								},
+							},
+						},
+						Name: "start",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 20,
+								Line:   32,
+							},
+							File:   "usage.flux",
+							Source: "stop",
+							Start: ast.Position{
+								Column: 16,
+								Line:   32,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 20,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "stop",
+								Start: ast.Position{
+									Column: 16,
+									Line:   32,
+								},
+							},
+						},
+						Name: "stop",
+					},
+					Separator: nil,
+					Value:     nil,
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 29,
+								Line:   32,
+							},
+							File:   "usage.flux",
+							Source: "host=\"\"",
+							Start: ast.Position{
+								Column: 22,
+								Line:   32,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 26,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "host",
+								Start: ast.Position{
+									Column: 22,
+									Line:   32,
+								},
+							},
+						},
+						Name: "host",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 29,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "\"\"",
+								Start: ast.Position{
+									Column: 27,
+									Line:   32,
+								},
+							},
+						},
+						Value: "",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 46,
+								Line:   32,
+							},
+							File:   "usage.flux",
+							Source: "orgID=\"{orgID}\"",
+							Start: ast.Position{
+								Column: 31,
+								Line:   32,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 36,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "orgID",
+								Start: ast.Position{
+									Column: 31,
+									Line:   32,
+								},
+							},
+						},
+						Name: "orgID",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "\"{orgID}\"",
+								Start: ast.Position{
+									Column: 37,
+									Line:   32,
+								},
+							},
+						},
+						Value: "{orgID}",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 56,
+								Line:   32,
+							},
+							File:   "usage.flux",
+							Source: "token=\"\"",
+							Start: ast.Position{
+								Column: 48,
+								Line:   32,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 53,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "token",
+								Start: ast.Position{
+									Column: 48,
+									Line:   32,
+								},
+							},
+						},
+						Name: "token",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 56,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "\"\"",
+								Start: ast.Position{
+									Column: 54,
+									Line:   32,
+								},
+							},
+						},
+						Value: "",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 67,
+								Line:   32,
+							},
+							File:   "usage.flux",
+							Source: "raw=false",
+							Start: ast.Position{
+								Column: 58,
+								Line:   32,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 61,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "raw",
+								Start: ast.Position{
+									Column: 58,
+									Line:   32,
+								},
+							},
+						},
+						Name: "raw",
+					},
+					Separator: nil,
+					Value: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 67,
+									Line:   32,
+								},
+								File:   "usage.flux",
+								Source: "false",
+								Start: ast.Position{
+									Column: 62,
+									Line:   32,
+								},
+							},
+						},
+						Name: "false",
+					},
+				}},
+				Rparan: nil,
+			},
+		}, &ast.VariableAssignment{
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 2,
+						Line:   63,
+					},
+					File:   "usage.flux",
+					Source: "limits = (host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\tresult = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)\n\n\treturn result\n}",
+					Start: ast.Position{
+						Column: 1,
+						Line:   52,
+					},
+				},
+			},
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: []ast.Comment{ast.Comment{Text: "// limits returns an organization's usage limits. Optional orgID, host\n"}, ast.Comment{Text: "// and token arguments allow cross-org and/or cross-cluster calls.\n"}},
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 7,
+							Line:   52,
+						},
+						File:   "usage.flux",
+						Source: "limits",
+						Start: ast.Position{
+							Column: 1,
+							Line:   52,
+						},
+					},
+				},
+				Name: "limits",
+			},
+			Init: &ast.FunctionExpression{
+				Arrow: nil,
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 2,
+							Line:   63,
+						},
+						File:   "usage.flux",
+						Source: "(host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\tresult = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)\n\n\treturn result\n}",
+						Start: ast.Position{
+							Column: 10,
+							Line:   52,
+						},
+					},
+				},
+				Body: &ast.Block{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 2,
+								Line:   63,
+							},
+							File:   "usage.flux",
+							Source: "{\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\tresult = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)\n\n\treturn result\n}",
+							Start: ast.Position{
+								Column: 50,
+								Line:   52,
+							},
+						},
+					},
+					Body: []ast.Statement{&ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 3,
+									Line:   58,
+								},
+								File:   "usage.flux",
+								Source: "response = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)",
+								Start: ast.Position{
+									Column: 2,
+									Line:   53,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 10,
+										Line:   53,
+									},
+									File:   "usage.flux",
+									Source: "response",
+									Start: ast.Position{
+										Column: 2,
+										Line:   53,
+									},
+								},
+							},
+							Name: "response",
+						},
+						Init: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   57,
+										},
+										File:   "usage.flux",
+										Source: "method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token",
+										Start: ast.Position{
+											Column: 3,
+											Line:   54,
+										},
+									},
+								},
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 16,
+												Line:   54,
+											},
+											File:   "usage.flux",
+											Source: "method: \"get\"",
+											Start: ast.Position{
+												Column: 3,
+												Line:   54,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 9,
+													Line:   54,
+												},
+												File:   "usage.flux",
+												Source: "method",
+												Start: ast.Position{
+													Column: 3,
+													Line:   54,
+												},
+											},
+										},
+										Name: "method",
+									},
+									Separator: nil,
+									Value: &ast.StringLiteral{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 16,
+													Line:   54,
+												},
+												File:   "usage.flux",
+												Source: "\"get\"",
+												Start: ast.Position{
+													Column: 11,
+													Line:   54,
+												},
+											},
+										},
+										Value: "get",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 44,
+												Line:   55,
+											},
+											File:   "usage.flux",
+											Source: "path: \"/api/v2/orgs/\" + orgID + \"/limits\"",
+											Start: ast.Position{
+												Column: 3,
+												Line:   55,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   55,
+												},
+												File:   "usage.flux",
+												Source: "path",
+												Start: ast.Position{
+													Column: 3,
+													Line:   55,
+												},
+											},
+										},
+										Name: "path",
+									},
+									Separator: nil,
+									Value: &ast.BinaryExpression{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 44,
+													Line:   55,
+												},
+												File:   "usage.flux",
+												Source: "\"/api/v2/orgs/\" + orgID + \"/limits\"",
+												Start: ast.Position{
+													Column: 9,
+													Line:   55,
+												},
+											},
+										},
+										Left: &ast.BinaryExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 32,
+														Line:   55,
+													},
+													File:   "usage.flux",
+													Source: "\"/api/v2/orgs/\" + orgID",
+													Start: ast.Position{
+														Column: 9,
+														Line:   55,
+													},
+												},
+											},
+											Left: &ast.StringLiteral{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 24,
+															Line:   55,
+														},
+														File:   "usage.flux",
+														Source: "\"/api/v2/orgs/\"",
+														Start: ast.Position{
+															Column: 9,
+															Line:   55,
+														},
+													},
+												},
+												Value: "/api/v2/orgs/",
+											},
+											Operator: 5,
+											Right: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 32,
+															Line:   55,
+														},
+														File:   "usage.flux",
+														Source: "orgID",
+														Start: ast.Position{
+															Column: 27,
+															Line:   55,
+														},
+													},
+												},
+												Name: "orgID",
+											},
+										},
+										Operator: 5,
+										Right: &ast.StringLiteral{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 44,
+														Line:   55,
+													},
+													File:   "usage.flux",
+													Source: "\"/limits\"",
+													Start: ast.Position{
+														Column: 35,
+														Line:   55,
+													},
+												},
+											},
+											Value: "/limits",
+										},
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 13,
+												Line:   56,
+											},
+											File:   "usage.flux",
+											Source: "host: host",
+											Start: ast.Position{
+												Column: 3,
+												Line:   56,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 7,
+													Line:   56,
+												},
+												File:   "usage.flux",
+												Source: "host",
+												Start: ast.Position{
+													Column: 3,
+													Line:   56,
+												},
+											},
+										},
+										Name: "host",
+									},
+									Separator: nil,
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 13,
+													Line:   56,
+												},
+												File:   "usage.flux",
+												Source: "host",
+												Start: ast.Position{
+													Column: 9,
+													Line:   56,
+												},
+											},
+										},
+										Name: "host",
+									},
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 15,
+												Line:   57,
+											},
+											File:   "usage.flux",
+											Source: "token: token",
+											Start: ast.Position{
+												Column: 3,
+												Line:   57,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 8,
+													Line:   57,
+												},
+												File:   "usage.flux",
+												Source: "token",
+												Start: ast.Position{
+													Column: 3,
+													Line:   57,
+												},
+											},
+										},
+										Name: "token",
+									},
+									Separator: nil,
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 15,
+													Line:   57,
+												},
+												File:   "usage.flux",
+												Source: "token",
+												Start: ast.Position{
+													Column: 10,
+													Line:   57,
+												},
+											},
+										},
+										Name: "token",
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 3,
+										Line:   58,
+									},
+									File:   "usage.flux",
+									Source: "influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)",
+									Start: ast.Position{
+										Column: 13,
+										Line:   53,
+									},
+								},
+							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   53,
+										},
+										File:   "usage.flux",
+										Source: "influxdb.api",
+										Start: ast.Position{
+											Column: 13,
+											Line:   53,
+										},
+									},
+								},
+								Lbrack: nil,
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 21,
+												Line:   53,
+											},
+											File:   "usage.flux",
+											Source: "influxdb",
+											Start: ast.Position{
+												Column: 13,
+												Line:   53,
+											},
+										},
+									},
+									Name: "influxdb",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   53,
+											},
+											File:   "usage.flux",
+											Source: "api",
+											Start: ast.Position{
+												Column: 22,
+												Line:   53,
+											},
+										},
+									},
+									Name: "api",
+								},
+								Rbrack: nil,
+							},
+							Lparen: nil,
+							Rparen: nil,
+						},
+					}, &ast.VariableAssignment{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 103,
+									Line:   60,
+								},
+								File:   "usage.flux",
+								Source: "result = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)",
+								Start: ast.Position{
+									Column: 2,
+									Line:   60,
+								},
+							},
+						},
+						ID: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 8,
+										Line:   60,
+									},
+									File:   "usage.flux",
+									Source: "result",
+									Start: ast.Position{
+										Column: 2,
+										Line:   60,
+									},
+								},
+							},
+							Name: "result",
+						},
+						Init: &ast.ConditionalExpression{
+							Alternate: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 102,
+												Line:   60,
+											},
+											File:   "usage.flux",
+											Source: "data: response.body",
+											Start: ast.Position{
+												Column: 83,
+												Line:   60,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 102,
+													Line:   60,
+												},
+												File:   "usage.flux",
+												Source: "data: response.body",
+												Start: ast.Position{
+													Column: 83,
+													Line:   60,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 87,
+														Line:   60,
+													},
+													File:   "usage.flux",
+													Source: "data",
+													Start: ast.Position{
+														Column: 83,
+														Line:   60,
+													},
+												},
+											},
+											Name: "data",
+										},
+										Separator: nil,
+										Value: &ast.MemberExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 102,
+														Line:   60,
+													},
+													File:   "usage.flux",
+													Source: "response.body",
+													Start: ast.Position{
+														Column: 89,
+														Line:   60,
+													},
+												},
+											},
+											Lbrack: nil,
+											Object: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 97,
+															Line:   60,
+														},
+														File:   "usage.flux",
+														Source: "response",
+														Start: ast.Position{
+															Column: 89,
+															Line:   60,
+														},
+													},
+												},
+												Name: "response",
+											},
+											Property: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 102,
+															Line:   60,
+														},
+														File:   "usage.flux",
+														Source: "body",
+														Start: ast.Position{
+															Column: 98,
+															Line:   60,
+														},
+													},
+												},
+												Name: "body",
+											},
+											Rbrack: nil,
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 103,
+											Line:   60,
+										},
+										File:   "usage.flux",
+										Source: "json.parse(data: response.body)",
+										Start: ast.Position{
+											Column: 72,
+											Line:   60,
+										},
+									},
+								},
+								Callee: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 82,
+												Line:   60,
+											},
+											File:   "usage.flux",
+											Source: "json.parse",
+											Start: ast.Position{
+												Column: 72,
+												Line:   60,
+											},
+										},
+									},
+									Lbrack: nil,
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 76,
+													Line:   60,
+												},
+												File:   "usage.flux",
+												Source: "json",
+												Start: ast.Position{
+													Column: 72,
+													Line:   60,
+												},
+											},
+										},
+										Name: "json",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 82,
+													Line:   60,
+												},
+												File:   "usage.flux",
+												Source: "parse",
+												Start: ast.Position{
+													Column: 77,
+													Line:   60,
+												},
+											},
+										},
+										Name: "parse",
+									},
+									Rbrack: nil,
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 103,
+										Line:   60,
+									},
+									File:   "usage.flux",
+									Source: "if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)",
+									Start: ast.Position{
+										Column: 11,
+										Line:   60,
+									},
+								},
+							},
+							Consequent: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 65,
+												Line:   60,
+											},
+											File:   "usage.flux",
+											Source: "response",
+											Start: ast.Position{
+												Column: 57,
+												Line:   60,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 65,
+													Line:   60,
+												},
+												File:   "usage.flux",
+												Source: "response",
+												Start: ast.Position{
+													Column: 57,
+													Line:   60,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 65,
+														Line:   60,
+													},
+													File:   "usage.flux",
+													Source: "response",
+													Start: ast.Position{
+														Column: 57,
+														Line:   60,
+													},
+												},
+											},
+											Name: "response",
+										},
+										Separator: nil,
+										Value:     nil,
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 66,
+											Line:   60,
+										},
+										File:   "usage.flux",
+										Source: "formatError(response)",
+										Start: ast.Position{
+											Column: 45,
+											Line:   60,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 56,
+												Line:   60,
+											},
+											File:   "usage.flux",
+											Source: "formatError",
+											Start: ast.Position{
+												Column: 45,
+												Line:   60,
+											},
+										},
+									},
+									Name: "formatError",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+							Test: &ast.BinaryExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 39,
+											Line:   60,
+										},
+										File:   "usage.flux",
+										Source: "response.statusCode > 299",
+										Start: ast.Position{
+											Column: 14,
+											Line:   60,
+										},
+									},
+								},
+								Left: &ast.MemberExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   60,
+											},
+											File:   "usage.flux",
+											Source: "response.statusCode",
+											Start: ast.Position{
+												Column: 14,
+												Line:   60,
+											},
+										},
+									},
+									Lbrack: nil,
+									Object: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 22,
+													Line:   60,
+												},
+												File:   "usage.flux",
+												Source: "response",
+												Start: ast.Position{
+													Column: 14,
+													Line:   60,
+												},
+											},
+										},
+										Name: "response",
+									},
+									Property: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 33,
+													Line:   60,
+												},
+												File:   "usage.flux",
+												Source: "statusCode",
+												Start: ast.Position{
+													Column: 23,
+													Line:   60,
+												},
+											},
+										},
+										Name: "statusCode",
+									},
+									Rbrack: nil,
+								},
+								Operator: 10,
+								Right: &ast.IntegerLiteral{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 39,
+												Line:   60,
+											},
+											File:   "usage.flux",
+											Source: "299",
+											Start: ast.Position{
+												Column: 36,
+												Line:   60,
+											},
+										},
+									},
+									Value: int64(299),
+								},
+							},
+							Tk_else: nil,
+							Tk_if:   nil,
+							Tk_then: nil,
+						},
+					}, &ast.ReturnStatement{
+						Argument: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 15,
+										Line:   62,
+									},
+									File:   "usage.flux",
+									Source: "result",
+									Start: ast.Position{
+										Column: 9,
+										Line:   62,
+									},
+								},
+							},
+							Name: "result",
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   62,
+								},
+								File:   "usage.flux",
+								Source: "return result",
+								Start: ast.Position{
+									Column: 2,
+									Line:   62,
+								},
+							},
+						},
+					}},
+					Lbrace: nil,
+					Rbrace: nil,
+				},
+				Lparen: nil,
+				Params: []*ast.Property{&ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 18,
+								Line:   52,
+							},
+							File:   "usage.flux",
+							Source: "host=\"\"",
+							Start: ast.Position{
+								Column: 11,
+								Line:   52,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 15,
+									Line:   52,
+								},
+								File:   "usage.flux",
+								Source: "host",
+								Start: ast.Position{
+									Column: 11,
+									Line:   52,
+								},
+							},
+						},
+						Name: "host",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 18,
+									Line:   52,
+								},
+								File:   "usage.flux",
+								Source: "\"\"",
+								Start: ast.Position{
+									Column: 16,
+									Line:   52,
+								},
+							},
+						},
+						Value: "",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 35,
+								Line:   52,
+							},
+							File:   "usage.flux",
+							Source: "orgID=\"{orgID}\"",
+							Start: ast.Position{
+								Column: 20,
+								Line:   52,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 25,
+									Line:   52,
+								},
+								File:   "usage.flux",
+								Source: "orgID",
+								Start: ast.Position{
+									Column: 20,
+									Line:   52,
+								},
+							},
+						},
+						Name: "orgID",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 35,
+									Line:   52,
+								},
+								File:   "usage.flux",
+								Source: "\"{orgID}\"",
+								Start: ast.Position{
+									Column: 26,
+									Line:   52,
+								},
+							},
+						},
+						Value: "{orgID}",
+					},
+				}, &ast.Property{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 45,
+								Line:   52,
+							},
+							File:   "usage.flux",
+							Source: "token=\"\"",
+							Start: ast.Position{
+								Column: 37,
+								Line:   52,
+							},
+						},
+					},
+					Comma: nil,
+					Key: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 42,
+									Line:   52,
+								},
+								File:   "usage.flux",
+								Source: "token",
+								Start: ast.Position{
+									Column: 37,
+									Line:   52,
+								},
+							},
+						},
+						Name: "token",
+					},
+					Separator: nil,
+					Value: &ast.StringLiteral{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 45,
+									Line:   52,
+								},
+								File:   "usage.flux",
+								Source: "\"\"",
+								Start: ast.Position{
+									Column: 43,
+									Line:   52,
+								},
+							},
+						},
+						Value: "",
+					},
+				}},
+				Rparan: nil,
+			},
+		}},
+		Eof: nil,
+		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 31,
+						Line:   3,
+					},
+					File:   "usage.flux",
+					Source: "import \"experimental/influxdb\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   3,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 31,
+							Line:   3,
+						},
+						File:   "usage.flux",
+						Source: "\"experimental/influxdb\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   3,
+						},
+					},
+				},
+				Value: "experimental/influxdb",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 13,
+						Line:   4,
+					},
+					File:   "usage.flux",
+					Source: "import \"csv\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   4,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   4,
+						},
+						File:   "usage.flux",
+						Source: "\"csv\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   4,
+						},
+					},
+				},
+				Value: "csv",
+			},
+		}, &ast.ImportDeclaration{
+			As: nil,
+			BaseNode: ast.BaseNode{
+				Comments: nil,
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 27,
+						Line:   5,
+					},
+					File:   "usage.flux",
+					Source: "import \"experimental/json\"",
+					Start: ast.Position{
+						Column: 1,
+						Line:   5,
+					},
+				},
+			},
+			Path: &ast.StringLiteral{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 27,
+							Line:   5,
+						},
+						File:   "usage.flux",
+						Source: "\"experimental/json\"",
+						Start: ast.Position{
+							Column: 8,
+							Line:   5,
+						},
+					},
+				},
+				Value: "experimental/json",
+			},
+		}},
 		Metadata: "parser-type=rust",
 		Name:     "usage.flux",
 		Package: &ast.PackageClause{

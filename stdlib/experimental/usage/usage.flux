@@ -4,6 +4,7 @@ import "experimental/influxdb"
 import "csv"
 import "experimental/json"
 
+// errTemplate for formatting HTTP error responses
 errTemplate = "#datatype,string,long,string
 #group,false,false,false
 #default,,,
@@ -25,6 +26,9 @@ formatError = (response) => {
 // bounded by start and stop arguments. Optional orgID, host and token arguments
 // allow cross-org and/or cross-cluster queries. Setting the raw parameter will
 // return raw usage data rather than the downsampled data returned by default.
+//
+// Note that unlike the range function, the stop argument is required here,
+// pending implementation of https://github.com/influxdata/flux/issues/3629.
 from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
 	response = influxdb.api(
         method: "get",
@@ -46,15 +50,15 @@ from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
 // limits returns an organization's usage limits. Optional orgID, host
 // and token arguments allow cross-org and/or cross-cluster calls.
 limits = (host="", orgID="{orgID}", token="") => {
-		response = influxdb.api(
-            method: "get",
-    		path: "/api/v2/orgs/" + orgID + "/limits",
-    		host: host,
-    		token: token,
-    	)
+	response = influxdb.api(
+		method: "get",
+		path: "/api/v2/orgs/" + orgID + "/limits",
+		host: host,
+		token: token,
+	)
 
-        result = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)
+	result = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)
 
-    	return result
+	return result
 }
 
