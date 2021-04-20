@@ -27,6 +27,17 @@ func TestTablesUnevenColumns(t *testing.T) {
 		err    string
 	}{
 		{
+			name: "happy path",
+			meta: []flux.ColMeta{
+				flux.ColMeta{Label: "bools", Type: flux.TBool},
+				flux.ColMeta{Label: "floats", Type: flux.TInt},
+			},
+			values: [][]interface{}{
+				{true, false, false, true, false},
+				{1, 2, 3, 4, 5},
+			},
+		},
+		{
 			name: "short column first",
 			meta: []flux.ColMeta{
 				flux.ColMeta{Label: "bools", Type: flux.TBool},
@@ -90,7 +101,9 @@ func TestTablesUnevenColumns(t *testing.T) {
 					t.Errorf("Expected error message \"%s\" - got \"%s\"", tc.err, err.Error())
 				}
 			} else {
-				t.Errorf("Expected no error - got \"%s\"", err.Error())
+				if err != nil {
+					t.Errorf("Expected no error - got \"%s\"", err.Error())
+				}
 			}
 		})
 	}
