@@ -25,7 +25,7 @@ from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
 	)
 
 	return if response.statusCode > 299 then
-		die(msg: "error querying organization usage: status code " + string(v: response.statusCode))
+		die(msg: "organization usage request returned status " + string(v: response.statusCode) + ": " + string(v: response.body))
     else
     	csv.from(csv: string(v: response.body))
 }
@@ -41,7 +41,7 @@ limits = (host="", orgID="{orgID}", token="") => {
 	)
 
 	return if response.statusCode > 299 then
-		die(msg: "error fetching organization limits: status code " + string(v: response.statusCode))
+		die(msg: "organization limits request returned status " + string(v: response.statusCode) + ": " + string(v: response.body))
 	else
 		json.parse(data: response.body)
 }

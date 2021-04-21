@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   47,
 				},
 				File:   "usage.flux",
-				Source: "package usage\n\nimport \"experimental/influxdb\"\nimport \"csv\"\nimport \"experimental/json\"\n\n// from returns an organization's usage data. The time range to query is\n// bounded by start and stop arguments. Optional orgID, host and token arguments\n// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n// return raw usage data rather than the downsampled data returned by default.\n//\n// Note that unlike the range function, the stop argument is required here,\n// pending implementation of https://github.com/influxdata/flux/issues/3629.\nfrom = (start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error querying organization usage: status code \" + string(v: response.statusCode))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}\n\n// limits returns an organization's usage limits. Optional orgID, host\n// and token arguments allow cross-org and/or cross-cluster calls.\nlimits = (host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error fetching organization limits: status code \" + string(v: response.statusCode))\n\telse\n\t\tjson.parse(data: response.body)\n}",
+				Source: "package usage\n\nimport \"experimental/influxdb\"\nimport \"csv\"\nimport \"experimental/json\"\n\n// from returns an organization's usage data. The time range to query is\n// bounded by start and stop arguments. Optional orgID, host and token arguments\n// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n// return raw usage data rather than the downsampled data returned by default.\n//\n// Note that unlike the range function, the stop argument is required here,\n// pending implementation of https://github.com/influxdata/flux/issues/3629.\nfrom = (start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}\n\n// limits returns an organization's usage limits. Optional orgID, host\n// and token arguments allow cross-org and/or cross-cluster calls.\nlimits = (host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body)\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -44,7 +44,7 @@ var pkgAST = &ast.Package{
 						Line:   31,
 					},
 					File:   "usage.flux",
-					Source: "from = (start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error querying organization usage: status code \" + string(v: response.statusCode))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
+					Source: "from = (start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -81,7 +81,7 @@ var pkgAST = &ast.Package{
 							Line:   31,
 						},
 						File:   "usage.flux",
-						Source: "(start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error querying organization usage: status code \" + string(v: response.statusCode))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
+						Source: "(start, stop, host=\"\", orgID=\"{orgID}\", token=\"\", raw=false) => {\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   14,
@@ -98,7 +98,7 @@ var pkgAST = &ast.Package{
 								Line:   31,
 							},
 							File:   "usage.flux",
-							Source: "{\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error querying organization usage: status code \" + string(v: response.statusCode))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
+							Source: "{\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: {\n                start: string(v: start),\n                stop: string(v: stop),\n                raw: string(v: raw),\n        },\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
 							Start: ast.Position{
 								Column: 72,
 								Line:   14,
@@ -1379,7 +1379,7 @@ var pkgAST = &ast.Package{
 										Line:   30,
 									},
 									File:   "usage.flux",
-									Source: "if response.statusCode > 299 then\n\t\tdie(msg: \"error querying organization usage: status code \" + string(v: response.statusCode))\n    else\n    \tcsv.from(csv: string(v: response.body))",
+									Source: "if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))",
 									Start: ast.Position{
 										Column: 9,
 										Line:   27,
@@ -1393,11 +1393,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 94,
+												Column: 124,
 												Line:   28,
 											},
 											File:   "usage.flux",
-											Source: "msg: \"error querying organization usage: status code \" + string(v: response.statusCode)",
+											Source: "msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body)",
 											Start: ast.Position{
 												Column: 7,
 												Line:   28,
@@ -1411,11 +1411,11 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 94,
+													Column: 124,
 													Line:   28,
 												},
 												File:   "usage.flux",
-												Source: "msg: \"error querying organization usage: status code \" + string(v: response.statusCode)",
+												Source: "msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body)",
 												Start: ast.Position{
 													Column: 7,
 													Line:   28,
@@ -1449,35 +1449,249 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 94,
+														Column: 124,
 														Line:   28,
 													},
 													File:   "usage.flux",
-													Source: "\"error querying organization usage: status code \" + string(v: response.statusCode)",
+													Source: "\"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body)",
 													Start: ast.Position{
 														Column: 12,
 														Line:   28,
 													},
 												},
 											},
-											Left: &ast.StringLiteral{
+											Left: &ast.BinaryExpression{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 61,
+															Column: 97,
 															Line:   28,
 														},
 														File:   "usage.flux",
-														Source: "\"error querying organization usage: status code \"",
+														Source: "\"organization usage request returned status \" + string(v: response.statusCode) + \": \"",
 														Start: ast.Position{
 															Column: 12,
 															Line:   28,
 														},
 													},
 												},
-												Value: "error querying organization usage: status code ",
+												Left: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 90,
+																Line:   28,
+															},
+															File:   "usage.flux",
+															Source: "\"organization usage request returned status \" + string(v: response.statusCode)",
+															Start: ast.Position{
+																Column: 12,
+																Line:   28,
+															},
+														},
+													},
+													Left: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 57,
+																	Line:   28,
+																},
+																File:   "usage.flux",
+																Source: "\"organization usage request returned status \"",
+																Start: ast.Position{
+																	Column: 12,
+																	Line:   28,
+																},
+															},
+														},
+														Value: "organization usage request returned status ",
+													},
+													Operator: 5,
+													Right: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 89,
+																		Line:   28,
+																	},
+																	File:   "usage.flux",
+																	Source: "v: response.statusCode",
+																	Start: ast.Position{
+																		Column: 67,
+																		Line:   28,
+																	},
+																},
+															},
+															Lbrace: nil,
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 89,
+																			Line:   28,
+																		},
+																		File:   "usage.flux",
+																		Source: "v: response.statusCode",
+																		Start: ast.Position{
+																			Column: 67,
+																			Line:   28,
+																		},
+																	},
+																},
+																Comma: nil,
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 68,
+																				Line:   28,
+																			},
+																			File:   "usage.flux",
+																			Source: "v",
+																			Start: ast.Position{
+																				Column: 67,
+																				Line:   28,
+																			},
+																		},
+																	},
+																	Name: "v",
+																},
+																Separator: nil,
+																Value: &ast.MemberExpression{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 89,
+																				Line:   28,
+																			},
+																			File:   "usage.flux",
+																			Source: "response.statusCode",
+																			Start: ast.Position{
+																				Column: 70,
+																				Line:   28,
+																			},
+																		},
+																	},
+																	Lbrack: nil,
+																	Object: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 78,
+																					Line:   28,
+																				},
+																				File:   "usage.flux",
+																				Source: "response",
+																				Start: ast.Position{
+																					Column: 70,
+																					Line:   28,
+																				},
+																			},
+																		},
+																		Name: "response",
+																	},
+																	Property: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 89,
+																					Line:   28,
+																				},
+																				File:   "usage.flux",
+																				Source: "statusCode",
+																				Start: ast.Position{
+																					Column: 79,
+																					Line:   28,
+																				},
+																			},
+																		},
+																		Name: "statusCode",
+																	},
+																	Rbrack: nil,
+																},
+															}},
+															Rbrace: nil,
+															With:   nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 90,
+																	Line:   28,
+																},
+																File:   "usage.flux",
+																Source: "string(v: response.statusCode)",
+																Start: ast.Position{
+																	Column: 60,
+																	Line:   28,
+																},
+															},
+														},
+														Callee: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 66,
+																		Line:   28,
+																	},
+																	File:   "usage.flux",
+																	Source: "string",
+																	Start: ast.Position{
+																		Column: 60,
+																		Line:   28,
+																	},
+																},
+															},
+															Name: "string",
+														},
+														Lparen: nil,
+														Rparen: nil,
+													},
+												},
+												Operator: 5,
+												Right: &ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 97,
+																Line:   28,
+															},
+															File:   "usage.flux",
+															Source: "\": \"",
+															Start: ast.Position{
+																Column: 93,
+																Line:   28,
+															},
+														},
+													},
+													Value: ": ",
+												},
 											},
 											Operator: 5,
 											Right: &ast.CallExpression{
@@ -1487,13 +1701,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 93,
+																Column: 123,
 																Line:   28,
 															},
 															File:   "usage.flux",
-															Source: "v: response.statusCode",
+															Source: "v: response.body",
 															Start: ast.Position{
-																Column: 71,
+																Column: 107,
 																Line:   28,
 															},
 														},
@@ -1505,13 +1719,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 93,
+																	Column: 123,
 																	Line:   28,
 																},
 																File:   "usage.flux",
-																Source: "v: response.statusCode",
+																Source: "v: response.body",
 																Start: ast.Position{
-																	Column: 71,
+																	Column: 107,
 																	Line:   28,
 																},
 															},
@@ -1523,13 +1737,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 72,
+																		Column: 108,
 																		Line:   28,
 																	},
 																	File:   "usage.flux",
 																	Source: "v",
 																	Start: ast.Position{
-																		Column: 71,
+																		Column: 107,
 																		Line:   28,
 																	},
 																},
@@ -1543,13 +1757,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 93,
+																		Column: 123,
 																		Line:   28,
 																	},
 																	File:   "usage.flux",
-																	Source: "response.statusCode",
+																	Source: "response.body",
 																	Start: ast.Position{
-																		Column: 74,
+																		Column: 110,
 																		Line:   28,
 																	},
 																},
@@ -1561,13 +1775,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 82,
+																			Column: 118,
 																			Line:   28,
 																		},
 																		File:   "usage.flux",
 																		Source: "response",
 																		Start: ast.Position{
-																			Column: 74,
+																			Column: 110,
 																			Line:   28,
 																		},
 																	},
@@ -1580,18 +1794,18 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 93,
+																			Column: 123,
 																			Line:   28,
 																		},
 																		File:   "usage.flux",
-																		Source: "statusCode",
+																		Source: "body",
 																		Start: ast.Position{
-																			Column: 83,
+																			Column: 119,
 																			Line:   28,
 																		},
 																	},
 																},
-																Name: "statusCode",
+																Name: "body",
 															},
 															Rbrack: nil,
 														},
@@ -1604,13 +1818,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 94,
+															Column: 124,
 															Line:   28,
 														},
 														File:   "usage.flux",
-														Source: "string(v: response.statusCode)",
+														Source: "string(v: response.body)",
 														Start: ast.Position{
-															Column: 64,
+															Column: 100,
 															Line:   28,
 														},
 													},
@@ -1621,13 +1835,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 70,
+																Column: 106,
 																Line:   28,
 															},
 															File:   "usage.flux",
 															Source: "string",
 															Start: ast.Position{
-																Column: 64,
+																Column: 100,
 																Line:   28,
 															},
 														},
@@ -1647,11 +1861,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 95,
+											Column: 125,
 											Line:   28,
 										},
 										File:   "usage.flux",
-										Source: "die(msg: \"error querying organization usage: status code \" + string(v: response.statusCode))",
+										Source: "die(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))",
 										Start: ast.Position{
 											Column: 3,
 											Line:   28,
@@ -1789,7 +2003,7 @@ var pkgAST = &ast.Package{
 									Line:   30,
 								},
 								File:   "usage.flux",
-								Source: "return if response.statusCode > 299 then\n\t\tdie(msg: \"error querying organization usage: status code \" + string(v: response.statusCode))\n    else\n    \tcsv.from(csv: string(v: response.body))",
+								Source: "return if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))",
 								Start: ast.Position{
 									Column: 2,
 									Line:   27,
@@ -2120,7 +2334,7 @@ var pkgAST = &ast.Package{
 						Line:   47,
 					},
 					File:   "usage.flux",
-					Source: "limits = (host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error fetching organization limits: status code \" + string(v: response.statusCode))\n\telse\n\t\tjson.parse(data: response.body)\n}",
+					Source: "limits = (host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body)\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   35,
@@ -2157,7 +2371,7 @@ var pkgAST = &ast.Package{
 							Line:   47,
 						},
 						File:   "usage.flux",
-						Source: "(host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error fetching organization limits: status code \" + string(v: response.statusCode))\n\telse\n\t\tjson.parse(data: response.body)\n}",
+						Source: "(host=\"\", orgID=\"{orgID}\", token=\"\") => {\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body)\n}",
 						Start: ast.Position{
 							Column: 10,
 							Line:   35,
@@ -2174,7 +2388,7 @@ var pkgAST = &ast.Package{
 								Line:   47,
 							},
 							File:   "usage.flux",
-							Source: "{\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"error fetching organization limits: status code \" + string(v: response.statusCode))\n\telse\n\t\tjson.parse(data: response.body)\n}",
+							Source: "{\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body)\n}",
 							Start: ast.Position{
 								Column: 50,
 								Line:   35,
@@ -2828,7 +3042,7 @@ var pkgAST = &ast.Package{
 										Line:   46,
 									},
 									File:   "usage.flux",
-									Source: "if response.statusCode > 299 then\n\t\tdie(msg: \"error fetching organization limits: status code \" + string(v: response.statusCode))\n\telse\n\t\tjson.parse(data: response.body)",
+									Source: "if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body)",
 									Start: ast.Position{
 										Column: 9,
 										Line:   43,
@@ -2842,11 +3056,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 95,
+												Column: 125,
 												Line:   44,
 											},
 											File:   "usage.flux",
-											Source: "msg: \"error fetching organization limits: status code \" + string(v: response.statusCode)",
+											Source: "msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body)",
 											Start: ast.Position{
 												Column: 7,
 												Line:   44,
@@ -2860,11 +3074,11 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 95,
+													Column: 125,
 													Line:   44,
 												},
 												File:   "usage.flux",
-												Source: "msg: \"error fetching organization limits: status code \" + string(v: response.statusCode)",
+												Source: "msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body)",
 												Start: ast.Position{
 													Column: 7,
 													Line:   44,
@@ -2898,35 +3112,249 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 95,
+														Column: 125,
 														Line:   44,
 													},
 													File:   "usage.flux",
-													Source: "\"error fetching organization limits: status code \" + string(v: response.statusCode)",
+													Source: "\"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body)",
 													Start: ast.Position{
 														Column: 12,
 														Line:   44,
 													},
 												},
 											},
-											Left: &ast.StringLiteral{
+											Left: &ast.BinaryExpression{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 62,
+															Column: 98,
 															Line:   44,
 														},
 														File:   "usage.flux",
-														Source: "\"error fetching organization limits: status code \"",
+														Source: "\"organization limits request returned status \" + string(v: response.statusCode) + \": \"",
 														Start: ast.Position{
 															Column: 12,
 															Line:   44,
 														},
 													},
 												},
-												Value: "error fetching organization limits: status code ",
+												Left: &ast.BinaryExpression{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 91,
+																Line:   44,
+															},
+															File:   "usage.flux",
+															Source: "\"organization limits request returned status \" + string(v: response.statusCode)",
+															Start: ast.Position{
+																Column: 12,
+																Line:   44,
+															},
+														},
+													},
+													Left: &ast.StringLiteral{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 58,
+																	Line:   44,
+																},
+																File:   "usage.flux",
+																Source: "\"organization limits request returned status \"",
+																Start: ast.Position{
+																	Column: 12,
+																	Line:   44,
+																},
+															},
+														},
+														Value: "organization limits request returned status ",
+													},
+													Operator: 5,
+													Right: &ast.CallExpression{
+														Arguments: []ast.Expression{&ast.ObjectExpression{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 90,
+																		Line:   44,
+																	},
+																	File:   "usage.flux",
+																	Source: "v: response.statusCode",
+																	Start: ast.Position{
+																		Column: 68,
+																		Line:   44,
+																	},
+																},
+															},
+															Lbrace: nil,
+															Properties: []*ast.Property{&ast.Property{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 90,
+																			Line:   44,
+																		},
+																		File:   "usage.flux",
+																		Source: "v: response.statusCode",
+																		Start: ast.Position{
+																			Column: 68,
+																			Line:   44,
+																		},
+																	},
+																},
+																Comma: nil,
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 69,
+																				Line:   44,
+																			},
+																			File:   "usage.flux",
+																			Source: "v",
+																			Start: ast.Position{
+																				Column: 68,
+																				Line:   44,
+																			},
+																		},
+																	},
+																	Name: "v",
+																},
+																Separator: nil,
+																Value: &ast.MemberExpression{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 90,
+																				Line:   44,
+																			},
+																			File:   "usage.flux",
+																			Source: "response.statusCode",
+																			Start: ast.Position{
+																				Column: 71,
+																				Line:   44,
+																			},
+																		},
+																	},
+																	Lbrack: nil,
+																	Object: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 79,
+																					Line:   44,
+																				},
+																				File:   "usage.flux",
+																				Source: "response",
+																				Start: ast.Position{
+																					Column: 71,
+																					Line:   44,
+																				},
+																			},
+																		},
+																		Name: "response",
+																	},
+																	Property: &ast.Identifier{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 90,
+																					Line:   44,
+																				},
+																				File:   "usage.flux",
+																				Source: "statusCode",
+																				Start: ast.Position{
+																					Column: 80,
+																					Line:   44,
+																				},
+																			},
+																		},
+																		Name: "statusCode",
+																	},
+																	Rbrack: nil,
+																},
+															}},
+															Rbrace: nil,
+															With:   nil,
+														}},
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 91,
+																	Line:   44,
+																},
+																File:   "usage.flux",
+																Source: "string(v: response.statusCode)",
+																Start: ast.Position{
+																	Column: 61,
+																	Line:   44,
+																},
+															},
+														},
+														Callee: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 67,
+																		Line:   44,
+																	},
+																	File:   "usage.flux",
+																	Source: "string",
+																	Start: ast.Position{
+																		Column: 61,
+																		Line:   44,
+																	},
+																},
+															},
+															Name: "string",
+														},
+														Lparen: nil,
+														Rparen: nil,
+													},
+												},
+												Operator: 5,
+												Right: &ast.StringLiteral{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 98,
+																Line:   44,
+															},
+															File:   "usage.flux",
+															Source: "\": \"",
+															Start: ast.Position{
+																Column: 94,
+																Line:   44,
+															},
+														},
+													},
+													Value: ": ",
+												},
 											},
 											Operator: 5,
 											Right: &ast.CallExpression{
@@ -2936,13 +3364,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 94,
+																Column: 124,
 																Line:   44,
 															},
 															File:   "usage.flux",
-															Source: "v: response.statusCode",
+															Source: "v: response.body",
 															Start: ast.Position{
-																Column: 72,
+																Column: 108,
 																Line:   44,
 															},
 														},
@@ -2954,13 +3382,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 94,
+																	Column: 124,
 																	Line:   44,
 																},
 																File:   "usage.flux",
-																Source: "v: response.statusCode",
+																Source: "v: response.body",
 																Start: ast.Position{
-																	Column: 72,
+																	Column: 108,
 																	Line:   44,
 																},
 															},
@@ -2972,13 +3400,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 73,
+																		Column: 109,
 																		Line:   44,
 																	},
 																	File:   "usage.flux",
 																	Source: "v",
 																	Start: ast.Position{
-																		Column: 72,
+																		Column: 108,
 																		Line:   44,
 																	},
 																},
@@ -2992,13 +3420,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 94,
+																		Column: 124,
 																		Line:   44,
 																	},
 																	File:   "usage.flux",
-																	Source: "response.statusCode",
+																	Source: "response.body",
 																	Start: ast.Position{
-																		Column: 75,
+																		Column: 111,
 																		Line:   44,
 																	},
 																},
@@ -3010,13 +3438,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 83,
+																			Column: 119,
 																			Line:   44,
 																		},
 																		File:   "usage.flux",
 																		Source: "response",
 																		Start: ast.Position{
-																			Column: 75,
+																			Column: 111,
 																			Line:   44,
 																		},
 																	},
@@ -3029,18 +3457,18 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 94,
+																			Column: 124,
 																			Line:   44,
 																		},
 																		File:   "usage.flux",
-																		Source: "statusCode",
+																		Source: "body",
 																		Start: ast.Position{
-																			Column: 84,
+																			Column: 120,
 																			Line:   44,
 																		},
 																	},
 																},
-																Name: "statusCode",
+																Name: "body",
 															},
 															Rbrack: nil,
 														},
@@ -3053,13 +3481,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 95,
+															Column: 125,
 															Line:   44,
 														},
 														File:   "usage.flux",
-														Source: "string(v: response.statusCode)",
+														Source: "string(v: response.body)",
 														Start: ast.Position{
-															Column: 65,
+															Column: 101,
 															Line:   44,
 														},
 													},
@@ -3070,13 +3498,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 71,
+																Column: 107,
 																Line:   44,
 															},
 															File:   "usage.flux",
 															Source: "string",
 															Start: ast.Position{
-																Column: 65,
+																Column: 101,
 																Line:   44,
 															},
 														},
@@ -3096,11 +3524,11 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 96,
+											Column: 126,
 											Line:   44,
 										},
 										File:   "usage.flux",
-										Source: "die(msg: \"error fetching organization limits: status code \" + string(v: response.statusCode))",
+										Source: "die(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))",
 										Start: ast.Position{
 											Column: 3,
 											Line:   44,
@@ -3238,7 +3666,7 @@ var pkgAST = &ast.Package{
 									Line:   46,
 								},
 								File:   "usage.flux",
-								Source: "return if response.statusCode > 299 then\n\t\tdie(msg: \"error fetching organization limits: status code \" + string(v: response.statusCode))\n\telse\n\t\tjson.parse(data: response.body)",
+								Source: "return if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body)",
 								Start: ast.Position{
 									Column: 2,
 									Line:   43,
