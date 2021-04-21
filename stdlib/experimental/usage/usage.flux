@@ -4,25 +4,6 @@ import "experimental/influxdb"
 import "csv"
 import "experimental/json"
 
-// errTemplate for formatting HTTP error responses
-errTemplate = "#datatype,string,long,string
-#group,false,false,false
-#default,,,
-,result,table,column
-,,0,*
-"
-
-// formatError formats an HTTP response as a table.
-formatError = (response) => {
-    return csv.from(csv: errTemplate)
-        |> map(fn: (r) => ({
-        	_measurement: "response_error",
-            error: string(v: response.body),
-            code: response.statusCode,
-        })
-    )
-}
-
 // from returns an organization's usage data. The time range to query is
 // bounded by start and stop arguments. Optional orgID, host and token arguments
 // allow cross-org and/or cross-cluster queries. Setting the raw parameter will
@@ -43,9 +24,10 @@ from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
         },
 	)
 
-	result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))
-
-	return result
+	return if response.statusCode > 299 then
+		die(msg: "error querying organization usage: status code " + string(v: response.statusCode))
+    else
+    	csv.from(csv: string(v: response.body))
 }
 
 // limits returns an organization's usage limits. Optional orgID, host
@@ -58,8 +40,9 @@ limits = (host="", orgID="{orgID}", token="") => {
 		token: token,
 	)
 
-	result = if response.statusCode > 299 then formatError(response) else json.parse(data: response.body)
-
-	return result
+	return if response.statusCode > 299 then
+		die(msg: "error fetching organization limits: status code " + string(v: response.statusCode))
+	else
+		json.parse(data: response.body)
 }
 
