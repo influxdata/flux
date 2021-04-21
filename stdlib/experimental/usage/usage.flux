@@ -16,6 +16,7 @@ errTemplate = "#datatype,string,long,string
 formatError = (response) => {
     return csv.from(csv: errTemplate)
         |> map(fn: (r) => ({
+        	_measurement: "response_error",
             error: string(v: response.body),
             code: response.statusCode,
         })
@@ -42,7 +43,7 @@ from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
         },
 	)
 
-    result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))
+	result = if response.statusCode > 299 then formatError(response) else csv.from(csv: string(v: response.body))
 
 	return result
 }
