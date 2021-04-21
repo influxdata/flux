@@ -30,40 +30,12 @@ var APISignature = runtime.MustLookupBuiltinType(PackagePath, APIFuncName)
 
 func init() {
 	runtime.RegisterPackageValue(PackagePath, APIFuncName,
-		flux.MustValue(flux.FunctionValueWithSideEffect("api", nil, APISignature)),
+		values.NewFunction(APIFuncName, APISignature, api, true),
 	)
 }
 
 // api submits an HTTP request to the specified API path.
 // Returns HTTP status code, response headers, and body as a byte array.
-//
-// It supports two special placeholders to allow organization and user IDs to be
-// injected into path segments implicitly: "{orgID}" and "{userID}", respectively.
-// For example, if a query is authenticated as an organization with ID 123, this call
-//
-//		influxdb.api(method: "get", path: "/api/v2/orgs/{orgID}")
-//
-// results in an API call to the endpoint "/api/v2/orgs/123" by deriving the caller's
-// organization ID from the authorization on the request context.
-//
-// This function implements the following Flux function signature, defined as part
-// of the Flux standard library:
-//
-//		builtin api : (
-//			method: string,
-//			path: string,
-//			?host: string,
-//			?token: string,
-//			?body: string,
-//			?headers: A,
-//			?query: B,
-//			?timeout: duration
-//		) => {
-//			statusCode: int,
-//			body: bytes,
-//			headers: C
-//		} where A: Record, B: Record, C: Record
-//
 func api(ctx context.Context, a values.Object) (values.Value, error) {
 	var (
 		deps      = flux.GetDependencies(ctx)
