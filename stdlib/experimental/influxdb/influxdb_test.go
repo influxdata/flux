@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
 )
 
@@ -55,8 +56,8 @@ func Test_api(t *testing.T) {
 				"method": values.NewString("get"),
 				"path":   values.NewString("/api/v2/foo"),
 				"token":  values.NewString("passedtoken"),
-				"headers": values.NewObjectWithValues(map[string]values.Value{
-					"key": values.NewString("value"),
+				"headers": newDictWithValues(map[string]string{
+					"key": "value",
 				}),
 			}),
 			expectedStatusCode:   200,
@@ -71,8 +72,8 @@ func Test_api(t *testing.T) {
 				"method": values.NewString("get"),
 				"path":   values.NewString("/api/v2/foo"),
 				"token":  values.NewString("passedtoken"),
-				"query": values.NewObjectWithValues(map[string]values.Value{
-					"key": values.NewString("value"),
+				"query": newDictWithValues(map[string]string{
+					"key": "value",
 				}),
 			}),
 			expectedStatusCode:   200,
@@ -199,3 +200,11 @@ func Test_api(t *testing.T) {
 }
 
 const fakeData = ",result,table,_start,_stop,_time,_value,_field,_measurement,endpoint,org_id,status\n,_result,0,2021-03-13T19:29:20.9874663Z,2021-03-15T19:29:20.9874663Z,2021-03-14T04:15:52.3897524Z,15838,req_bytes,http_request,/api/v2/write,0000000000001002,204\n,_result,0,2021-03-13T19:29:20.9874663Z,2021-03-15T19:29:20.9874663Z,2021-03-14T04:16:02.3428779Z,7924,req_bytes,http_request,/api/v2/write,0000000000001002,204\n,_result,0,2021-03-13T19:29:20.9874663Z,2021-03-15T19:29:20.9874663Z,2021-03-14T04:16:12.437844Z,7924,req_bytes,http_request,/api/v2/write,0000000000001002,204"
+
+func newDictWithValues(m map[string]string) values.Dictionary {
+	dict := values.NewDict(semantic.NewDictType(semantic.BasicString, semantic.BasicString))
+	for k, v := range m {
+		dict.Insert(values.NewString(k), values.NewString(v))
+	}
+	return dict
+}
