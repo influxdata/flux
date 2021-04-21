@@ -7,12 +7,12 @@ builtin api : (
 	path: string,
 	?host: string,
 	?token: string,
-	?body: string,
-	?headers: A,
-	?query: B,
+	?body: bytes,
+	?headers: [string: string],
+	?query: [string: string],
 	?timeout: duration
 ) => {
 	statusCode: int,
 	body: bytes,
-	headers: C
-} where A: Record, B: Record, C: Record
+	headers: [string: string],
+}

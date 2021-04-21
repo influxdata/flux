@@ -135,32 +135,6 @@ func Test_api(t *testing.T) {
 			}),
 			expectedErrorMessage: `missing required keyword argument "path"`,
 		},
-		{
-			name: "error non-string header value",
-			args: values.NewObjectWithValues(map[string]values.Value{
-				"host":   values.NewString("placeholder"),
-				"method": values.NewString("get"),
-				"path":   values.NewString("/api/v2/foo"),
-				"token":  values.NewString("passedtoken"),
-				"headers": values.NewObjectWithValues(map[string]values.Value{
-					"key": values.NewInt(42),
-				}),
-			}),
-			expectedErrorMessage: `request header value for key "key" must be a string`,
-		},
-		{
-			name: "error non-string query value",
-			args: values.NewObjectWithValues(map[string]values.Value{
-				"host":   values.NewString("placeholder"),
-				"method": values.NewString("get"),
-				"path":   values.NewString("/api/v2/foo"),
-				"token":  values.NewString("passedtoken"),
-				"query": values.NewObjectWithValues(map[string]values.Value{
-					"key": values.NewInt(42),
-				}),
-			}),
-			expectedErrorMessage: `url query value for key "key" must be a string`,
-		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			newServer := func(status int, response []byte, expectedToken, expectedMethod, expectedPath string, expectedBody []byte) *httptest.Server {

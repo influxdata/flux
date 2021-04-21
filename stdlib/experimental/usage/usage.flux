@@ -17,11 +17,11 @@ from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
 		path: "/api/v2/orgs/" + orgID + "/usage",
 		host: host,
 		token: token,
-        query: {
-                start: string(v: start),
-                stop: string(v: stop),
-                raw: string(v: raw),
-        },
+        query: [
+                "start": string(v: start),
+                "stop": string(v: stop),
+                "raw": string(v: raw),
+        ],
 	)
 
 	return if response.statusCode > 299 then

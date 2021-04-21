@@ -77,183 +77,18 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 40,
+							Column: 2,
 							Line:   18,
 						},
 						File:   "influxdb.flux",
-						Source: "(\n\tmethod: string,\n\tpath: string,\n\t?host: string,\n\t?token: string,\n\t?body: string,\n\t?headers: A,\n\t?query: B,\n\t?timeout: duration\n) => {\n\tstatusCode: int,\n\tbody: bytes,\n\theaders: C\n} where A: Record, B: Record, C: Record",
+						Source: "(\n\tmethod: string,\n\tpath: string,\n\t?host: string,\n\t?token: string,\n\t?body: bytes,\n\t?headers: [string: string],\n\t?query: [string: string],\n\t?timeout: duration\n) => {\n\tstatusCode: int,\n\tbody: bytes,\n\theaders: [string: string],\n}",
 						Start: ast.Position{
 							Column: 15,
 							Line:   5,
 						},
 					},
 				},
-				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 18,
-								Line:   18,
-							},
-							File:   "influxdb.flux",
-							Source: "A: Record",
-							Start: ast.Position{
-								Column: 9,
-								Line:   18,
-							},
-						},
-					},
-					Kinds: []*ast.Identifier{&ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 18,
-									Line:   18,
-								},
-								File:   "influxdb.flux",
-								Source: "Record",
-								Start: ast.Position{
-									Column: 12,
-									Line:   18,
-								},
-							},
-						},
-						Name: "Record",
-					}},
-					Tvar: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 10,
-									Line:   18,
-								},
-								File:   "influxdb.flux",
-								Source: "A",
-								Start: ast.Position{
-									Column: 9,
-									Line:   18,
-								},
-							},
-						},
-						Name: "A",
-					},
-				}, &ast.TypeConstraint{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 29,
-								Line:   18,
-							},
-							File:   "influxdb.flux",
-							Source: "B: Record",
-							Start: ast.Position{
-								Column: 20,
-								Line:   18,
-							},
-						},
-					},
-					Kinds: []*ast.Identifier{&ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 29,
-									Line:   18,
-								},
-								File:   "influxdb.flux",
-								Source: "Record",
-								Start: ast.Position{
-									Column: 23,
-									Line:   18,
-								},
-							},
-						},
-						Name: "Record",
-					}},
-					Tvar: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 21,
-									Line:   18,
-								},
-								File:   "influxdb.flux",
-								Source: "B",
-								Start: ast.Position{
-									Column: 20,
-									Line:   18,
-								},
-							},
-						},
-						Name: "B",
-					},
-				}, &ast.TypeConstraint{
-					BaseNode: ast.BaseNode{
-						Comments: nil,
-						Errors:   nil,
-						Loc: &ast.SourceLocation{
-							End: ast.Position{
-								Column: 40,
-								Line:   18,
-							},
-							File:   "influxdb.flux",
-							Source: "C: Record",
-							Start: ast.Position{
-								Column: 31,
-								Line:   18,
-							},
-						},
-					},
-					Kinds: []*ast.Identifier{&ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 40,
-									Line:   18,
-								},
-								File:   "influxdb.flux",
-								Source: "Record",
-								Start: ast.Position{
-									Column: 34,
-									Line:   18,
-								},
-							},
-						},
-						Name: "Record",
-					}},
-					Tvar: &ast.Identifier{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 32,
-									Line:   18,
-								},
-								File:   "influxdb.flux",
-								Source: "C",
-								Start: ast.Position{
-									Column: 31,
-									Line:   18,
-								},
-							},
-						},
-						Name: "C",
-					},
-				}},
+				Constraints: []*ast.TypeConstraint{},
 				Ty: &ast.FunctionType{
 					BaseNode: ast.BaseNode{
 						Comments: nil,
@@ -264,7 +99,7 @@ var pkgAST = &ast.Package{
 								Line:   18,
 							},
 							File:   "influxdb.flux",
-							Source: "(\n\tmethod: string,\n\tpath: string,\n\t?host: string,\n\t?token: string,\n\t?body: string,\n\t?headers: A,\n\t?query: B,\n\t?timeout: duration\n) => {\n\tstatusCode: int,\n\tbody: bytes,\n\theaders: C\n}",
+							Source: "(\n\tmethod: string,\n\tpath: string,\n\t?host: string,\n\t?token: string,\n\t?body: bytes,\n\t?headers: [string: string],\n\t?query: [string: string],\n\t?timeout: duration\n) => {\n\tstatusCode: int,\n\tbody: bytes,\n\theaders: [string: string],\n}",
 							Start: ast.Position{
 								Column: 15,
 								Line:   5,
@@ -573,11 +408,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
+									Column: 14,
 									Line:   10,
 								},
 								File:   "influxdb.flux",
-								Source: "?body: string",
+								Source: "?body: bytes",
 								Start: ast.Position{
 									Column: 2,
 									Line:   10,
@@ -610,11 +445,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
+										Column: 14,
 										Line:   10,
 									},
 									File:   "influxdb.flux",
-									Source: "string",
+									Source: "bytes",
 									Start: ast.Position{
 										Column: 9,
 										Line:   10,
@@ -627,18 +462,18 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
+											Column: 14,
 											Line:   10,
 										},
 										File:   "influxdb.flux",
-										Source: "string",
+										Source: "bytes",
 										Start: ast.Position{
 											Column: 9,
 											Line:   10,
 										},
 									},
 								},
-								Name: "string",
+								Name: "bytes",
 							},
 						},
 					}, &ast.ParameterType{
@@ -647,11 +482,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
+									Column: 28,
 									Line:   11,
 								},
 								File:   "influxdb.flux",
-								Source: "?headers: A",
+								Source: "?headers: [string: string]",
 								Start: ast.Position{
 									Column: 2,
 									Line:   11,
@@ -678,41 +513,96 @@ var pkgAST = &ast.Package{
 							},
 							Name: "headers",
 						},
-						Ty: &ast.TvarType{
+						Ty: &ast.DictType{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 13,
+										Column: 28,
 										Line:   11,
 									},
 									File:   "influxdb.flux",
-									Source: "A",
+									Source: "[string: string]",
 									Start: ast.Position{
 										Column: 12,
 										Line:   11,
 									},
 								},
 							},
-							ID: &ast.Identifier{
+							KeyType: &ast.NamedType{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
+											Column: 19,
 											Line:   11,
 										},
 										File:   "influxdb.flux",
-										Source: "A",
+										Source: "string",
 										Start: ast.Position{
-											Column: 12,
+											Column: 13,
 											Line:   11,
 										},
 									},
 								},
-								Name: "A",
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 19,
+												Line:   11,
+											},
+											File:   "influxdb.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 13,
+												Line:   11,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+							ValueType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 27,
+											Line:   11,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 21,
+											Line:   11,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 27,
+												Line:   11,
+											},
+											File:   "influxdb.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 21,
+												Line:   11,
+											},
+										},
+									},
+									Name: "string",
+								},
 							},
 						},
 					}, &ast.ParameterType{
@@ -721,11 +611,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
+									Column: 26,
 									Line:   12,
 								},
 								File:   "influxdb.flux",
-								Source: "?query: B",
+								Source: "?query: [string: string]",
 								Start: ast.Position{
 									Column: 2,
 									Line:   12,
@@ -752,41 +642,96 @@ var pkgAST = &ast.Package{
 							},
 							Name: "query",
 						},
-						Ty: &ast.TvarType{
+						Ty: &ast.DictType{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
+										Column: 26,
 										Line:   12,
 									},
 									File:   "influxdb.flux",
-									Source: "B",
+									Source: "[string: string]",
 									Start: ast.Position{
 										Column: 10,
 										Line:   12,
 									},
 								},
 							},
-							ID: &ast.Identifier{
+							KeyType: &ast.NamedType{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 11,
+											Column: 17,
 											Line:   12,
 										},
 										File:   "influxdb.flux",
-										Source: "B",
+										Source: "string",
 										Start: ast.Position{
-											Column: 10,
+											Column: 11,
 											Line:   12,
 										},
 									},
 								},
-								Name: "B",
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 17,
+												Line:   12,
+											},
+											File:   "influxdb.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 11,
+												Line:   12,
+											},
+										},
+									},
+									Name: "string",
+								},
+							},
+							ValueType: &ast.NamedType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 25,
+											Line:   12,
+										},
+										File:   "influxdb.flux",
+										Source: "string",
+										Start: ast.Position{
+											Column: 19,
+											Line:   12,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 25,
+												Line:   12,
+											},
+											File:   "influxdb.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 19,
+												Line:   12,
+											},
+										},
+									},
+									Name: "string",
+								},
 							},
 						},
 					}, &ast.ParameterType{
@@ -874,7 +819,7 @@ var pkgAST = &ast.Package{
 									Line:   18,
 								},
 								File:   "influxdb.flux",
-								Source: "{\n\tstatusCode: int,\n\tbody: bytes,\n\theaders: C\n}",
+								Source: "{\n\tstatusCode: int,\n\tbody: bytes,\n\theaders: [string: string],\n}",
 								Start: ast.Position{
 									Column: 6,
 									Line:   14,
@@ -1033,11 +978,11 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 27,
 										Line:   17,
 									},
 									File:   "influxdb.flux",
-									Source: "headers: C",
+									Source: "headers: [string: string]",
 									Start: ast.Position{
 										Column: 2,
 										Line:   17,
@@ -1063,41 +1008,96 @@ var pkgAST = &ast.Package{
 								},
 								Name: "headers",
 							},
-							Ty: &ast.TvarType{
+							Ty: &ast.DictType{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
+											Column: 27,
 											Line:   17,
 										},
 										File:   "influxdb.flux",
-										Source: "C",
+										Source: "[string: string]",
 										Start: ast.Position{
 											Column: 11,
 											Line:   17,
 										},
 									},
 								},
-								ID: &ast.Identifier{
+								KeyType: &ast.NamedType{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 12,
+												Column: 18,
 												Line:   17,
 											},
 											File:   "influxdb.flux",
-											Source: "C",
+											Source: "string",
 											Start: ast.Position{
-												Column: 11,
+												Column: 12,
 												Line:   17,
 											},
 										},
 									},
-									Name: "C",
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 18,
+													Line:   17,
+												},
+												File:   "influxdb.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 12,
+													Line:   17,
+												},
+											},
+										},
+										Name: "string",
+									},
+								},
+								ValueType: &ast.NamedType{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 26,
+												Line:   17,
+											},
+											File:   "influxdb.flux",
+											Source: "string",
+											Start: ast.Position{
+												Column: 20,
+												Line:   17,
+											},
+										},
+									},
+									ID: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 26,
+													Line:   17,
+												},
+												File:   "influxdb.flux",
+												Source: "string",
+												Start: ast.Position{
+													Column: 20,
+													Line:   17,
+												},
+											},
+										},
+										Name: "string",
+									},
 								},
 							},
 						}},

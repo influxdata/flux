@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	neturl "net/url"
@@ -58,8 +57,8 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 		path    string
 		host    string
 		token   string
-		headers values.Object
-		query   values.Object
+		headers values.Dictionary
+		query   values.Dictionary
 		timeout values.Duration
 		body    []byte
 	)
@@ -89,11 +88,11 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 		}
 
 		if q, ok := args.Get("query"); ok {
-			query = q.Object()
+			query = q.Dict()
 		}
 
 		if h, ok := args.Get("headers"); ok {
-			headers = h.Object()
+			headers = h.Dict()
 		}
 
 		if b, ok := args.Get("body"); ok {
@@ -110,16 +109,9 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 
 		if query != nil {
 			q := make(neturl.Values, query.Len())
-			query.Range(func(k string, v values.Value) {
-				if v.Type().Nature() != semantic.String {
-					err = fmt.Errorf("url query value for key %q must be a string", k)
-					return
-				}
-				q.Set(k, v.Str())
+			query.Range(func(k values.Value, v values.Value) {
+				q.Set(k.Str(), v.Str())
 			})
-			if err != nil {
-				return nil, err
-			}
 			u.RawQuery = q.Encode()
 		}
 
@@ -142,16 +134,9 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 		}
 
 		if headers != nil {
-			headers.Range(func(k string, v values.Value) {
-				if v.Type().Nature() != semantic.String {
-					err = fmt.Errorf("request header value for key %q must be a string", k)
-					return
-				}
-				req.Header.Set(k, v.Str())
+			headers.Range(func(k values.Value, v values.Value) {
+				req.Header.Set(k.Str(), v.Str())
 			})
-			if err != nil {
-				return nil, err
-			}
 		}
 		req.Header.Set("Authorization", "Token "+token)
 	}
