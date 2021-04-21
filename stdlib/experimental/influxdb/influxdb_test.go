@@ -156,7 +156,6 @@ func Test_api(t *testing.T) {
 						t.Errorf("unexpected request body: got %s, expected %s", requestBody, expectedBody)
 					}
 
-					w.Header().Set("Date", "someday")
 					if status != 0 {
 						w.WriteHeader(status)
 					}
