@@ -18,6 +18,97 @@ import (
 	"github.com/influxdata/flux/values"
 )
 
+func TestTablesUnevenColumns(t *testing.T) {
+	testCases := []struct {
+		name   string
+		meta   []flux.ColMeta
+		values [][]interface{}
+		expErr bool
+		err    string
+	}{
+		{
+			name: "happy path",
+			meta: []flux.ColMeta{
+				flux.ColMeta{Label: "bools", Type: flux.TBool},
+				flux.ColMeta{Label: "floats", Type: flux.TInt},
+			},
+			values: [][]interface{}{
+				{true, false, false, true, false},
+				{1, 2, 3, 4, 5},
+			},
+		},
+		{
+			name: "short column first",
+			meta: []flux.ColMeta{
+				flux.ColMeta{Label: "bools", Type: flux.TBool},
+				flux.ColMeta{Label: "floats", Type: flux.TFloat},
+			},
+			values: [][]interface{}{
+				{true, false, false, true},
+				{0.1, 0.2, 0.3, 0.4, 0.5},
+			},
+			expErr: true,
+			err:    "column bools of type bool has length 4 in table of length 5",
+		},
+		{
+			name: "long column first",
+			meta: []flux.ColMeta{
+				flux.ColMeta{Label: "uints", Type: flux.TUInt},
+				flux.ColMeta{Label: "strings", Type: flux.TString},
+			},
+			values: [][]interface{}{
+				{1, 2, 3, 4, 5, 6, 7, 8, 9, 10},
+				{"one", "two", "three", "four", "five"},
+			},
+			expErr: true,
+			err:    "column uints of type uint has length 10 in table of length 5",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			alloc := memory.Allocator{}
+			b := execute.NewColListTableBuilder(execute.NewGroupKey(
+				[]flux.ColMeta{},
+				[]values.Value{},
+			), &alloc)
+			for _, meta := range tc.meta {
+				b.AddCol(meta)
+			}
+			for i := 0; i < len(tc.values); i++ {
+				for j := 0; j < len(tc.values[i]); j++ {
+					switch tc.meta[i].Type {
+					case flux.TBool:
+						b.AppendBool(i, tc.values[i][j].(bool))
+					case flux.TString:
+						b.AppendString(i, tc.values[i][j].(string))
+					case flux.TInt:
+						b.AppendInt(i, int64(tc.values[i][j].(int)))
+					case flux.TUInt:
+						b.AppendUInt(i, uint64(tc.values[i][j].(int)))
+					case flux.TFloat:
+						b.AppendFloat(i, tc.values[i][j].(float64))
+					case flux.TTime:
+						b.AppendTime(i, tc.values[i][j].(values.Time))
+					}
+				}
+			}
+
+			_, err := b.Table()
+			if tc.expErr {
+				if err == nil {
+					t.Errorf("Expected error - got nil")
+				} else if err.Error() != tc.err {
+					t.Errorf("Expected error message \"%s\" - got \"%s\"", tc.err, err.Error())
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error - got \"%s\"", err.Error())
+				}
+			}
+		})
+	}
+}
+
 func TestTablesEqual(t *testing.T) {
 
 	testCases := []struct {
