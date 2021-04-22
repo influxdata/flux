@@ -964,6 +964,38 @@ f
 			},
 			wantErr: errors.New(`column _value:int is not of type float`),
 		},
+		{
+			name: `mismatched types with zero value`,
+			spec: &universe.MapProcedureSpec{
+				Fn: interpreter.ResolvedFunction{
+					Scope: builtIns,
+					Fn:    executetest.FunctionExpression(t, `(r) => ({_value: r._value, _time: r._time})`),
+				},
+			},
+			data: []flux.Table{
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TString},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), ""},
+						{execute.Time(2), "some words"},
+					},
+				},
+				&executetest.Table{
+					ColMeta: []flux.ColMeta{
+						{Label: "_time", Type: flux.TTime},
+						{Label: "_value", Type: flux.TFloat},
+					},
+					Data: [][]interface{}{
+						{execute.Time(1), 1.0},
+						{execute.Time(2), 0.0},
+					},
+				},
+			},
+			wantErr: errors.New(`column _value:string is not of type float`),
+		},
 	}
 	for _, tc := range testCases {
 		tc := tc
