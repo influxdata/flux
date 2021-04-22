@@ -184,6 +184,11 @@ func (t *mapTransformation) Process(id execute.DatasetID, tbl flux.Table) error 
 						return errors.Newf(codes.Internal, "could not find value for column %q", c.Label)
 					}
 				}
+				if !v.IsNull() && c.Type.String() != v.Type().Nature().String() {
+					return errors.Newf(codes.Internal, "column %s:%s is not of type %v",
+						c.Label, c.Type, v.Type(),
+					)
+				}
 				if err := builder.AppendValue(j, v); err != nil {
 					return err
 				}
