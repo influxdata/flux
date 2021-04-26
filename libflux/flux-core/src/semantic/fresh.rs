@@ -5,10 +5,10 @@ use crate::semantic::types::{
 use std::collections::BTreeMap;
 use std::hash::Hash;
 
-// Fresher returns incrementing type variables
+/// A struct used for incrementing type variable identifiers.
 pub struct Fresher(pub u64);
 
-// Create a tvar fresher from a u64
+/// Creates a type variable [`Fresher`] from a `u64`.
 impl From<u64> for Fresher {
     fn from(u: u64) -> Fresher {
         Fresher(u)
@@ -16,6 +16,7 @@ impl From<u64> for Fresher {
 }
 
 impl Fresher {
+    /// Takes a `Fresher` and returns an incremented [`Tvar`].
     pub fn fresh(&mut self) -> Tvar {
         let u = self.0;
         self.0 += 1;
