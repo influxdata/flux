@@ -32,10 +32,6 @@ jobs:
       - run: make checkgenerate
       - run: make libflux-wasm
       - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic'
-      - run:
-          name: Uploading coverage report
-          command: |
-            bash <(curl -s https://codecov.io/bash)
       - save_cache:
           name: Saving GOPATH/pkg/mod
           key: flux-gomod-{{checksum "go.sum"}}
