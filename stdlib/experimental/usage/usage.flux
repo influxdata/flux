@@ -1,8 +1,9 @@
 package usage
 
-import "experimental/influxdb"
 import "csv"
+import "experimental/influxdb"
 import "experimental/json"
+import "http"
 
 // from returns an organization's usage data. The time range to query is
 // bounded by start and stop arguments. Optional orgID, host and token arguments
@@ -14,7 +15,7 @@ import "experimental/json"
 from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
 	response = influxdb.api(
         method: "get",
-		path: "/api/v2/orgs/" + orgID + "/usage",
+		path: "/api/v2/orgs/" + http.pathEscape(inputString: orgID) + "/usage",
 		host: host,
 		token: token,
         query: [
@@ -35,7 +36,7 @@ from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
 limits = (host="", orgID="{orgID}", token="") => {
 	response = influxdb.api(
 		method: "get",
-		path: "/api/v2/orgs/" + orgID + "/limits",
+		path: "/api/v2/orgs/" + http.pathEscape(inputString: orgID) + "/limits",
 		host: host,
 		token: token,
 	)
@@ -43,6 +44,6 @@ limits = (host="", orgID="{orgID}", token="") => {
 	return if response.statusCode > 299 then
 		die(msg: "organization limits request returned status " + string(v: response.statusCode) + ": " + string(v: response.body))
 	else
-		json.parse(data: response.body)
+		json.parse(data: response.body).limits
 }
 
