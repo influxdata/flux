@@ -1,3 +1,5 @@
+//! Semantic analysis.
+
 #![allow(missing_docs)]
 pub mod convert;
 

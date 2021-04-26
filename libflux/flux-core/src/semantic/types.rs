@@ -9,7 +9,7 @@ use std::{
     fmt,
 };
 
-// For use in generics where the specific type of map is not mentioned.
+/// For use in generics where the specific type of map is not mentioned.
 pub type SemanticMap<K, V> = BTreeMap<K, V>;
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
@@ -136,6 +136,7 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
 }
 
 #[derive(Debug, PartialEq)]
+/// Errors that can be returned during type inference.
 pub enum Error {
     CannotUnify {
         exp: MonoType,
@@ -212,7 +213,7 @@ impl fmt::Display for Error {
     }
 }
 
-// Kind represents a class or family of types
+/// `Kind` represents a class or family of types.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Kind {
     Addable,
@@ -241,7 +242,7 @@ impl cmp::PartialOrd for Kind {
     }
 }
 
-// MonoType represents a specific named type
+/// MonoType represents a specific named type.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 pub enum MonoType {
     #[display(fmt = "bool")]
@@ -345,9 +346,8 @@ impl From<Record> for MonoType {
 }
 
 impl MonoType {
-    // self represents the expected type
     pub fn unify(
-        self,
+        self, // self represents the expected type
         actual: Self,
         cons: &mut TvarKinds,
         f: &mut Fresher,
@@ -494,12 +494,12 @@ impl MonoType {
     }
 }
 
-// Tvar stands for type variable.
-// A type variable holds an unknown type.
+/// `Tvar` stands for *type variable*.
+/// A type variable holds an unknown type, before type inference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64);
 
-// TvarKinds is a map from type variables to their constraining kinds.
+/// TvarKinds is a map from type variables to their constraining kinds.
 pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
 pub type TvarMap = SemanticMap<Tvar, Tvar>;
 pub type SubstitutionMap = SemanticMap<Tvar, MonoType>;
@@ -601,7 +601,7 @@ impl Tvar {
     }
 }
 
-// Array is a homogeneous list type
+/// `Array` is a homogeneous list type.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "[{}]", _0)]
 pub struct Array(pub MonoType);
@@ -647,10 +647,13 @@ impl Array {
     }
 }
 
+/// `Dictionary` is a key-value data structure.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "[{}:{}]", key, val)]
 pub struct Dictionary {
+    /// Type of key.
     pub key: MonoType,
+    /// Type of value.
     pub val: MonoType,
 }
 
@@ -693,15 +696,15 @@ impl Dictionary {
     }
 }
 
-// Record is an extensible record type.
-//
-// A row is either Empty meaning it has no properties,
-// or it is an extension of a row.
-//
-// A row may extend what is referred to as a row
-// variable. A row variable is a type variable that
-// represents an unknown record type.
-//
+/// `Record` is an extensible record type.
+///
+/// A row is either `Empty`, meaning it has no properties,
+/// or it is an extension of a row.
+///
+/// A row may extend what is referred to as a row
+/// variable. A row variable is a type variable that
+/// represents an unknown record type.
+///
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type")]
 pub enum Record {
@@ -983,7 +986,7 @@ fn apply_then_unify(
     Ok(sub.merge(s))
 }
 
-// A key value pair representing a property type in a record
+/// A key-value pair representing a property type in a record.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "{}:{}", k, v)]
 pub struct Property {
@@ -1009,17 +1012,21 @@ impl MaxTvar for Property {
     }
 }
 
-// Function represents a function type.
-//
-// A function type is defined by as set of required arguments,
-// a set of optional arguments, an optional pipe argument, and
-// a required return type.
-//
+/// `Function` represents a function type.
+///
+/// A function type is defined by a set of required arguments,
+/// a set of optional arguments, an optional pipe argument, and
+/// a required return type.
+///
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Function {
+    /// Required arguments to a function.
     pub req: MonoTypeMap,
+    /// Optional arguments to a function.
     pub opt: MonoTypeMap,
+    /// An optional pipe argument.
     pub pipe: Option<Property>,
+    /// Required return type.
     pub retn: MonoType,
 }
 
@@ -1310,6 +1317,7 @@ impl Function {
     }
 }
 
+/// Trait for returning the maximum type variable of a type.
 pub trait MaxTvar {
     fn max_tvar(&self) -> Tvar;
 }
@@ -1320,7 +1328,7 @@ mod tests {
     use crate::ast::get_err_type_expression;
     use crate::parser;
     use crate::semantic::convert::convert_polytype;
-    /// Polytype is an util method that returns a PolyType from a string.
+    /// `polytype` is a utility method that returns a `PolyType` from a string.
     pub fn polytype(typ: &str) -> PolyType {
         let mut p = parser::Parser::new(typ);
 
