@@ -494,8 +494,8 @@ impl MonoType {
     }
 }
 
-/// A type variable holds an unknown type.
-/// `Tvar` stands for type variable.
+/// `Tvar` stands for *type variable*.
+/// A type variable holds an unknown type, before type inference.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64);
 
