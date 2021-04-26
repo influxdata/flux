@@ -1328,7 +1328,7 @@ mod tests {
     use crate::ast::get_err_type_expression;
     use crate::parser;
     use crate::semantic::convert::convert_polytype;
-    /// Polytype is a utility method that returns a [`PolyType`] from a string.
+    /// `polytype` is a utility method that returns a `PolyType` from a string.
     pub fn polytype(typ: &str) -> PolyType {
         let mut p = parser::Parser::new(typ);
 
