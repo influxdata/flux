@@ -32,7 +32,7 @@ tabwriter = "1.2.1"
 
 [dev-dependencies]
 colored = "1.8"
-pretty_assertions = "0.6.1"
+pretty_assertions = "0.7.2"
 criterion = "0.3.3"
 
 [[bench]]
