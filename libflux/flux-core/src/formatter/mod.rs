@@ -666,18 +666,22 @@ impl Formatter {
             true => ",\n",
             false => ", ",
         };
-        for (i, item) in (&n.elements).iter().enumerate() {
-            if i != 0 {
-                self.write_string(sep);
-                if multiline {
-                    self.write_indent()
+        if !n.elements.is_empty() {
+            for (i, item) in (&n.elements).iter().enumerate() {
+                if i != 0 {
+                    self.write_string(sep);
+                    if multiline {
+                        self.write_indent()
+                    }
                 }
+                self.format_node(&Node::from_expr(&item.key));
+                self.write_rune(':');
+                self.write_rune(' ');
+                self.format_node(&Node::from_expr(&item.val));
+                self.format_comments(&item.comma);
             }
-            self.format_node(&Node::from_expr(&item.key));
+        } else {
             self.write_rune(':');
-            self.write_rune(' ');
-            self.format_node(&Node::from_expr(&item.val));
-            self.format_comments(&item.comma);
         }
         if multiline {
             self.temp_tabstops = false;
