@@ -1,0 +1,81 @@
+package arrowutil
+
+import (
+	"fmt"
+
+	"github.com/apache/arrow/go/arrow/array"
+)
+
+// CopyTo will copy the contents of the array into a new array builder.
+func CopyTo(b array.Builder, arr array.Interface) {
+    switch arr := arr.(type) {
+    {{range .}}
+    case *{{.Type}}:
+        Copy{{.Name}}sTo(b.(*{{.Type}}Builder), arr)
+    {{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+    }
+}
+
+// CopyByIndexTo will copy the contents of the array at the given indices into a new array builder.
+func CopyByIndexTo(b array.Builder, arr array.Interface, indices *array.Int64) {
+    switch arr := arr.(type) {
+    {{range .}}
+    case *{{.Type}}:
+        Copy{{.Name}}sByIndexTo(b.(*{{.Type}}Builder), arr, indices)
+    {{end}}
+	default:
+		panic(fmt.Errorf("unsupported array data type: %s", arr.DataType()))
+    }
+}
+
+{{range .}}
+func Copy{{.Name}}sTo(b *{{.Type}}Builder, arr *{{.Type}}) {
+    b.Reserve(arr.Len())
+    {{if eq .Name "String"}}
+    {
+        sz := 0
+        for i, n := 0, arr.Len(); i < n; i++ {
+            if arr.IsNull(i) {
+                continue
+            }
+            sz += arr.ValueLen(i)
+        }
+        b.ReserveData(sz)
+    }
+    {{end}}
+    for i, n := 0, arr.Len(); i < n; i++ {
+        if arr.IsNull(i) {
+            b.AppendNull()
+            continue
+        }
+        b.{{.Append}}(arr.{{.Value}}(i))
+    }
+}
+
+func Copy{{.Name}}sByIndexTo(b *{{.Type}}Builder, arr *{{.Type}}, indices *array.Int64) {
+    b.Reserve(indices.Len())
+    {{if eq .Name "String"}}
+    {
+        sz := 0
+        for i, n := 0, indices.Len(); i < n; i++ {
+            offset := int(indices.Value(i))
+            if arr.IsNull(offset) {
+                continue
+            }
+            sz += arr.ValueLen(offset)
+        }
+        b.ReserveData(sz)
+    }
+    {{end}}
+    for i, n := 0, indices.Len(); i < n; i++ {
+        offset := int(indices.Value(i))
+        if arr.IsNull(offset) {
+            b.AppendNull()
+            continue
+        }
+        b.{{.Append}}(arr.{{.Value}}(offset))
+    }
+}
+{{end}}
