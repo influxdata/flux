@@ -11,8 +11,10 @@ import (
 	"time"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/codes"
 	fluxhttp "github.com/influxdata/flux/dependencies/http"
 	fluxurl "github.com/influxdata/flux/dependencies/url"
+	fluxerrors "github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -44,10 +46,10 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 	)
 	{
 		if validator, err = deps.URLValidator(); err != nil {
-			return nil, errors.New("internal error")
+			return nil, fluxerrors.New(codes.Internal, "missing dependencies")
 		}
 		if client, err = deps.HTTPClient(); err != nil {
-			return nil, errors.New("internal error")
+			return nil, fluxerrors.New(codes.Internal, "missing dependencies")
 		}
 	}
 
@@ -61,6 +63,7 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 		query   values.Dictionary
 		timeout values.Duration
 		body    []byte
+		ok      bool
 	)
 	{
 		if method, err = args.GetRequiredString("method"); err != nil {
@@ -71,31 +74,38 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 			return nil, err
 		}
 
-		if host, err = args.GetRequiredString("host"); err != nil {
+		if host, ok, err = args.GetString("host"); err != nil {
 			return nil, err
+		} else if !ok {
+			return nil, fluxerrors.New(codes.Invalid, `keyword argument "host" is required when executing outside InfluxDB`)
 		}
 
-		if token, err = args.GetRequiredString("token"); err != nil {
+		if token, ok, err = args.GetString("token"); err != nil {
 			return nil, err
+		} else if !ok {
+			return nil, fluxerrors.New(codes.Invalid, `keyword argument "token" is required when executing outside InfluxDB`)
 		}
 
 		if raw, ok := args.Get("timeout"); !ok {
 			timeout = values.ConvertDurationNsecs(30 * time.Second)
 		} else if raw.Type().Nature() != semantic.Duration {
-			return nil, errors.New("timeout argument must be a duration")
+			return nil, fluxerrors.New(codes.Invalid, `keyword argument "timeout" must be a duration type`)
 		} else {
 			timeout = raw.Duration()
 		}
 
-		if q, ok := args.Get("query"); ok {
-			query = q.Dict()
+		if query, ok, err = args.GetDictionary("query"); err != nil {
+			return nil, err
 		}
 
-		if h, ok := args.Get("headers"); ok {
-			headers = h.Dict()
+		if headers, ok, err = args.GetDictionary("headers"); err != nil {
+			return nil, err
 		}
 
 		if b, ok := args.Get("body"); ok {
+			if b.Type().Nature() != semantic.Bytes {
+				return nil, fluxerrors.New(codes.Invalid, `keyword argument "body" must be a bytes type`)
+			}
 			body = b.Bytes()
 		}
 	}
@@ -157,19 +167,26 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 		return nil, err
 	}
 
+	responseHeaders, err := headerToDict(resp.Header)
+	if err != nil {
+		return nil, err
+	}
+
 	return values.NewObjectWithValues(map[string]values.Value{
 		"statusCode": values.NewInt(int64(resp.StatusCode)),
-		"headers":    headerToObject(resp.Header),
+		"headers":    responseHeaders,
 		"body":       values.NewBytes(b)}), nil
 }
 
-// headerToObject constructs a values.Object from a map of header keys and values.
-func headerToObject(header http.Header) (headerObj values.Object) {
-	m := make(map[string]values.Value)
+// headerToDict constructs a values.Dictionary from a map of header keys and values.
+func headerToDict(header http.Header) (values.Dictionary, error) {
+	builder := values.NewDictBuilder(semantic.NewDictType(semantic.BasicString, semantic.BasicString))
 	for name, thevalues := range header {
 		for _, onevalue := range thevalues {
-			m[name] = values.New(onevalue)
+			if err := builder.Insert(values.NewString(name), values.NewString(onevalue)); err != nil {
+				return nil, errors.New("")
+			}
 		}
 	}
-	return values.NewObjectWithValues(m)
+	return builder.Dict(), nil
 }

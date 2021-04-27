@@ -6,8 +6,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/semantic"
@@ -31,10 +34,12 @@ func Test_api(t *testing.T) {
 		response []byte
 
 		// method, status, token and paths mock api host expects to receive
-		expectedMethod       string
-		expectedRequestBody  []byte
-		expectedRequestPath  string
-		expectedRequestToken string
+		expectedMethod         string
+		expectedRequestBody    []byte
+		expectedRequestPath    string
+		expectedRequestToken   string
+		expectedRequestHeaders http.Header
+		expectedRequestQuery   url.Values
 	}{
 		{
 			name: "get",
@@ -57,13 +62,19 @@ func Test_api(t *testing.T) {
 				"path":   values.NewString("/api/v2/foo"),
 				"token":  values.NewString("passedtoken"),
 				"headers": newDictWithValues(map[string]string{
-					"key": "value",
+					"Key": "Value",
 				}),
 			}),
 			expectedStatusCode:   200,
 			expectedRequestPath:  "/api/v2/foo",
 			expectedMethod:       "get",
 			expectedRequestToken: "passedtoken",
+			expectedRequestHeaders: map[string][]string{
+				"Accept-Encoding": {"gzip"},
+				"Authorization":   {"Token passedtoken"},
+				"User-Agent":      {"Go-http-client/1.1"},
+				"Key":             {"Value"},
+			},
 		},
 		{
 			name: "get with query",
@@ -73,13 +84,16 @@ func Test_api(t *testing.T) {
 				"path":   values.NewString("/api/v2/foo"),
 				"token":  values.NewString("passedtoken"),
 				"query": newDictWithValues(map[string]string{
-					"key": "value",
+					"Key": "Value",
 				}),
 			}),
 			expectedStatusCode:   200,
 			expectedRequestPath:  "/api/v2/foo",
 			expectedMethod:       "get",
 			expectedRequestToken: "passedtoken",
+			expectedRequestQuery: map[string][]string{
+				"Key": {"Value"},
+			},
 		},
 		{
 			name:     "get returning data",
@@ -103,14 +117,20 @@ func Test_api(t *testing.T) {
 				"host":   values.NewString("placeholder"),
 				"method": values.NewString("post"),
 				"path":   values.NewString("/api/v2/baz"),
-				"body":   values.NewBytes([]byte(`{"key":"value"}`)),
+				"body":   values.NewBytes([]byte(`{"Key":"Value"}`)),
 				"token":  values.NewString("passedtoken"),
 			}),
-			expectedRequestBody:  []byte(`{"key":"value"}`),
+			expectedRequestBody:  []byte(`{"Key":"Value"}`),
 			expectedRequestPath:  "/api/v2/baz",
 			expectedStatusCode:   201,
 			expectedMethod:       "post",
 			expectedRequestToken: "passedtoken",
+			expectedRequestHeaders: http.Header{
+				"Accept-Encoding": {"gzip"},
+				"Authorization":   {"Token passedtoken"},
+				"Content-Length":  {"15"},
+				"User-Agent":      {"Go-http-client/1.1"},
+			},
 		},
 		{
 			name:     "error",
@@ -138,39 +158,40 @@ func Test_api(t *testing.T) {
 		},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			newServer := func(status int, response []byte, expectedToken, expectedMethod, expectedPath string, expectedBody []byte) *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if got, expected := strings.ToUpper(r.Method), strings.ToUpper(expectedMethod); got != expected {
-						t.Errorf("unexpected request method: got %s, expected %s", got, expected)
-					}
+			apiServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if got, expected := strings.ToUpper(r.Method), strings.ToUpper(test.expectedMethod); got != expected {
+					t.Errorf("unexpected request method: got %s, expected %s", got, expected)
+				}
 
-					if got := strings.TrimPrefix(r.Header.Get("Authorization"), "Token "); got != expectedToken {
-						t.Errorf("unexpected request token: got %s, expected %s", got, expectedToken)
-					}
+				if r.URL.Path != test.expectedRequestPath {
+					t.Errorf("unexpected request path: got %s, expected %s", r.URL.Path, test.expectedRequestPath)
+				}
 
-					if r.URL.Path != expectedPath {
-						t.Errorf("unexpected request path: got %s, expected %s", r.URL.Path, expectedPath)
-					}
+				expectedHeaders := defaultExpectedHeaders
+				if test.expectedRequestHeaders != nil {
+					expectedHeaders = test.expectedRequestHeaders
+				}
+				if diff := cmp.Diff(expectedHeaders, r.Header); diff != "" {
+					t.Errorf("unexpected request headers: %s", diff)
+				}
 
-					if requestBody, _ := ioutil.ReadAll(r.Body); !bytes.Equal(requestBody, expectedBody) {
-						t.Errorf("unexpected request body: got %s, expected %s", requestBody, expectedBody)
-					}
+				expectedQuery := defaultExpectedQuery
+				if test.expectedRequestQuery != nil {
+					expectedQuery = test.expectedRequestQuery
+				}
+				if diff := cmp.Diff(expectedQuery, r.URL.Query()); diff != "" {
+					t.Errorf("unexpected request URL query: %s", diff)
+				}
 
-					if status != 0 {
-						w.WriteHeader(status)
-					}
-					_, _ = w.Write([]byte(response))
-				}))
-			}
+				if requestBody, _ := ioutil.ReadAll(r.Body); !bytes.Equal(requestBody, test.expectedRequestBody) {
+					t.Errorf("unexpected request body: got %s, expected %s", requestBody, test.expectedRequestBody)
+				}
 
-			apiServer := newServer(
-				test.status,
-				test.response,
-				test.expectedRequestToken,
-				test.expectedMethod,
-				test.expectedRequestPath,
-				test.expectedRequestBody,
-			)
+				if test.status != 0 {
+					w.WriteHeader(test.status)
+				}
+				_, _ = w.Write([]byte(test.response))
+			}))
 			test.args.Set("host", values.NewString(apiServer.URL))
 
 			ctx := flux.NewDefaultDependencies().Inject(context.Background())
@@ -203,7 +224,15 @@ const fakeData = ",result,table,_start,_stop,_time,_value,_field,_measurement,en
 func newDictWithValues(m map[string]string) values.Dictionary {
 	dict := values.NewDict(semantic.NewDictType(semantic.BasicString, semantic.BasicString))
 	for k, v := range m {
-		dict.Insert(values.NewString(k), values.NewString(v))
+		dict, _ = dict.Insert(values.NewString(k), values.NewString(v))
 	}
 	return dict
 }
+
+var defaultExpectedHeaders = http.Header{
+	"Accept-Encoding": {"gzip"},
+	"Authorization":   {"Token passedtoken"},
+	"User-Agent":      {"Go-http-client/1.1"},
+}
+
+var defaultExpectedQuery = url.Values{}
