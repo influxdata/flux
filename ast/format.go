@@ -396,11 +396,15 @@ func (f *formatter) formatDictExpression(n *DictExpression) {
 		sep = ",\n"
 	}
 
-	for _, elem := range n.Elements {
-		f.formatNode(elem.Key)
-		f.writeString(": ")
-		f.formatNode(elem.Val)
-		f.writeString(sep)
+	if len(n.Elements) > 0 {
+		for _, elem := range n.Elements {
+			f.formatNode(elem.Key)
+			f.writeString(": ")
+			f.formatNode(elem.Val)
+			f.writeString(sep)
+		}
+	} else {
+		f.writeString(":")
 	}
 
 	if multiline {

@@ -59,6 +59,10 @@ func TestFormat_Nodes(t *testing.T) {
 			script: `"\"a + b = ${a + b}; \\\"quoted string\\\"\""`,
 		},
 		{
+			name:   "dict empty",
+			script: `codes = [:]`,
+		},
+		{
 			name:   "binary_op",
 			script: `1 + 1 - 2`,
 		},

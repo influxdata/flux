@@ -155,6 +155,7 @@ fn dict() {
     "c": 2,
 ]"#,
     );
+    assert_unchanged(r#"[:]"#);
 }
 
 #[test]
