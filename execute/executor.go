@@ -54,7 +54,9 @@ func (ctx streamContext) Bounds() *Bounds {
 type executionState struct {
 	p *plan.Spec
 
-	alloc *memory.Allocator
+	ctx    context.Context
+	cancel func()
+	alloc  *memory.Allocator
 
 	resources flux.ResourceManagement
 
@@ -74,7 +76,7 @@ func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocato
 		return nil, nil, errors.Wrap(err, codes.Inherit, "failed to initialize execute state")
 	}
 	es.logger = e.logger
-	es.do(ctx)
+	es.do()
 	return es.results, es.metaCh, nil
 }
 
@@ -89,8 +91,12 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 	if err := validatePlan(p); err != nil {
 		return nil, errors.Wrap(err, codes.Invalid, "invalid plan")
 	}
+
+	ctx, cancel := context.WithCancel(ctx)
 	es := &executionState{
 		p:         p,
+		ctx:       ctx,
+		cancel:    cancel,
 		alloc:     a,
 		resources: p.Resources,
 		results:   make(map[string]flux.Result),
@@ -98,7 +104,6 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 		dispatcher: newPoolDispatcher(10, e.logger),
 	}
 	v := &createExecutionNodeVisitor{
-		ctx:   ctx,
 		es:    es,
 		nodes: make(map[plan.Node]Node),
 	}
@@ -118,7 +123,6 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 // createExecutionNodeVisitor visits each node in a physical query plan
 // and creates a node responsible for executing that physical operation.
 type createExecutionNodeVisitor struct {
-	ctx   context.Context
 	es    *executionState
 	nodes map[plan.Node]Node
 }
@@ -173,7 +177,6 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 
 	// Build execution context
 	ec := executionContext{
-		ctx:           v.ctx,
 		es:            v.es,
 		parents:       make([]DatasetID, len(node.Predecessors())),
 		streamContext: streamContext,
@@ -216,6 +219,10 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 			return err
 		}
 
+		if ds, ok := ds.(DatasetContext); ok {
+			ds.WithContext(v.es.ctx)
+		}
+
 		tr.SetLabel(string(node.ID()))
 		if ppn.TriggerSpec == nil {
 			ppn.TriggerSpec = plan.DefaultTriggerSpec
@@ -245,14 +252,15 @@ func (es *executionState) abort(err error) {
 	for _, r := range es.results {
 		r.(*result).abort(err)
 	}
+	es.cancel()
 }
 
-func (es *executionState) do(ctx context.Context) {
+func (es *executionState) do() {
 	var wg sync.WaitGroup
 	for _, src := range es.sources {
 		wg.Add(1)
 		go func(src Source) {
-			ctx := ctx
+			ctx := es.ctx
 			if ctxWithSpan, span := StartSpanFromContext(ctx, reflect.TypeOf(src).String(), src.Label()); span != nil {
 				ctx = ctxWithSpan
 				defer span.Finish()
@@ -289,19 +297,17 @@ func (es *executionState) do(ctx context.Context) {
 		}(src)
 	}
 
+	wg.Add(1)
+	es.dispatcher.Start(es.resources.ConcurrencyQuota, es.ctx)
 	go func() {
-		defer close(es.metaCh)
-		wg.Wait()
-	}()
+		defer wg.Done()
 
-	es.dispatcher.Start(es.resources.ConcurrencyQuota, ctx)
-	go func() {
 		// Wait for all transports to finish
 		for _, t := range es.transports {
 			select {
 			case <-t.Finished():
-			case <-ctx.Done():
-				es.abort(ctx.Err())
+			case <-es.ctx.Done():
+				es.abort(es.ctx.Err())
 			case err := <-es.dispatcher.Err():
 				if err != nil {
 					es.abort(err)
@@ -314,11 +320,15 @@ func (es *executionState) do(ctx context.Context) {
 			es.abort(err)
 		}
 	}()
+
+	go func() {
+		defer close(es.metaCh)
+		wg.Wait()
+	}()
 }
 
 // Need a unique stream context per execution context
 type executionContext struct {
-	ctx           context.Context
 	es            *executionState
 	parents       []DatasetID
 	streamContext streamContext
@@ -329,7 +339,7 @@ func resolveTime(qt flux.Time, now time.Time) Time {
 }
 
 func (ec executionContext) Context() context.Context {
-	return ec.ctx
+	return ec.es.ctx
 }
 
 func (ec executionContext) ResolveTime(qt flux.Time) Time {

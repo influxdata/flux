@@ -1,6 +1,8 @@
 package execute
 
 import (
+	"context"
+
 	uuid "github.com/gofrs/uuid"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -18,6 +20,12 @@ type Dataset interface {
 	Finish(error)
 
 	SetTriggerSpec(t plan.TriggerSpec)
+}
+
+// DatasetContext represents a Dataset with a context.Context attached.
+type DatasetContext interface {
+	Dataset
+	WithContext(ctx context.Context)
 }
 
 // DataCache holds all working data for a transformation.
@@ -66,7 +74,8 @@ func DatasetIDFromNodeID(id plan.NodeID) DatasetID {
 }
 
 type dataset struct {
-	id DatasetID
+	ctx context.Context
+	id  DatasetID
 
 	ts      TransformationSet
 	accMode AccumulationMode
@@ -79,10 +88,15 @@ type dataset struct {
 
 func NewDataset(id DatasetID, accMode AccumulationMode, cache DataCache) *dataset {
 	return &dataset{
+		ctx:     context.Background(),
 		id:      id,
 		accMode: accMode,
 		cache:   cache,
 	}
+}
+
+func (d *dataset) WithContext(ctx context.Context) {
+	d.ctx = ctx
 }
 
 func (d *dataset) AddTransformation(t Transformation) {
@@ -115,6 +129,11 @@ func (d *dataset) evalTriggers() (err error) {
 			// Skip the rest once we have encountered an error
 			return
 		}
+
+		if err = d.ctx.Err(); err != nil {
+			return
+		}
+
 		c := TriggerContext{
 			Table:                 bc,
 			Watermark:             d.watermark,
@@ -165,6 +184,11 @@ func (d *dataset) Finish(err error) {
 			if err != nil {
 				return
 			}
+
+			if err = d.ctx.Err(); err != nil {
+				return
+			}
+
 			err = d.triggerTable(bk)
 			d.cache.ExpireTable(bk)
 		})
