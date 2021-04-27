@@ -1203,11 +1203,6 @@ func (b *ColListTableBuilder) Table() (flux.Table, error) {
 		t.cols = make([]column, len(b.cols))
 		for i, cb := range b.cols {
 			t.cols[i] = cb.Copy()
-			if cb.Len() != b.nrows {
-				return nil, errors.Newf(codes.Internal, "column %s of type %s has length %d in table of length %d",
-					b.colMeta[i].Label, b.colMeta[i].Type, cb.Len(), b.nrows,
-				)
-			}
 		}
 	}
 	return t, nil
