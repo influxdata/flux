@@ -12,9 +12,9 @@ package libflux
 // are not tracked by Go's build system.'
 //lint:ignore U1000 generated code
 var sourceHashes = map[string]string{
-	"libflux/Cargo.lock":                                                            "d3ec86d4707428ebeba572bfe88029143e1fbf2142727d98fcbdbcca8c695441",
+	"libflux/Cargo.lock":                                                            "3e548c7055e4d410d2424057d895766b4864ec3b3b62343d6304204da6905813",
 	"libflux/Cargo.toml":                                                            "c15d0e819daae82f6f1cc05c556f48cb22d91eb6e7bd6d8c2ccf3f2450f925f2",
-	"libflux/flux-core/Cargo.toml":                                                  "faa06a4b64854383d0f63cfa045593e7d3960f55c09a59f2e93e26d66a5f46ab",
+	"libflux/flux-core/Cargo.toml":                                                  "250d498b2cec53225353a2a091660debd05c2ce69ad421e161c401b5dfc45df1",
 	"libflux/flux-core/benches/scanner.rs":                                          "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
 	"libflux/flux-core/src/ast/check/mod.rs":                                        "c6ef78c2fa1b58a4076807c38cc7c07b9f605cf63cc545126253a2bb3c653595",
 	"libflux/flux-core/src/ast/check/tests.rs":                                      "dfa6dc9b877a72825c4b6669606c5b79de1bc11602c4259f712af1a252c92820",
