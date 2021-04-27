@@ -94,11 +94,11 @@ func api(ctx context.Context, a values.Object) (values.Value, error) {
 			timeout = raw.Duration()
 		}
 
-		if query, ok, err = args.GetDictionary("query"); err != nil {
+		if query, _, err = args.GetDictionary("query"); err != nil {
 			return nil, err
 		}
 
-		if headers, ok, err = args.GetDictionary("headers"); err != nil {
+		if headers, _, err = args.GetDictionary("headers"); err != nil {
 			return nil, err
 		}
 
