@@ -1,3 +1,6 @@
+//! Various conversions from AST nodes to their associated
+//! types in the semantic graph.
+
 use crate::ast;
 use crate::semantic::fresh::Fresher;
 use crate::semantic::nodes::*;
@@ -8,10 +11,12 @@ use crate::semantic::types::SemanticMap;
 use std::collections::BTreeMap;
 use std::result;
 
+/// Error type for semantic analysis.
 pub type SemanticError = String;
+/// Custom result type to wrap generic types and `SemanticError`s.
 pub type Result<T> = result::Result<T, SemanticError>;
 
-/// convert_with converts an AST package node to its semantic representation using
+/// convert_with converts an [`AST package`] node to its semantic representation using
 /// the provided fresher.
 ///
 /// Note: most external callers of this function will want to use the analyze()
@@ -22,6 +27,8 @@ pub type Result<T> = result::Result<T, SemanticError>;
 /// to the previous one. In other terms, once one converts an AST he should not use it anymore.
 /// If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
 /// overhead involved.
+///
+/// [`AST package`]: ast::Package
 pub fn convert_with(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
     convert_package(pkg, fresher)
     // TODO(affo): run checks on the semantic graph.
@@ -40,6 +47,10 @@ fn convert_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> 
     })
 }
 
+/// Converts an [`AST file`] node to its semantic representation using
+/// the provided fresher.
+///
+/// [`AST file`]: ast::File
 pub fn convert_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
     let package = convert_package_clause(file.package, fresher)?;
     let imports = file
@@ -242,6 +253,9 @@ fn convert_monotype(
     }
 }
 
+/// Converts a type expression in the AST into a [`PolyType`].
+///
+/// [`PolyType`]: types::PolyType
 pub fn convert_polytype(
     type_expression: ast::TypeExpression,
     f: &mut Fresher,
