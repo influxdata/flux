@@ -1,3 +1,5 @@
+//! "Fresh" type variable identifiers.
+
 use crate::semantic::types::{
     Array, Function, MonoType, MonoTypeVecMap, PolyType, Property, Record, SemanticMap, Tvar,
     TvarMap,
@@ -30,6 +32,7 @@ impl Default for Fresher {
     }
 }
 
+/// Trait for implementing `fresh` for various types.
 pub trait Fresh {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self;
 }
