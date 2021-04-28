@@ -16,8 +16,8 @@ pub type SemanticError = String;
 /// Custom result type to wrap generic types and `SemanticError`s.
 pub type Result<T> = result::Result<T, SemanticError>;
 
-/// convert_with converts an [`AST package`] node to its semantic representation using
-/// the provided fresher.
+/// convert_with converts an [AST package] node to its semantic representation using
+/// the provided [`Fresher`].
 ///
 /// Note: most external callers of this function will want to use the analyze()
 /// function in the flux crate instead, which is aware of everything in the Flux stdlib and prelude.
@@ -28,7 +28,7 @@ pub type Result<T> = result::Result<T, SemanticError>;
 /// If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
 /// overhead involved.
 ///
-/// [`AST package`]: ast::Package
+/// [AST package]: ast::Package
 pub fn convert_with(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> {
     convert_package(pkg, fresher)
     // TODO(affo): run checks on the semantic graph.
@@ -47,10 +47,10 @@ fn convert_package(pkg: ast::Package, fresher: &mut Fresher) -> Result<Package> 
     })
 }
 
-/// Converts an [`AST file`] node to its semantic representation using
+/// Converts an [AST file] node to its semantic representation using
 /// the provided fresher.
 ///
-/// [`AST file`]: ast::File
+/// [AST file]: ast::File
 pub fn convert_file(file: ast::File, fresher: &mut Fresher) -> Result<File> {
     let package = convert_package_clause(file.package, fresher)?;
     let imports = file
@@ -253,8 +253,9 @@ fn convert_monotype(
     }
 }
 
-/// Converts a type expression in the AST into a [`PolyType`].
+/// Converts a [type expression] in the AST into a [`PolyType`].
 ///
+/// [type expression]: ast::TypeExpression
 /// [`PolyType`]: types::PolyType
 pub fn convert_polytype(
     type_expression: ast::TypeExpression,
