@@ -184,7 +184,7 @@ func (testCases *SourceUrlValidationTestCases) Run(t *testing.T, fn execute.Crea
 			_, err := fn(tc.Spec, id, a)
 			if tc.ErrMsg != "" {
 				if err == nil {
-					t.Errorf("Expect an error with message \"%s\", but did not get one.", tc.ErrMsg)
+					t.Errorf("Expect an error with message \"%s\", but did not get an error.", tc.ErrMsg)
 				} else {
 					if !strings.Contains(err.Error(), tc.ErrMsg) {
 						t.Fatalf("unexpected result got %q expected error to contain %q", err.Error(), tc.ErrMsg)

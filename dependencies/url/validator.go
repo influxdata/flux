@@ -50,7 +50,9 @@ func (v PrivateIPValidator) Validate(u *url.URL) error {
 
 func (PrivateIPValidator) ValidateIP(ip net.IP) error {
 	if isPrivateIP(ip) {
-		return errors.New(codes.Invalid, "url is not valid, it connects to a private IP")
+		// Intentionally return a vague message that we cannot connect to the host.
+		// Do not explain why.
+		return errors.New(codes.Invalid, "no such host")
 	}
 	return nil
 }

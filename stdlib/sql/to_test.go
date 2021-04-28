@@ -379,7 +379,7 @@ func TestToSql_NewTransformation(t *testing.T) {
 					},
 				},
 				Validator: url.PrivateIPValidator{},
-				WantErr:   "url is not valid, it connects to a private IP",
+				WantErr:   "no such host",
 			},
 		},
 	}

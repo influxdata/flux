@@ -96,7 +96,7 @@ func TestIpValidation(t *testing.T) {
 		if err == nil {
 			t.Fatal("expected private IP validation error, but client.Do succeeded")
 		} else {
-			if !strings.HasSuffix(err.Error(), "it connects to a private IP") {
+			if !strings.HasSuffix(err.Error(), "no such host") {
 				t.Fatalf("expected private IP validation error, but got %v", err)
 			}
 		}
@@ -115,7 +115,7 @@ func (TestValidator) Validate(anUrl *url.URL) error {
 
 func (TestValidator) ValidateIP(ip net.IP) error {
 	if ip.Equal(net.ParseIP("127.6.6.6")) {
-		return errors.New(codes.Invalid, "url validation error, it connects to a private IP")
+		return errors.New(codes.Invalid, "no such host")
 	}
 	return nil
 }
@@ -150,7 +150,7 @@ func TestInvalidRedirects(t *testing.T) {
 		if err == nil {
 			t.Fatal("Client did not error")
 		}
-		if !strings.HasSuffix(err.Error(), "url validation error, it connects to a private IP") {
+		if !strings.HasSuffix(err.Error(), "no such host") {
 			t.Fatal(err)
 		}
 

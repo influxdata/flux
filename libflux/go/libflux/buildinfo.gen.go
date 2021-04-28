@@ -185,6 +185,7 @@ var sourceHashes = map[string]string{
 	"stdlib/experimental/histogram_quantile_test.flux":                                            "54ec84dda20dbb9d0bd883965d43673ab48991b3595ac40bbb47dbe9bc253e3e",
 	"stdlib/experimental/histogram_test.flux":                                                     "20d406b3a55cd011e2a467c50644f2fd0ea3a8b1bf4647a67b4df8a4408395b2",
 	"stdlib/experimental/http/http.flux":                                                          "f7795441a9a7fed397328d84f7d15a6ba74aa296fdc930a6ead0ba3eb95f0bce",
+	"stdlib/experimental/http/requests/requests.flux":                                             "af67ef57dd4c8b7749a8c79dd300d31f4569cf0284b235ad78c4fc3613859f80",
 	"stdlib/experimental/influxdb/influxdb.flux":                                                  "4f8e99e748fb2f466fac6ee594aa2c36e6bdcddc5209ea31f518bcd59851bc8e",
 	"stdlib/experimental/integral_test.flux":                                                      "7414a80441f483e702707feb608d3c43ce1b6998d0e49715b3e4dbbd10029c2b",
 	"stdlib/experimental/iox/iox.flux":                                                            "4a4ed85b584490ae6615522e3f5dfd61e5ab157425a348f5f376327d9aa6726a",
