@@ -13,11 +13,11 @@ import "http"
 // pending implementation of https://github.com/influxdata/flux/issues/3629.
 from = (start, stop, host="", orgID="", token="", raw=false) => {
 
-	orgID = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
+	id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
 
 	response = influxdb.api(
         method: "get",
-		path: "/api/v2/orgs/" + orgID + "/usage",
+		path: "/api/v2/orgs/" + id + "/usage",
 		host: host,
 		token: token,
         query: [
@@ -37,11 +37,11 @@ from = (start, stop, host="", orgID="", token="", raw=false) => {
 // and token arguments allow cross-org and/or cross-cluster calls.
 limits = (host="", orgID="", token="") => {
 
-	orgID = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
+	id = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
 
 	response = influxdb.api(
 		method: "get",
-		path: "/api/v2/orgs/" + orgID + "/limits",
+		path: "/api/v2/orgs/" + id + "/limits",
 		host: host,
 		token: token,
 	)

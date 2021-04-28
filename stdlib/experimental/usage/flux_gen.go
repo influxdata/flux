@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   53,
 				},
 				File:   "usage.flux",
-				Source: "package usage\n\nimport \"csv\"\nimport \"experimental/influxdb\"\nimport \"experimental/json\"\nimport \"http\"\n\n// from returns an organization's usage data. The time range to query is\n// bounded by start and stop arguments. Optional orgID, host and token arguments\n// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n// return raw usage data rather than the downsampled data returned by default.\n// Note that unlike the range function, the stop argument is required here,\n// pending implementation of https://github.com/influxdata/flux/issues/3629.\nfrom = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}\n\n// limits returns an organization's usage limits. Optional orgID, host\n// and token arguments allow cross-org and/or cross-cluster calls.\nlimits = (host=\"\", orgID=\"\", token=\"\") => {\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
+				Source: "package usage\n\nimport \"csv\"\nimport \"experimental/influxdb\"\nimport \"experimental/json\"\nimport \"http\"\n\n// from returns an organization's usage data. The time range to query is\n// bounded by start and stop arguments. Optional orgID, host and token arguments\n// allow cross-org and/or cross-cluster queries. Setting the raw parameter will\n// return raw usage data rather than the downsampled data returned by default.\n// Note that unlike the range function, the stop argument is required here,\n// pending implementation of https://github.com/influxdata/flux/issues/3629.\nfrom = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}\n\n// limits returns an organization's usage limits. Optional orgID, host\n// and token arguments allow cross-org and/or cross-cluster calls.\nlimits = (host=\"\", orgID=\"\", token=\"\") => {\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -44,7 +44,7 @@ var pkgAST = &ast.Package{
 						Line:   34,
 					},
 					File:   "usage.flux",
-					Source: "from = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
+					Source: "from = (start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -81,7 +81,7 @@ var pkgAST = &ast.Package{
 							Line:   34,
 						},
 						File:   "usage.flux",
-						Source: "(start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
+						Source: "(start, stop, host=\"\", orgID=\"\", token=\"\", raw=false) => {\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
 						Start: ast.Position{
 							Column: 8,
 							Line:   14,
@@ -98,7 +98,7 @@ var pkgAST = &ast.Package{
 								Line:   34,
 							},
 							File:   "usage.flux",
-							Source: "{\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
+							Source: "{\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization usage request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n    else\n    \tcsv.from(csv: string(v: response.body))\n}",
 							Start: ast.Position{
 								Column: 65,
 								Line:   14,
@@ -111,11 +111,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 80,
+									Column: 77,
 									Line:   16,
 								},
 								File:   "usage.flux",
-								Source: "orgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)",
+								Source: "id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)",
 								Start: ast.Position{
 									Column: 2,
 									Line:   16,
@@ -128,18 +128,18 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
+										Column: 4,
 										Line:   16,
 									},
 									File:   "usage.flux",
-									Source: "orgID",
+									Source: "id",
 									Start: ast.Position{
 										Column: 2,
 										Line:   16,
 									},
 								},
 							},
-							Name: "orgID",
+							Name: "id",
 						},
 						Init: &ast.ConditionalExpression{
 							Alternate: &ast.CallExpression{
@@ -149,13 +149,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 76,
 												Line:   16,
 											},
 											File:   "usage.flux",
 											Source: "inputString: orgID",
 											Start: ast.Position{
-												Column: 61,
+												Column: 58,
 												Line:   16,
 											},
 										},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 79,
+													Column: 76,
 													Line:   16,
 												},
 												File:   "usage.flux",
 												Source: "inputString: orgID",
 												Start: ast.Position{
-													Column: 61,
+													Column: 58,
 													Line:   16,
 												},
 											},
@@ -185,13 +185,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 72,
+														Column: 69,
 														Line:   16,
 													},
 													File:   "usage.flux",
 													Source: "inputString",
 													Start: ast.Position{
-														Column: 61,
+														Column: 58,
 														Line:   16,
 													},
 												},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 79,
+														Column: 76,
 														Line:   16,
 													},
 													File:   "usage.flux",
 													Source: "orgID",
 													Start: ast.Position{
-														Column: 74,
+														Column: 71,
 														Line:   16,
 													},
 												},
@@ -227,13 +227,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 80,
+											Column: 77,
 											Line:   16,
 										},
 										File:   "usage.flux",
 										Source: "http.pathEscape(inputString: orgID)",
 										Start: ast.Position{
-											Column: 45,
+											Column: 42,
 											Line:   16,
 										},
 									},
@@ -244,13 +244,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 60,
+												Column: 57,
 												Line:   16,
 											},
 											File:   "usage.flux",
 											Source: "http.pathEscape",
 											Start: ast.Position{
-												Column: 45,
+												Column: 42,
 												Line:   16,
 											},
 										},
@@ -262,13 +262,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 49,
+													Column: 46,
 													Line:   16,
 												},
 												File:   "usage.flux",
 												Source: "http",
 												Start: ast.Position{
-													Column: 45,
+													Column: 42,
 													Line:   16,
 												},
 											},
@@ -281,13 +281,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
+													Column: 57,
 													Line:   16,
 												},
 												File:   "usage.flux",
 												Source: "pathEscape",
 												Start: ast.Position{
-													Column: 50,
+													Column: 47,
 													Line:   16,
 												},
 											},
@@ -304,13 +304,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 80,
+										Column: 77,
 										Line:   16,
 									},
 									File:   "usage.flux",
 									Source: "if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)",
 									Start: ast.Position{
-										Column: 10,
+										Column: 7,
 										Line:   16,
 									},
 								},
@@ -321,13 +321,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 39,
+											Column: 36,
 											Line:   16,
 										},
 										File:   "usage.flux",
 										Source: "\"{orgID}\"",
 										Start: ast.Position{
-											Column: 30,
+											Column: 27,
 											Line:   16,
 										},
 									},
@@ -340,13 +340,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
+											Column: 21,
 											Line:   16,
 										},
 										File:   "usage.flux",
 										Source: "orgID == \"\"",
 										Start: ast.Position{
-											Column: 13,
+											Column: 10,
 											Line:   16,
 										},
 									},
@@ -357,13 +357,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 18,
+												Column: 15,
 												Line:   16,
 											},
 											File:   "usage.flux",
 											Source: "orgID",
 											Start: ast.Position{
-												Column: 13,
+												Column: 10,
 												Line:   16,
 											},
 										},
@@ -377,13 +377,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
+												Column: 21,
 												Line:   16,
 											},
 											File:   "usage.flux",
 											Source: "\"\"",
 											Start: ast.Position{
-												Column: 22,
+												Column: 19,
 												Line:   16,
 											},
 										},
@@ -405,7 +405,7 @@ var pkgAST = &ast.Package{
 									Line:   28,
 								},
 								File:   "usage.flux",
-								Source: "response = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)",
+								Source: "response = influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)",
 								Start: ast.Position{
 									Column: 2,
 									Line:   18,
@@ -442,7 +442,7 @@ var pkgAST = &ast.Package{
 											Line:   27,
 										},
 										File:   "usage.flux",
-										Source: "method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ]",
+										Source: "method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ]",
 										Start: ast.Position{
 											Column: 9,
 											Line:   19,
@@ -513,11 +513,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 43,
+												Column: 40,
 												Line:   20,
 											},
 											File:   "usage.flux",
-											Source: "path: \"/api/v2/orgs/\" + orgID + \"/usage\"",
+											Source: "path: \"/api/v2/orgs/\" + id + \"/usage\"",
 											Start: ast.Position{
 												Column: 3,
 												Line:   20,
@@ -551,11 +551,11 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 43,
+													Column: 40,
 													Line:   20,
 												},
 												File:   "usage.flux",
-												Source: "\"/api/v2/orgs/\" + orgID + \"/usage\"",
+												Source: "\"/api/v2/orgs/\" + id + \"/usage\"",
 												Start: ast.Position{
 													Column: 9,
 													Line:   20,
@@ -568,11 +568,11 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 32,
+														Column: 29,
 														Line:   20,
 													},
 													File:   "usage.flux",
-													Source: "\"/api/v2/orgs/\" + orgID",
+													Source: "\"/api/v2/orgs/\" + id",
 													Start: ast.Position{
 														Column: 9,
 														Line:   20,
@@ -605,18 +605,18 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
+															Column: 29,
 															Line:   20,
 														},
 														File:   "usage.flux",
-														Source: "orgID",
+														Source: "id",
 														Start: ast.Position{
 															Column: 27,
 															Line:   20,
 														},
 													},
 												},
-												Name: "orgID",
+												Name: "id",
 											},
 										},
 										Operator: 5,
@@ -626,13 +626,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
+														Column: 40,
 														Line:   20,
 													},
 													File:   "usage.flux",
 													Source: "\"/usage\"",
 													Start: ast.Position{
-														Column: 35,
+														Column: 32,
 														Line:   20,
 													},
 												},
@@ -1243,7 +1243,7 @@ var pkgAST = &ast.Package{
 										Line:   28,
 									},
 									File:   "usage.flux",
-									Source: "influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)",
+									Source: "influxdb.api(\n        method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/usage\",\n\t\thost: host,\n\t\ttoken: token,\n        query: [\n                \"start\": string(v: start),\n                \"stop\": string(v: stop),\n                \"raw\": string(v: raw),\n        ],\n\t)",
 									Start: ast.Position{
 										Column: 13,
 										Line:   18,
@@ -2572,7 +2572,7 @@ var pkgAST = &ast.Package{
 						Line:   53,
 					},
 					File:   "usage.flux",
-					Source: "limits = (host=\"\", orgID=\"\", token=\"\") => {\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
+					Source: "limits = (host=\"\", orgID=\"\", token=\"\") => {\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   38,
@@ -2609,7 +2609,7 @@ var pkgAST = &ast.Package{
 							Line:   53,
 						},
 						File:   "usage.flux",
-						Source: "(host=\"\", orgID=\"\", token=\"\") => {\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
+						Source: "(host=\"\", orgID=\"\", token=\"\") => {\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
 						Start: ast.Position{
 							Column: 10,
 							Line:   38,
@@ -2626,7 +2626,7 @@ var pkgAST = &ast.Package{
 								Line:   53,
 							},
 							File:   "usage.flux",
-							Source: "{\n\n\torgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
+							Source: "{\n\n\tid = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)\n\n\tresponse = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)\n\n\treturn if response.statusCode > 299 then\n\t\tdie(msg: \"organization limits request returned status \" + string(v: response.statusCode) + \": \" + string(v: response.body))\n\telse\n\t\tjson.parse(data: response.body).limits\n}",
 							Start: ast.Position{
 								Column: 43,
 								Line:   38,
@@ -2639,11 +2639,11 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 80,
+									Column: 77,
 									Line:   40,
 								},
 								File:   "usage.flux",
-								Source: "orgID = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)",
+								Source: "id = if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)",
 								Start: ast.Position{
 									Column: 2,
 									Line:   40,
@@ -2656,18 +2656,18 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
+										Column: 4,
 										Line:   40,
 									},
 									File:   "usage.flux",
-									Source: "orgID",
+									Source: "id",
 									Start: ast.Position{
 										Column: 2,
 										Line:   40,
 									},
 								},
 							},
-							Name: "orgID",
+							Name: "id",
 						},
 						Init: &ast.ConditionalExpression{
 							Alternate: &ast.CallExpression{
@@ -2677,13 +2677,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
+												Column: 76,
 												Line:   40,
 											},
 											File:   "usage.flux",
 											Source: "inputString: orgID",
 											Start: ast.Position{
-												Column: 61,
+												Column: 58,
 												Line:   40,
 											},
 										},
@@ -2695,13 +2695,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 79,
+													Column: 76,
 													Line:   40,
 												},
 												File:   "usage.flux",
 												Source: "inputString: orgID",
 												Start: ast.Position{
-													Column: 61,
+													Column: 58,
 													Line:   40,
 												},
 											},
@@ -2713,13 +2713,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 72,
+														Column: 69,
 														Line:   40,
 													},
 													File:   "usage.flux",
 													Source: "inputString",
 													Start: ast.Position{
-														Column: 61,
+														Column: 58,
 														Line:   40,
 													},
 												},
@@ -2733,13 +2733,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 79,
+														Column: 76,
 														Line:   40,
 													},
 													File:   "usage.flux",
 													Source: "orgID",
 													Start: ast.Position{
-														Column: 74,
+														Column: 71,
 														Line:   40,
 													},
 												},
@@ -2755,13 +2755,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 80,
+											Column: 77,
 											Line:   40,
 										},
 										File:   "usage.flux",
 										Source: "http.pathEscape(inputString: orgID)",
 										Start: ast.Position{
-											Column: 45,
+											Column: 42,
 											Line:   40,
 										},
 									},
@@ -2772,13 +2772,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 60,
+												Column: 57,
 												Line:   40,
 											},
 											File:   "usage.flux",
 											Source: "http.pathEscape",
 											Start: ast.Position{
-												Column: 45,
+												Column: 42,
 												Line:   40,
 											},
 										},
@@ -2790,13 +2790,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 49,
+													Column: 46,
 													Line:   40,
 												},
 												File:   "usage.flux",
 												Source: "http",
 												Start: ast.Position{
-													Column: 45,
+													Column: 42,
 													Line:   40,
 												},
 											},
@@ -2809,13 +2809,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
+													Column: 57,
 													Line:   40,
 												},
 												File:   "usage.flux",
 												Source: "pathEscape",
 												Start: ast.Position{
-													Column: 50,
+													Column: 47,
 													Line:   40,
 												},
 											},
@@ -2832,13 +2832,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 80,
+										Column: 77,
 										Line:   40,
 									},
 									File:   "usage.flux",
 									Source: "if orgID == \"\" then \"{orgID}\" else http.pathEscape(inputString: orgID)",
 									Start: ast.Position{
-										Column: 10,
+										Column: 7,
 										Line:   40,
 									},
 								},
@@ -2849,13 +2849,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 39,
+											Column: 36,
 											Line:   40,
 										},
 										File:   "usage.flux",
 										Source: "\"{orgID}\"",
 										Start: ast.Position{
-											Column: 30,
+											Column: 27,
 											Line:   40,
 										},
 									},
@@ -2868,13 +2868,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
+											Column: 21,
 											Line:   40,
 										},
 										File:   "usage.flux",
 										Source: "orgID == \"\"",
 										Start: ast.Position{
-											Column: 13,
+											Column: 10,
 											Line:   40,
 										},
 									},
@@ -2885,13 +2885,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 18,
+												Column: 15,
 												Line:   40,
 											},
 											File:   "usage.flux",
 											Source: "orgID",
 											Start: ast.Position{
-												Column: 13,
+												Column: 10,
 												Line:   40,
 											},
 										},
@@ -2905,13 +2905,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
+												Column: 21,
 												Line:   40,
 											},
 											File:   "usage.flux",
 											Source: "\"\"",
 											Start: ast.Position{
-												Column: 22,
+												Column: 19,
 												Line:   40,
 											},
 										},
@@ -2933,7 +2933,7 @@ var pkgAST = &ast.Package{
 									Line:   47,
 								},
 								File:   "usage.flux",
-								Source: "response = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)",
+								Source: "response = influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)",
 								Start: ast.Position{
 									Column: 2,
 									Line:   42,
@@ -2970,7 +2970,7 @@ var pkgAST = &ast.Package{
 											Line:   46,
 										},
 										File:   "usage.flux",
-										Source: "method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token",
+										Source: "method: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/limits\",\n\t\thost: host,\n\t\ttoken: token",
 										Start: ast.Position{
 											Column: 3,
 											Line:   43,
@@ -3041,11 +3041,11 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
+												Column: 41,
 												Line:   44,
 											},
 											File:   "usage.flux",
-											Source: "path: \"/api/v2/orgs/\" + orgID + \"/limits\"",
+											Source: "path: \"/api/v2/orgs/\" + id + \"/limits\"",
 											Start: ast.Position{
 												Column: 3,
 												Line:   44,
@@ -3079,11 +3079,11 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 44,
+													Column: 41,
 													Line:   44,
 												},
 												File:   "usage.flux",
-												Source: "\"/api/v2/orgs/\" + orgID + \"/limits\"",
+												Source: "\"/api/v2/orgs/\" + id + \"/limits\"",
 												Start: ast.Position{
 													Column: 9,
 													Line:   44,
@@ -3096,11 +3096,11 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 32,
+														Column: 29,
 														Line:   44,
 													},
 													File:   "usage.flux",
-													Source: "\"/api/v2/orgs/\" + orgID",
+													Source: "\"/api/v2/orgs/\" + id",
 													Start: ast.Position{
 														Column: 9,
 														Line:   44,
@@ -3133,18 +3133,18 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
+															Column: 29,
 															Line:   44,
 														},
 														File:   "usage.flux",
-														Source: "orgID",
+														Source: "id",
 														Start: ast.Position{
 															Column: 27,
 															Line:   44,
 														},
 													},
 												},
-												Name: "orgID",
+												Name: "id",
 											},
 										},
 										Operator: 5,
@@ -3154,13 +3154,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 44,
+														Column: 41,
 														Line:   44,
 													},
 													File:   "usage.flux",
 													Source: "\"/limits\"",
 													Start: ast.Position{
-														Column: 35,
+														Column: 32,
 														Line:   44,
 													},
 												},
@@ -3295,7 +3295,7 @@ var pkgAST = &ast.Package{
 										Line:   47,
 									},
 									File:   "usage.flux",
-									Source: "influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + orgID + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)",
+									Source: "influxdb.api(\n\t\tmethod: \"get\",\n\t\tpath: \"/api/v2/orgs/\" + id + \"/limits\",\n\t\thost: host,\n\t\ttoken: token,\n\t)",
 									Start: ast.Position{
 										Column: 13,
 										Line:   42,
