@@ -11,10 +11,13 @@ import "http"
 // return raw usage data rather than the downsampled data returned by default.
 // Note that unlike the range function, the stop argument is required here,
 // pending implementation of https://github.com/influxdata/flux/issues/3629.
-from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
+from = (start, stop, host="", orgID="", token="", raw=false) => {
+
+	orgID = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
+
 	response = influxdb.api(
         method: "get",
-		path: "/api/v2/orgs/" + http.pathEscape(inputString: orgID) + "/usage",
+		path: "/api/v2/orgs/" + orgID + "/usage",
 		host: host,
 		token: token,
         query: [
@@ -32,10 +35,13 @@ from = (start, stop, host="", orgID="{orgID}", token="", raw=false) => {
 
 // limits returns an organization's usage limits. Optional orgID, host
 // and token arguments allow cross-org and/or cross-cluster calls.
-limits = (host="", orgID="{orgID}", token="") => {
+limits = (host="", orgID="", token="") => {
+
+	orgID = if orgID == "" then "{orgID}" else http.pathEscape(inputString: orgID)
+
 	response = influxdb.api(
 		method: "get",
-		path: "/api/v2/orgs/" + http.pathEscape(inputString: orgID) + "/limits",
+		path: "/api/v2/orgs/" + orgID + "/limits",
 		host: host,
 		token: token,
 	)
