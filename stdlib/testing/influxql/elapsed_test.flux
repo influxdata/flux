@@ -1,5 +1,6 @@
 package influxql_test
 
+
 import "testing"
 import "internal/influxql"
 
@@ -345,7 +346,6 @@ inData = "
 ,,1,1970-01-07T22:00:00Z,m,1,f,0.5459991408731746
 ,,1,1970-01-07T23:00:00Z,m,1,f,0.7066840478612406
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,string,long
 #group,false,false,false,true,true,false
@@ -689,14 +689,14 @@ outData = "
 
 // SELECT elapsed(f) FROM m GROUP BY *
 t_elapsed = (tables=<-) => tables
-	|> range(start: influxql.minTime, stop: influxql.maxTime)
-	|> filter(fn: (r) => r._measurement == "m" and r._field == "f")
-	|> elapsed(unit: 1ns)
-	|> drop(columns: ["_start", "_stop", "_field", "_value"])
-	|> rename(columns: {_time: "time"})
+    |> range(start: influxql.minTime, stop: influxql.maxTime)
+    |> filter(fn: (r) => r._measurement == "m" and r._field == "f")
+    |> elapsed(unit: 1ns)
+    |> drop(columns: ["_start", "_stop", "_field", "_value"])
+    |> rename(columns: {_time: "time"})
 
 test _elapsed = () => ({
-	input: testing.loadStorage(csv: inData),
-	want: testing.loadMem(csv: outData),
-	fn: t_elapsed,
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: t_elapsed,
 })

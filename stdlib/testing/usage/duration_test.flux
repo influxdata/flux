@@ -1,5 +1,6 @@
 package usage_test
 
+
 import "testing"
 
 // This dataset has been generated with this query:
@@ -9,7 +10,6 @@ import "testing"
 //        (r.org_id == "03d01b74c8e09000" or r.org_id == "03c19003200d7000" or r.org_id == "0395bd7401aa3000")
 //        and r._measurement == "queryd_billing"
 //    )
-
 inData = "
 #group,false,false,true,true,false,false,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,long,string,string,string,string
@@ -6770,7 +6770,6 @@ inData = "
 
 
 "
-
 outData = "
 #group,false,false,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long,dateTime:RFC3339
@@ -6779,13 +6778,10 @@ outData = "
 ,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,12507024,2019-12-03T11:00:00Z
 ,,0,2019-12-03T10:00:00Z,2019-12-03T12:00:00Z,16069640,2019-12-03T12:00:00Z
 "
-
 _f = (table=<-) => table
     |> range(start: 2019-12-03T10:00:00Z, stop: 2019-12-03T12:00:00Z)
-    |> filter(fn: (r) =>
-        r.org_id == "03d01b74c8e09000"
-        and r._measurement == "queryd_billing"
-        and (r._field == "compile_duration_us" or r._field == "plan_duration_us" or r._field == "execute_duration_us")
+    |> filter(
+        fn: (r) => r.org_id == "03d01b74c8e09000" and r._measurement == "queryd_billing" and (r._field == "compile_duration_us" or r._field == "plan_duration_us" or r._field == "execute_duration_us"),
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: sum)
@@ -6793,5 +6789,4 @@ _f = (table=<-) => table
     |> rename(columns: {_value: "duration_us"})
     |> yield(name: "duration_us")
 
-test query_duration = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+test query_duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 16,
-					Line:   15,
+					Line:   16,
 				},
 				File:   "expect.flux",
-				Source: "package expect\n\n// planner will cause the present testcase to\n// expect the given planner rules will be invoked\n// exactly as many times as the number given.\n//\n// The key is the name of the planner rule.\nbuiltin planner",
+				Source: "package expect\n\n\n// planner will cause the present testcase to\n// expect the given planner rules will be invoked\n// exactly as many times as the number given.\n//\n// The key is the name of the planner rule.\nbuiltin planner",
 				Start: ast.Position{
 					Column: 1,
 					Line:   8,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   15,
+						Line:   16,
 					},
 					File:   "expect.flux",
 					Source: "builtin planner",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "expect.flux",
 						Source: "planner",
 						Start: ast.Position{
 							Column: 9,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -77,14 +77,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 47,
-							Line:   15,
+							Column: 46,
+							Line:   16,
 						},
 						File:   "expect.flux",
-						Source: "(rules: [string: int]) => {}",
+						Source: "(rules: [string:int]) => {}",
 						Start: ast.Position{
 							Column: 19,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -95,14 +95,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 47,
-								Line:   15,
+								Column: 46,
+								Line:   16,
 							},
 							File:   "expect.flux",
-							Source: "(rules: [string: int]) => {}",
+							Source: "(rules: [string:int]) => {}",
 							Start: ast.Position{
 								Column: 19,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -112,14 +112,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 40,
-									Line:   15,
+									Column: 39,
+									Line:   16,
 								},
 								File:   "expect.flux",
-								Source: "rules: [string: int]",
+								Source: "rules: [string:int]",
 								Start: ast.Position{
 									Column: 20,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   15,
+										Line:   16,
 									},
 									File:   "expect.flux",
 									Source: "rules",
 									Start: ast.Position{
 										Column: 20,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -149,14 +149,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 40,
-										Line:   15,
+										Column: 39,
+										Line:   16,
 									},
 									File:   "expect.flux",
-									Source: "[string: int]",
+									Source: "[string:int]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   15,
+											Line:   16,
 										},
 										File:   "expect.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 28,
-											Line:   15,
+											Line:   16,
 										},
 									},
 								},
@@ -184,13 +184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   15,
+												Line:   16,
 											},
 											File:   "expect.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 28,
-												Line:   15,
+												Line:   16,
 											},
 										},
 									},
@@ -203,14 +203,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 39,
-											Line:   15,
+											Column: 38,
+											Line:   16,
 										},
 										File:   "expect.flux",
 										Source: "int",
 										Start: ast.Position{
-											Column: 36,
-											Line:   15,
+											Column: 35,
+											Line:   16,
 										},
 									},
 								},
@@ -220,14 +220,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 39,
-												Line:   15,
+												Column: 38,
+												Line:   16,
 											},
 											File:   "expect.flux",
 											Source: "int",
 											Start: ast.Position{
-												Column: 36,
-												Line:   15,
+												Column: 35,
+												Line:   16,
 											},
 										},
 									},
@@ -242,14 +242,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 47,
-									Line:   15,
+									Column: 46,
+									Line:   16,
 								},
 								File:   "expect.flux",
 								Source: "{}",
 								Start: ast.Position{
-									Column: 45,
-									Line:   15,
+									Column: 44,
+									Line:   16,
 								},
 							},
 						},

@@ -1,5 +1,6 @@
 package usage_test
 
+
 import "testing"
 import "strings"
 
@@ -1670,7 +1671,6 @@ inData = "
 ,,116,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:57:45.370635649Z,0,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-j664w,03cbe13cce931000,204
 ,,116,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:59:38.077384742Z,0,req_bytes,http_request,/api/v2/write,gateway-internal-77ff9ccb7d-j664w,03cbe13cce931000,204
 "
-
 outData = "
 #group,false,false,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long,dateTime:RFC3339
@@ -1680,16 +1680,10 @@ outData = "
 ,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,145,2019-08-01T13:00:00Z
 ,,0,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,139,2019-08-01T14:00:00Z
 "
-
 _f = (table=<-) => table
     |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
-    |> filter(fn: (r) =>
-        r.org_id == "03cbe13cce931000"
-        and r._measurement == "http_request"
-        and ((r.endpoint == "/api/v2/write"
-            and r._field == "req_bytes"
-            and r.hostname !~ /^gateway-internal/)
-        or (r.endpoint == "/api/v2/query" and r._field == "resp_bytes"))
+    |> filter(
+        fn: (r) => r.org_id == "03cbe13cce931000" and r._measurement == "http_request" and (r.endpoint == "/api/v2/write" and r._field == "req_bytes" and r.hostname !~ /^gateway-internal/ or r.endpoint == "/api/v2/query" and r._field == "resp_bytes"),
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: count)
@@ -1697,5 +1691,4 @@ _f = (table=<-) => table
     |> rename(columns: {_value: "requests_count"})
     |> yield(name: "requests_count")
 
-test get_api_usage = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+test get_api_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

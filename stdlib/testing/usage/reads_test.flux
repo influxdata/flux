@@ -1,5 +1,6 @@
 package usage_test
 
+
 import "testing"
 
 // This dataset has been generated with this query:
@@ -3190,7 +3191,6 @@ inData = "
 ,,45,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:53:20.420898056Z,101,resp_bytes,http_request,/api/v2/query,gateway-77ff9ccb7d-brkqv,043e0780ee2b1000,200
 ,,45,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:54:37.162546325Z,114,resp_bytes,http_request,/api/v2/query,gateway-77ff9ccb7d-brkqv,043e0780ee2b1000,200
 "
-
 outData = "
 #group,false,false,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,long,dateTime:RFC3339
@@ -3199,15 +3199,10 @@ outData = "
 ,,0,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,746756,2019-08-01T13:00:00Z
 ,,0,2019-08-01T12:00:00Z,2019-08-01T14:00:00Z,78145,2019-08-01T14:00:00Z
 "
-
 _f = (table=<-) => table
     |> range(start: 2019-08-01T12:00:00Z, stop: 2019-08-01T14:00:00Z)
-    |> filter(fn: (r) =>
-        r.org_id == "03b603ab272a3000"
-        and r._measurement == "http_request"
-        and r._field == "resp_bytes"
-        and r.endpoint == "/api/v2/query"
-        and r.status == "200"
+    |> filter(
+        fn: (r) => r.org_id == "03b603ab272a3000" and r._measurement == "http_request" and r._field == "resp_bytes" and r.endpoint == "/api/v2/query" and r.status == "200",
     )
     |> group()
     |> aggregateWindow(every: 1h, fn: sum)
@@ -3215,5 +3210,4 @@ _f = (table=<-) => table
     |> rename(columns: {_value: "reads_b"})
     |> yield(name: "reads_b")
 
-test get_reads_usage = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+test get_reads_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

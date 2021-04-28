@@ -1,9 +1,10 @@
 package promql_test
+
+
 import "testing"
 import "internal/promql"
 
-option now = () =>
-	(2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,double,string
@@ -39,10 +40,8 @@ outData = "
 ,,1,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name2,32.78296,prometheus
 ,,2,2018-12-18T20:50:00Z,2018-12-18T20:55:00Z,metric_name3,535.7920000000001,prometheus
 "
-t_holtWinters = (table=<-) =>
-	(table
-		|> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
-		|> promql.holtWinters(smoothingFactor: 0.1, trendFactor: 0.2))
+t_holtWinters = (table=<-) => table
+    |> range(start: 2018-12-18T20:50:00Z, stop: 2018-12-18T20:55:00Z)
+    |> promql.holtWinters(smoothingFactor: 0.1, trendFactor: 0.2)
 
-test _holtWinters = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_holtWinters})
+test _holtWinters = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_holtWinters})
