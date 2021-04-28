@@ -1,12 +1,12 @@
 package monitor_test
 
+
 import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 
 option now = () => 2018-05-22T19:54:20Z
-
-option monitor.write = (tables=<-) => tables |> drop(columns:["_start", "_stop"])
+option monitor.write = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -20,7 +20,6 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,7.0,usage_idle,cpu,cpu-total,host.local
 ,,0,2018-05-22T19:54:16Z,7.1,usage_idle,cpu,cpu-total,host.local
 "
-
 outData = "
 #datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double
 #group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false
@@ -30,26 +29,23 @@ outData = "
 ,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732
 ,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
-
 data = {
     _check_id: "000000000000000a",
     _check_name: "cpu threshold check",
     _type: "threshold",
-    tags: {aaa: "vaaa", bbb: "vbbb"}
+    tags: {aaa: "vaaa", bbb: "vbbb"},
 }
-
-crit = (r) => (r.usage_idle < 5.0)
-warn = (r) => (r.usage_idle < 10.0)
-info = (r) => (r.usage_idle < 25.0)
-
+crit = (r) => r.usage_idle < 5.0
+warn = (r) => r.usage_idle < 10.0
+info = (r) => r.usage_idle < 25.0
 messageFn = (r) => "whoa!"
-
 t_check = (table=<-) => table
     |> range(start: -1m)
     |> filter(fn: (r) => r._measurement == "cpu")
     |> filter(fn: (r) => r._field == "usage_idle")
     |> filter(fn: (r) => r.cpu == "cpu-total")
-    |> v1.fieldsAsCols() // pivot data so there is a "usage_idle" column
+    |> v1.fieldsAsCols()
+    // pivot data so there is a "usage_idle" column
     |> aggregateWindow(every: 20s, fn: mean, column: "usage_idle")
     |> monitor.check(
         data: data,
@@ -59,5 +55,4 @@ t_check = (table=<-) => table
         crit: crit,
     )
 
-test monitor_check = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check})
+test monitor_check = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check})

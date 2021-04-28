@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 12,
-					Line:   3,
+					Line:   4,
 				},
 				File:   "secrets.flux",
-				Source: "package secrets\n\nbuiltin get",
+				Source: "package secrets\n\n\nbuiltin get",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "secrets.flux",
 					Source: "builtin get",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "secrets.flux",
 						Source: "get",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "secrets.flux",
 						Source: "(key: string) => string",
 						Start: ast.Position{
 							Column: 15,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "secrets.flux",
 							Source: "(key: string) => string",
 							Start: ast.Position{
 								Column: 15,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "secrets.flux",
 								Source: "key: string",
 								Start: ast.Position{
 									Column: 16,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "secrets.flux",
 									Source: "key",
 									Start: ast.Position{
 										Column: 16,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "secrets.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 21,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "secrets.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 21,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "secrets.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 32,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "secrets.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 32,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},

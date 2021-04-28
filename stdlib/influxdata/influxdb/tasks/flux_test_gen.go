@@ -20,10 +20,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   26,
+					Line:   27,
 				},
 				File:   "last_success_duration_no_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-07T09:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-07T09:00:00Z\n\"\nt_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)\n\ntest _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -38,13 +38,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "last_success_duration_no_option_test.flux",
 						Source: "now = () => 2020-09-08T09:00:00Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -55,13 +55,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_duration_no_option_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -75,13 +75,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_duration_no_option_test.flux",
 							Source: "() => 2020-09-08T09:00:00Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -92,13 +92,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "last_success_duration_no_option_test.flux",
 								Source: "2020-09-08T09:00:00Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -115,13 +115,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 40,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "last_success_duration_no_option_test.flux",
 					Source: "option now = () => 2020-09-08T09:00:00Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -132,13 +132,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   15,
+						Line:   16,
 					},
 					File:   "last_success_duration_no_option_test.flux",
 					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-07T09:00:00Z\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -149,13 +149,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   9,
+							Line:   10,
 						},
 						File:   "last_success_duration_no_option_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -168,13 +168,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "last_success_duration_no_option_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-07T09:00:00Z\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -186,11 +186,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 4,
-						Line:   20,
+						Column: 2,
+						Line:   21,
 					},
 					File:   "last_success_duration_no_option_test.flux",
-					Source: "t_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])",
+					Source: "t_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   17,
@@ -223,11 +223,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 4,
-							Line:   20,
+							Column: 2,
+							Line:   21,
 						},
 						File:   "last_success_duration_no_option_test.flux",
-						Source: "() =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])",
+						Source: "() => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)",
 						Start: ast.Position{
 							Column: 18,
 							Line:   17,
@@ -241,13 +241,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 6,
 									Line:   20,
 								},
 								File:   "last_success_duration_no_option_test.flux",
-								Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t]",
+								Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ]",
 								Start: ast.Position{
-									Column: 13,
+									Column: 5,
 									Line:   18,
 								},
 							},
@@ -259,13 +259,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 3,
+										Column: 6,
 										Line:   20,
 									},
 									File:   "last_success_duration_no_option_test.flux",
-									Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t]",
+									Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ]",
 									Start: ast.Position{
-										Column: 13,
+										Column: 5,
 										Line:   18,
 									},
 								},
@@ -277,13 +277,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 17,
+											Column: 9,
 											Line:   18,
 										},
 										File:   "last_success_duration_no_option_test.flux",
 										Source: "rows",
 										Start: ast.Position{
-											Column: 13,
+											Column: 5,
 											Line:   18,
 										},
 									},
@@ -297,13 +297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 3,
+											Column: 6,
 											Line:   20,
 										},
 										File:   "last_success_duration_no_option_test.flux",
-										Source: "[\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t]",
+										Source: "[\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ]",
 										Start: ast.Position{
-											Column: 19,
+											Column: 11,
 											Line:   18,
 										},
 									},
@@ -314,13 +314,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 48,
 												Line:   19,
 											},
 											File:   "last_success_duration_no_option_test.flux",
 											Source: "{_time: tasks.lastSuccess(orTime: -1d)}",
 											Start: ast.Position{
-												Column: 3,
+												Column: 9,
 												Line:   19,
 											},
 										},
@@ -332,13 +332,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
+													Column: 47,
 													Line:   19,
 												},
 												File:   "last_success_duration_no_option_test.flux",
 												Source: "_time: tasks.lastSuccess(orTime: -1d)",
 												Start: ast.Position{
-													Column: 4,
+													Column: 10,
 													Line:   19,
 												},
 											},
@@ -350,13 +350,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 9,
+														Column: 15,
 														Line:   19,
 													},
 													File:   "last_success_duration_no_option_test.flux",
 													Source: "_time",
 													Start: ast.Position{
-														Column: 4,
+														Column: 10,
 														Line:   19,
 													},
 												},
@@ -371,13 +371,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
+															Column: 46,
 															Line:   19,
 														},
 														File:   "last_success_duration_no_option_test.flux",
 														Source: "orTime: -1d",
 														Start: ast.Position{
-															Column: 29,
+															Column: 35,
 															Line:   19,
 														},
 													},
@@ -389,13 +389,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 40,
+																Column: 46,
 																Line:   19,
 															},
 															File:   "last_success_duration_no_option_test.flux",
 															Source: "orTime: -1d",
 															Start: ast.Position{
-																Column: 29,
+																Column: 35,
 																Line:   19,
 															},
 														},
@@ -407,13 +407,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 35,
+																	Column: 41,
 																	Line:   19,
 																},
 																File:   "last_success_duration_no_option_test.flux",
 																Source: "orTime",
 																Start: ast.Position{
-																	Column: 29,
+																	Column: 35,
 																	Line:   19,
 																},
 															},
@@ -428,13 +428,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 40,
+																		Column: 46,
 																		Line:   19,
 																	},
 																	File:   "last_success_duration_no_option_test.flux",
 																	Source: "1d",
 																	Start: ast.Position{
-																		Column: 38,
+																		Column: 44,
 																		Line:   19,
 																	},
 																},
@@ -449,13 +449,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 40,
+																	Column: 46,
 																	Line:   19,
 																},
 																File:   "last_success_duration_no_option_test.flux",
 																Source: "-1d",
 																Start: ast.Position{
-																	Column: 37,
+																	Column: 43,
 																	Line:   19,
 																},
 															},
@@ -471,13 +471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 41,
+														Column: 47,
 														Line:   19,
 													},
 													File:   "last_success_duration_no_option_test.flux",
 													Source: "tasks.lastSuccess(orTime: -1d)",
 													Start: ast.Position{
-														Column: 11,
+														Column: 17,
 														Line:   19,
 													},
 												},
@@ -488,13 +488,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
+															Column: 34,
 															Line:   19,
 														},
 														File:   "last_success_duration_no_option_test.flux",
 														Source: "tasks.lastSuccess",
 														Start: ast.Position{
-															Column: 11,
+															Column: 17,
 															Line:   19,
 														},
 													},
@@ -506,13 +506,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 16,
+																Column: 22,
 																Line:   19,
 															},
 															File:   "last_success_duration_no_option_test.flux",
 															Source: "tasks",
 															Start: ast.Position{
-																Column: 11,
+																Column: 17,
 																Line:   19,
 															},
 														},
@@ -525,13 +525,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 28,
+																Column: 34,
 																Line:   19,
 															},
 															File:   "last_success_duration_no_option_test.flux",
 															Source: "lastSuccess",
 															Start: ast.Position{
-																Column: 17,
+																Column: 23,
 																Line:   19,
 															},
 														},
@@ -559,14 +559,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 4,
-								Line:   20,
+								Column: 2,
+								Line:   21,
 							},
 							File:   "last_success_duration_no_option_test.flux",
-							Source: "array.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])",
+							Source: "array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)",
 							Start: ast.Position{
-								Column: 2,
-								Line:   18,
+								Column: 24,
+								Line:   17,
 							},
 						},
 					},
@@ -576,14 +576,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   18,
+									Column: 34,
+									Line:   17,
 								},
 								File:   "last_success_duration_no_option_test.flux",
 								Source: "array.from",
 								Start: ast.Position{
-									Column: 2,
-									Line:   18,
+									Column: 24,
+									Line:   17,
 								},
 							},
 						},
@@ -594,14 +594,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
-										Line:   18,
+										Column: 29,
+										Line:   17,
 									},
 									File:   "last_success_duration_no_option_test.flux",
 									Source: "array",
 									Start: ast.Position{
-										Column: 2,
-										Line:   18,
+										Column: 24,
+										Line:   17,
 									},
 								},
 							},
@@ -613,14 +613,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   18,
+										Column: 34,
+										Line:   17,
 									},
 									File:   "last_success_duration_no_option_test.flux",
 									Source: "from",
 									Start: ast.Position{
-										Column: 8,
-										Line:   18,
+										Column: 30,
+										Line:   17,
 									},
 								},
 							},
@@ -643,13 +643,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "last_success_duration_no_option_test.flux",
-						Source: "_last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+						Source: "_last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   22,
+							Line:   23,
 						},
 					},
 				},
@@ -660,13 +660,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   22,
+								Line:   23,
 							},
 							File:   "last_success_duration_no_option_test.flux",
 							Source: "_last_success",
 							Start: ast.Position{
 								Column: 6,
-								Line:   22,
+								Line:   23,
 							},
 						},
 					},
@@ -680,13 +680,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   26,
+								Line:   27,
 							},
 							File:   "last_success_duration_no_option_test.flux",
-							Source: "() => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+							Source: "() => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   22,
+								Line:   23,
 							},
 						},
 					},
@@ -697,13 +697,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   26,
+									Line:   27,
 								},
 								File:   "last_success_duration_no_option_test.flux",
-								Source: "({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+								Source: "({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   22,
+									Line:   23,
 								},
 							},
 						},
@@ -714,13 +714,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   26,
+										Line:   27,
 									},
 									File:   "last_success_duration_no_option_test.flux",
-									Source: "{\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n}",
+									Source: "{\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   22,
+										Line:   23,
 									},
 								},
 							},
@@ -731,14 +731,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   23,
+											Column: 28,
+											Line:   24,
 										},
 										File:   "last_success_duration_no_option_test.flux",
 										Source: "input: t_last_success()",
 										Start: ast.Position{
-											Column: 2,
-											Line:   23,
+											Column: 5,
+											Line:   24,
 										},
 									},
 								},
@@ -749,14 +749,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   23,
+												Column: 10,
+												Line:   24,
 											},
 											File:   "last_success_duration_no_option_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   23,
+												Column: 5,
+												Line:   24,
 											},
 										},
 									},
@@ -770,14 +770,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   23,
+												Column: 28,
+												Line:   24,
 											},
 											File:   "last_success_duration_no_option_test.flux",
 											Source: "t_last_success()",
 											Start: ast.Position{
-												Column: 9,
-												Line:   23,
+												Column: 12,
+												Line:   24,
 											},
 										},
 									},
@@ -787,14 +787,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   23,
+													Column: 26,
+													Line:   24,
 												},
 												File:   "last_success_duration_no_option_test.flux",
 												Source: "t_last_success",
 												Start: ast.Position{
-													Column: 9,
-													Line:   23,
+													Column: 12,
+													Line:   24,
 												},
 											},
 										},
@@ -809,14 +809,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   24,
+											Column: 40,
+											Line:   25,
 										},
 										File:   "last_success_duration_no_option_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   24,
+											Column: 5,
+											Line:   25,
 										},
 									},
 								},
@@ -827,14 +827,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   24,
+												Column: 9,
+												Line:   25,
 											},
 											File:   "last_success_duration_no_option_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   24,
+												Column: 5,
+												Line:   25,
 											},
 										},
 									},
@@ -848,14 +848,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   24,
+													Column: 39,
+													Line:   25,
 												},
 												File:   "last_success_duration_no_option_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   24,
+													Column: 27,
+													Line:   25,
 												},
 											},
 										},
@@ -866,14 +866,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   24,
+														Column: 39,
+														Line:   25,
 													},
 													File:   "last_success_duration_no_option_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   24,
+														Column: 27,
+														Line:   25,
 													},
 												},
 											},
@@ -884,14 +884,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   24,
+															Column: 30,
+															Line:   25,
 														},
 														File:   "last_success_duration_no_option_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   24,
+															Column: 27,
+															Line:   25,
 														},
 													},
 												},
@@ -904,14 +904,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   24,
+															Column: 39,
+															Line:   25,
 														},
 														File:   "last_success_duration_no_option_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   24,
+															Column: 32,
+															Line:   25,
 														},
 													},
 												},
@@ -926,14 +926,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   24,
+												Column: 40,
+												Line:   25,
 											},
 											File:   "last_success_duration_no_option_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   24,
+												Column: 11,
+												Line:   25,
 											},
 										},
 									},
@@ -943,14 +943,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   24,
+													Column: 26,
+													Line:   25,
 												},
 												File:   "last_success_duration_no_option_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   24,
+													Column: 11,
+													Line:   25,
 												},
 											},
 										},
@@ -961,14 +961,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   24,
+														Column: 18,
+														Line:   25,
 													},
 													File:   "last_success_duration_no_option_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   24,
+														Column: 11,
+														Line:   25,
 													},
 												},
 											},
@@ -980,14 +980,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   24,
+														Column: 26,
+														Line:   25,
 													},
 													File:   "last_success_duration_no_option_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   24,
+														Column: 19,
+														Line:   25,
 													},
 												},
 											},
@@ -1004,14 +1004,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   25,
+											Column: 30,
+											Line:   26,
 										},
 										File:   "last_success_duration_no_option_test.flux",
 										Source: "fn: (tables=<-) => tables",
 										Start: ast.Position{
-											Column: 2,
-											Line:   25,
+											Column: 5,
+											Line:   26,
 										},
 									},
 								},
@@ -1022,14 +1022,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   25,
+												Column: 7,
+												Line:   26,
 											},
 											File:   "last_success_duration_no_option_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   25,
+												Column: 5,
+												Line:   26,
 											},
 										},
 									},
@@ -1043,14 +1043,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   25,
+												Column: 30,
+												Line:   26,
 											},
 											File:   "last_success_duration_no_option_test.flux",
 											Source: "(tables=<-) => tables",
 											Start: ast.Position{
-												Column: 6,
-												Line:   25,
+												Column: 9,
+												Line:   26,
 											},
 										},
 									},
@@ -1060,14 +1060,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   25,
+													Column: 30,
+													Line:   26,
 												},
 												File:   "last_success_duration_no_option_test.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 21,
-													Line:   25,
+													Column: 24,
+													Line:   26,
 												},
 											},
 										},
@@ -1080,14 +1080,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   25,
+													Column: 19,
+													Line:   26,
 												},
 												File:   "last_success_duration_no_option_test.flux",
 												Source: "tables=<-",
 												Start: ast.Position{
-													Column: 7,
-													Line:   25,
+													Column: 10,
+													Line:   26,
 												},
 											},
 										},
@@ -1098,14 +1098,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   25,
+														Column: 16,
+														Line:   26,
 													},
 													File:   "last_success_duration_no_option_test.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 7,
-														Line:   25,
+														Column: 10,
+														Line:   26,
 													},
 												},
 											},
@@ -1117,14 +1117,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   25,
+													Column: 19,
+													Line:   26,
 												},
 												File:   "last_success_duration_no_option_test.flux",
 												Source: "<-",
 												Start: ast.Position{
-													Column: 14,
-													Line:   25,
+													Column: 17,
+													Line:   26,
 												},
 											},
 										}},
@@ -1149,13 +1149,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "last_success_duration_no_option_test.flux",
-					Source: "test _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+					Source: "test _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   22,
+						Line:   23,
 					},
 				},
 			},
@@ -1169,13 +1169,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "last_success_duration_no_option_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -1186,13 +1186,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "last_success_duration_no_option_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -1206,13 +1206,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "last_success_duration_no_option_test.flux",
 					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -1223,13 +1223,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "last_success_duration_no_option_test.flux",
 						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -1243,13 +1243,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "last_success_duration_no_option_test.flux",
 					Source: "import \"influxdata/influxdb/tasks\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -1260,13 +1260,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "last_success_duration_no_option_test.flux",
 						Source: "\"influxdata/influxdb/tasks\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -1319,10 +1319,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   27,
+					Line:   28,
 				},
 				File:   "last_success_duration_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\nt_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)\n\ntest _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1337,13 +1337,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "last_success_duration_option_test.flux",
 						Source: "now = () => 2020-09-08T09:00:00Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -1354,13 +1354,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_duration_option_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -1374,13 +1374,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_duration_option_test.flux",
 							Source: "() => 2020-09-08T09:00:00Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -1391,13 +1391,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "last_success_duration_option_test.flux",
 								Source: "2020-09-08T09:00:00Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -1414,13 +1414,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 40,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "last_success_duration_option_test.flux",
 					Source: "option now = () => 2020-09-08T09:00:00Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -1432,13 +1432,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 52,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "last_success_duration_option_test.flux",
 						Source: "tasks.lastSuccessTime = 2020-09-08T08:00:00Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},
@@ -1449,13 +1449,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 52,
-								Line:   8,
+								Line:   9,
 							},
 							File:   "last_success_duration_option_test.flux",
 							Source: "2020-09-08T08:00:00Z",
 							Start: ast.Position{
 								Column: 32,
-								Line:   8,
+								Line:   9,
 							},
 						},
 					},
@@ -1468,13 +1468,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   8,
+								Line:   9,
 							},
 							File:   "last_success_duration_option_test.flux",
 							Source: "tasks.lastSuccessTime",
 							Start: ast.Position{
 								Column: 8,
-								Line:   8,
+								Line:   9,
 							},
 						},
 					},
@@ -1486,13 +1486,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   8,
+									Line:   9,
 								},
 								File:   "last_success_duration_option_test.flux",
 								Source: "tasks",
 								Start: ast.Position{
 									Column: 8,
-									Line:   8,
+									Line:   9,
 								},
 							},
 						},
@@ -1505,13 +1505,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   8,
+									Line:   9,
 								},
 								File:   "last_success_duration_option_test.flux",
 								Source: "lastSuccessTime",
 								Start: ast.Position{
 									Column: 14,
-									Line:   8,
+									Line:   9,
 								},
 							},
 						},
@@ -1526,13 +1526,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 52,
-						Line:   8,
+						Line:   9,
 					},
 					File:   "last_success_duration_option_test.flux",
 					Source: "option tasks.lastSuccessTime = 2020-09-08T08:00:00Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   9,
 					},
 				},
 			},
@@ -1543,13 +1543,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   16,
+						Line:   17,
 					},
 					File:   "last_success_duration_option_test.flux",
 					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   11,
 					},
 				},
 			},
@@ -1560,13 +1560,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   10,
+							Line:   11,
 						},
 						File:   "last_success_duration_option_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   10,
+							Line:   11,
 						},
 					},
 				},
@@ -1579,13 +1579,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   16,
+							Line:   17,
 						},
 						File:   "last_success_duration_option_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   10,
+							Line:   11,
 						},
 					},
 				},
@@ -1597,11 +1597,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 4,
-						Line:   21,
+						Column: 2,
+						Line:   22,
 					},
 					File:   "last_success_duration_option_test.flux",
-					Source: "t_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])",
+					Source: "t_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   18,
@@ -1634,11 +1634,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 4,
-							Line:   21,
+							Column: 2,
+							Line:   22,
 						},
 						File:   "last_success_duration_option_test.flux",
-						Source: "() =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])",
+						Source: "() => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)",
 						Start: ast.Position{
 							Column: 18,
 							Line:   18,
@@ -1652,13 +1652,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 6,
 									Line:   21,
 								},
 								File:   "last_success_duration_option_test.flux",
-								Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t]",
+								Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ]",
 								Start: ast.Position{
-									Column: 13,
+									Column: 5,
 									Line:   19,
 								},
 							},
@@ -1670,13 +1670,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 3,
+										Column: 6,
 										Line:   21,
 									},
 									File:   "last_success_duration_option_test.flux",
-									Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t]",
+									Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ]",
 									Start: ast.Position{
-										Column: 13,
+										Column: 5,
 										Line:   19,
 									},
 								},
@@ -1688,13 +1688,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 17,
+											Column: 9,
 											Line:   19,
 										},
 										File:   "last_success_duration_option_test.flux",
 										Source: "rows",
 										Start: ast.Position{
-											Column: 13,
+											Column: 5,
 											Line:   19,
 										},
 									},
@@ -1708,13 +1708,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 3,
+											Column: 6,
 											Line:   21,
 										},
 										File:   "last_success_duration_option_test.flux",
-										Source: "[\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t]",
+										Source: "[\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ]",
 										Start: ast.Position{
-											Column: 19,
+											Column: 11,
 											Line:   19,
 										},
 									},
@@ -1725,13 +1725,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 42,
+												Column: 48,
 												Line:   20,
 											},
 											File:   "last_success_duration_option_test.flux",
 											Source: "{_time: tasks.lastSuccess(orTime: -1d)}",
 											Start: ast.Position{
-												Column: 3,
+												Column: 9,
 												Line:   20,
 											},
 										},
@@ -1743,13 +1743,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
+													Column: 47,
 													Line:   20,
 												},
 												File:   "last_success_duration_option_test.flux",
 												Source: "_time: tasks.lastSuccess(orTime: -1d)",
 												Start: ast.Position{
-													Column: 4,
+													Column: 10,
 													Line:   20,
 												},
 											},
@@ -1761,13 +1761,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 9,
+														Column: 15,
 														Line:   20,
 													},
 													File:   "last_success_duration_option_test.flux",
 													Source: "_time",
 													Start: ast.Position{
-														Column: 4,
+														Column: 10,
 														Line:   20,
 													},
 												},
@@ -1782,13 +1782,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
+															Column: 46,
 															Line:   20,
 														},
 														File:   "last_success_duration_option_test.flux",
 														Source: "orTime: -1d",
 														Start: ast.Position{
-															Column: 29,
+															Column: 35,
 															Line:   20,
 														},
 													},
@@ -1800,13 +1800,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 40,
+																Column: 46,
 																Line:   20,
 															},
 															File:   "last_success_duration_option_test.flux",
 															Source: "orTime: -1d",
 															Start: ast.Position{
-																Column: 29,
+																Column: 35,
 																Line:   20,
 															},
 														},
@@ -1818,13 +1818,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 35,
+																	Column: 41,
 																	Line:   20,
 																},
 																File:   "last_success_duration_option_test.flux",
 																Source: "orTime",
 																Start: ast.Position{
-																	Column: 29,
+																	Column: 35,
 																	Line:   20,
 																},
 															},
@@ -1839,13 +1839,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 40,
+																		Column: 46,
 																		Line:   20,
 																	},
 																	File:   "last_success_duration_option_test.flux",
 																	Source: "1d",
 																	Start: ast.Position{
-																		Column: 38,
+																		Column: 44,
 																		Line:   20,
 																	},
 																},
@@ -1860,13 +1860,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 40,
+																	Column: 46,
 																	Line:   20,
 																},
 																File:   "last_success_duration_option_test.flux",
 																Source: "-1d",
 																Start: ast.Position{
-																	Column: 37,
+																	Column: 43,
 																	Line:   20,
 																},
 															},
@@ -1882,13 +1882,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 41,
+														Column: 47,
 														Line:   20,
 													},
 													File:   "last_success_duration_option_test.flux",
 													Source: "tasks.lastSuccess(orTime: -1d)",
 													Start: ast.Position{
-														Column: 11,
+														Column: 17,
 														Line:   20,
 													},
 												},
@@ -1899,13 +1899,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
+															Column: 34,
 															Line:   20,
 														},
 														File:   "last_success_duration_option_test.flux",
 														Source: "tasks.lastSuccess",
 														Start: ast.Position{
-															Column: 11,
+															Column: 17,
 															Line:   20,
 														},
 													},
@@ -1917,13 +1917,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 16,
+																Column: 22,
 																Line:   20,
 															},
 															File:   "last_success_duration_option_test.flux",
 															Source: "tasks",
 															Start: ast.Position{
-																Column: 11,
+																Column: 17,
 																Line:   20,
 															},
 														},
@@ -1936,13 +1936,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 28,
+																Column: 34,
 																Line:   20,
 															},
 															File:   "last_success_duration_option_test.flux",
 															Source: "lastSuccess",
 															Start: ast.Position{
-																Column: 17,
+																Column: 23,
 																Line:   20,
 															},
 														},
@@ -1970,14 +1970,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 4,
-								Line:   21,
+								Column: 2,
+								Line:   22,
 							},
 							File:   "last_success_duration_option_test.flux",
-							Source: "array.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: -1d)},\n\t])",
+							Source: "array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: -1d)},\n    ],\n)",
 							Start: ast.Position{
-								Column: 2,
-								Line:   19,
+								Column: 24,
+								Line:   18,
 							},
 						},
 					},
@@ -1987,14 +1987,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   19,
+									Column: 34,
+									Line:   18,
 								},
 								File:   "last_success_duration_option_test.flux",
 								Source: "array.from",
 								Start: ast.Position{
-									Column: 2,
-									Line:   19,
+									Column: 24,
+									Line:   18,
 								},
 							},
 						},
@@ -2005,14 +2005,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
-										Line:   19,
+										Column: 29,
+										Line:   18,
 									},
 									File:   "last_success_duration_option_test.flux",
 									Source: "array",
 									Start: ast.Position{
-										Column: 2,
-										Line:   19,
+										Column: 24,
+										Line:   18,
 									},
 								},
 							},
@@ -2024,14 +2024,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   19,
+										Column: 34,
+										Line:   18,
 									},
 									File:   "last_success_duration_option_test.flux",
 									Source: "from",
 									Start: ast.Position{
-										Column: 8,
-										Line:   19,
+										Column: 30,
+										Line:   18,
 									},
 								},
 							},
@@ -2054,13 +2054,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   27,
+							Line:   28,
 						},
 						File:   "last_success_duration_option_test.flux",
-						Source: "_last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+						Source: "_last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   23,
+							Line:   24,
 						},
 					},
 				},
@@ -2071,13 +2071,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "last_success_duration_option_test.flux",
 							Source: "_last_success",
 							Start: ast.Position{
 								Column: 6,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -2091,13 +2091,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   27,
+								Line:   28,
 							},
 							File:   "last_success_duration_option_test.flux",
-							Source: "() => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+							Source: "() => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -2108,13 +2108,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   27,
+									Line:   28,
 								},
 								File:   "last_success_duration_option_test.flux",
-								Source: "({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+								Source: "({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -2125,13 +2125,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   27,
+										Line:   28,
 									},
 									File:   "last_success_duration_option_test.flux",
-									Source: "{\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n}",
+									Source: "{\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   23,
+										Line:   24,
 									},
 								},
 							},
@@ -2142,14 +2142,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   24,
+											Column: 28,
+											Line:   25,
 										},
 										File:   "last_success_duration_option_test.flux",
 										Source: "input: t_last_success()",
 										Start: ast.Position{
-											Column: 2,
-											Line:   24,
+											Column: 5,
+											Line:   25,
 										},
 									},
 								},
@@ -2160,14 +2160,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   24,
+												Column: 10,
+												Line:   25,
 											},
 											File:   "last_success_duration_option_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   24,
+												Column: 5,
+												Line:   25,
 											},
 										},
 									},
@@ -2181,14 +2181,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   24,
+												Column: 28,
+												Line:   25,
 											},
 											File:   "last_success_duration_option_test.flux",
 											Source: "t_last_success()",
 											Start: ast.Position{
-												Column: 9,
-												Line:   24,
+												Column: 12,
+												Line:   25,
 											},
 										},
 									},
@@ -2198,14 +2198,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   24,
+													Column: 26,
+													Line:   25,
 												},
 												File:   "last_success_duration_option_test.flux",
 												Source: "t_last_success",
 												Start: ast.Position{
-													Column: 9,
-													Line:   24,
+													Column: 12,
+													Line:   25,
 												},
 											},
 										},
@@ -2220,14 +2220,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   25,
+											Column: 40,
+											Line:   26,
 										},
 										File:   "last_success_duration_option_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   25,
+											Column: 5,
+											Line:   26,
 										},
 									},
 								},
@@ -2238,14 +2238,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   25,
+												Column: 9,
+												Line:   26,
 											},
 											File:   "last_success_duration_option_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   25,
+												Column: 5,
+												Line:   26,
 											},
 										},
 									},
@@ -2259,14 +2259,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   25,
+													Column: 39,
+													Line:   26,
 												},
 												File:   "last_success_duration_option_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   25,
+													Column: 27,
+													Line:   26,
 												},
 											},
 										},
@@ -2277,14 +2277,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   25,
+														Column: 39,
+														Line:   26,
 													},
 													File:   "last_success_duration_option_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   25,
+														Column: 27,
+														Line:   26,
 													},
 												},
 											},
@@ -2295,14 +2295,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   25,
+															Column: 30,
+															Line:   26,
 														},
 														File:   "last_success_duration_option_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   25,
+															Column: 27,
+															Line:   26,
 														},
 													},
 												},
@@ -2315,14 +2315,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   25,
+															Column: 39,
+															Line:   26,
 														},
 														File:   "last_success_duration_option_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   25,
+															Column: 32,
+															Line:   26,
 														},
 													},
 												},
@@ -2337,14 +2337,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   25,
+												Column: 40,
+												Line:   26,
 											},
 											File:   "last_success_duration_option_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   25,
+												Column: 11,
+												Line:   26,
 											},
 										},
 									},
@@ -2354,14 +2354,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   25,
+													Column: 26,
+													Line:   26,
 												},
 												File:   "last_success_duration_option_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   25,
+													Column: 11,
+													Line:   26,
 												},
 											},
 										},
@@ -2372,14 +2372,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   25,
+														Column: 18,
+														Line:   26,
 													},
 													File:   "last_success_duration_option_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   25,
+														Column: 11,
+														Line:   26,
 													},
 												},
 											},
@@ -2391,14 +2391,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   25,
+														Column: 26,
+														Line:   26,
 													},
 													File:   "last_success_duration_option_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   25,
+														Column: 19,
+														Line:   26,
 													},
 												},
 											},
@@ -2415,14 +2415,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   26,
+											Column: 30,
+											Line:   27,
 										},
 										File:   "last_success_duration_option_test.flux",
 										Source: "fn: (tables=<-) => tables",
 										Start: ast.Position{
-											Column: 2,
-											Line:   26,
+											Column: 5,
+											Line:   27,
 										},
 									},
 								},
@@ -2433,14 +2433,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   26,
+												Column: 7,
+												Line:   27,
 											},
 											File:   "last_success_duration_option_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   26,
+												Column: 5,
+												Line:   27,
 											},
 										},
 									},
@@ -2454,14 +2454,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   26,
+												Column: 30,
+												Line:   27,
 											},
 											File:   "last_success_duration_option_test.flux",
 											Source: "(tables=<-) => tables",
 											Start: ast.Position{
-												Column: 6,
-												Line:   26,
+												Column: 9,
+												Line:   27,
 											},
 										},
 									},
@@ -2471,14 +2471,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   26,
+													Column: 30,
+													Line:   27,
 												},
 												File:   "last_success_duration_option_test.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 21,
-													Line:   26,
+													Column: 24,
+													Line:   27,
 												},
 											},
 										},
@@ -2491,14 +2491,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   26,
+													Column: 19,
+													Line:   27,
 												},
 												File:   "last_success_duration_option_test.flux",
 												Source: "tables=<-",
 												Start: ast.Position{
-													Column: 7,
-													Line:   26,
+													Column: 10,
+													Line:   27,
 												},
 											},
 										},
@@ -2509,14 +2509,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   26,
+														Column: 16,
+														Line:   27,
 													},
 													File:   "last_success_duration_option_test.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 7,
-														Line:   26,
+														Column: 10,
+														Line:   27,
 													},
 												},
 											},
@@ -2528,14 +2528,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   26,
+													Column: 19,
+													Line:   27,
 												},
 												File:   "last_success_duration_option_test.flux",
 												Source: "<-",
 												Start: ast.Position{
-													Column: 14,
-													Line:   26,
+													Column: 17,
+													Line:   27,
 												},
 											},
 										}},
@@ -2560,13 +2560,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   27,
+						Line:   28,
 					},
 					File:   "last_success_duration_option_test.flux",
-					Source: "test _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+					Source: "test _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   23,
+						Line:   24,
 					},
 				},
 			},
@@ -2580,13 +2580,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "last_success_duration_option_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -2597,13 +2597,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "last_success_duration_option_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -2617,13 +2617,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "last_success_duration_option_test.flux",
 					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -2634,13 +2634,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "last_success_duration_option_test.flux",
 						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -2654,13 +2654,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "last_success_duration_option_test.flux",
 					Source: "import \"influxdata/influxdb/tasks\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -2671,13 +2671,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "last_success_duration_option_test.flux",
 						Source: "\"influxdata/influxdb/tasks\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -2730,10 +2730,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   27,
+					Line:   28,
 				},
 				File:   "last_success_with_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\noption tasks.lastSuccessTime = 2020-09-08T08:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"\nt_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)\n\ntest _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -2748,13 +2748,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "last_success_with_option_test.flux",
 						Source: "now = () => 2020-09-08T09:00:00Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -2765,13 +2765,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_with_option_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -2785,13 +2785,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_with_option_test.flux",
 							Source: "() => 2020-09-08T09:00:00Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -2802,13 +2802,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "last_success_with_option_test.flux",
 								Source: "2020-09-08T09:00:00Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -2825,13 +2825,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 40,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "last_success_with_option_test.flux",
 					Source: "option now = () => 2020-09-08T09:00:00Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -2843,13 +2843,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 52,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "last_success_with_option_test.flux",
 						Source: "tasks.lastSuccessTime = 2020-09-08T08:00:00Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},
@@ -2860,13 +2860,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 52,
-								Line:   8,
+								Line:   9,
 							},
 							File:   "last_success_with_option_test.flux",
 							Source: "2020-09-08T08:00:00Z",
 							Start: ast.Position{
 								Column: 32,
-								Line:   8,
+								Line:   9,
 							},
 						},
 					},
@@ -2879,13 +2879,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   8,
+								Line:   9,
 							},
 							File:   "last_success_with_option_test.flux",
 							Source: "tasks.lastSuccessTime",
 							Start: ast.Position{
 								Column: 8,
-								Line:   8,
+								Line:   9,
 							},
 						},
 					},
@@ -2897,13 +2897,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   8,
+									Line:   9,
 								},
 								File:   "last_success_with_option_test.flux",
 								Source: "tasks",
 								Start: ast.Position{
 									Column: 8,
-									Line:   8,
+									Line:   9,
 								},
 							},
 						},
@@ -2916,13 +2916,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   8,
+									Line:   9,
 								},
 								File:   "last_success_with_option_test.flux",
 								Source: "lastSuccessTime",
 								Start: ast.Position{
 									Column: 14,
-									Line:   8,
+									Line:   9,
 								},
 							},
 						},
@@ -2937,13 +2937,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 52,
-						Line:   8,
+						Line:   9,
 					},
 					File:   "last_success_with_option_test.flux",
 					Source: "option tasks.lastSuccessTime = 2020-09-08T08:00:00Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   9,
 					},
 				},
 			},
@@ -2954,13 +2954,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   16,
+						Line:   17,
 					},
 					File:   "last_success_with_option_test.flux",
 					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   11,
 					},
 				},
 			},
@@ -2971,13 +2971,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   10,
+							Line:   11,
 						},
 						File:   "last_success_with_option_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   10,
+							Line:   11,
 						},
 					},
 				},
@@ -2990,13 +2990,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   16,
+							Line:   17,
 						},
 						File:   "last_success_with_option_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T08:00:00Z\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   10,
+							Line:   11,
 						},
 					},
 				},
@@ -3008,11 +3008,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 4,
-						Line:   21,
+						Column: 2,
+						Line:   22,
 					},
 					File:   "last_success_with_option_test.flux",
-					Source: "t_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])",
+					Source: "t_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   18,
@@ -3045,11 +3045,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 4,
-							Line:   21,
+							Column: 2,
+							Line:   22,
 						},
 						File:   "last_success_with_option_test.flux",
-						Source: "() =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])",
+						Source: "() => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)",
 						Start: ast.Position{
 							Column: 18,
 							Line:   18,
@@ -3063,13 +3063,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 6,
 									Line:   21,
 								},
 								File:   "last_success_with_option_test.flux",
-								Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t]",
+								Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ]",
 								Start: ast.Position{
-									Column: 13,
+									Column: 5,
 									Line:   19,
 								},
 							},
@@ -3081,13 +3081,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 3,
+										Column: 6,
 										Line:   21,
 									},
 									File:   "last_success_with_option_test.flux",
-									Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t]",
+									Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ]",
 									Start: ast.Position{
-										Column: 13,
+										Column: 5,
 										Line:   19,
 									},
 								},
@@ -3099,13 +3099,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 17,
+											Column: 9,
 											Line:   19,
 										},
 										File:   "last_success_with_option_test.flux",
 										Source: "rows",
 										Start: ast.Position{
-											Column: 13,
+											Column: 5,
 											Line:   19,
 										},
 									},
@@ -3119,13 +3119,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 3,
+											Column: 6,
 											Line:   21,
 										},
 										File:   "last_success_with_option_test.flux",
-										Source: "[\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t]",
+										Source: "[\n        {_time: tasks.lastSuccess(orTime: now())},\n    ]",
 										Start: ast.Position{
-											Column: 19,
+											Column: 11,
 											Line:   19,
 										},
 									},
@@ -3136,13 +3136,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
+												Column: 50,
 												Line:   20,
 											},
 											File:   "last_success_with_option_test.flux",
 											Source: "{_time: tasks.lastSuccess(orTime: now())}",
 											Start: ast.Position{
-												Column: 3,
+												Column: 9,
 												Line:   20,
 											},
 										},
@@ -3154,13 +3154,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 43,
+													Column: 49,
 													Line:   20,
 												},
 												File:   "last_success_with_option_test.flux",
 												Source: "_time: tasks.lastSuccess(orTime: now())",
 												Start: ast.Position{
-													Column: 4,
+													Column: 10,
 													Line:   20,
 												},
 											},
@@ -3172,13 +3172,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 9,
+														Column: 15,
 														Line:   20,
 													},
 													File:   "last_success_with_option_test.flux",
 													Source: "_time",
 													Start: ast.Position{
-														Column: 4,
+														Column: 10,
 														Line:   20,
 													},
 												},
@@ -3193,13 +3193,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 42,
+															Column: 48,
 															Line:   20,
 														},
 														File:   "last_success_with_option_test.flux",
 														Source: "orTime: now()",
 														Start: ast.Position{
-															Column: 29,
+															Column: 35,
 															Line:   20,
 														},
 													},
@@ -3211,13 +3211,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 42,
+																Column: 48,
 																Line:   20,
 															},
 															File:   "last_success_with_option_test.flux",
 															Source: "orTime: now()",
 															Start: ast.Position{
-																Column: 29,
+																Column: 35,
 																Line:   20,
 															},
 														},
@@ -3229,13 +3229,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 35,
+																	Column: 41,
 																	Line:   20,
 																},
 																File:   "last_success_with_option_test.flux",
 																Source: "orTime",
 																Start: ast.Position{
-																	Column: 29,
+																	Column: 35,
 																	Line:   20,
 																},
 															},
@@ -3250,13 +3250,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 42,
+																	Column: 48,
 																	Line:   20,
 																},
 																File:   "last_success_with_option_test.flux",
 																Source: "now()",
 																Start: ast.Position{
-																	Column: 37,
+																	Column: 43,
 																	Line:   20,
 																},
 															},
@@ -3267,13 +3267,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 40,
+																		Column: 46,
 																		Line:   20,
 																	},
 																	File:   "last_success_with_option_test.flux",
 																	Source: "now",
 																	Start: ast.Position{
-																		Column: 37,
+																		Column: 43,
 																		Line:   20,
 																	},
 																},
@@ -3292,13 +3292,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
+														Column: 49,
 														Line:   20,
 													},
 													File:   "last_success_with_option_test.flux",
 													Source: "tasks.lastSuccess(orTime: now())",
 													Start: ast.Position{
-														Column: 11,
+														Column: 17,
 														Line:   20,
 													},
 												},
@@ -3309,13 +3309,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
+															Column: 34,
 															Line:   20,
 														},
 														File:   "last_success_with_option_test.flux",
 														Source: "tasks.lastSuccess",
 														Start: ast.Position{
-															Column: 11,
+															Column: 17,
 															Line:   20,
 														},
 													},
@@ -3327,13 +3327,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 16,
+																Column: 22,
 																Line:   20,
 															},
 															File:   "last_success_with_option_test.flux",
 															Source: "tasks",
 															Start: ast.Position{
-																Column: 11,
+																Column: 17,
 																Line:   20,
 															},
 														},
@@ -3346,13 +3346,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 28,
+																Column: 34,
 																Line:   20,
 															},
 															File:   "last_success_with_option_test.flux",
 															Source: "lastSuccess",
 															Start: ast.Position{
-																Column: 17,
+																Column: 23,
 																Line:   20,
 															},
 														},
@@ -3380,14 +3380,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 4,
-								Line:   21,
+								Column: 2,
+								Line:   22,
 							},
 							File:   "last_success_with_option_test.flux",
-							Source: "array.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])",
+							Source: "array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)",
 							Start: ast.Position{
-								Column: 2,
-								Line:   19,
+								Column: 24,
+								Line:   18,
 							},
 						},
 					},
@@ -3397,14 +3397,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   19,
+									Column: 34,
+									Line:   18,
 								},
 								File:   "last_success_with_option_test.flux",
 								Source: "array.from",
 								Start: ast.Position{
-									Column: 2,
-									Line:   19,
+									Column: 24,
+									Line:   18,
 								},
 							},
 						},
@@ -3415,14 +3415,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
-										Line:   19,
+										Column: 29,
+										Line:   18,
 									},
 									File:   "last_success_with_option_test.flux",
 									Source: "array",
 									Start: ast.Position{
-										Column: 2,
-										Line:   19,
+										Column: 24,
+										Line:   18,
 									},
 								},
 							},
@@ -3434,14 +3434,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   19,
+										Column: 34,
+										Line:   18,
 									},
 									File:   "last_success_with_option_test.flux",
 									Source: "from",
 									Start: ast.Position{
-										Column: 8,
-										Line:   19,
+										Column: 30,
+										Line:   18,
 									},
 								},
 							},
@@ -3464,13 +3464,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   27,
+							Line:   28,
 						},
 						File:   "last_success_with_option_test.flux",
-						Source: "_last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+						Source: "_last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   23,
+							Line:   24,
 						},
 					},
 				},
@@ -3481,13 +3481,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "last_success_with_option_test.flux",
 							Source: "_last_success",
 							Start: ast.Position{
 								Column: 6,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -3501,13 +3501,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   27,
+								Line:   28,
 							},
 							File:   "last_success_with_option_test.flux",
-							Source: "() => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+							Source: "() => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -3518,13 +3518,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   27,
+									Line:   28,
 								},
 								File:   "last_success_with_option_test.flux",
-								Source: "({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+								Source: "({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -3535,13 +3535,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   27,
+										Line:   28,
 									},
 									File:   "last_success_with_option_test.flux",
-									Source: "{\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n}",
+									Source: "{\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   23,
+										Line:   24,
 									},
 								},
 							},
@@ -3552,14 +3552,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   24,
+											Column: 28,
+											Line:   25,
 										},
 										File:   "last_success_with_option_test.flux",
 										Source: "input: t_last_success()",
 										Start: ast.Position{
-											Column: 2,
-											Line:   24,
+											Column: 5,
+											Line:   25,
 										},
 									},
 								},
@@ -3570,14 +3570,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   24,
+												Column: 10,
+												Line:   25,
 											},
 											File:   "last_success_with_option_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   24,
+												Column: 5,
+												Line:   25,
 											},
 										},
 									},
@@ -3591,14 +3591,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   24,
+												Column: 28,
+												Line:   25,
 											},
 											File:   "last_success_with_option_test.flux",
 											Source: "t_last_success()",
 											Start: ast.Position{
-												Column: 9,
-												Line:   24,
+												Column: 12,
+												Line:   25,
 											},
 										},
 									},
@@ -3608,14 +3608,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   24,
+													Column: 26,
+													Line:   25,
 												},
 												File:   "last_success_with_option_test.flux",
 												Source: "t_last_success",
 												Start: ast.Position{
-													Column: 9,
-													Line:   24,
+													Column: 12,
+													Line:   25,
 												},
 											},
 										},
@@ -3630,14 +3630,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   25,
+											Column: 40,
+											Line:   26,
 										},
 										File:   "last_success_with_option_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   25,
+											Column: 5,
+											Line:   26,
 										},
 									},
 								},
@@ -3648,14 +3648,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   25,
+												Column: 9,
+												Line:   26,
 											},
 											File:   "last_success_with_option_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   25,
+												Column: 5,
+												Line:   26,
 											},
 										},
 									},
@@ -3669,14 +3669,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   25,
+													Column: 39,
+													Line:   26,
 												},
 												File:   "last_success_with_option_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   25,
+													Column: 27,
+													Line:   26,
 												},
 											},
 										},
@@ -3687,14 +3687,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   25,
+														Column: 39,
+														Line:   26,
 													},
 													File:   "last_success_with_option_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   25,
+														Column: 27,
+														Line:   26,
 													},
 												},
 											},
@@ -3705,14 +3705,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   25,
+															Column: 30,
+															Line:   26,
 														},
 														File:   "last_success_with_option_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   25,
+															Column: 27,
+															Line:   26,
 														},
 													},
 												},
@@ -3725,14 +3725,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   25,
+															Column: 39,
+															Line:   26,
 														},
 														File:   "last_success_with_option_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   25,
+															Column: 32,
+															Line:   26,
 														},
 													},
 												},
@@ -3747,14 +3747,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   25,
+												Column: 40,
+												Line:   26,
 											},
 											File:   "last_success_with_option_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   25,
+												Column: 11,
+												Line:   26,
 											},
 										},
 									},
@@ -3764,14 +3764,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   25,
+													Column: 26,
+													Line:   26,
 												},
 												File:   "last_success_with_option_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   25,
+													Column: 11,
+													Line:   26,
 												},
 											},
 										},
@@ -3782,14 +3782,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   25,
+														Column: 18,
+														Line:   26,
 													},
 													File:   "last_success_with_option_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   25,
+														Column: 11,
+														Line:   26,
 													},
 												},
 											},
@@ -3801,14 +3801,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   25,
+														Column: 26,
+														Line:   26,
 													},
 													File:   "last_success_with_option_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   25,
+														Column: 19,
+														Line:   26,
 													},
 												},
 											},
@@ -3825,14 +3825,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   26,
+											Column: 30,
+											Line:   27,
 										},
 										File:   "last_success_with_option_test.flux",
 										Source: "fn: (tables=<-) => tables",
 										Start: ast.Position{
-											Column: 2,
-											Line:   26,
+											Column: 5,
+											Line:   27,
 										},
 									},
 								},
@@ -3843,14 +3843,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   26,
+												Column: 7,
+												Line:   27,
 											},
 											File:   "last_success_with_option_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   26,
+												Column: 5,
+												Line:   27,
 											},
 										},
 									},
@@ -3864,14 +3864,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   26,
+												Column: 30,
+												Line:   27,
 											},
 											File:   "last_success_with_option_test.flux",
 											Source: "(tables=<-) => tables",
 											Start: ast.Position{
-												Column: 6,
-												Line:   26,
+												Column: 9,
+												Line:   27,
 											},
 										},
 									},
@@ -3881,14 +3881,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   26,
+													Column: 30,
+													Line:   27,
 												},
 												File:   "last_success_with_option_test.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 21,
-													Line:   26,
+													Column: 24,
+													Line:   27,
 												},
 											},
 										},
@@ -3901,14 +3901,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   26,
+													Column: 19,
+													Line:   27,
 												},
 												File:   "last_success_with_option_test.flux",
 												Source: "tables=<-",
 												Start: ast.Position{
-													Column: 7,
-													Line:   26,
+													Column: 10,
+													Line:   27,
 												},
 											},
 										},
@@ -3919,14 +3919,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   26,
+														Column: 16,
+														Line:   27,
 													},
 													File:   "last_success_with_option_test.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 7,
-														Line:   26,
+														Column: 10,
+														Line:   27,
 													},
 												},
 											},
@@ -3938,14 +3938,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   26,
+													Column: 19,
+													Line:   27,
 												},
 												File:   "last_success_with_option_test.flux",
 												Source: "<-",
 												Start: ast.Position{
-													Column: 14,
-													Line:   26,
+													Column: 17,
+													Line:   27,
 												},
 											},
 										}},
@@ -3970,13 +3970,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   27,
+						Line:   28,
 					},
 					File:   "last_success_with_option_test.flux",
-					Source: "test _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+					Source: "test _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   23,
+						Line:   24,
 					},
 				},
 			},
@@ -3990,13 +3990,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "last_success_with_option_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -4007,13 +4007,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "last_success_with_option_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -4027,13 +4027,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "last_success_with_option_test.flux",
 					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -4044,13 +4044,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "last_success_with_option_test.flux",
 						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -4064,13 +4064,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "last_success_with_option_test.flux",
 					Source: "import \"influxdata/influxdb/tasks\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -4081,13 +4081,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "last_success_with_option_test.flux",
 						Source: "\"influxdata/influxdb/tasks\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -4140,10 +4140,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   26,
+					Line:   27,
 				},
 				File:   "last_success_without_option_test.flux",
-				Source: "package tasks_test\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T09:00:00Z\n\"\n\nt_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])\n\ntest _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+				Source: "package tasks_test\n\n\nimport \"testing\"\nimport \"array\"\nimport \"influxdata/influxdb/tasks\"\n\noption now = () => 2020-09-08T09:00:00Z\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T09:00:00Z\n\"\nt_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)\n\ntest _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -4158,13 +4158,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "last_success_without_option_test.flux",
 						Source: "now = () => 2020-09-08T09:00:00Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -4175,13 +4175,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_without_option_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -4195,13 +4195,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   7,
+								Line:   8,
 							},
 							File:   "last_success_without_option_test.flux",
 							Source: "() => 2020-09-08T09:00:00Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   7,
+								Line:   8,
 							},
 						},
 					},
@@ -4212,13 +4212,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   7,
+									Line:   8,
 								},
 								File:   "last_success_without_option_test.flux",
 								Source: "2020-09-08T09:00:00Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   7,
+									Line:   8,
 								},
 							},
 						},
@@ -4235,13 +4235,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 40,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "last_success_without_option_test.flux",
 					Source: "option now = () => 2020-09-08T09:00:00Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -4252,13 +4252,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   15,
+						Line:   16,
 					},
 					File:   "last_success_without_option_test.flux",
 					Source: "outData = \"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T09:00:00Z\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -4269,13 +4269,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   9,
+							Line:   10,
 						},
 						File:   "last_success_without_option_test.flux",
 						Source: "outData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -4288,13 +4288,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "last_success_without_option_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339\n#group,false,false,false\n#default,_result,,\n,result,table,_time\n,,0,2020-09-08T09:00:00Z\n\"",
 						Start: ast.Position{
 							Column: 11,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -4306,11 +4306,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 4,
-						Line:   20,
+						Column: 2,
+						Line:   21,
 					},
 					File:   "last_success_without_option_test.flux",
-					Source: "t_last_success = () =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])",
+					Source: "t_last_success = () => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   17,
@@ -4343,11 +4343,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 4,
-							Line:   20,
+							Column: 2,
+							Line:   21,
 						},
 						File:   "last_success_without_option_test.flux",
-						Source: "() =>\n\tarray.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])",
+						Source: "() => array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)",
 						Start: ast.Position{
 							Column: 18,
 							Line:   17,
@@ -4361,13 +4361,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 3,
+									Column: 6,
 									Line:   20,
 								},
 								File:   "last_success_without_option_test.flux",
-								Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t]",
+								Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ]",
 								Start: ast.Position{
-									Column: 13,
+									Column: 5,
 									Line:   18,
 								},
 							},
@@ -4379,13 +4379,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 3,
+										Column: 6,
 										Line:   20,
 									},
 									File:   "last_success_without_option_test.flux",
-									Source: "rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t]",
+									Source: "rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ]",
 									Start: ast.Position{
-										Column: 13,
+										Column: 5,
 										Line:   18,
 									},
 								},
@@ -4397,13 +4397,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 17,
+											Column: 9,
 											Line:   18,
 										},
 										File:   "last_success_without_option_test.flux",
 										Source: "rows",
 										Start: ast.Position{
-											Column: 13,
+											Column: 5,
 											Line:   18,
 										},
 									},
@@ -4417,13 +4417,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 3,
+											Column: 6,
 											Line:   20,
 										},
 										File:   "last_success_without_option_test.flux",
-										Source: "[\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t]",
+										Source: "[\n        {_time: tasks.lastSuccess(orTime: now())},\n    ]",
 										Start: ast.Position{
-											Column: 19,
+											Column: 11,
 											Line:   18,
 										},
 									},
@@ -4434,13 +4434,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
+												Column: 50,
 												Line:   19,
 											},
 											File:   "last_success_without_option_test.flux",
 											Source: "{_time: tasks.lastSuccess(orTime: now())}",
 											Start: ast.Position{
-												Column: 3,
+												Column: 9,
 												Line:   19,
 											},
 										},
@@ -4452,13 +4452,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 43,
+													Column: 49,
 													Line:   19,
 												},
 												File:   "last_success_without_option_test.flux",
 												Source: "_time: tasks.lastSuccess(orTime: now())",
 												Start: ast.Position{
-													Column: 4,
+													Column: 10,
 													Line:   19,
 												},
 											},
@@ -4470,13 +4470,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 9,
+														Column: 15,
 														Line:   19,
 													},
 													File:   "last_success_without_option_test.flux",
 													Source: "_time",
 													Start: ast.Position{
-														Column: 4,
+														Column: 10,
 														Line:   19,
 													},
 												},
@@ -4491,13 +4491,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 42,
+															Column: 48,
 															Line:   19,
 														},
 														File:   "last_success_without_option_test.flux",
 														Source: "orTime: now()",
 														Start: ast.Position{
-															Column: 29,
+															Column: 35,
 															Line:   19,
 														},
 													},
@@ -4509,13 +4509,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 42,
+																Column: 48,
 																Line:   19,
 															},
 															File:   "last_success_without_option_test.flux",
 															Source: "orTime: now()",
 															Start: ast.Position{
-																Column: 29,
+																Column: 35,
 																Line:   19,
 															},
 														},
@@ -4527,13 +4527,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 35,
+																	Column: 41,
 																	Line:   19,
 																},
 																File:   "last_success_without_option_test.flux",
 																Source: "orTime",
 																Start: ast.Position{
-																	Column: 29,
+																	Column: 35,
 																	Line:   19,
 																},
 															},
@@ -4548,13 +4548,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 42,
+																	Column: 48,
 																	Line:   19,
 																},
 																File:   "last_success_without_option_test.flux",
 																Source: "now()",
 																Start: ast.Position{
-																	Column: 37,
+																	Column: 43,
 																	Line:   19,
 																},
 															},
@@ -4565,13 +4565,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 40,
+																		Column: 46,
 																		Line:   19,
 																	},
 																	File:   "last_success_without_option_test.flux",
 																	Source: "now",
 																	Start: ast.Position{
-																		Column: 37,
+																		Column: 43,
 																		Line:   19,
 																	},
 																},
@@ -4590,13 +4590,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
+														Column: 49,
 														Line:   19,
 													},
 													File:   "last_success_without_option_test.flux",
 													Source: "tasks.lastSuccess(orTime: now())",
 													Start: ast.Position{
-														Column: 11,
+														Column: 17,
 														Line:   19,
 													},
 												},
@@ -4607,13 +4607,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
+															Column: 34,
 															Line:   19,
 														},
 														File:   "last_success_without_option_test.flux",
 														Source: "tasks.lastSuccess",
 														Start: ast.Position{
-															Column: 11,
+															Column: 17,
 															Line:   19,
 														},
 													},
@@ -4625,13 +4625,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 16,
+																Column: 22,
 																Line:   19,
 															},
 															File:   "last_success_without_option_test.flux",
 															Source: "tasks",
 															Start: ast.Position{
-																Column: 11,
+																Column: 17,
 																Line:   19,
 															},
 														},
@@ -4644,13 +4644,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 28,
+																Column: 34,
 																Line:   19,
 															},
 															File:   "last_success_without_option_test.flux",
 															Source: "lastSuccess",
 															Start: ast.Position{
-																Column: 17,
+																Column: 23,
 																Line:   19,
 															},
 														},
@@ -4678,14 +4678,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 4,
-								Line:   20,
+								Column: 2,
+								Line:   21,
 							},
 							File:   "last_success_without_option_test.flux",
-							Source: "array.from(rows: [\n\t\t{_time: tasks.lastSuccess(orTime: now())},\n\t])",
+							Source: "array.from(\n    rows: [\n        {_time: tasks.lastSuccess(orTime: now())},\n    ],\n)",
 							Start: ast.Position{
-								Column: 2,
-								Line:   18,
+								Column: 24,
+								Line:   17,
 							},
 						},
 					},
@@ -4695,14 +4695,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   18,
+									Column: 34,
+									Line:   17,
 								},
 								File:   "last_success_without_option_test.flux",
 								Source: "array.from",
 								Start: ast.Position{
-									Column: 2,
-									Line:   18,
+									Column: 24,
+									Line:   17,
 								},
 							},
 						},
@@ -4713,14 +4713,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
-										Line:   18,
+										Column: 29,
+										Line:   17,
 									},
 									File:   "last_success_without_option_test.flux",
 									Source: "array",
 									Start: ast.Position{
-										Column: 2,
-										Line:   18,
+										Column: 24,
+										Line:   17,
 									},
 								},
 							},
@@ -4732,14 +4732,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   18,
+										Column: 34,
+										Line:   17,
 									},
 									File:   "last_success_without_option_test.flux",
 									Source: "from",
 									Start: ast.Position{
-										Column: 8,
-										Line:   18,
+										Column: 30,
+										Line:   17,
 									},
 								},
 							},
@@ -4762,13 +4762,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "last_success_without_option_test.flux",
-						Source: "_last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+						Source: "_last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   22,
+							Line:   23,
 						},
 					},
 				},
@@ -4779,13 +4779,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   22,
+								Line:   23,
 							},
 							File:   "last_success_without_option_test.flux",
 							Source: "_last_success",
 							Start: ast.Position{
 								Column: 6,
-								Line:   22,
+								Line:   23,
 							},
 						},
 					},
@@ -4799,13 +4799,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   26,
+								Line:   27,
 							},
 							File:   "last_success_without_option_test.flux",
-							Source: "() => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+							Source: "() => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 							Start: ast.Position{
 								Column: 22,
-								Line:   22,
+								Line:   23,
 							},
 						},
 					},
@@ -4816,13 +4816,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   26,
+									Line:   27,
 								},
 								File:   "last_success_without_option_test.flux",
-								Source: "({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+								Source: "({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 								Start: ast.Position{
 									Column: 28,
-									Line:   22,
+									Line:   23,
 								},
 							},
 						},
@@ -4833,13 +4833,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   26,
+										Line:   27,
 									},
 									File:   "last_success_without_option_test.flux",
-									Source: "{\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n}",
+									Source: "{\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   22,
+										Line:   23,
 									},
 								},
 							},
@@ -4850,14 +4850,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   23,
+											Column: 28,
+											Line:   24,
 										},
 										File:   "last_success_without_option_test.flux",
 										Source: "input: t_last_success()",
 										Start: ast.Position{
-											Column: 2,
-											Line:   23,
+											Column: 5,
+											Line:   24,
 										},
 									},
 								},
@@ -4868,14 +4868,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   23,
+												Column: 10,
+												Line:   24,
 											},
 											File:   "last_success_without_option_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   23,
+												Column: 5,
+												Line:   24,
 											},
 										},
 									},
@@ -4889,14 +4889,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   23,
+												Column: 28,
+												Line:   24,
 											},
 											File:   "last_success_without_option_test.flux",
 											Source: "t_last_success()",
 											Start: ast.Position{
-												Column: 9,
-												Line:   23,
+												Column: 12,
+												Line:   24,
 											},
 										},
 									},
@@ -4906,14 +4906,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   23,
+													Column: 26,
+													Line:   24,
 												},
 												File:   "last_success_without_option_test.flux",
 												Source: "t_last_success",
 												Start: ast.Position{
-													Column: 9,
-													Line:   23,
+													Column: 12,
+													Line:   24,
 												},
 											},
 										},
@@ -4928,14 +4928,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   24,
+											Column: 40,
+											Line:   25,
 										},
 										File:   "last_success_without_option_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   24,
+											Column: 5,
+											Line:   25,
 										},
 									},
 								},
@@ -4946,14 +4946,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   24,
+												Column: 9,
+												Line:   25,
 											},
 											File:   "last_success_without_option_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   24,
+												Column: 5,
+												Line:   25,
 											},
 										},
 									},
@@ -4967,14 +4967,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   24,
+													Column: 39,
+													Line:   25,
 												},
 												File:   "last_success_without_option_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   24,
+													Column: 27,
+													Line:   25,
 												},
 											},
 										},
@@ -4985,14 +4985,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   24,
+														Column: 39,
+														Line:   25,
 													},
 													File:   "last_success_without_option_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   24,
+														Column: 27,
+														Line:   25,
 													},
 												},
 											},
@@ -5003,14 +5003,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   24,
+															Column: 30,
+															Line:   25,
 														},
 														File:   "last_success_without_option_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   24,
+															Column: 27,
+															Line:   25,
 														},
 													},
 												},
@@ -5023,14 +5023,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   24,
+															Column: 39,
+															Line:   25,
 														},
 														File:   "last_success_without_option_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   24,
+															Column: 32,
+															Line:   25,
 														},
 													},
 												},
@@ -5045,14 +5045,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   24,
+												Column: 40,
+												Line:   25,
 											},
 											File:   "last_success_without_option_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   24,
+												Column: 11,
+												Line:   25,
 											},
 										},
 									},
@@ -5062,14 +5062,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   24,
+													Column: 26,
+													Line:   25,
 												},
 												File:   "last_success_without_option_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   24,
+													Column: 11,
+													Line:   25,
 												},
 											},
 										},
@@ -5080,14 +5080,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   24,
+														Column: 18,
+														Line:   25,
 													},
 													File:   "last_success_without_option_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   24,
+														Column: 11,
+														Line:   25,
 													},
 												},
 											},
@@ -5099,14 +5099,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   24,
+														Column: 26,
+														Line:   25,
 													},
 													File:   "last_success_without_option_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   24,
+														Column: 19,
+														Line:   25,
 													},
 												},
 											},
@@ -5123,14 +5123,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   25,
+											Column: 30,
+											Line:   26,
 										},
 										File:   "last_success_without_option_test.flux",
 										Source: "fn: (tables=<-) => tables",
 										Start: ast.Position{
-											Column: 2,
-											Line:   25,
+											Column: 5,
+											Line:   26,
 										},
 									},
 								},
@@ -5141,14 +5141,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   25,
+												Column: 7,
+												Line:   26,
 											},
 											File:   "last_success_without_option_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   25,
+												Column: 5,
+												Line:   26,
 											},
 										},
 									},
@@ -5162,14 +5162,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   25,
+												Column: 30,
+												Line:   26,
 											},
 											File:   "last_success_without_option_test.flux",
 											Source: "(tables=<-) => tables",
 											Start: ast.Position{
-												Column: 6,
-												Line:   25,
+												Column: 9,
+												Line:   26,
 											},
 										},
 									},
@@ -5179,14 +5179,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   25,
+													Column: 30,
+													Line:   26,
 												},
 												File:   "last_success_without_option_test.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 21,
-													Line:   25,
+													Column: 24,
+													Line:   26,
 												},
 											},
 										},
@@ -5199,14 +5199,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   25,
+													Column: 19,
+													Line:   26,
 												},
 												File:   "last_success_without_option_test.flux",
 												Source: "tables=<-",
 												Start: ast.Position{
-													Column: 7,
-													Line:   25,
+													Column: 10,
+													Line:   26,
 												},
 											},
 										},
@@ -5217,14 +5217,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   25,
+														Column: 16,
+														Line:   26,
 													},
 													File:   "last_success_without_option_test.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 7,
-														Line:   25,
+														Column: 10,
+														Line:   26,
 													},
 												},
 											},
@@ -5236,14 +5236,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   25,
+													Column: 19,
+													Line:   26,
 												},
 												File:   "last_success_without_option_test.flux",
 												Source: "<-",
 												Start: ast.Position{
-													Column: 14,
-													Line:   25,
+													Column: 17,
+													Line:   26,
 												},
 											},
 										}},
@@ -5268,13 +5268,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "last_success_without_option_test.flux",
-					Source: "test _last_success = () => ({\n\tinput: t_last_success(),\n\twant: testing.loadMem(csv: outData),\n\tfn: (tables=<-) => tables,\n})",
+					Source: "test _last_success = () => ({\n    input: t_last_success(),\n    want: testing.loadMem(csv: outData),\n    fn: (tables=<-) => tables,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   22,
+						Line:   23,
 					},
 				},
 			},
@@ -5288,13 +5288,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "last_success_without_option_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -5305,13 +5305,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "last_success_without_option_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -5325,13 +5325,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "last_success_without_option_test.flux",
 					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -5342,13 +5342,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "last_success_without_option_test.flux",
 						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -5362,13 +5362,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "last_success_without_option_test.flux",
 					Source: "import \"influxdata/influxdb/tasks\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -5379,13 +5379,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "last_success_without_option_test.flux",
 						Source: "\"influxdata/influxdb/tasks\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},

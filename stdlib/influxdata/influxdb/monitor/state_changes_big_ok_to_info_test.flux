@@ -1,13 +1,13 @@
 package monitor_test
 
+
 import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 import "experimental"
 
 option now = () => 2018-05-22T19:54:40Z
-
-option monitor.log = (tables=<-) => tables |> drop(columns:["_start", "_stop"])
+option monitor.log = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
 
 // Note this input data is identical to the output data of the check test case, post pivot.
 inData = "
@@ -241,8 +241,6 @@ inData = "
 
 
 "
-
-
 outData = "
 #group,false,false,true,true,true,false,true,false,true,true,false,true,true,true,false,true
 #datatype,string,long,string,string,string,string,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double,string
@@ -252,7 +250,6 @@ outData = "
 
 
 "
-
 t_state_changes_big_ok_to_info = (table=<-) => table
     |> v1.fieldsAsCols()
     |> monitor.stateChanges(
@@ -260,6 +257,4 @@ t_state_changes_big_ok_to_info = (table=<-) => table
         toLevel: "info",
     )
 
-test monitor_state_changes_big_ok_to_info = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info})
-
+test monitor_state_changes_big_ok_to_info = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_big_ok_to_info})

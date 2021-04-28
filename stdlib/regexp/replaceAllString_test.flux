@@ -1,9 +1,10 @@
 package regexp_test
 
+
 import "testing"
 import "regexp"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -23,7 +24,6 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long,string
 #group,false,false,true,true,true,true,true,false,false,true
@@ -36,15 +36,12 @@ outData = "
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:06Z,15205499,disk9
 ,,0,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,2018-05-22T19:54:16Z,15205755,disk9
 "
-
 re = regexp.compile(v: ".*0")
+t_filter_by_regex = (table=<-) => table
+    |> range(start: 2018-05-20T19:53:26Z)
+    |> filter(fn: (r) => r["name"] =~ /.*0/)
+    |> map(
+        fn: (r) => ({r with name: regexp.replaceAllString(r: re, v: r.name, t: "disk9")}),
+    )
 
-t_filter_by_regex = (table=<-) =>
-table
-  |> range(start: 2018-05-20T19:53:26Z)
-  |> filter(fn: (r) => r["name"] =~ /.*0/)
-  |> map(fn: (r) =>
-                ({r with name: regexp.replaceAllString(r: re, v: r.name, t: "disk9")}))
-
-test _filter_by_regex = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})
+test _filter_by_regex = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_by_regex})

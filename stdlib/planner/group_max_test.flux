@@ -1,10 +1,11 @@
 package planner_test
 
+
 import "testing"
 import "testing/expect"
 import "planner"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 input = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
@@ -27,8 +28,7 @@ testcase group_max_bare {
         |> group(columns: ["_field"])
         |> max()
         |> drop(columns: ["_start", "_stop"])
-
-out_max_bare = "
+    out_max_bare = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,false,false,true,false
 #default,_result,,,,,,
@@ -62,8 +62,7 @@ testcase group_max_bare_host {
         |> group(columns: ["_field"])
         |> max()
         |> drop(columns: ["_start", "_stop"])
-
-out_max_bare = "
+    out_max_bare = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,false,false,true,false
 #default,_result,,,,,,
@@ -108,11 +107,10 @@ testcase group_max_bare_field {
     // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
     result = testing.loadStorage(csv: input_field)
         |> range(start: 2018-05-22T19:00:00Z)
-        |> group(columns:["_start", "_stop","host"])
+        |> group(columns: ["_start", "_stop", "host"])
         |> max()
         |> drop(columns: ["_measurement", "_time"])
-
-out_max_bare = "
+    out_max_bare = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,true,false,false
 #default,_result,,,,,,
@@ -124,7 +122,6 @@ out_max_bare = "
 
     testing.diff(got: result, want: testing.loadMem(csv: out_max_bare)) |> yield()
 }
-
 testcase group_max_window {
     result = testing.loadStorage(csv: input)
         |> range(start: 2018-05-22T19:53:26Z)
@@ -132,8 +129,7 @@ testcase group_max_window {
         |> group(columns: ["_field"])
         |> window(every: 1d)
         |> max()
-
-out_max_window = "
+    out_max_window = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,false,true,false
 #default,_result,,,,,,,,
@@ -143,14 +139,12 @@ out_max_window = "
 
     testing.diff(got: result, want: testing.loadMem(csv: out_max_window)) |> yield()
 }
-
 testcase group_max_agg_window {
     result = testing.loadStorage(csv: input)
         |> range(start: 2018-05-22T19:53:26Z)
         |> group(columns: ["host"])
         |> aggregateWindow(fn: max, every: 1d)
-
-out_max_agg_window = "
+    out_max_agg_window = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,true,false,false
 #default,_result,,,,,,,,
@@ -160,14 +154,12 @@ out_max_agg_window = "
 
     testing.diff(got: result, want: testing.loadMem(csv: out_max_agg_window)) |> yield()
 }
-
 testcase group_max_agg_window_empty {
     result = testing.loadStorage(csv: input)
         |> range(start: 2018-05-22T19:53:26Z)
         |> group(columns: ["_field"])
         |> aggregateWindow(fn: max, every: 1d, createEmpty: true)
-
-out_max_agg_window_empty = "
+    out_max_agg_window_empty = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,false,true,false
 #default,_result,,,,,,,,
