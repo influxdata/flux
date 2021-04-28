@@ -22,7 +22,7 @@ pub type Result<T> = result::Result<T, SemanticError>;
 /// Note: most external callers of this function will want to use the analyze()
 /// function in the flux crate instead, which is aware of everything in the Flux stdlib and prelude.
 ///
-/// The function explicitly moves the ast::Package because it adds information to it.
+/// The function explicitly moves the `ast::Package` because it adds information to it.
 /// We follow here the principle that every compilation step should be isolated and should add meaning
 /// to the previous one. In other terms, once one converts an AST he should not use it anymore.
 /// If one wants to do so, he should explicitly pkg.clone() and incur consciously in the memory
