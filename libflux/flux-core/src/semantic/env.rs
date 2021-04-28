@@ -1,17 +1,21 @@
+//! Type environments.
+
 use crate::semantic::import::Importer;
 use crate::semantic::sub::{Substitutable, Substitution};
 use crate::semantic::types::{union, PolyType, PolyTypeMap, Tvar};
 
-// A type environment maps program identifiers to their polymorphic types.
-//
-// A type environment is implemented as a stack of frames where each
-// frame holds the bindings for the identifiers declared in a particular
-// lexical block.
-//
+/// A type environment maps program identifiers to their polymorphic types.
+///
+/// Type environments are implemented as a stack where each
+/// frame holds the bindings for the identifiers declared in a particular
+/// lexical block.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Environment {
+    /// An optional parent environment.
     pub parent: Option<Box<Environment>>,
+    /// Values in the environment.
     pub values: PolyTypeMap,
+    /// Read/write permissions flag.
     pub readwrite: bool,
 }
 
@@ -76,6 +80,7 @@ impl From<PolyTypeMap> for Environment {
 }
 
 impl Environment {
+    /// Create an empty environment with no parent.
     pub fn empty(readwrite: bool) -> Environment {
         Environment {
             parent: None,
@@ -83,6 +88,8 @@ impl Environment {
             readwrite,
         }
     }
+
+    /// Return a new environment from the current one.
     // The following clippy lint is ignored due to taking a `Self` type as the
     // first parameter, which clippy wrongly identifies as the parameter name,
     // used in a place that shouldn't take a `self` parameter.
@@ -95,6 +102,10 @@ impl Environment {
             readwrite: true,
         }
     }
+
+    /// Check whether a `PolyType` `t` given by a
+    /// string identifier is in the environment. Also checks parent environments.
+    /// If the type is present, returns a pointer to `t`; otherwise, returns `None`.
     pub fn lookup(&self, v: &str) -> Option<&PolyType> {
         if let Some(t) = self.values.get(v) {
             Some(t)
@@ -104,31 +115,32 @@ impl Environment {
             None
         }
     }
-    // Add a new variable binding to the current stack frame
+
+    /// Add a new variable binding to the current stack frame.
     pub fn add(&mut self, name: String, t: PolyType) {
         self.values.insert(name, t);
     }
-    // Remove a variable binding from the current stack frame
+
+    /// Remove a variable binding from the current stack frame.
     pub fn remove(&mut self, name: &str) {
         self.values.remove(name);
     }
-    // A type environment is a stack where each frame corresponds to a lexical
-    // block inside a Flux program.
-    //
-    // After inferring the types in each lexical block, the frame at the top
-    // of the stack will be popped, returning the type environment for the
-    // enclosing block.
-    //
-    // Note that 'pop' must be paired with a corresponding call to 'new'. In
-    // particular when inferring the type of a function expression, a new
-    // frame must be added to the top of the stack by calling 'new'. Then the
-    // bindings for the function arguments must be added to the new frame. At
-    // that point the type of the function body is inferred and the last frame
-    // is popped from the stack and returned to the calling function.
-    //
-    // It is invalid to call pop on a type environment with only one stack
-    // frame. This will result in a panic.
-    //
+
+    /// After inferring the types in each lexical block, the frame at the top
+    /// of the stack is popped, returning the type environment for the
+    /// enclosing block.
+    ///
+    /// `pop` must be paired with a corresponding call to `new`. In
+    /// particular when inferring the type of a function expression, a new
+    /// frame must be added to the top of the stack by calling `new`. Then the
+    /// bindings for the function arguments must be added to the new frame. At
+    /// that point the type of the function body is inferred and the last frame
+    /// is popped from the stack and returned to the calling function.
+    ///
+    /// # Panics
+    ///
+    /// It is invalid to call `pop` on a type environment with only one stack
+    /// frame. This will result in a panic.
     pub fn pop(self) -> Environment {
         match self.parent {
             Some(env) => *env,
@@ -136,8 +148,8 @@ impl Environment {
         }
     }
 
-    // Copy all the variable bindings from another Environment to the current environment.
-    // This does not change the current environment's parent and readwrite flag.
+    /// Copy all the variable bindings from another [`Environment`] to the current environment.
+    /// This does not change the current environment's `parent` or `readwrite` flag.
     pub fn copy_bindings_from(&mut self, other: &Environment) {
         for (name, t) in other.values.iter() {
             self.add(name.clone(), t.clone());
