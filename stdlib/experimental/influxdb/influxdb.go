@@ -184,7 +184,7 @@ func headerToDict(header http.Header) (values.Dictionary, error) {
 	for name, thevalues := range header {
 		for _, onevalue := range thevalues {
 			if err := builder.Insert(values.NewString(name), values.NewString(onevalue)); err != nil {
-				return nil, errors.New("")
+				return nil, err
 			}
 		}
 	}

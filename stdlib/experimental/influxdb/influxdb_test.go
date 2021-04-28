@@ -25,9 +25,11 @@ func Test_api(t *testing.T) {
 		args values.Object
 
 		// expected to be returned from api func call
-		expectedErrorMessage string
-		expectedStatusCode   int64
-		expectedResponseBody []byte
+		expectedErrorMessage          string
+		expectedStatusCode            int64
+		expectedResponseBody          []byte
+		expectedResponseContentLength string
+		expectedResponseHeaderCount   int
 
 		// status and responses to be returned from mock api host
 		status   int
@@ -49,10 +51,12 @@ func Test_api(t *testing.T) {
 				"path":   values.NewString("/api/v2/foo"),
 				"token":  values.NewString("passedtoken"),
 			}),
-			expectedStatusCode:   200,
-			expectedRequestPath:  "/api/v2/foo",
-			expectedMethod:       "get",
-			expectedRequestToken: "passedtoken",
+			expectedStatusCode:            200,
+			expectedRequestPath:           "/api/v2/foo",
+			expectedMethod:                "get",
+			expectedRequestToken:          "passedtoken",
+			expectedResponseContentLength: "0",
+			expectedResponseHeaderCount:   2,
 		},
 		{
 			name: "get with headers",
@@ -75,6 +79,8 @@ func Test_api(t *testing.T) {
 				"User-Agent":      {"Go-http-client/1.1"},
 				"Key":             {"Value"},
 			},
+			expectedResponseContentLength: "0",
+			expectedResponseHeaderCount:   2,
 		},
 		{
 			name: "get with query",
@@ -94,6 +100,8 @@ func Test_api(t *testing.T) {
 			expectedRequestQuery: map[string][]string{
 				"Key": {"Value"},
 			},
+			expectedResponseContentLength: "0",
+			expectedResponseHeaderCount:   2,
 		},
 		{
 			name:     "get returning data",
@@ -104,11 +112,13 @@ func Test_api(t *testing.T) {
 				"path":   values.NewString("/api/v2/bar"),
 				"token":  values.NewString("passedtoken"),
 			}),
-			expectedStatusCode:   200,
-			expectedResponseBody: []byte(fakeData),
-			expectedRequestPath:  "/api/v2/bar",
-			expectedMethod:       "get",
-			expectedRequestToken: "passedtoken",
+			expectedStatusCode:            200,
+			expectedResponseBody:          []byte(fakeData),
+			expectedRequestPath:           "/api/v2/bar",
+			expectedMethod:                "get",
+			expectedRequestToken:          "passedtoken",
+			expectedResponseContentLength: "565",
+			expectedResponseHeaderCount:   3,
 		},
 		{
 			name:   "post created",
@@ -131,6 +141,8 @@ func Test_api(t *testing.T) {
 				"Content-Length":  {"15"},
 				"User-Agent":      {"Go-http-client/1.1"},
 			},
+			expectedResponseContentLength: "0",
+			expectedResponseHeaderCount:   2,
 		},
 		{
 			name:     "error",
@@ -142,11 +154,13 @@ func Test_api(t *testing.T) {
 				"path":   values.NewString("/api/v2/bing"),
 				"token":  values.NewString("passedtoken"),
 			}),
-			expectedStatusCode:   500,
-			expectedResponseBody: []byte(`{"code":"internal","message":"internal error"}`),
-			expectedRequestPath:  "/api/v2/bing",
-			expectedMethod:       "get",
-			expectedRequestToken: "passedtoken",
+			expectedStatusCode:            500,
+			expectedResponseBody:          []byte(`{"code":"internal","message":"internal error"}`),
+			expectedRequestPath:           "/api/v2/bing",
+			expectedMethod:                "get",
+			expectedRequestToken:          "passedtoken",
+			expectedResponseContentLength: "46",
+			expectedResponseHeaderCount:   3,
 		},
 		{
 			name: "error missing args",
@@ -167,7 +181,7 @@ func Test_api(t *testing.T) {
 					t.Errorf("unexpected request path: got %s, expected %s", r.URL.Path, test.expectedRequestPath)
 				}
 
-				expectedHeaders := defaultExpectedHeaders
+				expectedHeaders := defaultExpectedRequestHeaders
 				if test.expectedRequestHeaders != nil {
 					expectedHeaders = test.expectedRequestHeaders
 				}
@@ -175,7 +189,7 @@ func Test_api(t *testing.T) {
 					t.Errorf("unexpected request headers: %s", diff)
 				}
 
-				expectedQuery := defaultExpectedQuery
+				expectedQuery := defaultExpectedRequestQuery
 				if test.expectedRequestQuery != nil {
 					expectedQuery = test.expectedRequestQuery
 				}
@@ -214,6 +228,18 @@ func Test_api(t *testing.T) {
 				} else if responseBody, _ := result.Object().Get("body"); !bytes.Equal(responseBody.Bytes(), test.expectedResponseBody) {
 					t.Errorf("unexpected response body: got %s, expected %s", responseBody.Bytes(), test.expectedResponseBody)
 				}
+
+				// http.Server returns Content-Length and Date. The Date is difficult to test since it is
+				// time dependent and contrary to documentation, it is impossible to suppress this behavior.
+				// Therefore we only test for the Content-Length and total dictionary length here.
+				responseHeadersObj, _ := result.Object().Get("headers")
+				responseHeaders := responseHeadersObj.Dict()
+				if got, expected := responseHeaders.Len(), test.expectedResponseHeaderCount; got != expected {
+					t.Errorf("unexpected response headers: got %d, expected %d", got, expected)
+				} else if contentLength := responseHeaders.Get(
+					values.NewString("Content-Length"), values.NewString("")); contentLength.Str() != test.expectedResponseContentLength {
+					t.Errorf("unexpected Content-Length header value: expected %s, got %s", contentLength.Str(), test.expectedResponseContentLength)
+				}
 			}
 		})
 	}
@@ -229,10 +255,10 @@ func newDictWithValues(m map[string]string) values.Dictionary {
 	return dict
 }
 
-var defaultExpectedHeaders = http.Header{
+var defaultExpectedRequestHeaders = http.Header{
 	"Accept-Encoding": {"gzip"},
 	"Authorization":   {"Token passedtoken"},
 	"User-Agent":      {"Go-http-client/1.1"},
 }
 
-var defaultExpectedQuery = url.Values{}
+var defaultExpectedRequestQuery = url.Values{}
