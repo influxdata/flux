@@ -1,9 +1,10 @@
 package promql_test
+
+
 import "testing"
 import "internal/promql"
 
-option now = () =>
-	(2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,double,string
@@ -29,11 +30,9 @@ outData = "
 ,,0,2018-12-30T20:00:50.123Z,metric_name,1546200050.123,prometheus
 ,,0,2018-12-31T20:01:00.123Z,metric_name,1546286460.123,prometheus
 "
-t_timestamp = (table=<-) =>
-	(table
-		|> range(start: 1980-01-01T00:00:00Z)
-		|> drop(columns: ["_start", "_stop"])
-		|> promql.timestamp())
+t_timestamp = (table=<-) => table
+    |> range(start: 1980-01-01T00:00:00Z)
+    |> drop(columns: ["_start", "_stop"])
+    |> promql.timestamp()
 
-test _timestamp = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_timestamp})
+test _timestamp = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_timestamp})

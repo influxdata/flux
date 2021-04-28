@@ -1,5 +1,6 @@
 package chronograf_test
 
+
 import "testing"
 
 input = "
@@ -75,7 +76,6 @@ input = "
 ,,0,2018-05-22T19:54:06Z,swp,us-east,host.global,load2,17.190
 ,,0,2018-05-22T19:54:16Z,swp,us-east,host.global,load2,17.192
 "
-
 output = "
 #datatype,string,long,string
 #group,false,false,false
@@ -88,7 +88,6 @@ output = "
 ,,0,host
 ,,0,region
 "
-
 measurement_tag_keys_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
     |> filter(fn: (r) => r._measurement == "swp")
@@ -98,5 +97,4 @@ measurement_tag_keys_fn = (tables=<-) => tables
     |> distinct()
     |> sort()
 
-test measurement_tag_keys = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_keys_fn})
+test measurement_tag_keys = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: measurement_tag_keys_fn})

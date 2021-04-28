@@ -1,9 +1,10 @@
 package promql_test
 
-import "testing"
-import "internal/promql" 
 
-option now = () => (2030-01-01T00:00:00Z)
+import "testing"
+import "internal/promql"
+
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,string,string,string,dateTime:RFC3339,double
@@ -23,7 +24,6 @@ inData = "
 ,,3,Reiva,OAOJWe7,qCnJDC,2019-01-09T19:45:38Z,16.140262630578995
 ,,3,Reiva,OAOJWe7,qCnJDC,2019-01-09T19:45:48Z,29.50336437998469
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,true,true,true,false
@@ -34,10 +34,8 @@ outData = "
 "
 
 // testing below range value
-t_quantile = (tables=<-) =>
-    tables
-        |> range(start: 2019-01-01T00:00:00Z)
-        |> promql.quantile(q: -0.1)
+t_quantile = (tables=<-) => tables
+    |> range(start: 2019-01-01T00:00:00Z)
+    |> promql.quantile(q: -0.1)
 
-test _quantile = () => 
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})
+test _quantile = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})

@@ -1,5 +1,6 @@
 package usage_test
 
+
 import "testing"
 import "math"
 
@@ -2181,7 +2182,6 @@ inData = "
 ,,1,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:59:40Z,34,gauge,storage_usage_org_bytes,storage-4,038b7a85ca099000
 ,,1,2019-08-01T11:00:00Z,2019-08-01T14:00:00Z,2019-08-01T13:59:50Z,34,gauge,storage_usage_org_bytes,storage-4,038b7a85ca099000
 "
-
 outData = "
 #group,false,false,false,false
 #datatype,string,long,dateTime:RFC3339,long
@@ -2191,13 +2191,10 @@ outData = "
 ,,0,2019-08-01T13:00:00Z,68
 ,,0,2019-08-01T14:00:00Z,68
 "
-
 _f = (table=<-) => table
     |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
-    |> filter(fn: (r) =>
-        r.org_id == "038b7a85ca099000"
-        and r._measurement == "storage_usage_org_bytes"
-        and r._field == "gauge"
+    |> filter(
+        fn: (r) => r.org_id == "038b7a85ca099000" and r._measurement == "storage_usage_org_bytes" and r._field == "gauge",
     )
     |> aggregateWindow(every: 1h, fn: mean)
     |> fill(column: "_value", value: 0.0)
@@ -2208,5 +2205,4 @@ _f = (table=<-) => table
     |> rename(columns: {_value: "storage_b"})
     |> yield(name: "storage_b")
 
-test get_storage_usage = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})
+test get_storage_usage = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: _f})

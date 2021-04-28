@@ -1,10 +1,11 @@
 package pandas_test
 
+
 import "testing"
 import "strings"
 import "regexp"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
@@ -18,7 +19,6 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,string,long
 #group,false,false,true,true,false,false,true,true,true,true,true,true,false
@@ -31,14 +31,9 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,cLnSkNMI,used_percent,disk,disk1,apfs,host.local,/,0
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,13F2,used_percent,disk,disk1,apfs,host.local,/,2
 "
-
 re = regexp.compile(v: "[[:alpha:]]{1}")
+t_string_extract = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> map(fn: (r) => ({r with extract0: regexp.findStringIndex(r: re, v: r._value)[0]}))
 
-t_string_extract = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> map(fn: (r) => ({r with extract0: regexp.findStringIndex(r: re, v: r._value)[0]}))
-	)
-
-test _string_extract = () =>
-         ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_extract})
+test _string_extract = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_extract})

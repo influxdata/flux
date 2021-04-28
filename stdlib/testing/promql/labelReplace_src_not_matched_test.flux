@@ -1,9 +1,10 @@
 package promql_test
+
+
 import "testing"
 import "internal/promql"
 
-option now = () =>
-	(2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double,string
@@ -25,16 +26,14 @@ outData = "
 ,,1,metric_name,source-value-20,original-destination-value,3,prometheus
 ,,1,metric_name,source-value-20,original-destination-value,4,prometheus
 "
-t_labelReplace = (table=<-) =>
-	(table
-		|> range(start: 1980-01-01T00:00:00Z)
-		|> drop(columns: ["_start", "_stop"])
-		|> promql.labelReplace(
-			source: "src",
-			destination: "dst",
-			regex: "non-matching-regex",
-			replacement: "value-$1",
-		))
+t_labelReplace = (table=<-) => table
+    |> range(start: 1980-01-01T00:00:00Z)
+    |> drop(columns: ["_start", "_stop"])
+    |> promql.labelReplace(
+        source: "src",
+        destination: "dst",
+        regex: "non-matching-regex",
+        replacement: "value-$1",
+    )
 
-test _labelReplace = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})
+test _labelReplace = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_labelReplace})
