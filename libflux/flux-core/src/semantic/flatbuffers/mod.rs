@@ -1,4 +1,4 @@
-#[allow(clippy::all)]
+#[allow(clippy::all, missing_docs)]
 pub mod semantic_generated;
 pub mod types;
 
