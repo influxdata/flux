@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! Token scanner.
 
 use std::collections::HashMap;
 use std::str;
@@ -21,6 +21,7 @@ use super::DefaultHasher;
 #[cfg(test)]
 mod tests;
 
+/// Represents a Flux scanner and its state during compilation.
 pub struct Scanner {
     data: Vec<u8>,
     ps: i32,
@@ -34,31 +35,44 @@ pub struct Scanner {
     checkpoint_last_newline: i32,
     token: TokenType,
     positions: HashMap<Position, u32, DefaultHasher>,
+
+    /// Comments
     pub comments: Vec<Comment>,
 }
 
+/// A position in source code.
 #[derive(Debug, PartialEq, Copy, Clone, Hash)]
 pub struct Position {
+    /// Line number.
     pub line: u32,
+    /// Column number.
     pub column: u32,
 }
 
 impl std::cmp::Eq for Position {}
 
+/// A token.
 #[derive(Debug, Display, PartialEq, Clone)]
 #[display(fmt = "{}", lit)]
 pub struct Token {
+    /// Type of token.
     pub tok: TokenType,
+    /// String representation of token.
     pub lit: String,
+    /// Offset
     pub start_offset: u32,
+    /// Offset
     pub end_offset: u32,
+    /// Start position of token in the source.
     pub start_pos: Position,
+    /// End position of token in the source.
     pub end_pos: Position,
+    /// Comments.
     pub comments: Vec<Comment>,
 }
 
 impl Scanner {
-    // New creates a scanner with the provided input.
+    /// New creates a scanner with the provided input.
     pub fn new(input: &str) -> Self {
         let mut data = Vec::new();
         data.extend_from_slice(input.as_bytes());
@@ -209,6 +223,7 @@ impl Scanner {
         }
     }
 
+    /// Produces the next comment token from the input.
     pub fn scan_with_comments(&mut self, mode: i32) -> Token {
         let mut token;
         loop {
@@ -222,35 +237,37 @@ impl Scanner {
         token
     }
 
-    // scan produces the next token from the input.
+    /// Produces the next token from the input.
     pub fn scan(&mut self) -> Token {
         self.scan_with_comments(0)
     }
 
-    // scan_with_regex produces the next token from the input accounting for regex.
+    /// Produces the next token from the input accounting for regex.
     pub fn scan_with_regex(&mut self) -> Token {
         self.scan_with_comments(1)
     }
 
-    // scan_string_expr produces the next token from the input in a string expression.
+    /// Produces the next token from the input in a string expression.
     pub fn scan_string_expr(&mut self) -> Token {
         self.scan_with_comments(2)
     }
 
-    // unread will reset the Scanner to go back to the Scanner's location
-    // before the last scan_with_regex or scan call. If either of the scan_with_regex methods
-    // returned an EOF token, a call to unread will not unread the discarded whitespace.
-    // This method is a no-op if called multiple times.
+    /// `unread` will reset the [`Scanner`] to go back to the location
+    /// before the last `scan_with_regex` or `scan` call. If either of the `scan_with_regex` methods
+    /// returned an EOF token, a call to `unread` will not unread the discarded whitespace.
+    /// This method is a no-op if called multiple times.
     pub fn unread(&mut self) {
         self.p = self.checkpoint;
         self.cur_line = self.checkpoint_line;
         self.last_newline = self.checkpoint_last_newline;
     }
 
+    /// Get the offset of a position.
     pub fn offset(&self, pos: &Position) -> u32 {
         *self.positions.get(pos).expect("position should be in map")
     }
 
+    /// Append a comment to the current [`Scanner`].
     pub fn set_comments(&mut self, t: &mut Vec<Comment>) {
         self.comments.append(t);
     }

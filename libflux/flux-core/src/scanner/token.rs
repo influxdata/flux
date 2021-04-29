@@ -1,5 +1,7 @@
 use derive_more::Display;
 
+/// Enum representing the possible types of tokens.
+#[allow(missing_docs)] // Not documenting token type variants.
 #[derive(Clone, Copy, Debug, Display, Hash, Eq, PartialEq)]
 pub enum TokenType {
     #[display(fmt = "ILLEGAL")]
@@ -9,7 +11,7 @@ pub enum TokenType {
     #[display(fmt = "COMMENT")]
     Comment,
 
-    // Reserved keywords->
+    // Reserved keywords
     #[display(fmt = "AND")]
     And,
     #[display(fmt = "OR")]
@@ -41,7 +43,7 @@ pub enum TokenType {
     #[display(fmt = "ELSE")]
     Else,
 
-    // Identifiers and literals->
+    // Identifiers and literals
     #[display(fmt = "IDENT")]
     Ident,
     #[display(fmt = "INT")]
@@ -57,7 +59,7 @@ pub enum TokenType {
     #[display(fmt = "DURATION")]
     Duration,
 
-    // Operators->
+    // Operators
     #[display(fmt = "ADD")]
     Add,
     #[display(fmt = "SUB")]
@@ -115,7 +117,7 @@ pub enum TokenType {
     #[display(fmt = "EXISTS")]
     Exists,
 
-    // String expression tokens->
+    // String expression tokens
     #[display(fmt = "QUOTE")]
     Quote,
     #[display(fmt = "STRINGEXPR")]
