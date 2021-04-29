@@ -59,13 +59,13 @@ pub struct Token {
     pub tok: TokenType,
     /// String representation of token.
     pub lit: String,
-    /// Offset
+    /// Starting location of token, offset in characters from the beginning of the source.
     pub start_offset: u32,
-    /// Offset
+    /// Ending location of token, offset in characters from the beginning of the source.
     pub end_offset: u32,
-    /// Start position of token in the source.
+    /// Starting position of token in the source.
     pub start_pos: Position,
-    /// End position of token in the source.
+    /// Ending position of token in the source.
     pub end_pos: Position,
     /// Comments.
     pub comments: Vec<Comment>,
