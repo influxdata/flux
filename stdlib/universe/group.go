@@ -8,9 +8,10 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/execute/dataset"
-	"github.com/influxdata/flux/internal/execute/table"
+	itable "github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -264,13 +265,13 @@ func (t *groupTransformation) groupByRow(tbl flux.Table) error {
 	// Construct a builder cache for the built tables.
 	cache := table.BuilderCache{
 		New: func(key flux.GroupKey) table.Builder {
-			return table.NewArrowBuilder(key, t.mem)
+			return itable.NewArrowBuilder(key, t.mem)
 		},
 	}
 	if err := tbl.Do(func(cr flux.ColReader) error {
 		for i, l := 0, cr.Len(); i < l; i++ {
 			key := execute.GroupKeyForRowOn(i, cr, on)
-			ab, created := table.GetArrowBuilder(key, &cache)
+			ab, created := itable.GetArrowBuilder(key, &cache)
 			if created {
 				for _, c := range cr.Cols() {
 					_, _ = ab.AddCol(c)

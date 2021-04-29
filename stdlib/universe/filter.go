@@ -13,9 +13,10 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/arrowutil"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/execute/table"
+	itable "github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
@@ -275,7 +276,7 @@ func (t *filterTransformation) filterByKey(tbl flux.Table) error {
 }
 
 func (t *filterTransformation) filterTable(fn *execute.RowPredicatePreparedFn, in flux.Table, record values.Object, indices []int) (flux.Table, error) {
-	return table.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
+	return itable.StreamWithContext(t.ctx, in.Key(), in.Cols(), func(ctx context.Context, w *itable.StreamWriter) error {
 		return in.Do(func(cr flux.ColReader) error {
 			bitset, err := t.filter(fn, cr, record, indices)
 			if err != nil {

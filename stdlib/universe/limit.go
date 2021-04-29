@@ -8,8 +8,9 @@ import (
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	"github.com/influxdata/flux/internal/execute/table"
+	itable "github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 )
@@ -123,7 +124,7 @@ func (t *limitTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 }
 
 func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	tbl, err := table.Stream(tbl.Key(), tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
+	tbl, err := itable.Stream(tbl.Key(), tbl.Cols(), func(ctx context.Context, w *itable.StreamWriter) error {
 		return t.limitTable(ctx, w, tbl)
 	})
 	if err != nil {
@@ -132,7 +133,7 @@ func (t *limitTransformation) Process(id execute.DatasetID, tbl flux.Table) erro
 	return t.d.Process(tbl)
 }
 
-func (t *limitTransformation) limitTable(ctx context.Context, w *table.StreamWriter, tbl flux.Table) error {
+func (t *limitTransformation) limitTable(ctx context.Context, w *itable.StreamWriter, tbl flux.Table) error {
 	n, offset := t.n, t.offset
 	return tbl.Do(func(cr flux.ColReader) error {
 		if n <= 0 {

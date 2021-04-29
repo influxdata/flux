@@ -6,8 +6,9 @@ import (
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/execute"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/arrowutil"
-	"github.com/influxdata/flux/internal/execute/table"
+	itable "github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 )
@@ -95,7 +96,7 @@ func (t *slurpTransformation) RetractTable(id execute.DatasetID, key flux.GroupK
 }
 
 func (t *slurpTransformation) Process(id execute.DatasetID, tbl flux.Table) error {
-	b := table.NewArrowBuilder(tbl.Key(), t.mem)
+	b := itable.NewArrowBuilder(tbl.Key(), t.mem)
 	b.Init(tbl.Cols())
 
 	if err := tbl.Do(func(cr flux.ColReader) error {

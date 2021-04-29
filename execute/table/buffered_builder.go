@@ -153,12 +153,3 @@ func (b *BufferedBuilder) Release() {
 		buf.Release()
 	}
 }
-
-func colIdx(label string, cols []flux.ColMeta) int {
-	for j, c := range cols {
-		if c.Label == label {
-			return j
-		}
-	}
-	return -1
-}

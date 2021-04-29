@@ -9,7 +9,7 @@ import (
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/execute/executetest"
-	"github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/values"
 )
