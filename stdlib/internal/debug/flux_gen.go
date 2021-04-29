@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   5,
+					Line:   13,
 				},
 				File:   "debug.flux",
-				Source: "package debug\n\n// pass will pass any incoming tables directly next to the following transformation.\n// It is best used to interrupt any planner rules that rely on a specific ordering.\nbuiltin pass",
+				Source: "package debug\n\n// pass will pass any incoming tables directly next to the following transformation.\n// It is best used to interrupt any planner rules that rely on a specific ordering.\nbuiltin pass : (<-tables: [A]) => [A] where A: Record\n\n// slurp will read the incoming tables and concatenate buffers with the same group key\n// into a single table. This is useful for testing the performance impact of multiple\n// buffers versus a single buffer.\nbuiltin slurp : (<-tables: [A]) => [A] where A: Record\n\n// sink will discard all data that comes into it.\nbuiltin sink",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -302,6 +302,560 @@ var pkgAST = &ast.Package{
 										Start: ast.Position{
 											Column: 36,
 											Line:   5,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Comments: []ast.Comment{ast.Comment{Text: "// slurp will read the incoming tables and concatenate buffers with the same group key\n"}, ast.Comment{Text: "// into a single table. This is useful for testing the performance impact of multiple\n"}, ast.Comment{Text: "// buffers versus a single buffer.\n"}},
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 14,
+						Line:   10,
+					},
+					File:   "debug.flux",
+					Source: "builtin slurp",
+					Start: ast.Position{
+						Column: 1,
+						Line:   10,
+					},
+				},
+			},
+			Colon: nil,
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 14,
+							Line:   10,
+						},
+						File:   "debug.flux",
+						Source: "slurp",
+						Start: ast.Position{
+							Column: 9,
+							Line:   10,
+						},
+					},
+				},
+				Name: "slurp",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 55,
+							Line:   10,
+						},
+						File:   "debug.flux",
+						Source: "(<-tables: [A]) => [A] where A: Record",
+						Start: ast.Position{
+							Column: 17,
+							Line:   10,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 55,
+								Line:   10,
+							},
+							File:   "debug.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 46,
+								Line:   10,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 55,
+									Line:   10,
+								},
+								File:   "debug.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 49,
+									Line:   10,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 47,
+									Line:   10,
+								},
+								File:   "debug.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 46,
+									Line:   10,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 39,
+								Line:   10,
+							},
+							File:   "debug.flux",
+							Source: "(<-tables: [A]) => [A]",
+							Start: ast.Position{
+								Column: 17,
+								Line:   10,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 31,
+									Line:   10,
+								},
+								File:   "debug.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 18,
+									Line:   10,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 26,
+										Line:   10,
+									},
+									File:   "debug.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 20,
+										Line:   10,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 31,
+										Line:   10,
+									},
+									File:   "debug.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 28,
+										Line:   10,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 30,
+											Line:   10,
+										},
+										File:   "debug.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 29,
+											Line:   10,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 30,
+												Line:   10,
+											},
+											File:   "debug.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 29,
+												Line:   10,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 39,
+									Line:   10,
+								},
+								File:   "debug.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 36,
+									Line:   10,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 38,
+										Line:   10,
+									},
+									File:   "debug.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 37,
+										Line:   10,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 38,
+											Line:   10,
+										},
+										File:   "debug.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 37,
+											Line:   10,
+										},
+									},
+								},
+								Name: "A",
+							},
+						},
+					},
+				},
+			},
+		}, &ast.BuiltinStatement{
+			BaseNode: ast.BaseNode{
+				Comments: []ast.Comment{ast.Comment{Text: "// sink will discard all data that comes into it.\n"}},
+				Errors:   nil,
+				Loc: &ast.SourceLocation{
+					End: ast.Position{
+						Column: 13,
+						Line:   13,
+					},
+					File:   "debug.flux",
+					Source: "builtin sink",
+					Start: ast.Position{
+						Column: 1,
+						Line:   13,
+					},
+				},
+			},
+			Colon: nil,
+			ID: &ast.Identifier{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 13,
+							Line:   13,
+						},
+						File:   "debug.flux",
+						Source: "sink",
+						Start: ast.Position{
+							Column: 9,
+							Line:   13,
+						},
+					},
+				},
+				Name: "sink",
+			},
+			Ty: ast.TypeExpression{
+				BaseNode: ast.BaseNode{
+					Comments: nil,
+					Errors:   nil,
+					Loc: &ast.SourceLocation{
+						End: ast.Position{
+							Column: 54,
+							Line:   13,
+						},
+						File:   "debug.flux",
+						Source: "(<-tables: [A]) => [A] where A: Record",
+						Start: ast.Position{
+							Column: 16,
+							Line:   13,
+						},
+					},
+				},
+				Constraints: []*ast.TypeConstraint{&ast.TypeConstraint{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 54,
+								Line:   13,
+							},
+							File:   "debug.flux",
+							Source: "A: Record",
+							Start: ast.Position{
+								Column: 45,
+								Line:   13,
+							},
+						},
+					},
+					Kinds: []*ast.Identifier{&ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 54,
+									Line:   13,
+								},
+								File:   "debug.flux",
+								Source: "Record",
+								Start: ast.Position{
+									Column: 48,
+									Line:   13,
+								},
+							},
+						},
+						Name: "Record",
+					}},
+					Tvar: &ast.Identifier{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 46,
+									Line:   13,
+								},
+								File:   "debug.flux",
+								Source: "A",
+								Start: ast.Position{
+									Column: 45,
+									Line:   13,
+								},
+							},
+						},
+						Name: "A",
+					},
+				}},
+				Ty: &ast.FunctionType{
+					BaseNode: ast.BaseNode{
+						Comments: nil,
+						Errors:   nil,
+						Loc: &ast.SourceLocation{
+							End: ast.Position{
+								Column: 38,
+								Line:   13,
+							},
+							File:   "debug.flux",
+							Source: "(<-tables: [A]) => [A]",
+							Start: ast.Position{
+								Column: 16,
+								Line:   13,
+							},
+						},
+					},
+					Parameters: []*ast.ParameterType{&ast.ParameterType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 30,
+									Line:   13,
+								},
+								File:   "debug.flux",
+								Source: "<-tables: [A]",
+								Start: ast.Position{
+									Column: 17,
+									Line:   13,
+								},
+							},
+						},
+						Kind: "Pipe",
+						Name: &ast.Identifier{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 25,
+										Line:   13,
+									},
+									File:   "debug.flux",
+									Source: "tables",
+									Start: ast.Position{
+										Column: 19,
+										Line:   13,
+									},
+								},
+							},
+							Name: "tables",
+						},
+						Ty: &ast.ArrayType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 30,
+										Line:   13,
+									},
+									File:   "debug.flux",
+									Source: "[A]",
+									Start: ast.Position{
+										Column: 27,
+										Line:   13,
+									},
+								},
+							},
+							ElementType: &ast.TvarType{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 29,
+											Line:   13,
+										},
+										File:   "debug.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 28,
+											Line:   13,
+										},
+									},
+								},
+								ID: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 29,
+												Line:   13,
+											},
+											File:   "debug.flux",
+											Source: "A",
+											Start: ast.Position{
+												Column: 28,
+												Line:   13,
+											},
+										},
+									},
+									Name: "A",
+								},
+							},
+						},
+					}},
+					Return: &ast.ArrayType{
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 38,
+									Line:   13,
+								},
+								File:   "debug.flux",
+								Source: "[A]",
+								Start: ast.Position{
+									Column: 35,
+									Line:   13,
+								},
+							},
+						},
+						ElementType: &ast.TvarType{
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 37,
+										Line:   13,
+									},
+									File:   "debug.flux",
+									Source: "A",
+									Start: ast.Position{
+										Column: 36,
+										Line:   13,
+									},
+								},
+							},
+							ID: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 37,
+											Line:   13,
+										},
+										File:   "debug.flux",
+										Source: "A",
+										Start: ast.Position{
+											Column: 36,
+											Line:   13,
 										},
 									},
 								},

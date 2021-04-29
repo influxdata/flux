@@ -41,6 +41,30 @@ func (a *ArrowBuilder) Cols() []flux.ColMeta {
 	return a.Columns
 }
 
+// Init will initialize the builders for this ArrowBuilder with the given columns.
+// This can be used as an alternative to multiple calls to AddCol.
+func (a *ArrowBuilder) Init(cols []flux.ColMeta) {
+	a.Columns = cols
+	a.Builders = make([]array.Builder, len(cols))
+	for i, col := range cols {
+		a.Builders[i] = arrow.NewBuilder(col.Type, a.Allocator)
+	}
+}
+
+// Resize calls Resize on each of the builders in this builder.
+func (a *ArrowBuilder) Resize(n int) {
+	for _, b := range a.Builders {
+		b.Resize(n)
+	}
+}
+
+// Reserve calls Reserve on each of the builders in this builder.
+func (a *ArrowBuilder) Reserve(n int) {
+	for _, b := range a.Builders {
+		b.Reserve(n)
+	}
+}
+
 // AddCol will add a column with the given metadata.
 // If the column exists, an error is returned.
 func (a *ArrowBuilder) AddCol(c flux.ColMeta) (int, error) {
