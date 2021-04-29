@@ -1,11 +1,11 @@
 package planner_test
 
+
 import "testing"
 import "planner"
 
 option planner.disablePhysicalRules = ["PushDownGroupAggregateRule"]
-
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 input = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
@@ -34,7 +34,6 @@ input = "
 ,,3,2018-05-22T19:53:56Z,system,hostC,load1,1.89
 ,,3,2018-05-22T19:54:16Z,system,hostC,load1,1.93
 "
-
 output = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,true,false,false
@@ -44,16 +43,14 @@ output = "
 ,,1,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostB,load3,1.96
 ,,2,2018-05-22T19:00:00Z,2030-01-01T00:00:00Z,hostC,load1,1.89
 "
-
 group_min_fn = (tables=<-) => tables
     |> range(start: 2018-05-22T19:00:00Z)
-    |> group(columns:["_start", "_stop","host"])
+    |> group(columns: ["_start", "_stop", "host"])
     |> min()
     |> drop(columns: ["_measurement", "_time"])
 
-test group_min_evaluate = () =>
-	({
-		input: testing.loadStorage(csv: input),
-		want: testing.loadMem(csv: output),
-		fn: group_min_fn
-	})
+test group_min_evaluate = () => ({
+    input: testing.loadStorage(csv: input),
+    want: testing.loadMem(csv: output),
+    fn: group_min_fn,
+})

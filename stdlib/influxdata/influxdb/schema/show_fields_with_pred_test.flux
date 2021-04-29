@@ -1,5 +1,6 @@
 package schema_test
 
+
 import "testing"
 
 input = "
@@ -67,7 +68,6 @@ input = "
 ,,7,2018-05-22T19:54:06Z,swp,host.global,used_percent,8259
 ,,7,2018-05-22T19:54:16Z,swp,host.global,used_percent,8264
 "
-
 output = "
 #datatype,string,long,string
 #group,false,false,false
@@ -76,7 +76,6 @@ output = "
 ,,0,load3
 ,,0,load8
 "
-
 show_fields_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
     |> filter(fn: (r) => r._measurement == "sys")
@@ -86,5 +85,4 @@ show_fields_fn = (tables=<-) => tables
     |> distinct(column: "_field")
     |> sort()
 
-test show_fields = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})
+test show_fields = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_fields_fn})

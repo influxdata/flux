@@ -1,5 +1,6 @@
 package schema_test
 
+
 import "testing"
 
 input = "
@@ -53,7 +54,6 @@ input = "
 ,,5,2018-05-22T19:54:06Z,system,us-west,host.local,load5,13
 ,,5,2018-05-22T19:54:16Z,system,us-west,host.local,load5,13
 "
-
 output = "
 #datatype,string,long,string
 #group,false,false,false
@@ -66,7 +66,6 @@ output = "
 ,,0,host
 ,,0,region
 "
-
 show_tag_keys_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z, stop: 2019-01-01T00:00:00Z)
     |> filter(fn: (r) => true)
@@ -75,5 +74,4 @@ show_tag_keys_fn = (tables=<-) => tables
     |> distinct()
     |> sort()
 
-test show_tag_keys = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})
+test show_tag_keys = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_tag_keys_fn})

@@ -1,9 +1,10 @@
 package planner_test
 
+
 import "testing"
 import "planner"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 input = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
@@ -31,7 +32,6 @@ input = "
 ,,2,2018-05-22T19:53:56Z,system,host.local,load5,4.50
 ,,2,2018-05-22T19:54:16Z,system,host.local,load5,2.75
 "
-
 output = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,true,true,true,false
@@ -47,11 +47,9 @@ output = "
 ,,7,2018-05-22T19:53:40Z,2018-05-22T19:54:00Z,system,host.local,load5,3.0
 ,,8,2018-05-22T19:54:00Z,2018-05-22T19:54:20Z,system,host.local,load5,2.75
 "
-
 window_mean_fn = (tables=<-) => tables
     |> range(start: 2018-05-22T00:00:00Z)
     |> window(every: 20s)
     |> mean()
 
-test window_mean_evaluate = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})
+test window_mean_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: window_mean_fn})

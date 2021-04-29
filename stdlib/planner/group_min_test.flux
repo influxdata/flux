@@ -1,9 +1,10 @@
 package planner_test
 
+
 import "testing"
 import "planner"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 input = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
@@ -19,15 +20,14 @@ input = "
 "
 
 testcase group_min_bare {
-// todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
+    // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
     result = testing.loadStorage(csv: input)
         |> range(start: 2018-05-22T19:53:26Z)
         |> filter(fn: (r) => r["_value"] == 1.77)
         |> group(columns: ["_field"])
         |> min()
         |> drop(columns: ["_start", "_stop"])
-
-out_min_bare = "
+    out_min_bare = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,false,false,true,false
 #default,_result,,,,,,
@@ -61,8 +61,7 @@ testcase group_min_bare_host {
         |> group(columns: ["_field"])
         |> min()
         |> drop(columns: ["_start", "_stop"])
-
-out_min_bare = "
+    out_min_bare = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
 #group,false,false,false,false,false,true,false
 #default,_result,,,,,,
@@ -107,11 +106,10 @@ testcase group_min_bare_field {
     // todo(faith): remove drop() call once storage doesnt force _start and _stop columns to be in group key
     result = testing.loadStorage(csv: input_field)
         |> range(start: 2018-05-22T19:00:00Z)
-        |> group(columns:["_start", "_stop","host"])
+        |> group(columns: ["_start", "_stop", "host"])
         |> min()
         |> drop(columns: ["_measurement", "_time"])
-
-out_min_bare = "
+    out_min_bare = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,true,false,false
 #default,_result,,,,,,
@@ -123,7 +121,6 @@ out_min_bare = "
 
     testing.diff(got: result, want: testing.loadMem(csv: out_min_bare)) |> yield()
 }
-
 testcase group_min_window {
     result = testing.loadStorage(csv: input)
         |> range(start: 2018-05-22T19:53:26Z)
@@ -131,8 +128,7 @@ testcase group_min_window {
         |> group(columns: ["_field"])
         |> window(every: 1d)
         |> min()
-
-out_min_window = "
+    out_min_window = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,false,true,false
 #default,_result,,,,,,,,
@@ -142,14 +138,12 @@ out_min_window = "
 
     testing.diff(got: result, want: testing.loadMem(csv: out_min_window)) |> yield()
 }
-
 testcase group_min_agg_window {
     result = testing.loadStorage(csv: input)
         |> range(start: 2018-05-22T19:53:26Z)
         |> group(columns: ["host"])
         |> aggregateWindow(fn: min, every: 1d)
-
-out_min_agg_window = "
+    out_min_agg_window = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,true,false,false
 #default,_result,,,,,,,,
@@ -159,13 +153,11 @@ out_min_agg_window = "
 
     testing.diff(got: result, want: testing.loadMem(csv: out_min_agg_window)) |> yield()
 }
-
 testcase group_min_agg_window_empty {
     result = testing.loadStorage(csv: input)
-    |> range(start: 2018-05-22T19:53:26Z)
-    |> group(columns: ["_field"])
-    |> aggregateWindow(fn: min, every: 1d, createEmpty: true)
-
+        |> range(start: 2018-05-22T19:53:26Z)
+        |> group(columns: ["_field"])
+        |> aggregateWindow(fn: min, every: 1d, createEmpty: true)
     out_min_agg_window_empty = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,false,false,true,false
@@ -178,4 +170,3 @@ testcase group_min_agg_window_empty {
 
     testing.diff(got: result, want: testing.loadMem(csv: out_min_agg_window_empty)) |> yield()
 }
-

@@ -1,5 +1,6 @@
 package regexp
 
+
 builtin compile : (v: string) => regexp
 builtin quoteMeta : (v: string) => string
 builtin findString : (r: regexp, v: string) => string

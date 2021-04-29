@@ -1,8 +1,9 @@
 package planner_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 input = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,double
@@ -30,7 +31,6 @@ input = "
 ,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89
 ,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93
 "
-
 output = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,long
 #group,false,false,true,true,true,true,true,false
@@ -40,10 +40,8 @@ output = "
 ,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load3,6
 ,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,system,host.local,load5,6
 "
-
 bare_count_fn = (tables=<-) => tables
     |> range(start: 2018-05-01T00:00:00Z)
     |> count()
 
-test bare_count_pushdown = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_count_fn})
+test bare_count_pushdown = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_count_fn})

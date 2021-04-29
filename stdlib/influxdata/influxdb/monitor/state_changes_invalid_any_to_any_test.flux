@@ -1,13 +1,13 @@
 package monitor_test
 
+
 import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/v1"
 import "testing"
 import "experimental"
 
 option now = () => 2018-05-22T19:54:40Z
-
-option monitor.log = (tables=<-) => tables |> drop(columns:["_start", "_stop"])
+option monitor.log = (tables=<-) => tables |> drop(columns: ["_start", "_stop"])
 
 // Note this input data is identical to the output data of the check test case, post pivot.
 inData = "
@@ -35,7 +35,6 @@ inData = "
 ,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:21Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018820000000000
 ,,1,000000000000000a,cpu threshold check,ok,statuses,cpu,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,_source_timestamp,1527018860000000000
 "
-
 outData = "
 #datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double
 #group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false
@@ -44,7 +43,6 @@ outData = "
 ,,1,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001
 ,,2,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:22Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05
 "
-
 t_state_changes_any_to_any = (table=<-) => table
     |> range(start: -1m)
     |> v1.fieldsAsCols()
@@ -52,8 +50,6 @@ t_state_changes_any_to_any = (table=<-) => table
         fromLevel: "any",
         toLevel: "any",
     )
-    |> drop(columns: ["_start","_stop"])
+    |> drop(columns: ["_start", "_stop"])
 
-test monitor_state_changes_any_to_any = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})
-
+test monitor_state_changes_any_to_any = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_state_changes_any_to_any})

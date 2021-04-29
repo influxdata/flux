@@ -1,9 +1,10 @@
 package planner_test
 
+
 import "testing"
 import "planner"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,double
@@ -91,11 +92,10 @@ inData = "
 
 testcase group_min_table {
     result = testing.loadStorage(csv: inData)
-    |> range(start: 2019-11-25T00:00:00Z)
-    |> group(columns: ["t0"])
-    |> min()
-    |> drop(columns: ["_start", "_stop"])
-
+        |> range(start: 2019-11-25T00:00:00Z)
+        |> group(columns: ["t0"])
+        |> min()
+        |> drop(columns: ["_start", "_stop"])
     out_min_table = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,false,false
@@ -108,14 +108,12 @@ testcase group_min_table {
 
     testing.diff(got: result, want: testing.loadMem(csv: out_min_table)) |> yield()
 }
-
 testcase group_max_table {
     result = testing.loadStorage(csv: inData)
-    |> range(start: 2019-11-25T00:00:00Z)
-    |> group(columns: ["t0"])
-    |> max()
-    |> drop(columns: ["_start", "_stop"])
-
+        |> range(start: 2019-11-25T00:00:00Z)
+        |> group(columns: ["t0"])
+        |> max()
+        |> drop(columns: ["_start", "_stop"])
     out_max_table = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,false,false
@@ -128,13 +126,11 @@ testcase group_max_table {
 
     testing.diff(got: result, want: testing.loadMem(csv: out_max_table)) |> yield()
 }
-
 // testcase group_no_agg_table {
 //     result = testing.loadStorage(csv: inData)
 //     |> range(start: 2019-11-25T00:00:00Z)
 //     |> group(columns: ["t0"])
 //     |> drop(columns: ["_start", "_stop"])
-
 //     out_no_agg_table = "
 // #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 // #group,false,false,false,false,false,true,false,false
@@ -152,7 +148,6 @@ testcase group_max_table {
 // ,,0,2019-11-25T00:01:30Z,m0,f0,a-0,b-0,2.0
 // ,,0,2019-11-25T00:01:40Z,m0,f0,a-0,b-0,3.0
 // ,,0,2019-11-25T00:01:50Z,m0,f0,a-0,b-0,4.0
-
 // ,,0,2019-11-25T00:00:00Z,m0,f0,a-0,b-1,5.0
 // ,,0,2019-11-25T00:00:10Z,m0,f0,a-0,b-1,6.0
 // ,,0,2019-11-25T00:00:20Z,m0,f0,a-0,b-1,7.0
@@ -165,7 +160,6 @@ testcase group_max_table {
 // ,,0,2019-11-25T00:01:30Z,m0,f0,a-0,b-1,6.0
 // ,,0,2019-11-25T00:01:40Z,m0,f0,a-0,b-1,7.0
 // ,,0,2019-11-25T00:01:50Z,m0,f0,a-0,b-1,8.0
-
 // ,,1,2019-11-25T00:00:00Z,m0,f0,a-1,b-0,1.0
 // ,,1,2019-11-25T00:00:10Z,m0,f0,a-1,b-0,2.0
 // ,,1,2019-11-25T00:00:20Z,m0,f0,a-1,b-0,3.0
@@ -178,7 +172,6 @@ testcase group_max_table {
 // ,,1,2019-11-25T00:01:30Z,m0,f0,a-1,b-0,2.0
 // ,,1,2019-11-25T00:01:40Z,m0,f0,a-1,b-0,3.0
 // ,,1,2019-11-25T00:01:50Z,m0,f0,a-1,b-0,4.0
-
 // ,,1,2019-11-25T00:00:00Z,m0,f0,a-1,b-1,5.0
 // ,,1,2019-11-25T00:00:10Z,m0,f0,a-1,b-1,6.0
 // ,,1,2019-11-25T00:00:20Z,m0,f0,a-1,b-1,7.0
@@ -191,7 +184,6 @@ testcase group_max_table {
 // ,,1,2019-11-25T00:01:30Z,m0,f0,a-1,b-1,6.0
 // ,,1,2019-11-25T00:01:40Z,m0,f0,a-1,b-1,7.0
 // ,,1,2019-11-25T00:01:50Z,m0,f0,a-1,b-1,8.0
-
 // ,,2,2019-11-25T00:00:00Z,m0,f0,a-2,b-0,1.0
 // ,,2,2019-11-25T00:00:10Z,m0,f0,a-2,b-0,2.0
 // ,,2,2019-11-25T00:00:20Z,m0,f0,a-2,b-0,3.0
@@ -204,7 +196,6 @@ testcase group_max_table {
 // ,,2,2019-11-25T00:01:30Z,m0,f0,a-2,b-0,2.0
 // ,,2,2019-11-25T00:01:40Z,m0,f0,a-2,b-0,3.0
 // ,,2,2019-11-25T00:01:50Z,m0,f0,a-2,b-0,4.0
-
 // ,,2,2019-11-25T00:00:00Z,m0,f0,a-2,b-1,5.0
 // ,,2,2019-11-25T00:00:10Z,m0,f0,a-2,b-1,6.0
 // ,,2,2019-11-25T00:00:20Z,m0,f0,a-2,b-1,7.0
@@ -218,6 +209,6 @@ testcase group_max_table {
 // ,,2,2019-11-25T00:01:40Z,m0,f0,a-2,b-1,7.0
 // ,,2,2019-11-25T00:01:50Z,m0,f0,a-2,b-1,8.0
 // "
-
 //     testing.diff(got: result, want: testing.loadMem(csv: out_no_agg_table)) |> yield()
 // }
+

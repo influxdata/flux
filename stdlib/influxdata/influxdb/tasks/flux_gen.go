@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   21,
 				},
 				File:   "tasks.flux",
-				Source: "package tasks\n\n// _zeroTime is a sentinel value for the zero time.\n// This is used to mark that the lastSuccessTime has not been set.\nbuiltin _zeroTime: time\n\n// lastSuccessTime is the last time this task had run successfully.\noption lastSuccessTime = _zeroTime\n\n// _lastSuccess will return the time set on the option lastSuccessTime\n// or it will return the orTime.\nbuiltin _lastSuccess:\n    (orTime: T, lastSuccessTime: time) => time where T: Timeable\n\n// lastSuccess will return the last successful time a task ran\n// within an influxdb task. If the task has not successfully run,\n// the orTime will be returned.\nlastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)",
+				Source: "package tasks\n\n\n// _zeroTime is a sentinel value for the zero time.\n// This is used to mark that the lastSuccessTime has not been set.\nbuiltin _zeroTime : time\n\n// lastSuccessTime is the last time this task had run successfully.\noption lastSuccessTime = _zeroTime\n\n// _lastSuccess will return the time set on the option lastSuccessTime\n// or it will return the orTime.\nbuiltin _lastSuccess : (orTime: T, lastSuccessTime: time) => time where T: Timeable\n\n// lastSuccess will return the last successful time a task ran\n// within an influxdb task. If the task has not successfully run,\n// the orTime will be returned.\nlastSuccess = (orTime) => _lastSuccess(orTime, lastSuccessTime)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   4,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   8,
+						Line:   9,
 					},
 					File:   "tasks.flux",
 					Source: "builtin _zeroTime",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   9,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "tasks.flux",
 						Source: "_zeroTime",
 						Start: ast.Position{
 							Column: 9,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},
@@ -77,14 +77,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 24,
-							Line:   8,
+							Column: 25,
+							Line:   9,
 						},
 						File:   "tasks.flux",
 						Source: "time",
 						Start: ast.Position{
-							Column: 20,
-							Line:   8,
+							Column: 21,
+							Line:   9,
 						},
 					},
 				},
@@ -95,14 +95,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 24,
-								Line:   8,
+								Column: 25,
+								Line:   9,
 							},
 							File:   "tasks.flux",
 							Source: "time",
 							Start: ast.Position{
-								Column: 20,
-								Line:   8,
+								Column: 21,
+								Line:   9,
 							},
 						},
 					},
@@ -112,14 +112,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 24,
-									Line:   8,
+									Column: 25,
+									Line:   9,
 								},
 								File:   "tasks.flux",
 								Source: "time",
 								Start: ast.Position{
-									Column: 20,
-									Line:   8,
+									Column: 21,
+									Line:   9,
 								},
 							},
 						},
@@ -135,13 +135,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   11,
+							Line:   12,
 						},
 						File:   "tasks.flux",
 						Source: "lastSuccessTime = _zeroTime",
 						Start: ast.Position{
 							Column: 8,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -152,13 +152,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   11,
+								Line:   12,
 							},
 							File:   "tasks.flux",
 							Source: "lastSuccessTime",
 							Start: ast.Position{
 								Column: 8,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -171,13 +171,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   11,
+								Line:   12,
 							},
 							File:   "tasks.flux",
 							Source: "_zeroTime",
 							Start: ast.Position{
 								Column: 26,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -190,13 +190,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   11,
+						Line:   12,
 					},
 					File:   "tasks.flux",
 					Source: "option lastSuccessTime = _zeroTime",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   12,
 					},
 				},
 			},
@@ -207,13 +207,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 21,
-						Line:   15,
+						Line:   16,
 					},
 					File:   "tasks.flux",
 					Source: "builtin _lastSuccess",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -225,13 +225,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "tasks.flux",
 						Source: "_lastSuccess",
 						Start: ast.Position{
 							Column: 9,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -243,13 +243,13 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 65,
+							Column: 84,
 							Line:   16,
 						},
 						File:   "tasks.flux",
 						Source: "(orTime: T, lastSuccessTime: time) => time where T: Timeable",
 						Start: ast.Position{
-							Column: 5,
+							Column: 24,
 							Line:   16,
 						},
 					},
@@ -260,13 +260,13 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 65,
+								Column: 84,
 								Line:   16,
 							},
 							File:   "tasks.flux",
 							Source: "T: Timeable",
 							Start: ast.Position{
-								Column: 54,
+								Column: 73,
 								Line:   16,
 							},
 						},
@@ -277,13 +277,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 65,
+									Column: 84,
 									Line:   16,
 								},
 								File:   "tasks.flux",
 								Source: "Timeable",
 								Start: ast.Position{
-									Column: 57,
+									Column: 76,
 									Line:   16,
 								},
 							},
@@ -296,13 +296,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 55,
+									Column: 74,
 									Line:   16,
 								},
 								File:   "tasks.flux",
 								Source: "T",
 								Start: ast.Position{
-									Column: 54,
+									Column: 73,
 									Line:   16,
 								},
 							},
@@ -316,13 +316,13 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 47,
+								Column: 66,
 								Line:   16,
 							},
 							File:   "tasks.flux",
 							Source: "(orTime: T, lastSuccessTime: time) => time",
 							Start: ast.Position{
-								Column: 5,
+								Column: 24,
 								Line:   16,
 							},
 						},
@@ -333,13 +333,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
+									Column: 34,
 									Line:   16,
 								},
 								File:   "tasks.flux",
 								Source: "orTime: T",
 								Start: ast.Position{
-									Column: 6,
+									Column: 25,
 									Line:   16,
 								},
 							},
@@ -351,13 +351,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 31,
 										Line:   16,
 									},
 									File:   "tasks.flux",
 									Source: "orTime",
 									Start: ast.Position{
-										Column: 6,
+										Column: 25,
 										Line:   16,
 									},
 								},
@@ -370,13 +370,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
+										Column: 34,
 										Line:   16,
 									},
 									File:   "tasks.flux",
 									Source: "T",
 									Start: ast.Position{
-										Column: 14,
+										Column: 33,
 										Line:   16,
 									},
 								},
@@ -387,13 +387,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
+											Column: 34,
 											Line:   16,
 										},
 										File:   "tasks.flux",
 										Source: "T",
 										Start: ast.Position{
-											Column: 14,
+											Column: 33,
 											Line:   16,
 										},
 									},
@@ -407,13 +407,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 38,
+									Column: 57,
 									Line:   16,
 								},
 								File:   "tasks.flux",
 								Source: "lastSuccessTime: time",
 								Start: ast.Position{
-									Column: 17,
+									Column: 36,
 									Line:   16,
 								},
 							},
@@ -425,13 +425,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 32,
+										Column: 51,
 										Line:   16,
 									},
 									File:   "tasks.flux",
 									Source: "lastSuccessTime",
 									Start: ast.Position{
-										Column: 17,
+										Column: 36,
 										Line:   16,
 									},
 								},
@@ -444,13 +444,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 38,
+										Column: 57,
 										Line:   16,
 									},
 									File:   "tasks.flux",
 									Source: "time",
 									Start: ast.Position{
-										Column: 34,
+										Column: 53,
 										Line:   16,
 									},
 								},
@@ -461,13 +461,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 38,
+											Column: 57,
 											Line:   16,
 										},
 										File:   "tasks.flux",
 										Source: "time",
 										Start: ast.Position{
-											Column: 34,
+											Column: 53,
 											Line:   16,
 										},
 									},
@@ -482,13 +482,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 47,
+									Column: 66,
 									Line:   16,
 								},
 								File:   "tasks.flux",
 								Source: "time",
 								Start: ast.Position{
-									Column: 43,
+									Column: 62,
 									Line:   16,
 								},
 							},
@@ -499,13 +499,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 47,
+										Column: 66,
 										Line:   16,
 									},
 									File:   "tasks.flux",
 									Source: "time",
 									Start: ast.Position{
-										Column: 43,
+										Column: 62,
 										Line:   16,
 									},
 								},

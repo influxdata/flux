@@ -1,8 +1,9 @@
 package schema_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 input = "
 #group,false,false,false,false,true,true,true,true,true,true,true
@@ -55,7 +56,6 @@ input = "
 ,,9,usage_user,cpu,2020-10-21T20:48:40Z,2.4000000000536965,cpu1,euterpe.local,north
 ,,9,usage_user,cpu,2020-10-21T20:48:50Z,2.0999999999423746,cpu1,euterpe.local,north
 "
-
 output = "
 #datatype,string,long,string
 #group,false,false,false
@@ -63,7 +63,6 @@ output = "
 ,result,table,_value
 ,,0,cpu
 "
-
 show_measurements_fn = (tables=<-) => tables
     |> range(start: 2018-01-01T00:00:00Z)
     |> filter(fn: (r) => r._field == "usage_idle" and r.host == "euterpe.local")
@@ -72,5 +71,4 @@ show_measurements_fn = (tables=<-) => tables
     |> distinct(column: "_measurement")
     |> sort()
 
-test show_measurements = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})
+test show_measurements = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: show_measurements_fn})

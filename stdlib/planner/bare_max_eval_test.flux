@@ -1,9 +1,10 @@
 package planner_test
 
+
 import "testing"
 import "planner"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 option planner.disablePhysicalRules = ["PushDownBareAggregateRule"]
 
 input = "
@@ -32,7 +33,6 @@ input = "
 ,,2,2018-05-22T19:53:56Z,system,host.local,load5,1.89
 ,,2,2018-05-22T19:54:16Z,system,host.local,load5,1.93
 "
-
 output = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,false,true,true,true,false
@@ -42,10 +42,8 @@ output = "
 ,,1,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,system,host.local,load3,1.99
 ,,2,2018-05-01T00:00:00Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,system,host.local,load5,1.95
 "
-
 bare_max_fn = (tables=<-) => tables
     |> range(start: 2018-05-01T00:00:00Z)
     |> max()
 
-test bare_max_evaluate = () =>
-    ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_max_fn})
+test bare_max_evaluate = () => ({input: testing.loadStorage(csv: input), want: testing.loadMem(csv: output), fn: bare_max_fn})

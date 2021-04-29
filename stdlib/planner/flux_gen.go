@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 35,
-					Line:   4,
+					Line:   5,
 				},
 				File:   "planner.flux",
-				Source: "package planner\n\noption disableLogicalRules = [\"\"]\noption disablePhysicalRules = [\"\"]",
+				Source: "package planner\n\n\noption disableLogicalRules = [\"\"]\noption disablePhysicalRules = [\"\"]",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -42,13 +42,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 34,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "planner.flux",
 						Source: "disableLogicalRules = [\"\"]",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 27,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "planner.flux",
 							Source: "disableLogicalRules",
 							Start: ast.Position{
 								Column: 8,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "planner.flux",
 							Source: "[\"\"]",
 							Start: ast.Position{
 								Column: 30,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "planner.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 31,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -117,13 +117,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 34,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "planner.flux",
 					Source: "option disableLogicalRules = [\"\"]",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -135,13 +135,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "planner.flux",
 						Source: "disablePhysicalRules = [\"\"]",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -152,13 +152,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
-								Line:   4,
+								Line:   5,
 							},
 							File:   "planner.flux",
 							Source: "disablePhysicalRules",
 							Start: ast.Position{
 								Column: 8,
-								Line:   4,
+								Line:   5,
 							},
 						},
 					},
@@ -171,13 +171,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   4,
+								Line:   5,
 							},
 							File:   "planner.flux",
 							Source: "[\"\"]",
 							Start: ast.Position{
 								Column: 31,
-								Line:   4,
+								Line:   5,
 							},
 						},
 					},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   4,
+									Line:   5,
 								},
 								File:   "planner.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 32,
-									Line:   4,
+									Line:   5,
 								},
 							},
 						},
@@ -210,13 +210,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "planner.flux",
 					Source: "option disablePhysicalRules = [\"\"]",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
