@@ -72,7 +72,7 @@ pub struct Token {
 }
 
 impl Scanner {
-    /// New creates a scanner with the provided input.
+    /// Create a new scanner with the provided input.
     pub fn new(input: &str) -> Self {
         let mut data = Vec::new();
         data.extend_from_slice(input.as_bytes());
