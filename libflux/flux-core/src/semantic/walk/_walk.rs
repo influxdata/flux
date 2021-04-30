@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use crate::ast::SourceLocation;
 use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;

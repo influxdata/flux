@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use crate::ast;
 use crate::parser::parse_string;
 use crate::semantic::convert;

@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 mod _walk;
 mod walk_mut;
 pub use _walk::*;

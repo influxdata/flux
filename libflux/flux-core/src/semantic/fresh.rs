@@ -34,6 +34,7 @@ impl Default for Fresher {
 
 /// Trait for implementing `fresh` for various types.
 pub trait Fresh {
+    #[allow(missing_docs)]
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self;
 }
 
