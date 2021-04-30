@@ -1,4 +1,5 @@
-#![allow(missing_docs)]
+//! Source code formatter.
+
 use crate::ast::{self, walk::Node, File};
 use crate::parser::parse_string;
 use crate::Error;
@@ -12,6 +13,7 @@ use tabwriter::{Alignment, IntoInnerError, TabWriter};
 use chrono::SecondsFormat;
 use wasm_bindgen::prelude::*;
 
+/// Format a JS file.
 #[wasm_bindgen]
 pub fn format_from_js_file(js_file: JsValue) -> String {
     if let Ok(file) = js_file.into_serde::<File>() {
@@ -22,17 +24,22 @@ pub fn format_from_js_file(js_file: JsValue) -> String {
     "".to_string()
 }
 
+/// Format a [`File`].
 pub fn convert_to_string(file: &File) -> Result<String, Error> {
     let mut formatter = Formatter::default();
     formatter.format_file(file, true);
     formatter.output()
 }
 
+/// Format a string of Flux code.
 pub fn format(contents: &str) -> Result<String, Error> {
     let file = parse_string("", contents);
     convert_to_string(&file)
 }
 
+/// Struct to hold data related to formatting such as formatted code,
+/// options, and errors.
+/// Provides methods for formatting files and strings of source code.
 pub struct Formatter {
     // Builder is a buffer of the formatted code. We use a TabWriter to align tabstops
     // vertically.
@@ -106,7 +113,7 @@ impl From<IntoInnerError<TabWriter<Vec<u8>>>> for Error {
 }
 
 impl Formatter {
-    // returns the final string and error msg
+    /// Returns the final formatted string and error message.
     pub fn output(mut self) -> Result<String, Error> {
         if let Some(err) = self.err {
             return Err(err);
@@ -185,6 +192,7 @@ impl Formatter {
         self.write_rune('\n')
     }
 
+    /// Format a file.
     pub fn format_file(&mut self, n: &File, include_pkg: bool) {
         let sep = '\n';
         if let Some(pkg) = &n.package {
