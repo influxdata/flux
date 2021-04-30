@@ -344,7 +344,7 @@ pub struct Comment {
     pub text: String,
 }
 
-// BaseNode holds the attributes every expression or statement must have
+/// BaseNode holds the attributes every expression or statement must have.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct BaseNode {
@@ -378,7 +378,7 @@ impl BaseNode {
     }
 }
 
-/// Package represents a complete package source tree
+/// Package represents a complete package source tree.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -407,7 +407,7 @@ impl From<File> for Package {
     }
 }
 
-/// File represents a source from a single file
+/// Represents a source from a single file.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -440,7 +440,7 @@ impl File {
     }
 }
 
-/// PackageClause defines the current package identifier.
+/// Defines the current package identifier.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -452,7 +452,7 @@ pub struct PackageClause {
     pub name: Identifier,
 }
 
-/// ImportDeclaration declares a single import
+/// Declares a single import.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -466,7 +466,7 @@ pub struct ImportDeclaration {
     pub path: StringLit,
 }
 
-/// Block is a set of statements
+/// Block is a set of statements.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -497,7 +497,8 @@ pub struct BadStmt {
     pub text: String,
 }
 
-/// ExprStmt may consist of an expression that does not return a value and is executed solely for its side-effects.
+/// ExprStmt may consist of an expression that does not return a value
+/// and is executed solely for its side-effects.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct ExprStmt {
@@ -508,7 +509,7 @@ pub struct ExprStmt {
     pub expression: Expression,
 }
 
-/// ReturnStmt defines an Expression to return
+/// Defines an Expression to return.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct ReturnStmt {
@@ -519,7 +520,9 @@ pub struct ReturnStmt {
     pub argument: Expression,
 }
 
-/// OptionStmt syntactically is a single variable declaration
+/// An option statement.
+///
+/// Syntactically, is a single variable declaration.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct OptionStmt {
@@ -530,7 +533,7 @@ pub struct OptionStmt {
     pub assignment: Assignment,
 }
 
-/// BuiltinStmt declares a builtin identifier and its struct
+/// BuiltinStmt declares a builtin identifier and its struct.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct BuiltinStmt {
@@ -545,6 +548,7 @@ pub struct BuiltinStmt {
     pub ty: TypeExpression,
 }
 
+/// A monotype.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -897,7 +901,7 @@ pub struct PropertyType {
     pub monotype: MonoType,
 }
 
-/// TestStmt declares a Flux test case
+/// TestStmt declares a Flux test case.
 #[allow(missing_docs)]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct TestStmt {
@@ -908,7 +912,7 @@ pub struct TestStmt {
     pub assignment: VariableAssgn,
 }
 
-/// TestCaseStmt declares a Flux test case.
+/// Declares a Flux test case.
 // XXX: rockstar (17 Nov 2020) - This should replace the TestStmt above, once
 // it has been extended enough to cover the existing use cases.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -924,7 +928,7 @@ pub struct TestCaseStmt {
     pub block: Block,
 }
 
-/// VariableAssgn represents the declaration of a variable
+/// Represents the declaration of a variable.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct VariableAssgn {
@@ -936,7 +940,7 @@ pub struct VariableAssgn {
     pub init: Expression,
 }
 
-/// MemberAssgn represents an assignement into a member of an object.
+/// Represents an assignement into a member of an object.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct MemberAssgn {
@@ -948,7 +952,7 @@ pub struct MemberAssgn {
     pub init: Expression,
 }
 
-/// StringExpr represents an interpolated string
+/// Represents an interpolated string.
 #[allow(missing_docs)]
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct StringExpr {
@@ -959,7 +963,7 @@ pub struct StringExpr {
     pub parts: Vec<StringExprPart>,
 }
 
-/// StringExprPart represents part of an interpolated string
+/// Represents part of an interpolated string.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -970,7 +974,7 @@ pub enum StringExprPart {
     Interpolated(InterpolatedPart),
 }
 
-/// TextPart represents the text part of an interpolated string
+/// Represents the text part of an interpolated string.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct TextPart {
@@ -981,7 +985,7 @@ pub struct TextPart {
     pub value: String,
 }
 
-/// InterpolatedPart represents the expression part of an interpolated string
+/// Represents the expression part of an interpolated string.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct InterpolatedPart {
@@ -992,7 +996,7 @@ pub struct InterpolatedPart {
     pub expression: Expression,
 }
 
-/// ParenExpr represents an expression wrapped in parenthesis
+/// Represents an expression wrapped in parenthesis.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct ParenExpr {
@@ -1009,7 +1013,7 @@ pub struct ParenExpr {
     pub rparen: Vec<Comment>,
 }
 
-/// CallExpr represents a function call
+/// Represents a function call.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct CallExpr {
@@ -1029,7 +1033,7 @@ pub struct CallExpr {
     pub rparen: Vec<Comment>,
 }
 
-/// PipeExpr represents a call expression using the pipe forward syntax.
+/// Represents a call expression using the pipe forward syntax.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct PipeExpr {
@@ -1041,7 +1045,7 @@ pub struct PipeExpr {
     pub call: CallExpr,
 }
 
-/// MemberExpr represents calling a property of a Call
+/// Represents calling a property of a Call.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct MemberExpr {
@@ -1059,7 +1063,7 @@ pub struct MemberExpr {
     pub rbrack: Vec<Comment>,
 }
 
-/// IndexExpr represents indexing into an array
+/// Represents indexing into an array.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct IndexExpr {
@@ -1098,11 +1102,12 @@ pub struct FunctionExpr {
     pub body: FunctionBody,
 }
 
-/// Operator are Equality and Arithmetic operators.
-/// Result of evaluating an equality operator is always of type Boolean based on whether the
-/// comparison is true.
-/// Arithmetic operators take numerical values (either literals or variables) as their operands
-/// and return a single numerical value.
+/// Represents Equality and Arithmetic operators.
+///
+/// Result of evaluating an equality operator is always of type `bool`
+/// based on whether the comparison is true.
+/// Arithmetic operators take numerical values (either literals or variables)
+/// as their operands and return a single numerical value.
 #[derive(Debug, Display, PartialEq, Clone)]
 #[allow(missing_docs)]
 pub enum Operator {
@@ -1250,7 +1255,7 @@ pub struct UnaryExpr {
     pub argument: Expression,
 }
 
-/// LogicalOperator are used with boolean (logical) values
+/// LogicalOperator are used with boolean (logical) values.
 #[derive(Debug, PartialEq, Clone)]
 #[allow(missing_docs)]
 pub enum LogicalOperator {
@@ -1523,7 +1528,8 @@ pub struct BooleanLit {
     pub value: bool,
 }
 
-/// FloatLit represent floating point numbers according to the double representations defined by the IEEE-754-1985
+/// Represent floating point numbers according to the double representations
+/// defined by [IEEE-754-1985](https://en.wikipedia.org/wiki/IEEE_754-1985).
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct FloatLit {
@@ -1534,7 +1540,7 @@ pub struct FloatLit {
     pub value: f64,
 }
 
-/// IntegerLit represent integer numbers.
+/// Represents integer numbers.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct IntegerLit {
@@ -1547,7 +1553,7 @@ pub struct IntegerLit {
     pub value: i64,
 }
 
-/// UintLit represent integer numbers.
+/// Represents integer numbers.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct UintLit {
@@ -1626,7 +1632,7 @@ where
     d.deserialize_str(I64Visitor)
 }
 
-/// RegexpLit expressions begin and end with `/` and are regular expressions with syntax accepted by RE2
+/// RegexpLit expressions begin and end with `/` and are regular expressions with syntax accepted by RE2.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[allow(missing_docs)]
 pub struct RegexpLit {
@@ -1648,7 +1654,9 @@ pub struct Duration {
 }
 
 /// DurationLit represents the elapsed time between two instants as an
-/// int64 nanosecond count with syntax of golang's time.Duration
+/// int64 nanosecond count with syntax of [golang's time.Duration].
+///
+/// [golang's time.Duration]: https://golang.org/pkg/time/#Duration
 // TODO: this may be better as a class initialization
 // All magnitudes in Duration vector should have the same sign
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -1662,7 +1670,7 @@ pub struct DurationLit {
 }
 
 /// DateTimeLit represents an instant in time with nanosecond precision using
-/// the syntax of golang's RFC3339 Nanosecond variant
+/// the syntax of golang's RFC3339 Nanosecond variant.
 // TODO: we need a "duration from" that takes a time and a durationliteral, and gives an exact time.DurationLit instead of an approximation
 // TODO: this may be better as a class initialization
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
