@@ -2,8 +2,8 @@ use derive_more::Display;
 
 use crate::ast::{walk, PropertyKey, SourceLocation};
 
-// check() inspects an AST node and returns a list of found AST errors plus
-// any errors existed before ast.check() is performed.
+/// Inspects an AST node and returns a list of found AST errors plus
+/// any errors existed before `ast.check()` is performed.
 pub fn check(node: walk::Node) -> Vec<Error> {
     let mut errors = vec![];
     walk::walk(
@@ -64,10 +64,13 @@ pub fn check(node: walk::Node) -> Vec<Error> {
     errors
 }
 
+/// An error that can be returned while checking the AST.
 #[derive(Debug, Display, PartialEq)] // derive std::fmt::Debug on AppError
 #[display(fmt = "error at {}: {}", location, message)]
 pub struct Error {
+    /// Location of the error in source code.
     pub location: SourceLocation,
+    /// Error message.
     pub message: String,
 }
 

@@ -16,7 +16,7 @@ var sourceHashes = map[string]string{
 	"libflux/Cargo.toml":                                                            "c15d0e819daae82f6f1cc05c556f48cb22d91eb6e7bd6d8c2ccf3f2450f925f2",
 	"libflux/flux-core/Cargo.toml":                                                  "250d498b2cec53225353a2a091660debd05c2ce69ad421e161c401b5dfc45df1",
 	"libflux/flux-core/benches/scanner.rs":                                          "da73723114b3a22ef3f497fbc7bf9b93b4ddc1e38d31d0fee974e027fb45f199",
-	"libflux/flux-core/src/ast/check/mod.rs":                                        "c6ef78c2fa1b58a4076807c38cc7c07b9f605cf63cc545126253a2bb3c653595",
+	"libflux/flux-core/src/ast/check/mod.rs":                                        "e6fba39b1d0ed06a48e17e43e3687489508400236fecb09eb61dbb069b3b7b34",
 	"libflux/flux-core/src/ast/check/tests.rs":                                      "dfa6dc9b877a72825c4b6669606c5b79de1bc11602c4259f712af1a252c92820",
 	"libflux/flux-core/src/ast/flatbuffers/ast_generated.rs":                        "c41b82c7268d3f2986e9dd1221e87f773b110425afb21192486dc1040522db20",
 	"libflux/flux-core/src/ast/flatbuffers/mod.rs":                                  "0dde310b44e9323f1d2029540327a281dec1e0bf8a66787e2f3a339391e72ceb",
