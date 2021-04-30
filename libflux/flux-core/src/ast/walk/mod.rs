@@ -8,8 +8,9 @@ use derive_more::Display;
 
 use crate::ast::*;
 
-/// Node represents any structure that can appear in the AST
+/// Node represents any structure that can appear in the AST.
 #[derive(Debug, Display)]
+#[allow(missing_docs)]
 pub enum Node<'a> {
     #[display(fmt = "Package")]
     Package(&'a Package),
