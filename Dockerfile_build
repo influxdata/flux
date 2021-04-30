@@ -97,14 +97,14 @@ ENV PATH="/go/clang_8.0.0/bin:${PATH}" \
 # The `git checkout` line specifies what was HEAD at the time of this authoring. It makes sense to pin
 # our build to that commit, rather than rely on a completely api-stable osxcross for eternity. There is
 # nothing special about that specific commit.
-ENV MACOSX_DEPLOYMENT_TARGET=10.11
+ENV MACOSX_DEPLOYMENT_TARGET=10.12
 RUN mkdir -p /opt/osxcross && \
     cd /opt && \
     git clone https://github.com/tpoechtrager/osxcross.git && \
     cd osxcross && \
-    git checkout c2ad5e859d12a295c3f686a15bd7181a165bfa82 && \
+    git checkout 5771a847950abefed9a37e2d16ee10e0dd90c641 && \
     curl -L -o ./tarballs/MacOSX${MACOSX_DEPLOYMENT_TARGET}.sdk.tar.xz \
-        https://macos-sdks.s3.amazonaws.com/MacOSX${MACOSX_DEPLOYMENT_TARGET}.sdk.tar.xz && \
+        https://storage.googleapis.com/influxdata-team-flux/macos-sdks/MacOSX${MACOSX_DEPLOYMENT_TARGET}.sdk.tar.xz && \
     UNATTENDED=1 PORTABLE=true OCDEBUG=1 ./build.sh
 ENV PATH="/opt/osxcross/target/bin:${PATH}"
 
