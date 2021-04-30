@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/influxdata/flux"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/execute/table/static"
-	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
 )
 

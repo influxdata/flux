@@ -6,6 +6,7 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/arrow"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 )
 
@@ -28,7 +29,7 @@ func NewArrowBuilder(key flux.GroupKey, mem memory.Allocator) *ArrowBuilder {
 
 // GetArrowBuilder is a convenience method for retrieving an
 // ArrowBuilder from the BuilderCache.
-func GetArrowBuilder(key flux.GroupKey, cache *BuilderCache) (builder *ArrowBuilder, created bool) {
+func GetArrowBuilder(key flux.GroupKey, cache *table.BuilderCache) (builder *ArrowBuilder, created bool) {
 	created = cache.Get(key, &builder)
 	return builder, created
 }
@@ -138,11 +139,20 @@ func (a *ArrowBuilder) Table() (flux.Table, error) {
 	if err != nil {
 		return nil, err
 	}
-	return FromBuffer(&buffer), nil
+	return table.FromBuffer(&buffer), nil
 }
 
 func (a *ArrowBuilder) Release() {
 	for _, b := range a.Builders {
 		b.Release()
 	}
+}
+
+func colIdx(label string, cols []flux.ColMeta) int {
+	for j, c := range cols {
+		if c.Label == label {
+			return j
+		}
+	}
+	return -1
 }
