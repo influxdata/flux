@@ -18,10 +18,11 @@ use serde::de::{Deserialize, Deserializer, Error, Visitor};
 use serde::ser::{Serialize, SerializeSeq, Serializer};
 use serde_aux::prelude::*;
 
+/// The default package name.
 pub const DEFAULT_PACKAGE_NAME: &str = "main";
 
-// Position is the AST counterpart of Scanner's Position.
-// It adds serde capabilities.
+/// Position is the AST counterpart of [`scanner::Position`].
+/// It adds serde capabilities.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub struct Position {
     pub line: u32,
@@ -62,15 +63,19 @@ impl Default for Position {
     }
 }
 
-// SourceLocation represents the location of a node in the AST
+/// Represents the location of a node in the AST.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 pub struct SourceLocation {
+    /// File is the optional file name.
     #[serde(skip_serializing_if = "skip_string_option")]
-    pub file: Option<String>, // File is the optional file name.
-    pub start: Position, // Start is the location in the source the node starts.
-    pub end: Position,   // End is the location in the source the node ends.
+    pub file: Option<String>,
+    /// Start is the location in the source the node starts.
+    pub start: Position,
+    /// End is the location in the source the node ends.
+    pub end: Position,
+    /// Source is optional raw source.
     #[serde(skip_serializing_if = "skip_string_option")]
-    pub source: Option<String>, // Source is optional raw source.
+    pub source: Option<String>,
 }
 
 impl SourceLocation {
