@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
 use derive_more::Display;

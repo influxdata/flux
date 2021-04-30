@@ -1,6 +1,5 @@
 //! Semantic analysis.
 
-#![allow(missing_docs)]
 pub mod convert;
 
 mod import;
@@ -33,6 +32,7 @@ use crate::semantic::fresh::Fresher;
 pub use crate::semantic::import::Importer;
 use derive_more::Display;
 
+/// An error in semantic analysis.
 #[derive(Debug, Display)]
 #[display(fmt = "{}", msg)]
 pub struct Error {

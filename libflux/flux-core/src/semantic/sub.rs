@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 
 // A substitution defines a function that takes a monotype as input

@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::collections::HashSet;
 use std::fs;
 use std::io;
