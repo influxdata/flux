@@ -3,7 +3,6 @@
 pub mod check;
 #[allow(missing_docs)]
 pub mod flatbuffers;
-#[allow(missing_docs)]
 pub mod walk;
 
 use super::DefaultHasher;
