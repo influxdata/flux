@@ -8,9 +8,8 @@ import (
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
-	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
-	itable "github.com/influxdata/flux/internal/execute/table"
+	"github.com/influxdata/flux/internal/execute/table"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
@@ -230,7 +229,7 @@ func (t *fillTransformation) Process(id execute.DatasetID, tbl flux.Table) error
 		fillValue = values.Unwrap(t.spec.Value)
 	}
 
-	table, err := itable.StreamWithContext(t.ctx, key, tbl.Cols(), func(ctx context.Context, w *itable.StreamWriter) error {
+	table, err := table.StreamWithContext(t.ctx, key, tbl.Cols(), func(ctx context.Context, w *table.StreamWriter) error {
 		return tbl.Do(func(cr flux.ColReader) error {
 			return t.fillTable(w, cr, colIdx, &fillValue)
 		})
@@ -251,7 +250,7 @@ func (t *fillTransformation) Finish(id execute.DatasetID, err error) {
 	t.d.Finish(err)
 }
 
-func (t *fillTransformation) fillTable(w *itable.StreamWriter, cr flux.ColReader, colIdx int, fillValue *interface{}) error {
+func (t *fillTransformation) fillTable(w *table.StreamWriter, cr flux.ColReader, colIdx int, fillValue *interface{}) error {
 	if cr.Len() == 0 {
 		return nil
 	}
