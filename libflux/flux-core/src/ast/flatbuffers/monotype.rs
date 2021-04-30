@@ -1,5 +1,5 @@
-//! Flatbuffer serialization for MonoType AST nodes
-//!
+//! Flatbuffer serialization for MonoType AST nodes.
+
 use crate::ast::flatbuffers::ast_generated::fbast as fb;
 
 #[rustfmt::skip]
