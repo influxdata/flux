@@ -1,8 +1,9 @@
 package universe_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -45,7 +46,6 @@ inData = "
 ,,4,2018-05-22T19:54:06Z,1.94,load5,system,host.local
 ,,4,2018-05-22T19:54:16Z,1.93,load5,system,host.local
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,long
 #group,false,false,true,true,true,true,true,true,false
@@ -54,14 +54,10 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk0,6
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,diskio,io_time,host.local,disk2,0
 "
+t_filter_mixed_empty = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> filter(fn: (r) => r._measurement == "diskio")
+    |> filter(fn: (r) => r["_value"] > 1000, onEmpty: "keep")
+    |> count()
 
-t_filter_mixed_empty = (table=<-) =>
-  table
-  |> range(start: 2018-05-22T19:53:26Z)
-  |> filter(fn: (r) => r._measurement == "diskio")
-  |> filter(fn: (r) => r["_value"] > 1000, onEmpty: "keep")
-  |> count()
-
-test _filter_mixed_empty = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_mixed_empty})
-
+test _filter_mixed_empty = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_filter_mixed_empty})

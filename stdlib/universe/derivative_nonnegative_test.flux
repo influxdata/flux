@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -19,7 +20,6 @@ inData = "
 ,,0,2018-05-22T19:54:46Z,7,usage_guest_nice,cpu,cpu-total,host.local
 ,,0,2018-05-22T19:54:56Z,10,usage_guest_nice,cpu,cpu-total,host.local
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,true,true,false,false,true,true,true,true
@@ -34,11 +34,8 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:46Z,,usage_guest_nice,cpu,cpu-total,host.local
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:56Z,0.03,usage_guest_nice,cpu,cpu-total,host.local
 "
-derivative_nonnegative = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> derivative(unit: 100ms, nonNegative: true))
+derivative_nonnegative = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> derivative(unit: 100ms, nonNegative: true)
 
-test _derivative_nonnegative = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: derivative_nonnegative})
-
+test _derivative_nonnegative = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: derivative_nonnegative})

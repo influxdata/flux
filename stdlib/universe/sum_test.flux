@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,unsignedLong
@@ -38,7 +39,6 @@ inData = "
 ,,2,Sgf,qaOnnQc,2018-12-18T22:11:45Z,16.140262630578995
 ,,2,Sgf,qaOnnQc,2018-12-18T22:11:55Z,29.50336437998469
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,unsignedLong
 #group,false,false,true,true,true,true,false
@@ -56,12 +56,8 @@ outData = "
 ,result,table,_start,_stop,_measurement,_field,_value
 ,,2,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,qaOnnQc,65.87456992286917
 "
+t_sum = (table=<-) => table
+    |> range(start: 2018-12-01T00:00:00Z)
+    |> sum()
 
-t_sum = (table=<-) =>
-	(table
-		|> range(start: 2018-12-01T00:00:00Z)
-		|> sum())
-
-test _sum = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})
-
+test _sum = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_sum})

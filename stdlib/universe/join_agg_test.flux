@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -18,7 +19,6 @@ inData = "
 ,,3,2019-05-10T20:50:00Z,0,writes,diskio,ip-192-168-1-16.ec2.internal,disk2
 ,,3,2019-05-10T20:50:10Z,0,writes,diskio,ip-192-168-1-16.ec2.internal,disk2
 "
-
 outData = "
 #datatype,string,long,string,long,long
 #group,false,false,true,false,false
@@ -27,19 +27,17 @@ outData = "
 ,,0,disk0,23860342,68799506
 ,,1,disk2,782,0
 "
-
 t_joinNoOn = (table=<-) => {
     left = table
-		|> range(start: 2018-05-22T19:53:00Z)
-		|> filter(fn: (r) => r._field == "reads")
+        |> range(start: 2018-05-22T19:53:00Z)
+        |> filter(fn: (r) => r._field == "reads")
         |> group(columns: ["name"])
         |> keep(columns: ["name", "_value"])
         |> sum()
         |> rename(columns: {_value: "total_reads"})
-
     right = table
-		|> range(start: 2018-05-22T19:53:00Z)
-		|> filter(fn: (r) => r._field == "writes")
+        |> range(start: 2018-05-22T19:53:00Z)
+        |> filter(fn: (r) => r._field == "writes")
         |> group(columns: ["name"])
         |> keep(columns: ["name", "_value"])
         |> sum()
@@ -48,5 +46,4 @@ t_joinNoOn = (table=<-) => {
     return join(tables: {left, right}, on: ["name"])
 }
 
-test _join = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_joinNoOn})
+test _join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_joinNoOn})

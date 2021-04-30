@@ -1,8 +1,9 @@
 package universe_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -34,7 +35,6 @@ inData = "
 ,,3,2018-05-22T19:54:06Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:16Z,82.6416015625,used_percent,swap,host.local
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,double,double,double,double
 #group,false,false,true,true,false,true,false,false,false,false
@@ -47,13 +47,9 @@ outData = "
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,host.local,1.91,1.98,1.94,82.598876953125
 ,,0,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,host.local,1.84,1.97,1.93,82.6416015625
 "
+t_pivot = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> pivot(rowKey: ["_time"], columnKey: ["_field", "_measurement"], valueColumn: "_value")
+    |> yield(name: "0")
 
-t_pivot = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> pivot(rowKey: ["_time"], columnKey: ["_field", "_measurement"], valueColumn: "_value")
-		|> yield(name: "0"))
-
-test _pivot = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot})
-
+test _pivot = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot})

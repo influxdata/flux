@@ -1,9 +1,10 @@
 package universe_test
 
+
 import "testing"
 import "math"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string
@@ -40,7 +41,6 @@ inData = "
 ,,0,2018-05-22T00:04:30Z,107.97,used_percent,disk
 ,,0,2018-05-22T00:04:40Z,106.09,used_percent,disk
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string
 #group,false,false,false,false,true,true
@@ -66,14 +66,10 @@ outData = "
 ,,0,2018-05-22T00:04:30Z,108.95,used_percent,disk
 ,,0,2018-05-22T00:04:40Z,108.42,used_percent,disk
 "
+kama = (table=<-) => table
+    |> range(start: 2018-05-22T00:00:00Z)
+    |> drop(columns: ["_start", "_stop"])
+    |> kaufmansAMA(n: 10)
+    |> map(fn: (r) => ({r with _value: math.round(x: r._value * 100.0) / 100.0}))
 
-kama = (table=<-) =>
-    (table
-        |> range(start:2018-05-22T00:00:00Z)
-        |> drop(columns: ["_start", "_stop"])
-        |> kaufmansAMA(n: 10)
-        |> map(fn: (r) => ({r with _value: (math.round(x: r._value*100.0)/100.0)}))
-    )
-
-test _kama = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})
+test _kama = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: kama})

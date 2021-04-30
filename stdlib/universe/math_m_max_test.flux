@@ -1,9 +1,10 @@
 package universe_test
 
+
 import "testing"
 import "math"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string
@@ -23,7 +24,6 @@ inData = "
 ,,1,2018-05-26T19:54:10Z,32.5,f,m2
 ,,1,2018-05-27T19:54:20Z,75.2,f,m2
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,double
 #group,false,false,true,true,true,true,false,false
@@ -35,16 +35,11 @@ outData = "
 ,,0,2018-05-22T19:53:26.000000000Z,2030-01-01T00:00:00.000000000Z,active,mem,2018-05-27T00:00:00Z,0
 ,,0,2018-05-22T19:53:26.000000000Z,2030-01-01T00:00:00.000000000Z,active,mem,2018-05-28T00:00:00Z,0
 "
+t_mmax = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> filter(fn: (r) => r._measurement == "mem" and r._field == "active")
+    |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
+    |> difference(nonNegative: false, columns: ["_value"])
+    |> map(fn: (r) => ({r with _value: math.mMax(x: r._value, y: 0.0)}))
 
-t_mmax = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-        |> filter(fn: (r) => r._measurement == "mem" and r._field == "active")
-        |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)
-        |> difference(nonNegative: false, columns: ["_value"])
-        |> map(fn: (r) => ({r with _value: math.mMax(x:r._value, y:0.0)}))
-    )
-
-test _mmax = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mmax})
-
+test _mmax = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mmax})

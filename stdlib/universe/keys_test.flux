@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -22,7 +23,6 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
 ,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string
 #group,false,false,true,true,true,true,false
@@ -37,12 +37,8 @@ outData = "
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,host
 ,,1,2018-05-20T19:53:26Z,2030-01-01T00:00:00Z,host.local,disk2,name
 "
+t_keys = (table=<-) => table
+    |> range(start: 2018-05-20T19:53:26Z)
+    |> keys()
 
-t_keys = (table=<-) =>
-	(table
-		|> range(start: 2018-05-20T19:53:26Z)
-		|> keys())
-
-test _keys = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keys})
-
+test _keys = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keys})

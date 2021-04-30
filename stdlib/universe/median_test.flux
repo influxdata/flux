@@ -1,8 +1,9 @@
 package universe_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,string,string,string,dateTime:RFC3339,double
@@ -22,7 +23,6 @@ inData = "
 ,,1,Reiva,OAOJWe7,qCnJDC,2019-01-09T19:45:38Z,16.140262630578995
 ,,1,Reiva,OAOJWe7,qCnJDC,2019-01-09T19:45:48Z,29.50336437998469
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
 #group,false,false,true,true,true,true,true,false
@@ -31,14 +31,12 @@ outData = "
 ,,0,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,OAOJWe7,BnR,38.11466723641958
 ,,1,2019-01-01T00:00:00Z,2030-01-01T00:00:00Z,Reiva,OAOJWe7,qCnJDC,4.911443547730174
 "
-
-t_median = (table=<-) =>
-	table
-		|> range(start: 2019-01-01T00:00:00Z)
+t_median = (table=<-) => table
+    |> range(start: 2019-01-01T00:00:00Z)
     |> median()
 
 test _median = () => ({
-	input: testing.loadStorage(csv: inData),
-	want: testing.loadMem(csv: outData),
-	fn: t_median,
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: t_median,
 })

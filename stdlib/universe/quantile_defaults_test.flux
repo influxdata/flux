@@ -3,8 +3,7 @@ package universe_test
 
 import "testing"
 
-option now = () =>
-	(2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,double
@@ -25,10 +24,8 @@ outData = "
 ,result,table,_start,_stop,_measurement,_field,_value
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,SOYcRk,NC7N,29.50336437998469
 "
-t_quantile = (table=<-) =>
-	(table
-		|> range(start: 2018-01-01T00:00:00Z)
-		|> quantile(q: 0.75))
+t_quantile = (table=<-) => table
+    |> range(start: 2018-01-01T00:00:00Z)
+    |> quantile(q: 0.75)
 
-test _quantile_tdigest = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})
+test _quantile_tdigest = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_quantile})

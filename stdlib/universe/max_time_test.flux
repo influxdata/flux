@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -28,7 +29,6 @@ inData = "
 ,,3,2018-05-22T19:53:36Z,82.598876953125,used_percent,swap,host.local
 ,,3,2018-05-22T19:53:46Z,82.598876953125,used_percent,swap,host.local
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string
 #group,false,false,true,true,false,false,true,true,true
@@ -39,12 +39,8 @@ outData = "
 ,,2,2018-05-22T19:52:26Z,2018-05-22T19:55:16Z,2018-05-22T19:53:56Z,1.89,load5,system,host.local
 ,,3,2018-05-22T19:52:26Z,2018-05-22T19:55:16Z,2018-05-22T19:53:46Z,82.598876953125,used_percent,swap,host.local
 "
+t_max = (table=<-) => table
+    |> range(start: 2018-05-22T19:52:26Z, stop: 2018-05-22T19:55:16Z)
+    |> max(column: "_time")
 
-t_max = (table=<-) =>
-	(table
-        |> range(start: 2018-05-22T19:52:26Z, stop: 2018-05-22T19:55:16Z)
-		|> max(column: "_time"))
-
-test _max = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_max})
-
+test _max = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_max})

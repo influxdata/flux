@@ -1,8 +1,9 @@
 package universe_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
@@ -16,7 +17,6 @@ inData = "
 ,,0,2018-05-22T00:00:40Z,40,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:50Z,40,used_percent,disk,disk1s1,apfs,host.local,/
 "
-
 outData = "
 #group,false,false,true,true,true,true,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,double,dateTime:RFC3339
@@ -31,11 +31,8 @@ outData = "
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/,40,2018-05-22T00:01:00Z
 ,,0,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/,40,2018-05-22T00:01:00Z
 "
-timed_moving_average = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
-		|> timedMovingAverage(every: 10s, period: 30s))
+timed_moving_average = (table=<-) => table
+    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+    |> timedMovingAverage(every: 10s, period: 30s)
 
-test _timed_moving_average = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: timed_moving_average})
-
+test _timed_moving_average = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: timed_moving_average})
