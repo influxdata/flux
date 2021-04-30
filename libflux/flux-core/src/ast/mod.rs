@@ -1,6 +1,5 @@
 //! Abstract syntax tree (AST).
 
-#[allow(missing_docs)]
 pub mod check;
 #[allow(missing_docs)]
 pub mod flatbuffers;

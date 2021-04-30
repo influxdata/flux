@@ -1,3 +1,5 @@
+//! Checking the AST.
+
 use derive_more::Display;
 
 use crate::ast::{walk, PropertyKey, SourceLocation};
