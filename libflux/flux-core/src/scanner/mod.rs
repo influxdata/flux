@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use std::str;
 use std::vec::Vec;
 
-use crate::ast::Comment;
+use crate::ast::{Comment, Position as AstPosition};
 
 use derive_more::Display;
 
@@ -50,6 +50,15 @@ pub struct Position {
 }
 
 impl std::cmp::Eq for Position {}
+
+impl From<&AstPosition> for Position {
+    fn from(item: &AstPosition) -> Self {
+        Position {
+            line: item.line,
+            column: item.column,
+        }
+    }
+}
 
 /// A token.
 #[derive(Debug, Display, PartialEq, Clone)]

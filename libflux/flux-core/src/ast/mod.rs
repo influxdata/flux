@@ -47,15 +47,6 @@ impl From<&scanner::Position> for Position {
     }
 }
 
-impl From<&Position> for scanner::Position {
-    fn from(item: &Position) -> Self {
-        scanner::Position {
-            line: item.line,
-            column: item.column,
-        }
-    }
-}
-
 impl Default for Position {
     fn default() -> Self {
         Self::invalid()
