@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string
@@ -16,7 +17,6 @@ inData = "
 ,,0,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host1
 ,,0,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host2
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #group,false,false,false,false,false,true,false,false,false,false
@@ -29,12 +29,8 @@ outData = "
 ,,4,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:46Z,91.0977744436109,usage_idle,cpu,cpu-total,host1
 ,,5,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu,cpu-total,host1
 "
+t_group_by_field = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> group(columns: ["_value"])
 
-t_group_by_field = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> group(columns: ["_value"]))
-
-test _group_by_field = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_field})
-
+test _group_by_field = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group_by_field})

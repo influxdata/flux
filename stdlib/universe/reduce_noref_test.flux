@@ -1,8 +1,9 @@
 package universe_test
+
+
 import "testing"
 
-option now = () =>
-	(2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -27,12 +28,11 @@ outData = "
 ,,0,2018-05-21T13:09:22.885021542Z,2030-01-01T00:00:00Z,used_percent,swap,host.local,1.0,6
 ,,1,2018-05-21T13:09:22.885021542Z,2030-01-01T00:00:00Z,used_percent,swap,host.local2,1.0,3
 "
-
-
 t_reduce = (tables=<-) => tables
-            |> range(start: 2018-05-21T13:09:22.885021542Z)
-            |> reduce(fn: (r, accumulator) =>
-            			({sum: r._value + accumulator.sum, b: 1.0 }), identity: {sum: 0.0, b: 0.0})
+    |> range(start: 2018-05-21T13:09:22.885021542Z)
+    |> reduce(
+        fn: (r, accumulator) => ({sum: r._value + accumulator.sum, b: 1.0}),
+        identity: {sum: 0.0, b: 0.0},
+    )
 
-test _reduce = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_reduce})
+test _reduce = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_reduce})

@@ -1,5 +1,6 @@
 package universe_test
 
+
 import "testing"
 
 passData = "
@@ -14,7 +15,6 @@ passData = "
 ,,4535,2020-12-21T17:49:44.773856591Z,2020-12-21T17:50:44.773856591Z,2020-12-21T17:50:00Z,5000,counter,istio_requests_total,none,gateway,v4,gateway,unknown,gateway-external-query.twodotoh.svc.prod01.us-west-2.local,gateway-external-query,twodotoh,v4,gateway-external-query,twodotoh,prod01-us-west-2,gateway-external-query-b499584c-65xvz,gateway-external-query-b499584c-65xvz,ip-10-130-16-33.us-west-2.compute.internal,destination,http,400,-,unknown,latest,unknown,unknown,unknown,unknown,unknown,http://127.0.0.1:15090/stats/prometheus
 ,,4535,2020-12-21T17:49:44.773856591Z,2020-12-21T17:50:44.773856591Z,2020-12-21T17:50:10Z,5002,counter,istio_requests_total,none,gateway,v4,gateway,unknown,gateway-external-query.twodotoh.svc.prod01.us-west-2.local,gateway-external-query,twodotoh,v4,gateway-external-query,twodotoh,prod01-us-west-2,gateway-external-query-b499584c-65xvz,gateway-external-query-b499584c-65xvz,ip-10-130-16-33.us-west-2.compute.internal,destination,http,400,-,unknown,latest,unknown,unknown,unknown,unknown,unknown,http://127.0.0.1:15090/stats/prometheus
 "
-
 failData = "
 #group,false,false,true,true,false,false,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string,string
@@ -29,7 +29,6 @@ failData = "
 ,,4535,2020-12-21T17:49:44.773856591Z,2020-12-21T17:50:44.773856591Z,2020-12-21T17:50:00Z,5000,counter,istio_requests_total,none,gateway,v4,gateway,unknown,gateway-external-query.twodotoh.svc.prod01.us-west-2.local,gateway-external-query,twodotoh,v4,gateway-external-query,twodotoh,prod01-us-west-2,gateway-external-query-b499584c-65xvz,gateway-external-query-b499584c-65xvz,ip-10-130-16-33.us-west-2.compute.internal,destination,http,400,-,unknown,latest,unknown,unknown,unknown,unknown,unknown,http://127.0.0.1:15090/stats/prometheus
 ,,4535,2020-12-21T17:49:44.773856591Z,2020-12-21T17:50:44.773856591Z,2020-12-21T17:50:10Z,5002,counter,istio_requests_total,none,gateway,v4,gateway,unknown,gateway-external-query.twodotoh.svc.prod01.us-west-2.local,gateway-external-query,twodotoh,v4,gateway-external-query,twodotoh,prod01-us-west-2,gateway-external-query-b499584c-65xvz,gateway-external-query-b499584c-65xvz,ip-10-130-16-33.us-west-2.compute.internal,destination,http,400,-,unknown,latest,unknown,unknown,unknown,unknown,unknown,http://127.0.0.1:15090/stats/prometheus
 "
-
 outData = "
 #group,false,false,false,false,false,false,false,false
 #datatype,string,long,double,double,double,string,string,string
@@ -41,28 +40,25 @@ outData = "
 ,,0,16,2,-700,prod01-us-west-2,429,400
 ,,0,16,16,0,prod01-us-west-2,429,429
 "
-
 t_join_panic = (table=<-) => {
     api_requests = table |> difference()
-
     errors = api_requests
-      |> filter(fn: (r) => r.response_code == "400" or r.response_code == "401" or r.response_code == "404" or r.response_code == "429" or r.response_code == "500" or r.response_code == "503")
-      |> group(columns: ["env", "response_code"])
-      |> sum()
-      |> filter(fn: (r) => r._value > 0)
-
+        |> filter(fn: (r) => r.response_code == "400" or r.response_code == "401" or r.response_code == "404" or r.response_code == "429" or r.response_code == "500" or r.response_code == "503")
+        |> group(columns: ["env", "response_code"])
+        |> sum()
+        |> filter(fn: (r) => r._value > 0)
     total = api_requests
-      //|> group(columns: ["env"])
-      |> group(columns: ["env", "response_code"])
-      |> sum()
-      |> filter(fn: (r) => r._value > 0)
+        //|> group(columns: ["env"])
+        |> group(columns: ["env", "response_code"])
+        |> sum()
+        |> filter(fn: (r) => r._value > 0)
 
     return join(tables: {errors: errors, total: total}, on: ["env"])
-      |> map(fn: (r) => ({r with availability: (1.0 - float(v: r._value_errors) / float(v: r._value_total)) * 100.0}))
-      |> sort(columns: ["availability"], desc: true)
-      |> group()
+        |> map(fn: (r) => ({r with availability: (1.0 - float(v: r._value_errors) / float(v: r._value_total)) * 100.0}))
+        |> sort(columns: ["availability"], desc: true)
+        |> group()
 }
 
-test _join_panic = () =>
+test _join_panic = () => 
     // to trigger the panic, switch the testing.loadStorage() csv from `passData` to `failData`
-	({input: testing.loadStorage(csv: passData), want: testing.loadMem(csv: outData), fn: t_join_panic})
+    ({input: testing.loadStorage(csv: passData), want: testing.loadMem(csv: outData), fn: t_join_panic})

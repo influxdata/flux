@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,double,double
@@ -22,7 +23,6 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,34.98204153981662,f,m2,11,0
 ,,1,2018-05-22T19:54:16Z,34.982252364543626,f,m2,33,42
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,double,double
 #group,false,false,true,true,false,false,true,true,false,false
@@ -39,12 +39,8 @@ outData = "
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,34.98204153981662,f,m2,-1,-80
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,34.982252364543626,f,m2,22,42
 "
+t_difference = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> difference(columns: ["x", "y"])
 
-t_difference = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> difference(columns: ["x", "y"]))
-
-test _difference_columns = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})
-
+test _difference_columns = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference})

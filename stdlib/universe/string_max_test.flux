@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string,string
@@ -16,15 +17,10 @@ inData = "
 ,,0,2018-05-22T19:53:46Z,b,used_percent,disk,disk1,apfs,host.local,/
 ,,0,2018-05-22T19:53:36Z,k9ngm,used_percent,disk,disk1,apfs,host.local,/
 "
-
 outData = "error: invalid use of function: *functions.MaxSelector has no implementation for type string
 "
+t_string_max = (table=<-) => table
+    |> range(start: 2018-05-22T19:54:16Z)
+    |> max()
 
-t_string_max = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:54:16Z)
-		|> max())
-
-test _string_max = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_max})
-
+test _string_max = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_max})

@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,string,string
@@ -21,7 +22,6 @@ inData = "
 ,,4,2018-10-03T17:55:11.01435Z,2018-10-03T17:55:12Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 ,,4,2018-10-03T17:55:11.115415Z,2018-10-03T17:55:13Z,scheduledFor,02bac3c8f0f37000,02bac3c8d6c5b000,success,records
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string
 #group,false,false,false,false,false,false,false,false,false,true,false
@@ -56,24 +56,30 @@ outData = "
 ,,2,records,2018-10-02T17:55:11.520461Z,2018-10-03T17:55:11.520461Z,2018-10-03T17:55:11.113222Z,02bac3c8d6c5b000,02bac3c922737000,2018-10-03T17:55:13Z,2018-10-03T17:55:11.113222Z,started,2018-10-03T17:55:11.115415Z,02bac3c8f0f37000
 ,,2,,2018-10-02T17:55:11.520461Z,2018-10-03T17:55:11.520461Z,2018-10-03T17:55:11.115415Z,02bac3c8d6c5b000,02bac3c922737000,2018-10-03T17:55:13Z,2018-10-03T17:55:11.113222Z,success,2018-10-03T17:55:11.115415Z,02bac3c8f0f37000
 "
-
 fn = (table=<-) => {
     supl = table
         |> range(start: 2018-10-02T17:55:11.520461Z)
-        |> filter(fn: (r) =>
-            (r._measurement == "records" and r.taskID == "02bac3c8f0f37000"))
+        |> filter(
+            fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000",
+        )
         |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> group(columns: ["runID"])
-
     main = table
         |> range(start: 2018-10-02T17:55:11.520461Z)
-        |> filter(fn: (r) =>
-            (r._measurement == "records" and r.taskID == "02bac3c8f0f37000"))
+        |> filter(
+            fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000",
+        )
         |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> pivot(rowKey: ["runID"], columnKey: ["status"], valueColumn: "_time")
 
-    return join(tables: {main: main, supl: supl}, on: ["_start", "_stop", "orgID", "taskID", "runID", "_measurement"])
+    return join(tables: {main: main, supl: supl}, on: [
+        "_start",
+        "_stop",
+        "orgID",
+        "taskID",
+        "runID",
+        "_measurement",
+    ])
 }
 
-test task_per_line = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: fn})
+test task_per_line = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: fn})

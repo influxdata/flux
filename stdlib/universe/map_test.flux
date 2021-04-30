@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string
@@ -13,7 +14,6 @@ inData = "
 ,,0,2018-05-22T19:53:36Z,101,load1,system,host.local
 ,,0,2018-05-22T19:53:46Z,102,load1,system,host.local
 "
-
 outData = "
 #datatype,string,long,double
 #group,false,false,false
@@ -23,12 +23,9 @@ outData = "
 ,,0,101.0
 ,,0,102.0
 "
+t_map = (table=<-) => table
+    |> map(
+        fn: (r) => ({newValue: float(v: r._value)}),
+    )
 
-t_map = (table=<-) =>
-	(table
-		|> map(fn: (r) =>
-			({newValue: float(v: r._value)})))
-
-test _map = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})
-
+test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map})

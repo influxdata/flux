@@ -1,8 +1,9 @@
 package universe_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
@@ -39,7 +40,6 @@ inData = "
 ,,0,2018-05-22T00:04:30Z,2,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:04:40Z,1,used_percent,disk,disk1s1,apfs,host.local,/
 "
-
 outData = "
 #group,false,false,true,true,false,false,true,true,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string
@@ -57,11 +57,8 @@ outData = "
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:30Z,3.5064225149113675,used_percent,disk,disk1s1,apfs,host.local,/
 ,,0,2018-05-22T00:00:00Z,2030-01-01T00:00:00.000000000Z,2018-05-22T00:04:40Z,2.3311049123183603,used_percent,disk,disk1s1,apfs,host.local,/
 "
+double_exponential_moving_average = (table=<-) => table
+    |> range(start: 2018-05-22T00:00:00Z)
+    |> doubleEMA(n: 10)
 
-double_exponential_moving_average = (table=<-) =>
-    (table
-        |> range(start:2018-05-22T00:00:00Z)
-        |> doubleEMA(n:10))
-
-test _double_exponential_moving_average = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: double_exponential_moving_average})
+test _double_exponential_moving_average = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: double_exponential_moving_average})

@@ -1,12 +1,13 @@
 package universe_test
- 
+
+
 import "testing"
 import c "csv"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
+
 // todo(faith): remove overload https://github.com/influxdata/flux/issues/3155
 option testing.loadStorage = (csv) => c.from(csv: csv)
-
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
@@ -57,7 +58,6 @@ inData = "
 ,,5,2018-05-22T19:54:06Z,15205499,io_time,diskio,host2
 ,,5,2018-05-22T19:54:16Z,,io_time,diskio,host2
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,long,string,string,string,string
 #group,false,false,false,false,false,false,true,false
@@ -98,13 +98,8 @@ outData = "
 ,,2,2018-05-22T19:54:06Z,15205499,io_time,diskio,host2
 ,,2,2018-05-22T19:54:16Z,,io_time,diskio,host2
 "
+t_group = (table=<-) => table
+    |> group(columns: ["host"])
+    |> drop(columns: ["_start", "_stop"])
 
-t_group = (table=<-) =>
-	(table
-		|> group(columns: ["host"])
-		|> drop(columns: ["_start", "_stop"])
-	)
-
-test _group = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})
-
+test _group = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_group})

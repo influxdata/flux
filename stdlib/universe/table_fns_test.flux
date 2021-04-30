@@ -1,10 +1,11 @@
 package universe_test
 
+
 import "csv"
 
 option now = () => 2020-02-22T18:00:00Z
 
-csvdata ="
+csvdata = "
 #group,false,false,true,true,false,false,true,true,true,true
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string
 #default,_result,,,,,,,,,
@@ -17,17 +18,12 @@ csvdata ="
 ,,0,2018-04-06T10:49:41.565Z,2020-04-06T11:49:41.564Z,2020-02-22T17:31:00Z,48,bottom_degrees,h2o_temperature,santa_monica,CA
 ,,0,2018-04-06T10:49:41.565Z,2020-04-06T11:49:41.564Z,2020-02-22T17:46:00Z,48,bottom_degrees,h2o_temperature,santa_monica,CA
 "
-
-data = csv.from( csv: csvdata )
-	|> range( start: -3h )
-
+data = csv.from(csv: csvdata)
+    |> range(start: -3h)
 col = data
-	|> tableFind( fn: (key) => (true) )
-	|> getColumn( column: "_value" )
+    |> tableFind(fn: (key) => true)
+    |> getColumn(column: "_value")
+t_now = (table=<-) => table
+    |> filter(fn: (r) => contains(value: r._value, set: col))
 
-t_now = (table=<-) =>
-	(table
-		|> filter( fn: (r) => ( contains( value: r._value, set: col ) ) ) ) 
-
-test _sum = () =>
-	({input: data, want: data, fn: t_now})
+test _sum = () => ({input: data, want: data, fn: t_now})

@@ -1,8 +1,9 @@
 package universe_test
 
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string
@@ -42,7 +43,6 @@ inData = "
 ,,3,2018-05-22T19:53:56Z,85,used_percent,swap,host.local
 ,,3,2018-05-22T19:54:06Z,82,used_percent,swap,host.local
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,long
 #group,false,false,true,true,false,true,true,false
@@ -64,13 +64,9 @@ outData = "
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:06Z,system,host.local,1.91,1.98,94
 ,,1,2018-05-22T19:53:26Z,2030-01-01T00:00:00Z,2018-05-22T19:54:16Z,system,host.local,1.84,1.97,93
 "
+t_pivot_fields = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z)
+    |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+    |> yield(name: "0")
 
-t_pivot_fields = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:26Z)
-		|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-		|> yield(name: "0"))
-
-test _pivot_fields = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_fields})
-
+test _pivot_fields = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_pivot_fields})

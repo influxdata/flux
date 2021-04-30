@@ -1,8 +1,9 @@
 package universe_test
- 
+
+
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,double
@@ -32,7 +33,6 @@ inData = "
 ,,3,2018-05-22T19:53:50Z,_m,SR,1
 ,,3,2018-05-22T19:54:00Z,_m,SR,1
 "
-
 outData = "
 #datatype,string,long,string,string,double
 #group,false,false,true,true,false
@@ -43,13 +43,9 @@ outData = "
 ,,2,_m,RR,3
 ,,3,_m,SR,2
 "
+t_integral = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
+    |> integral(unit: 10s)
+    |> drop(columns: ["_start", "_stop"])
 
-t_integral = (table=<-) =>
-	(table
-		|> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-		|> integral(unit: 10s))
-		|> drop(columns: ["_start", "_stop"])
-
-test _integral = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})
-
+test _integral = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_integral})

@@ -1,5 +1,6 @@
 package universe_test
- 
+
+
 import "testing"
 
 inData = "
@@ -26,7 +27,6 @@ inData = "
 ,,2,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:06Z,68.304576144036,usage_idle,cpu,cpu-total,host.local
 ,,2,2018-05-22T19:53:24.421470485Z,2018-05-22T19:54:24.421470485Z,2018-05-22T19:54:16Z,87.88598574821853,usage_idle,cpu,cpu-total,host.local
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,true,true,false,true,true,true,true,false
@@ -49,10 +49,8 @@ outData = "
 test aggregate_window_fill = () => ({
     input: testing.loadStorage(csv: inData),
     want: testing.loadMem(csv: outData),
-    fn: (table=<-) =>
-        table
-            |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
-            |> aggregateWindow(every: 30s, fn: sum)
-            |> fill(value: 0.0),
+    fn: (table=<-) => table
+        |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:55:00Z)
+        |> aggregateWindow(every: 30s, fn: sum)
+        |> fill(value: 0.0),
 })
-
