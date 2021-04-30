@@ -267,7 +267,7 @@ where
     walk_rc(v, Rc::new(node));
 }
 
-pub fn walk_rc<'a, T>(v: &T, node: Rc<Node<'a>>)
+fn walk_rc<'a, T>(v: &T, node: Rc<Node<'a>>)
 where
     T: Visitor<'a>,
 {
