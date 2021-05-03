@@ -272,6 +272,7 @@ where
     walk_rc(v, Rc::new(node));
 }
 
+#[allow(missing_docs)]
 pub fn walk_rc<'a, T>(v: &T, node: Rc<Node<'a>>)
 where
     T: Visitor<'a>,
