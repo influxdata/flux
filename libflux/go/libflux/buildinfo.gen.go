@@ -77,6 +77,7 @@ var sourceHashes = map[string]string{
 	"stdlib/contrib/anaisdg/anomalydetection/mad_test.flux":                         "da898bbb218ec8723e85d68afcd8d94cb35d662d61ece237ce41f35e48f92e3b",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg.flux":                             "d0b71e0a13566f6916586ca49a16ebd96f940b35bf48af4c5c6444653cfd565d",
 	"stdlib/contrib/anaisdg/statsmodels/linearreg_test.flux":                        "21a1bed6c35e9dec388d3bb8e8d4dd6e4e647a612ff6c1af434dcdbd01c9d26a",
+	"stdlib/contrib/bonitoo-io/servicenow/servicenow.flux":                          "ecab1dce3867d1b96d54709744a4e520ae7e85cb650fd77484cce5b11d3818b3",
 	"stdlib/contrib/bonitoo-io/tickscript/alert_test.flux":                          "42df276f705aa22b47a042a8ef90bead60c59e38ef0de4fa7fd073b9cafe0125",
 	"stdlib/contrib/bonitoo-io/tickscript/alert_with_topic_test.flux":               "afc254476285bf95d155304413510083c4e04a3b89ae5e3a59ccd502f84954a9",
 	"stdlib/contrib/bonitoo-io/tickscript/deadman_empty_test.flux":                  "87b466960a05925c508851a159b50dedd7552477cc4ec9e6f49907f8ffe8a69b",
