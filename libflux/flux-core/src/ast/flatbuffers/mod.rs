@@ -1,3 +1,5 @@
+//! Serializing the AST with FlatBuffers.
+
 #[allow(non_snake_case, unused, clippy::all)]
 mod ast_generated;
 

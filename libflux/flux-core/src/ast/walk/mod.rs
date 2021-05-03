@@ -1,3 +1,5 @@
+//! Walking the AST.
+
 #[cfg(test)]
 mod tests;
 
@@ -8,8 +10,9 @@ use derive_more::Display;
 
 use crate::ast::*;
 
-/// Node represents any structure that can appear in the AST
+/// Node represents any structure that can appear in the AST.
 #[derive(Debug, Display)]
+#[allow(missing_docs)]
 pub enum Node<'a> {
     #[display(fmt = "Package")]
     Package(&'a Package),
@@ -113,6 +116,7 @@ pub enum Node<'a> {
 }
 
 impl<'a> Node<'a> {
+    #[allow(missing_docs)]
     pub fn base(&self) -> &BaseNode {
         match self {
             Node::Package(n) => &n.base,
@@ -162,6 +166,7 @@ impl<'a> Node<'a> {
 }
 
 impl<'a> Node<'a> {
+    #[allow(missing_docs)]
     pub fn from_expr(expr: &'a Expression) -> Node {
         match expr {
             Expression::Identifier(e) => Node::Identifier(e),
@@ -191,6 +196,7 @@ impl<'a> Node<'a> {
             Expression::Bad(e) => Node::BadExpr(e),
         }
     }
+    #[allow(missing_docs)]
     pub fn from_stmt(stmt: &Statement) -> Node {
         match stmt {
             Statement::Expr(s) => Node::ExprStmt(s),
@@ -266,6 +272,7 @@ where
     walk_rc(v, Rc::new(node));
 }
 
+#[allow(missing_docs)]
 pub fn walk_rc<'a, T>(v: &T, node: Rc<Node<'a>>)
 where
     T: Visitor<'a>,
