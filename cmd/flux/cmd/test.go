@@ -618,19 +618,25 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	}
 	defer query.Done()
 
+	wasDiff := false
 	results := flux.NewResultIteratorFromQuery(query)
 	for results.More() {
 		result := results.Next()
 		err := result.Tables().Do(func(tbl flux.Table) error {
+			wasDiff = true
 			// The data returned here is the result of `testing.diff`, so any result means that
 			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
 			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
 			// is not exactly "human readable."
-			return fmt.Errorf("%s", table.Stringify(tbl))
+			fmt.Fprintln(os.Stderr, table.Stringify(tbl))
+			return nil
 		})
 		if err != nil {
 			return err
 		}
+	}
+	if wasDiff {
+		return errors.New(codes.Unknown, "test failed with diff tables, see logs for details")
 	}
 	results.Release()
 	return results.Err()
