@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 16,
-					Line:   3,
+					Line:   4,
 				},
 				File:   "runtime.flux",
-				Source: "package runtime\n\nbuiltin version",
+				Source: "package runtime\n\n\nbuiltin version",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "runtime.flux",
 					Source: "builtin version",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "runtime.flux",
 						Source: "version",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 31,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "runtime.flux",
 						Source: "() => string",
 						Start: ast.Position{
 							Column: 19,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "runtime.flux",
 							Source: "() => string",
 							Start: ast.Position{
 								Column: 19,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -114,13 +114,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "runtime.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 25,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "runtime.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 25,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},

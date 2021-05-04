@@ -1,5 +1,6 @@
 package json
 
+
 // encode converts a value into JSON bytes
 // Time values are encoded using RFC3339.
 // Duration values are encoded in number of milleseconds since the epoch.

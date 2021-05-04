@@ -1,9 +1,10 @@
 package date_test
 
+
 import "testing"
 import "date"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,long
@@ -17,7 +18,6 @@ inData = "
 ,,0,2018-05-22T19:05:00.676423456Z,_m,FF,1
 ,,0,2018-05-22T19:06:00.982342357Z,_m,FF,2
 "
-
 outData = "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
@@ -30,11 +30,8 @@ outData = "
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:05:00.676423456Z,0
 ,,0,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,FF,_m,2018-05-22T19:06:00.982342357Z,0
 "
+t_duration_microsecond = (table=<-) => table
+    |> range(start: 2018-01-01T00:00:00Z)
+    |> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v: r._value))}))
 
-t_duration_microsecond = (table=<-) =>
-	(table
-		|> range(start: 2018-01-01T00:00:00Z)
-		|> map(fn: (r) => ({r with _value: date.microsecond(t: duration(v : r._value))})))
-
-test _duration_microsecond = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_microsecond})
+test _duration_microsecond = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_microsecond})

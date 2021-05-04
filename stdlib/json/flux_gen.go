@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   9,
+					Line:   10,
 				},
 				File:   "json.flux",
-				Source: "package json\n\n// encode converts a value into JSON bytes\n// Time values are encoded using RFC3339.\n// Duration values are encoded in number of milleseconds since the epoch.\n// Regexp values are encoded as their string representation.\n// Bytes values are encodes as base64-encoded strings.\n// Function values cannot be encoded and will produce an error.\nbuiltin encode",
+				Source: "package json\n\n\n// encode converts a value into JSON bytes\n// Time values are encoded using RFC3339.\n// Duration values are encoded in number of milleseconds since the epoch.\n// Regexp values are encoded as their string representation.\n// Bytes values are encodes as base64-encoded strings.\n// Function values cannot be encoded and will produce an error.\nbuiltin encode",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   9,
+						Line:   10,
 					},
 					File:   "json.flux",
 					Source: "builtin encode",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   9,
+							Line:   10,
 						},
 						File:   "json.flux",
 						Source: "encode",
 						Start: ast.Position{
 							Column: 9,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 33,
-							Line:   9,
+							Line:   10,
 						},
 						File:   "json.flux",
 						Source: "(v: A) => bytes",
 						Start: ast.Position{
 							Column: 18,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
-								Line:   9,
+								Line:   10,
 							},
 							File:   "json.flux",
 							Source: "(v: A) => bytes",
 							Start: ast.Position{
 								Column: 18,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   9,
+									Line:   10,
 								},
 								File:   "json.flux",
 								Source: "v: A",
 								Start: ast.Position{
 									Column: 19,
-									Line:   9,
+									Line:   10,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   9,
+										Line:   10,
 									},
 									File:   "json.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 19,
-										Line:   9,
+										Line:   10,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   9,
+										Line:   10,
 									},
 									File:   "json.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 22,
-										Line:   9,
+										Line:   10,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   9,
+											Line:   10,
 										},
 										File:   "json.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 22,
-											Line:   9,
+											Line:   10,
 										},
 									},
 								},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   9,
+									Line:   10,
 								},
 								File:   "json.flux",
 								Source: "bytes",
 								Start: ast.Position{
 									Column: 28,
-									Line:   9,
+									Line:   10,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   9,
+										Line:   10,
 									},
 									File:   "json.flux",
 									Source: "bytes",
 									Start: ast.Position{
 										Column: 28,
-										Line:   9,
+										Line:   10,
 									},
 								},
 							},

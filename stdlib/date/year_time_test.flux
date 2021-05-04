@@ -1,9 +1,10 @@
 package date_test
 
+
 import "testing"
 import "date"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,double
@@ -23,7 +24,6 @@ inData = "
 ,,1,2028-11-22T19:53:40Z,_m,QQ,1
 ,,1,2029-12-22T19:53:50Z,_m,QQ,1
 "
-
 outData = "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,dateTime:RFC3339,long
@@ -42,11 +42,8 @@ outData = "
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2028-11-22T19:53:40Z,2028
 ,,1,2018-01-01T00:00:00Z,2030-01-01T00:00:00Z,QQ,_m,2029-12-22T19:53:50Z,2029
 "
+t_time_year = (table=<-) => table
+    |> range(start: 2018-01-01T00:00:00Z)
+    |> map(fn: (r) => ({r with _value: date.year(t: r._time)}))
 
-t_time_year = (table=<-) =>
-	(table
- 	    |> range(start: 2018-01-01T00:00:00Z)
- 		|> map(fn: (r) => ({r with _value: date.year(t: r._time)})))
-
-  test _time_year = () =>
- 	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_year})
+test _time_year = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_time_year})
