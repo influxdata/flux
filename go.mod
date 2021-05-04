@@ -17,7 +17,7 @@ require (
 	github.com/c-bata/go-prompt v0.2.2
 	github.com/cespare/xxhash/v2 v2.1.1
 	github.com/dave/jennifer v1.2.0
-	github.com/denisenkom/go-mssqldb v0.0.0-20200428022330-06a60b6afbbc
+	github.com/denisenkom/go-mssqldb v0.10.0
 	github.com/eclipse/paho.mqtt.golang v1.2.0
 	github.com/foxcpp/go-mockdns v0.0.0-20201212160233-ede2f9158d15
 	github.com/go-sql-driver/mysql v1.5.0
