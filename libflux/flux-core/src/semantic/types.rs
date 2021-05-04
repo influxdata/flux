@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! Types.
 
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
@@ -13,16 +13,23 @@ use std::{
 
 /// For use in generics where the specific type of map is not mentioned.
 pub type SemanticMap<K, V> = BTreeMap<K, V>;
+#[allow(missing_docs)]
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
+/// A polytype.
 #[derive(Debug, Clone)]
 pub struct PolyType {
+    /// Type variables.
     pub vars: Vec<Tvar>,
+    /// Kinds of type variables.
     pub cons: TvarKinds,
+    /// Monotype.
     pub expr: MonoType,
 }
 
+#[allow(missing_docs)]
 pub type PolyTypeMap = SemanticMap<String, PolyType>;
+#[allow(missing_docs)]
 pub type PolyTypeMapMap = SemanticMap<String, SemanticMap<String, PolyType>>;
 
 #[macro_export]
@@ -120,18 +127,21 @@ impl PolyType {
             .collect::<Vec<_>>()
             .join(" + ")
     }
+    #[allow(missing_docs)]
     pub fn normal(&self) -> PolyType {
         self.clone()
             .fresh(&mut Fresher::from(0), &mut TvarMap::new())
     }
 }
 
+#[allow(missing_docs)]
 pub fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> {
     with.retain(|tv| !vars.contains(tv));
     vars.append(&mut with);
     vars
 }
 
+#[allow(missing_docs)]
 pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
     from.retain(|tv| !vars.contains(tv));
     from
@@ -139,6 +149,7 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
 
 #[derive(Debug, PartialEq)]
 /// Errors that can be returned during type inference.
+#[allow(missing_docs)]
 pub enum Error {
     CannotUnify {
         exp: MonoType,
@@ -217,6 +228,7 @@ impl fmt::Display for Error {
 
 /// `Kind` represents a class or family of types.
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash)]
+#[allow(missing_docs)]
 pub enum Kind {
     Addable,
     Subtractable,
@@ -246,6 +258,7 @@ impl cmp::PartialOrd for Kind {
 
 /// MonoType represents a specific named type.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[allow(missing_docs)]
 pub enum MonoType {
     #[display(fmt = "bool")]
     Bool,
@@ -277,8 +290,11 @@ pub enum MonoType {
     Fun(Box<Function>),
 }
 
+#[allow(missing_docs)]
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
+#[allow(missing_docs)]
 pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
+#[allow(missing_docs)]
 type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
 
 impl Substitutable for MonoType {
@@ -348,6 +364,7 @@ impl From<Record> for MonoType {
 }
 
 impl MonoType {
+    #[allow(missing_docs)]
     pub fn unify(
         self, // self represents the expected type
         actual: Self,
@@ -374,6 +391,7 @@ impl MonoType {
         }
     }
 
+    #[allow(missing_docs)]
     pub fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match self {
             MonoType::Bool => match with {
@@ -503,7 +521,9 @@ pub struct Tvar(pub u64);
 
 /// TvarKinds is a map from type variables to their constraining kinds.
 pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
+#[allow(missing_docs)]
 pub type TvarMap = SemanticMap<Tvar, Tvar>;
+#[allow(missing_docs)]
 pub type SubstitutionMap = SemanticMap<Tvar, MonoType>;
 
 impl fmt::Display for Tvar {
@@ -709,6 +729,7 @@ impl Dictionary {
 ///
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type")]
+#[allow(missing_docs)]
 pub enum Record {
     Empty,
     Extension { head: Property, tail: MonoType },
@@ -991,6 +1012,7 @@ fn apply_then_unify(
 /// A key-value pair representing a property type in a record.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "{}:{}", k, v)]
+#[allow(missing_docs)]
 pub struct Property {
     pub k: String,
     pub v: MonoType,
@@ -1019,7 +1041,6 @@ impl MaxTvar for Property {
 /// A function type is defined by a set of required arguments,
 /// a set of optional arguments, an optional pipe argument, and
 /// a required return type.
-///
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Function {
     /// Required arguments to a function.
@@ -1321,6 +1342,7 @@ impl Function {
 
 /// Trait for returning the maximum type variable of a type.
 pub trait MaxTvar {
+    /// Return the maximum type variable of a type.
     fn max_tvar(&self) -> Tvar;
 }
 
