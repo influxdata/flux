@@ -1,9 +1,10 @@
 package date_test
 
+
 import "testing"
 import "date"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,string,long
@@ -18,7 +19,6 @@ inData = "
 ,,0,2018-05-22T19:53:50.000000000Z,_m,FF,7200000000000
 ,,0,2018-05-22T19:54:00.000000000Z,_m,FF,10800000000000
 "
-
 outData = "
 #datatype,string,long,string,string,dateTime:RFC3339,long
 #group,false,false,true,true,false,false
@@ -32,12 +32,9 @@ outData = "
 ,,0,FF,_m,2018-05-22T19:53:50.000000000Z,1893463200000000000
 ,,0,FF,_m,2018-05-22T19:54:00.000000000Z,1893466800000000000
 "
+t_duration_truncate = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:00Z)
+    |> drop(columns: ["_start", "_stop"])
+    |> map(fn: (r) => ({r with _value: int(v: date.truncate(t: duration(v: r._value), unit: 1s))}))
 
-t_duration_truncate = (table=<-) =>
-	(table
-	    |> range(start: 2018-05-22T19:53:00.000000000Z)
-	    |> drop(columns: ["_start", "_stop"])
-		|> map(fn: (r) => ({r with _value: int(v: date.truncate(t: duration(v: r._value), unit: 1s))})))
-
-test _duration_truncate = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_truncate})
+test _duration_truncate = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration_truncate})

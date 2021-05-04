@@ -1,5 +1,6 @@
 package interpolate_test
 
+
 import "testing"
 import "interpolate"
 
@@ -21,7 +22,6 @@ inData = "
 ,,1,2014-01-01T01:09:00Z,_m,QQ,3
 ,,1,2014-01-01T01:11:00Z,_m,QQ,1
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,string,double
 #group,false,false,false,true,true,false
@@ -50,11 +50,9 @@ outData = "
 ,,1,2014-01-01T01:10:00Z,_m,QQ,2
 ,,1,2014-01-01T01:11:00Z,_m,QQ,1
 "
-
 interpolateFn = (table=<-) => table
     |> range(start: 2014-01-01T01:00:00Z, stop: 2014-01-01T02:00:00Z)
     |> interpolate.linear(every: 1m)
     |> drop(columns: ["_start", "_stop"])
 
-test interpolate_test = () =>
-    ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})
+test interpolate_test = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: interpolateFn})

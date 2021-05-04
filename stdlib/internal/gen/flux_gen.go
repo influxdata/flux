@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   3,
+					Line:   4,
 				},
 				File:   "gen.flux",
-				Source: "package gen\n\nbuiltin tables",
+				Source: "package gen\n\n\nbuiltin tables",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "gen.flux",
 					Source: "builtin tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "gen.flux",
 						Source: "tables",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -77,14 +77,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 127,
-							Line:   3,
+							Column: 125,
+							Line:   4,
 						},
 						File:   "gen.flux",
-						Source: "(n: int, ?nulls: float, ?tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
+						Source: "(n: int, ?nulls: float, ?tags: [{name: string, cardinality: int}]) => [{A with _time: time, _value: float}]",
 						Start: ast.Position{
 							Column: 18,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -95,14 +95,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 127,
-								Line:   3,
+								Column: 125,
+								Line:   4,
 							},
 							File:   "gen.flux",
-							Source: "(n: int, ?nulls: float, ?tags: [{name: string , cardinality: int}]) => [{A with _time: time , _value: float}]",
+							Source: "(n: int, ?nulls: float, ?tags: [{name: string, cardinality: int}]) => [{A with _time: time, _value: float}]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "gen.flux",
 								Source: "n: int",
 								Start: ast.Position{
 									Column: 19,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "gen.flux",
 									Source: "n",
 									Start: ast.Position{
 										Column: 19,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "gen.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 22,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "gen.flux",
 										Source: "int",
 										Start: ast.Position{
 											Column: 22,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -187,13 +187,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "gen.flux",
 								Source: "?nulls: float",
 								Start: ast.Position{
 									Column: 27,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "gen.flux",
 									Source: "nulls",
 									Start: ast.Position{
 										Column: 28,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -224,13 +224,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "gen.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 35,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -241,13 +241,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "gen.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 35,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -260,14 +260,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 84,
-									Line:   3,
+									Column: 83,
+									Line:   4,
 								},
 								File:   "gen.flux",
-								Source: "?tags: [{name: string , cardinality: int}]",
+								Source: "?tags: [{name: string, cardinality: int}]",
 								Start: ast.Position{
 									Column: 42,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -279,13 +279,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "gen.flux",
 									Source: "tags",
 									Start: ast.Position{
 										Column: 43,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -297,14 +297,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 84,
-										Line:   3,
+										Column: 83,
+										Line:   4,
 									},
 									File:   "gen.flux",
-									Source: "[{name: string , cardinality: int}]",
+									Source: "[{name: string, cardinality: int}]",
 									Start: ast.Position{
 										Column: 49,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -314,14 +314,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 83,
-											Line:   3,
+											Column: 82,
+											Line:   4,
 										},
 										File:   "gen.flux",
-										Source: "{name: string , cardinality: int}",
+										Source: "{name: string, cardinality: int}",
 										Start: ast.Position{
 											Column: 50,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -332,13 +332,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 63,
-												Line:   3,
+												Line:   4,
 											},
 											File:   "gen.flux",
 											Source: "name: string",
 											Start: ast.Position{
 												Column: 51,
-												Line:   3,
+												Line:   4,
 											},
 										},
 									},
@@ -349,13 +349,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 55,
-													Line:   3,
+													Line:   4,
 												},
 												File:   "gen.flux",
 												Source: "name",
 												Start: ast.Position{
 													Column: 51,
-													Line:   3,
+													Line:   4,
 												},
 											},
 										},
@@ -368,13 +368,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 63,
-													Line:   3,
+													Line:   4,
 												},
 												File:   "gen.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 57,
-													Line:   3,
+													Line:   4,
 												},
 											},
 										},
@@ -385,13 +385,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 63,
-														Line:   3,
+														Line:   4,
 													},
 													File:   "gen.flux",
 													Source: "string",
 													Start: ast.Position{
 														Column: 57,
-														Line:   3,
+														Line:   4,
 													},
 												},
 											},
@@ -404,14 +404,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 82,
-												Line:   3,
+												Column: 81,
+												Line:   4,
 											},
 											File:   "gen.flux",
 											Source: "cardinality: int",
 											Start: ast.Position{
-												Column: 66,
-												Line:   3,
+												Column: 65,
+												Line:   4,
 											},
 										},
 									},
@@ -421,14 +421,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 77,
-													Line:   3,
+													Column: 76,
+													Line:   4,
 												},
 												File:   "gen.flux",
 												Source: "cardinality",
 												Start: ast.Position{
-													Column: 66,
-													Line:   3,
+													Column: 65,
+													Line:   4,
 												},
 											},
 										},
@@ -440,14 +440,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 82,
-													Line:   3,
+													Column: 81,
+													Line:   4,
 												},
 												File:   "gen.flux",
 												Source: "int",
 												Start: ast.Position{
-													Column: 79,
-													Line:   3,
+													Column: 78,
+													Line:   4,
 												},
 											},
 										},
@@ -457,14 +457,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 82,
-														Line:   3,
+														Column: 81,
+														Line:   4,
 													},
 													File:   "gen.flux",
 													Source: "int",
 													Start: ast.Position{
-														Column: 79,
-														Line:   3,
+														Column: 78,
+														Line:   4,
 													},
 												},
 											},
@@ -482,14 +482,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 127,
-									Line:   3,
+									Column: 125,
+									Line:   4,
 								},
 								File:   "gen.flux",
-								Source: "[{A with _time: time , _value: float}]",
+								Source: "[{A with _time: time, _value: float}]",
 								Start: ast.Position{
-									Column: 89,
-									Line:   3,
+									Column: 88,
+									Line:   4,
 								},
 							},
 						},
@@ -499,14 +499,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 126,
-										Line:   3,
+										Column: 124,
+										Line:   4,
 									},
 									File:   "gen.flux",
-									Source: "{A with _time: time , _value: float}",
+									Source: "{A with _time: time, _value: float}",
 									Start: ast.Position{
-										Column: 90,
-										Line:   3,
+										Column: 89,
+										Line:   4,
 									},
 								},
 							},
@@ -516,14 +516,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 109,
-											Line:   3,
+											Column: 108,
+											Line:   4,
 										},
 										File:   "gen.flux",
 										Source: "_time: time",
 										Start: ast.Position{
-											Column: 98,
-											Line:   3,
+											Column: 97,
+											Line:   4,
 										},
 									},
 								},
@@ -533,14 +533,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 103,
-												Line:   3,
+												Column: 102,
+												Line:   4,
 											},
 											File:   "gen.flux",
 											Source: "_time",
 											Start: ast.Position{
-												Column: 98,
-												Line:   3,
+												Column: 97,
+												Line:   4,
 											},
 										},
 									},
@@ -552,14 +552,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 109,
-												Line:   3,
+												Column: 108,
+												Line:   4,
 											},
 											File:   "gen.flux",
 											Source: "time",
 											Start: ast.Position{
-												Column: 105,
-												Line:   3,
+												Column: 104,
+												Line:   4,
 											},
 										},
 									},
@@ -569,14 +569,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 109,
-													Line:   3,
+													Column: 108,
+													Line:   4,
 												},
 												File:   "gen.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 105,
-													Line:   3,
+													Column: 104,
+													Line:   4,
 												},
 											},
 										},
@@ -589,14 +589,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 125,
-											Line:   3,
+											Column: 123,
+											Line:   4,
 										},
 										File:   "gen.flux",
 										Source: "_value: float",
 										Start: ast.Position{
-											Column: 112,
-											Line:   3,
+											Column: 110,
+											Line:   4,
 										},
 									},
 								},
@@ -606,14 +606,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 118,
-												Line:   3,
+												Column: 116,
+												Line:   4,
 											},
 											File:   "gen.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 112,
-												Line:   3,
+												Column: 110,
+												Line:   4,
 											},
 										},
 									},
@@ -625,14 +625,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 125,
-												Line:   3,
+												Column: 123,
+												Line:   4,
 											},
 											File:   "gen.flux",
 											Source: "float",
 											Start: ast.Position{
-												Column: 120,
-												Line:   3,
+												Column: 118,
+												Line:   4,
 											},
 										},
 									},
@@ -642,14 +642,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 125,
-													Line:   3,
+													Column: 123,
+													Line:   4,
 												},
 												File:   "gen.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 120,
-													Line:   3,
+													Column: 118,
+													Line:   4,
 												},
 											},
 										},
@@ -663,14 +663,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 92,
-											Line:   3,
+											Column: 91,
+											Line:   4,
 										},
 										File:   "gen.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 91,
-											Line:   3,
+											Column: 90,
+											Line:   4,
 										},
 									},
 								},

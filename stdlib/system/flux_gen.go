@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   3,
+					Line:   4,
 				},
 				File:   "system.flux",
-				Source: "package system\n\nbuiltin time",
+				Source: "package system\n\n\nbuiltin time",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "system.flux",
 					Source: "builtin time",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "system.flux",
 						Source: "time",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "system.flux",
 						Source: "() => time",
 						Start: ast.Position{
 							Column: 16,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "system.flux",
 							Source: "() => time",
 							Start: ast.Position{
 								Column: 16,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -114,13 +114,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "system.flux",
 								Source: "time",
 								Start: ast.Position{
 									Column: 22,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "system.flux",
 									Source: "time",
 									Start: ast.Position{
 										Column: 22,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},

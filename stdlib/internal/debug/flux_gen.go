@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   13,
+					Line:   14,
 				},
 				File:   "debug.flux",
-				Source: "package debug\n\n// pass will pass any incoming tables directly next to the following transformation.\n// It is best used to interrupt any planner rules that rely on a specific ordering.\nbuiltin pass : (<-tables: [A]) => [A] where A: Record\n\n// slurp will read the incoming tables and concatenate buffers with the same group key\n// into a single table. This is useful for testing the performance impact of multiple\n// buffers versus a single buffer.\nbuiltin slurp : (<-tables: [A]) => [A] where A: Record\n\n// sink will discard all data that comes into it.\nbuiltin sink",
+				Source: "package debug\n\n\n// pass will pass any incoming tables directly next to the following transformation.\n// It is best used to interrupt any planner rules that rely on a specific ordering.\nbuiltin pass : (<-tables: [A]) => [A] where A: Record\n\n// slurp will read the incoming tables and concatenate buffers with the same group key\n// into a single table. This is useful for testing the performance impact of multiple\n// buffers versus a single buffer.\nbuiltin slurp : (<-tables: [A]) => [A] where A: Record\n\n// sink will discard all data that comes into it.\nbuiltin sink",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "debug.flux",
 					Source: "builtin pass",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "debug.flux",
 						Source: "pass",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "debug.flux",
 						Source: "(<-tables: [A]) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 16,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   5,
+								Line:   6,
 							},
 							File:   "debug.flux",
 							Source: "A: Record",
 							Start: ast.Position{
 								Column: 45,
-								Line:   5,
+								Line:   6,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   5,
+									Line:   6,
 								},
 								File:   "debug.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 48,
-									Line:   5,
+									Line:   6,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   5,
+									Line:   6,
 								},
 								File:   "debug.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 45,
-									Line:   5,
+									Line:   6,
 								},
 							},
 						},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   5,
+								Line:   6,
 							},
 							File:   "debug.flux",
 							Source: "(<-tables: [A]) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   5,
+								Line:   6,
 							},
 						},
 					},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   5,
+									Line:   6,
 								},
 								File:   "debug.flux",
 								Source: "<-tables: [A]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   5,
+									Line:   6,
 								},
 							},
 						},
@@ -186,13 +186,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   5,
+										Line:   6,
 									},
 									File:   "debug.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 19,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   5,
+										Line:   6,
 									},
 									File:   "debug.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -222,13 +222,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   5,
+											Line:   6,
 										},
 										File:   "debug.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 28,
-											Line:   5,
+											Line:   6,
 										},
 									},
 								},
@@ -239,13 +239,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   5,
+												Line:   6,
 											},
 											File:   "debug.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 28,
-												Line:   5,
+												Line:   6,
 											},
 										},
 									},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   5,
+									Line:   6,
 								},
 								File:   "debug.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 35,
-									Line:   5,
+									Line:   6,
 								},
 							},
 						},
@@ -278,13 +278,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   5,
+										Line:   6,
 									},
 									File:   "debug.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 36,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -295,13 +295,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   5,
+											Line:   6,
 										},
 										File:   "debug.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 36,
-											Line:   5,
+											Line:   6,
 										},
 									},
 								},
@@ -318,13 +318,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   10,
+						Line:   11,
 					},
 					File:   "debug.flux",
 					Source: "builtin slurp",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   11,
 					},
 				},
 			},
@@ -336,13 +336,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   10,
+							Line:   11,
 						},
 						File:   "debug.flux",
 						Source: "slurp",
 						Start: ast.Position{
 							Column: 9,
-							Line:   10,
+							Line:   11,
 						},
 					},
 				},
@@ -355,13 +355,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 55,
-							Line:   10,
+							Line:   11,
 						},
 						File:   "debug.flux",
 						Source: "(<-tables: [A]) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 17,
-							Line:   10,
+							Line:   11,
 						},
 					},
 				},
@@ -372,13 +372,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 55,
-								Line:   10,
+								Line:   11,
 							},
 							File:   "debug.flux",
 							Source: "A: Record",
 							Start: ast.Position{
 								Column: 46,
-								Line:   10,
+								Line:   11,
 							},
 						},
 					},
@@ -389,13 +389,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
-									Line:   10,
+									Line:   11,
 								},
 								File:   "debug.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 49,
-									Line:   10,
+									Line:   11,
 								},
 							},
 						},
@@ -408,13 +408,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   10,
+									Line:   11,
 								},
 								File:   "debug.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 46,
-									Line:   10,
+									Line:   11,
 								},
 							},
 						},
@@ -428,13 +428,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 39,
-								Line:   10,
+								Line:   11,
 							},
 							File:   "debug.flux",
 							Source: "(<-tables: [A]) => [A]",
 							Start: ast.Position{
 								Column: 17,
-								Line:   10,
+								Line:   11,
 							},
 						},
 					},
@@ -445,13 +445,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   10,
+									Line:   11,
 								},
 								File:   "debug.flux",
 								Source: "<-tables: [A]",
 								Start: ast.Position{
 									Column: 18,
-									Line:   10,
+									Line:   11,
 								},
 							},
 						},
@@ -463,13 +463,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   10,
+										Line:   11,
 									},
 									File:   "debug.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 20,
-										Line:   10,
+										Line:   11,
 									},
 								},
 							},
@@ -482,13 +482,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   10,
+										Line:   11,
 									},
 									File:   "debug.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 28,
-										Line:   10,
+										Line:   11,
 									},
 								},
 							},
@@ -499,13 +499,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   10,
+											Line:   11,
 										},
 										File:   "debug.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 29,
-											Line:   10,
+											Line:   11,
 										},
 									},
 								},
@@ -516,13 +516,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   10,
+												Line:   11,
 											},
 											File:   "debug.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 29,
-												Line:   10,
+												Line:   11,
 											},
 										},
 									},
@@ -538,13 +538,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   10,
+									Line:   11,
 								},
 								File:   "debug.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 36,
-									Line:   10,
+									Line:   11,
 								},
 							},
 						},
@@ -555,13 +555,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   10,
+										Line:   11,
 									},
 									File:   "debug.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 37,
-										Line:   10,
+										Line:   11,
 									},
 								},
 							},
@@ -572,13 +572,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 38,
-											Line:   10,
+											Line:   11,
 										},
 										File:   "debug.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 37,
-											Line:   10,
+											Line:   11,
 										},
 									},
 								},
@@ -595,13 +595,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   13,
+						Line:   14,
 					},
 					File:   "debug.flux",
 					Source: "builtin sink",
 					Start: ast.Position{
 						Column: 1,
-						Line:   13,
+						Line:   14,
 					},
 				},
 			},
@@ -613,13 +613,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   13,
+							Line:   14,
 						},
 						File:   "debug.flux",
 						Source: "sink",
 						Start: ast.Position{
 							Column: 9,
-							Line:   13,
+							Line:   14,
 						},
 					},
 				},
@@ -632,13 +632,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   13,
+							Line:   14,
 						},
 						File:   "debug.flux",
 						Source: "(<-tables: [A]) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 16,
-							Line:   13,
+							Line:   14,
 						},
 					},
 				},
@@ -649,13 +649,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "debug.flux",
 							Source: "A: Record",
 							Start: ast.Position{
 								Column: 45,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -666,13 +666,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "debug.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 48,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -685,13 +685,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "debug.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 45,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -705,13 +705,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 38,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "debug.flux",
 							Source: "(<-tables: [A]) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -722,13 +722,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "debug.flux",
 								Source: "<-tables: [A]",
 								Start: ast.Position{
 									Column: 17,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -740,13 +740,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "debug.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 19,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -759,13 +759,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "debug.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 27,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -776,13 +776,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   13,
+											Line:   14,
 										},
 										File:   "debug.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 28,
-											Line:   13,
+											Line:   14,
 										},
 									},
 								},
@@ -793,13 +793,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   13,
+												Line:   14,
 											},
 											File:   "debug.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 28,
-												Line:   13,
+												Line:   14,
 											},
 										},
 									},
@@ -815,13 +815,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "debug.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 35,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -832,13 +832,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "debug.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 36,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -849,13 +849,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   13,
+											Line:   14,
 										},
 										File:   "debug.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 36,
-											Line:   13,
+											Line:   14,
 										},
 									},
 								},

@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 15,
-					Line:   19,
+					Line:   20,
 				},
 				File:   "dict.flux",
-				Source: "package dict\n\n// fromList will convert an array of key/value pairs\n// into a dictionary.\nbuiltin fromList : (pairs: [{ key: K, value: V }]) => [K: V] where K: Comparable\n\n// get will retrieve a value from a dictionary. If there is no\n// key in the dictionary, the default value will be returned.\nbuiltin get : (dict: [K: V], key: K, default: V) => V where K: Comparable\n\n// insert will insert a key/value pair into the dictionary\n// and return a new dictionary with that value inserted.\n// If the key already exists in the dictionary, it will\n// be overwritten.\nbuiltin insert : (dict: [K: V], key: K, value: V) => [K: V] where K: Comparable\n\n// remove will remove a key/value pair from the dictionary\n// and return a new dictionary with that value removed.\nbuiltin remove",
+				Source: "package dict\n\n\n// fromList will convert an array of key/value pairs\n// into a dictionary.\nbuiltin fromList : (pairs: [{key: K, value: V}]) => [K:V] where K: Comparable\n\n// get will retrieve a value from a dictionary. If there is no\n// key in the dictionary, the default value will be returned.\nbuiltin get : (dict: [K:V], key: K, default: V) => V where K: Comparable\n\n// insert will insert a key/value pair into the dictionary\n// and return a new dictionary with that value inserted.\n// If the key already exists in the dictionary, it will\n// be overwritten.\nbuiltin insert : (dict: [K:V], key: K, value: V) => [K:V] where K: Comparable\n\n// remove will remove a key/value pair from the dictionary\n// and return a new dictionary with that value removed.\nbuiltin remove",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "dict.flux",
 					Source: "builtin fromList",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "dict.flux",
 						Source: "fromList",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -77,14 +77,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 81,
-							Line:   5,
+							Column: 78,
+							Line:   6,
 						},
 						File:   "dict.flux",
-						Source: "(pairs: [{ key: K, value: V }]) => [K: V] where K: Comparable",
+						Source: "(pairs: [{key: K, value: V}]) => [K:V] where K: Comparable",
 						Start: ast.Position{
 							Column: 20,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -94,14 +94,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 81,
-								Line:   5,
+								Column: 78,
+								Line:   6,
 							},
 							File:   "dict.flux",
 							Source: "K: Comparable",
 							Start: ast.Position{
-								Column: 68,
-								Line:   5,
+								Column: 65,
+								Line:   6,
 							},
 						},
 					},
@@ -111,14 +111,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 81,
-									Line:   5,
+									Column: 78,
+									Line:   6,
 								},
 								File:   "dict.flux",
 								Source: "Comparable",
 								Start: ast.Position{
-									Column: 71,
-									Line:   5,
+									Column: 68,
+									Line:   6,
 								},
 							},
 						},
@@ -130,14 +130,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 69,
-									Line:   5,
+									Column: 66,
+									Line:   6,
 								},
 								File:   "dict.flux",
 								Source: "K",
 								Start: ast.Position{
-									Column: 68,
-									Line:   5,
+									Column: 65,
+									Line:   6,
 								},
 							},
 						},
@@ -150,14 +150,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 61,
-								Line:   5,
+								Column: 58,
+								Line:   6,
 							},
 							File:   "dict.flux",
-							Source: "(pairs: [{ key: K, value: V }]) => [K: V]",
+							Source: "(pairs: [{key: K, value: V}]) => [K:V]",
 							Start: ast.Position{
 								Column: 20,
-								Line:   5,
+								Line:   6,
 							},
 						},
 					},
@@ -167,14 +167,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 50,
-									Line:   5,
+									Column: 48,
+									Line:   6,
 								},
 								File:   "dict.flux",
-								Source: "pairs: [{ key: K, value: V }]",
+								Source: "pairs: [{key: K, value: V}]",
 								Start: ast.Position{
 									Column: 21,
-									Line:   5,
+									Line:   6,
 								},
 							},
 						},
@@ -186,13 +186,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   5,
+										Line:   6,
 									},
 									File:   "dict.flux",
 									Source: "pairs",
 									Start: ast.Position{
 										Column: 21,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -204,14 +204,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 50,
-										Line:   5,
+										Column: 48,
+										Line:   6,
 									},
 									File:   "dict.flux",
-									Source: "[{ key: K, value: V }]",
+									Source: "[{key: K, value: V}]",
 									Start: ast.Position{
 										Column: 28,
-										Line:   5,
+										Line:   6,
 									},
 								},
 							},
@@ -221,14 +221,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 49,
-											Line:   5,
+											Column: 47,
+											Line:   6,
 										},
 										File:   "dict.flux",
-										Source: "{ key: K, value: V }",
+										Source: "{key: K, value: V}",
 										Start: ast.Position{
 											Column: 29,
-											Line:   5,
+											Line:   6,
 										},
 									},
 								},
@@ -238,14 +238,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   5,
+												Column: 36,
+												Line:   6,
 											},
 											File:   "dict.flux",
 											Source: "key: K",
 											Start: ast.Position{
-												Column: 31,
-												Line:   5,
+												Column: 30,
+												Line:   6,
 											},
 										},
 									},
@@ -255,14 +255,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 34,
-													Line:   5,
+													Column: 33,
+													Line:   6,
 												},
 												File:   "dict.flux",
 												Source: "key",
 												Start: ast.Position{
-													Column: 31,
-													Line:   5,
+													Column: 30,
+													Line:   6,
 												},
 											},
 										},
@@ -274,14 +274,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
-													Line:   5,
+													Column: 36,
+													Line:   6,
 												},
 												File:   "dict.flux",
 												Source: "K",
 												Start: ast.Position{
-													Column: 36,
-													Line:   5,
+													Column: 35,
+													Line:   6,
 												},
 											},
 										},
@@ -291,14 +291,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
-														Line:   5,
+														Column: 36,
+														Line:   6,
 													},
 													File:   "dict.flux",
 													Source: "K",
 													Start: ast.Position{
-														Column: 36,
-														Line:   5,
+														Column: 35,
+														Line:   6,
 													},
 												},
 											},
@@ -311,14 +311,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 47,
-												Line:   5,
+												Column: 46,
+												Line:   6,
 											},
 											File:   "dict.flux",
 											Source: "value: V",
 											Start: ast.Position{
-												Column: 39,
-												Line:   5,
+												Column: 38,
+												Line:   6,
 											},
 										},
 									},
@@ -328,14 +328,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 44,
-													Line:   5,
+													Column: 43,
+													Line:   6,
 												},
 												File:   "dict.flux",
 												Source: "value",
 												Start: ast.Position{
-													Column: 39,
-													Line:   5,
+													Column: 38,
+													Line:   6,
 												},
 											},
 										},
@@ -347,14 +347,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 47,
-													Line:   5,
+													Column: 46,
+													Line:   6,
 												},
 												File:   "dict.flux",
 												Source: "V",
 												Start: ast.Position{
-													Column: 46,
-													Line:   5,
+													Column: 45,
+													Line:   6,
 												},
 											},
 										},
@@ -364,14 +364,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 47,
-														Line:   5,
+														Column: 46,
+														Line:   6,
 													},
 													File:   "dict.flux",
 													Source: "V",
 													Start: ast.Position{
-														Column: 46,
-														Line:   5,
+														Column: 45,
+														Line:   6,
 													},
 												},
 											},
@@ -389,14 +389,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 61,
-									Line:   5,
+									Column: 58,
+									Line:   6,
 								},
 								File:   "dict.flux",
-								Source: "[K: V]",
+								Source: "[K:V]",
 								Start: ast.Position{
-									Column: 55,
-									Line:   5,
+									Column: 53,
+									Line:   6,
 								},
 							},
 						},
@@ -406,14 +406,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 57,
-										Line:   5,
+										Column: 55,
+										Line:   6,
 									},
 									File:   "dict.flux",
 									Source: "K",
 									Start: ast.Position{
-										Column: 56,
-										Line:   5,
+										Column: 54,
+										Line:   6,
 									},
 								},
 							},
@@ -423,14 +423,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 57,
-											Line:   5,
+											Column: 55,
+											Line:   6,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
-											Column: 56,
-											Line:   5,
+											Column: 54,
+											Line:   6,
 										},
 									},
 								},
@@ -443,14 +443,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 60,
-										Line:   5,
+										Column: 57,
+										Line:   6,
 									},
 									File:   "dict.flux",
 									Source: "V",
 									Start: ast.Position{
-										Column: 59,
-										Line:   5,
+										Column: 56,
+										Line:   6,
 									},
 								},
 							},
@@ -460,14 +460,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 60,
-											Line:   5,
+											Column: 57,
+											Line:   6,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 59,
-											Line:   5,
+											Column: 56,
+											Line:   6,
 										},
 									},
 								},
@@ -484,13 +484,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   9,
+						Line:   10,
 					},
 					File:   "dict.flux",
 					Source: "builtin get",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -502,13 +502,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   9,
+							Line:   10,
 						},
 						File:   "dict.flux",
 						Source: "get",
 						Start: ast.Position{
 							Column: 9,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -520,14 +520,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 74,
-							Line:   9,
+							Column: 73,
+							Line:   10,
 						},
 						File:   "dict.flux",
-						Source: "(dict: [K: V], key: K, default: V) => V where K: Comparable",
+						Source: "(dict: [K:V], key: K, default: V) => V where K: Comparable",
 						Start: ast.Position{
 							Column: 15,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -537,14 +537,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 74,
-								Line:   9,
+								Column: 73,
+								Line:   10,
 							},
 							File:   "dict.flux",
 							Source: "K: Comparable",
 							Start: ast.Position{
-								Column: 61,
-								Line:   9,
+								Column: 60,
+								Line:   10,
 							},
 						},
 					},
@@ -554,14 +554,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 74,
-									Line:   9,
+									Column: 73,
+									Line:   10,
 								},
 								File:   "dict.flux",
 								Source: "Comparable",
 								Start: ast.Position{
-									Column: 64,
-									Line:   9,
+									Column: 63,
+									Line:   10,
 								},
 							},
 						},
@@ -573,14 +573,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 62,
-									Line:   9,
+									Column: 61,
+									Line:   10,
 								},
 								File:   "dict.flux",
 								Source: "K",
 								Start: ast.Position{
-									Column: 61,
-									Line:   9,
+									Column: 60,
+									Line:   10,
 								},
 							},
 						},
@@ -593,14 +593,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 54,
-								Line:   9,
+								Column: 53,
+								Line:   10,
 							},
 							File:   "dict.flux",
-							Source: "(dict: [K: V], key: K, default: V) => V",
+							Source: "(dict: [K:V], key: K, default: V) => V",
 							Start: ast.Position{
 								Column: 15,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
@@ -610,14 +610,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   9,
+									Column: 27,
+									Line:   10,
 								},
 								File:   "dict.flux",
-								Source: "dict: [K: V]",
+								Source: "dict: [K:V]",
 								Start: ast.Position{
 									Column: 16,
-									Line:   9,
+									Line:   10,
 								},
 							},
 						},
@@ -629,13 +629,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   9,
+										Line:   10,
 									},
 									File:   "dict.flux",
 									Source: "dict",
 									Start: ast.Position{
 										Column: 16,
-										Line:   9,
+										Line:   10,
 									},
 								},
 							},
@@ -647,14 +647,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
-										Line:   9,
+										Column: 27,
+										Line:   10,
 									},
 									File:   "dict.flux",
-									Source: "[K: V]",
+									Source: "[K:V]",
 									Start: ast.Position{
 										Column: 22,
-										Line:   9,
+										Line:   10,
 									},
 								},
 							},
@@ -665,13 +665,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   9,
+											Line:   10,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
 											Column: 23,
-											Line:   9,
+											Line:   10,
 										},
 									},
 								},
@@ -682,13 +682,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   9,
+												Line:   10,
 											},
 											File:   "dict.flux",
 											Source: "K",
 											Start: ast.Position{
 												Column: 23,
-												Line:   9,
+												Line:   10,
 											},
 										},
 									},
@@ -701,14 +701,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   9,
+											Column: 26,
+											Line:   10,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 26,
-											Line:   9,
+											Column: 25,
+											Line:   10,
 										},
 									},
 								},
@@ -718,14 +718,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   9,
+												Column: 26,
+												Line:   10,
 											},
 											File:   "dict.flux",
 											Source: "V",
 											Start: ast.Position{
-												Column: 26,
-												Line:   9,
+												Column: 25,
+												Line:   10,
 											},
 										},
 									},
@@ -739,14 +739,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 36,
-									Line:   9,
+									Column: 35,
+									Line:   10,
 								},
 								File:   "dict.flux",
 								Source: "key: K",
 								Start: ast.Position{
-									Column: 30,
-									Line:   9,
+									Column: 29,
+									Line:   10,
 								},
 							},
 						},
@@ -757,14 +757,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 33,
-										Line:   9,
+										Column: 32,
+										Line:   10,
 									},
 									File:   "dict.flux",
 									Source: "key",
 									Start: ast.Position{
-										Column: 30,
-										Line:   9,
+										Column: 29,
+										Line:   10,
 									},
 								},
 							},
@@ -776,14 +776,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 36,
-										Line:   9,
+										Column: 35,
+										Line:   10,
 									},
 									File:   "dict.flux",
 									Source: "K",
 									Start: ast.Position{
-										Column: 35,
-										Line:   9,
+										Column: 34,
+										Line:   10,
 									},
 								},
 							},
@@ -793,14 +793,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
-											Line:   9,
+											Column: 35,
+											Line:   10,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
-											Column: 35,
-											Line:   9,
+											Column: 34,
+											Line:   10,
 										},
 									},
 								},
@@ -813,14 +813,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
-									Line:   9,
+									Column: 47,
+									Line:   10,
 								},
 								File:   "dict.flux",
 								Source: "default: V",
 								Start: ast.Position{
-									Column: 38,
-									Line:   9,
+									Column: 37,
+									Line:   10,
 								},
 							},
 						},
@@ -831,14 +831,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 45,
-										Line:   9,
+										Column: 44,
+										Line:   10,
 									},
 									File:   "dict.flux",
 									Source: "default",
 									Start: ast.Position{
-										Column: 38,
-										Line:   9,
+										Column: 37,
+										Line:   10,
 									},
 								},
 							},
@@ -850,14 +850,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 48,
-										Line:   9,
+										Column: 47,
+										Line:   10,
 									},
 									File:   "dict.flux",
 									Source: "V",
 									Start: ast.Position{
-										Column: 47,
-										Line:   9,
+										Column: 46,
+										Line:   10,
 									},
 								},
 							},
@@ -867,14 +867,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
-											Line:   9,
+											Column: 47,
+											Line:   10,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 47,
-											Line:   9,
+											Column: 46,
+											Line:   10,
 										},
 									},
 								},
@@ -888,14 +888,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 54,
-									Line:   9,
+									Column: 53,
+									Line:   10,
 								},
 								File:   "dict.flux",
 								Source: "V",
 								Start: ast.Position{
-									Column: 53,
-									Line:   9,
+									Column: 52,
+									Line:   10,
 								},
 							},
 						},
@@ -905,14 +905,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 54,
-										Line:   9,
+										Column: 53,
+										Line:   10,
 									},
 									File:   "dict.flux",
 									Source: "V",
 									Start: ast.Position{
-										Column: 53,
-										Line:   9,
+										Column: 52,
+										Line:   10,
 									},
 								},
 							},
@@ -928,13 +928,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   15,
+						Line:   16,
 					},
 					File:   "dict.flux",
 					Source: "builtin insert",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -946,13 +946,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "dict.flux",
 						Source: "insert",
 						Start: ast.Position{
 							Column: 9,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -964,14 +964,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 80,
-							Line:   15,
+							Column: 78,
+							Line:   16,
 						},
 						File:   "dict.flux",
-						Source: "(dict: [K: V], key: K, value: V) => [K: V] where K: Comparable",
+						Source: "(dict: [K:V], key: K, value: V) => [K:V] where K: Comparable",
 						Start: ast.Position{
 							Column: 18,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -981,14 +981,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 80,
-								Line:   15,
+								Column: 78,
+								Line:   16,
 							},
 							File:   "dict.flux",
 							Source: "K: Comparable",
 							Start: ast.Position{
-								Column: 67,
-								Line:   15,
+								Column: 65,
+								Line:   16,
 							},
 						},
 					},
@@ -998,14 +998,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 80,
-									Line:   15,
+									Column: 78,
+									Line:   16,
 								},
 								File:   "dict.flux",
 								Source: "Comparable",
 								Start: ast.Position{
-									Column: 70,
-									Line:   15,
+									Column: 68,
+									Line:   16,
 								},
 							},
 						},
@@ -1017,14 +1017,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 68,
-									Line:   15,
+									Column: 66,
+									Line:   16,
 								},
 								File:   "dict.flux",
 								Source: "K",
 								Start: ast.Position{
-									Column: 67,
-									Line:   15,
+									Column: 65,
+									Line:   16,
 								},
 							},
 						},
@@ -1037,14 +1037,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 60,
-								Line:   15,
+								Column: 58,
+								Line:   16,
 							},
 							File:   "dict.flux",
-							Source: "(dict: [K: V], key: K, value: V) => [K: V]",
+							Source: "(dict: [K:V], key: K, value: V) => [K:V]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -1054,14 +1054,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 31,
-									Line:   15,
+									Column: 30,
+									Line:   16,
 								},
 								File:   "dict.flux",
-								Source: "dict: [K: V]",
+								Source: "dict: [K:V]",
 								Start: ast.Position{
 									Column: 19,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -1073,13 +1073,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   15,
+										Line:   16,
 									},
 									File:   "dict.flux",
 									Source: "dict",
 									Start: ast.Position{
 										Column: 19,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -1091,14 +1091,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 31,
-										Line:   15,
+										Column: 30,
+										Line:   16,
 									},
 									File:   "dict.flux",
-									Source: "[K: V]",
+									Source: "[K:V]",
 									Start: ast.Position{
 										Column: 25,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -1109,13 +1109,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   15,
+											Line:   16,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
 											Column: 26,
-											Line:   15,
+											Line:   16,
 										},
 									},
 								},
@@ -1126,13 +1126,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   15,
+												Line:   16,
 											},
 											File:   "dict.flux",
 											Source: "K",
 											Start: ast.Position{
 												Column: 26,
-												Line:   15,
+												Line:   16,
 											},
 										},
 									},
@@ -1145,14 +1145,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 30,
-											Line:   15,
+											Column: 29,
+											Line:   16,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 29,
-											Line:   15,
+											Column: 28,
+											Line:   16,
 										},
 									},
 								},
@@ -1162,14 +1162,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
-												Line:   15,
+												Column: 29,
+												Line:   16,
 											},
 											File:   "dict.flux",
 											Source: "V",
 											Start: ast.Position{
-												Column: 29,
-												Line:   15,
+												Column: 28,
+												Line:   16,
 											},
 										},
 									},
@@ -1183,14 +1183,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 39,
-									Line:   15,
+									Column: 38,
+									Line:   16,
 								},
 								File:   "dict.flux",
 								Source: "key: K",
 								Start: ast.Position{
-									Column: 33,
-									Line:   15,
+									Column: 32,
+									Line:   16,
 								},
 							},
 						},
@@ -1201,14 +1201,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 36,
-										Line:   15,
+										Column: 35,
+										Line:   16,
 									},
 									File:   "dict.flux",
 									Source: "key",
 									Start: ast.Position{
-										Column: 33,
-										Line:   15,
+										Column: 32,
+										Line:   16,
 									},
 								},
 							},
@@ -1220,14 +1220,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 39,
-										Line:   15,
+										Column: 38,
+										Line:   16,
 									},
 									File:   "dict.flux",
 									Source: "K",
 									Start: ast.Position{
-										Column: 38,
-										Line:   15,
+										Column: 37,
+										Line:   16,
 									},
 								},
 							},
@@ -1237,14 +1237,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 39,
-											Line:   15,
+											Column: 38,
+											Line:   16,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
-											Column: 38,
-											Line:   15,
+											Column: 37,
+											Line:   16,
 										},
 									},
 								},
@@ -1257,14 +1257,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 49,
-									Line:   15,
+									Column: 48,
+									Line:   16,
 								},
 								File:   "dict.flux",
 								Source: "value: V",
 								Start: ast.Position{
-									Column: 41,
-									Line:   15,
+									Column: 40,
+									Line:   16,
 								},
 							},
 						},
@@ -1275,14 +1275,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 46,
-										Line:   15,
+										Column: 45,
+										Line:   16,
 									},
 									File:   "dict.flux",
 									Source: "value",
 									Start: ast.Position{
-										Column: 41,
-										Line:   15,
+										Column: 40,
+										Line:   16,
 									},
 								},
 							},
@@ -1294,14 +1294,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 49,
-										Line:   15,
+										Column: 48,
+										Line:   16,
 									},
 									File:   "dict.flux",
 									Source: "V",
 									Start: ast.Position{
-										Column: 48,
-										Line:   15,
+										Column: 47,
+										Line:   16,
 									},
 								},
 							},
@@ -1311,14 +1311,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 49,
-											Line:   15,
+											Column: 48,
+											Line:   16,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 48,
-											Line:   15,
+											Column: 47,
+											Line:   16,
 										},
 									},
 								},
@@ -1332,14 +1332,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 60,
-									Line:   15,
+									Column: 58,
+									Line:   16,
 								},
 								File:   "dict.flux",
-								Source: "[K: V]",
+								Source: "[K:V]",
 								Start: ast.Position{
-									Column: 54,
-									Line:   15,
+									Column: 53,
+									Line:   16,
 								},
 							},
 						},
@@ -1349,14 +1349,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 56,
-										Line:   15,
+										Column: 55,
+										Line:   16,
 									},
 									File:   "dict.flux",
 									Source: "K",
 									Start: ast.Position{
-										Column: 55,
-										Line:   15,
+										Column: 54,
+										Line:   16,
 									},
 								},
 							},
@@ -1366,14 +1366,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 56,
-											Line:   15,
+											Column: 55,
+											Line:   16,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
-											Column: 55,
-											Line:   15,
+											Column: 54,
+											Line:   16,
 										},
 									},
 								},
@@ -1386,14 +1386,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 59,
-										Line:   15,
+										Column: 57,
+										Line:   16,
 									},
 									File:   "dict.flux",
 									Source: "V",
 									Start: ast.Position{
-										Column: 58,
-										Line:   15,
+										Column: 56,
+										Line:   16,
 									},
 								},
 							},
@@ -1403,14 +1403,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 59,
-											Line:   15,
+											Column: 57,
+											Line:   16,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 58,
-											Line:   15,
+											Column: 56,
+											Line:   16,
 										},
 									},
 								},
@@ -1427,13 +1427,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   19,
+						Line:   20,
 					},
 					File:   "dict.flux",
 					Source: "builtin remove",
 					Start: ast.Position{
 						Column: 1,
-						Line:   19,
+						Line:   20,
 					},
 				},
 			},
@@ -1445,13 +1445,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   19,
+							Line:   20,
 						},
 						File:   "dict.flux",
 						Source: "remove",
 						Start: ast.Position{
 							Column: 9,
-							Line:   19,
+							Line:   20,
 						},
 					},
 				},
@@ -1463,14 +1463,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 70,
-							Line:   19,
+							Column: 68,
+							Line:   20,
 						},
 						File:   "dict.flux",
-						Source: "(dict: [K: V], key: K) => [K: V] where K: Comparable",
+						Source: "(dict: [K:V], key: K) => [K:V] where K: Comparable",
 						Start: ast.Position{
 							Column: 18,
-							Line:   19,
+							Line:   20,
 						},
 					},
 				},
@@ -1480,14 +1480,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 70,
-								Line:   19,
+								Column: 68,
+								Line:   20,
 							},
 							File:   "dict.flux",
 							Source: "K: Comparable",
 							Start: ast.Position{
-								Column: 57,
-								Line:   19,
+								Column: 55,
+								Line:   20,
 							},
 						},
 					},
@@ -1497,14 +1497,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 70,
-									Line:   19,
+									Column: 68,
+									Line:   20,
 								},
 								File:   "dict.flux",
 								Source: "Comparable",
 								Start: ast.Position{
-									Column: 60,
-									Line:   19,
+									Column: 58,
+									Line:   20,
 								},
 							},
 						},
@@ -1516,14 +1516,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 58,
-									Line:   19,
+									Column: 56,
+									Line:   20,
 								},
 								File:   "dict.flux",
 								Source: "K",
 								Start: ast.Position{
-									Column: 57,
-									Line:   19,
+									Column: 55,
+									Line:   20,
 								},
 							},
 						},
@@ -1536,14 +1536,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 50,
-								Line:   19,
+								Column: 48,
+								Line:   20,
 							},
 							File:   "dict.flux",
-							Source: "(dict: [K: V], key: K) => [K: V]",
+							Source: "(dict: [K:V], key: K) => [K:V]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   19,
+								Line:   20,
 							},
 						},
 					},
@@ -1553,14 +1553,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 31,
-									Line:   19,
+									Column: 30,
+									Line:   20,
 								},
 								File:   "dict.flux",
-								Source: "dict: [K: V]",
+								Source: "dict: [K:V]",
 								Start: ast.Position{
 									Column: 19,
-									Line:   19,
+									Line:   20,
 								},
 							},
 						},
@@ -1572,13 +1572,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 23,
-										Line:   19,
+										Line:   20,
 									},
 									File:   "dict.flux",
 									Source: "dict",
 									Start: ast.Position{
 										Column: 19,
-										Line:   19,
+										Line:   20,
 									},
 								},
 							},
@@ -1590,14 +1590,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 31,
-										Line:   19,
+										Column: 30,
+										Line:   20,
 									},
 									File:   "dict.flux",
-									Source: "[K: V]",
+									Source: "[K:V]",
 									Start: ast.Position{
 										Column: 25,
-										Line:   19,
+										Line:   20,
 									},
 								},
 							},
@@ -1608,13 +1608,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   19,
+											Line:   20,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
 											Column: 26,
-											Line:   19,
+											Line:   20,
 										},
 									},
 								},
@@ -1625,13 +1625,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   19,
+												Line:   20,
 											},
 											File:   "dict.flux",
 											Source: "K",
 											Start: ast.Position{
 												Column: 26,
-												Line:   19,
+												Line:   20,
 											},
 										},
 									},
@@ -1644,14 +1644,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 30,
-											Line:   19,
+											Column: 29,
+											Line:   20,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 29,
-											Line:   19,
+											Column: 28,
+											Line:   20,
 										},
 									},
 								},
@@ -1661,14 +1661,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
-												Line:   19,
+												Column: 29,
+												Line:   20,
 											},
 											File:   "dict.flux",
 											Source: "V",
 											Start: ast.Position{
-												Column: 29,
-												Line:   19,
+												Column: 28,
+												Line:   20,
 											},
 										},
 									},
@@ -1682,14 +1682,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 39,
-									Line:   19,
+									Column: 38,
+									Line:   20,
 								},
 								File:   "dict.flux",
 								Source: "key: K",
 								Start: ast.Position{
-									Column: 33,
-									Line:   19,
+									Column: 32,
+									Line:   20,
 								},
 							},
 						},
@@ -1700,14 +1700,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 36,
-										Line:   19,
+										Column: 35,
+										Line:   20,
 									},
 									File:   "dict.flux",
 									Source: "key",
 									Start: ast.Position{
-										Column: 33,
-										Line:   19,
+										Column: 32,
+										Line:   20,
 									},
 								},
 							},
@@ -1719,14 +1719,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 39,
-										Line:   19,
+										Column: 38,
+										Line:   20,
 									},
 									File:   "dict.flux",
 									Source: "K",
 									Start: ast.Position{
-										Column: 38,
-										Line:   19,
+										Column: 37,
+										Line:   20,
 									},
 								},
 							},
@@ -1736,14 +1736,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 39,
-											Line:   19,
+											Column: 38,
+											Line:   20,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
-											Column: 38,
-											Line:   19,
+											Column: 37,
+											Line:   20,
 										},
 									},
 								},
@@ -1757,14 +1757,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 50,
-									Line:   19,
+									Column: 48,
+									Line:   20,
 								},
 								File:   "dict.flux",
-								Source: "[K: V]",
+								Source: "[K:V]",
 								Start: ast.Position{
-									Column: 44,
-									Line:   19,
+									Column: 43,
+									Line:   20,
 								},
 							},
 						},
@@ -1774,14 +1774,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 46,
-										Line:   19,
+										Column: 45,
+										Line:   20,
 									},
 									File:   "dict.flux",
 									Source: "K",
 									Start: ast.Position{
-										Column: 45,
-										Line:   19,
+										Column: 44,
+										Line:   20,
 									},
 								},
 							},
@@ -1791,14 +1791,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 46,
-											Line:   19,
+											Column: 45,
+											Line:   20,
 										},
 										File:   "dict.flux",
 										Source: "K",
 										Start: ast.Position{
-											Column: 45,
-											Line:   19,
+											Column: 44,
+											Line:   20,
 										},
 									},
 								},
@@ -1811,14 +1811,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 49,
-										Line:   19,
+										Column: 47,
+										Line:   20,
 									},
 									File:   "dict.flux",
 									Source: "V",
 									Start: ast.Position{
-										Column: 48,
-										Line:   19,
+										Column: 46,
+										Line:   20,
 									},
 								},
 							},
@@ -1828,14 +1828,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 49,
-											Line:   19,
+											Column: 47,
+											Line:   20,
 										},
 										File:   "dict.flux",
 										Source: "V",
 										Start: ast.Position{
-											Column: 48,
-											Line:   19,
+											Column: 46,
+											Line:   20,
 										},
 									},
 								},

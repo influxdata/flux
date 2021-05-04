@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 25,
-					Line:   120,
+					Line:   131,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\nimport \"math\" \nimport \"universe\"\nimport \"experimental\"\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth : (timestamp: float) => float\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek : (timestamp: float) => float\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth : (timestamp: float) => float\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable : () => [{_start: time , _stop: time , _time: time , _value: float}]\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate : (<-tables: [{A with _start: time , _stop: time , _time: time , _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters : (<-tables: [{A with _time: time , _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour : (timestamp: float) => float\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate : (<-tables: [{A with _time: time , _value: float}], ?isRate: bool) => [{B with _value: float}]\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace : (<-tables: [{A with _value: float}], source: string, destination: string, regex: string, replacement: string) => [{B with _value: float}]\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression : (<-tables: [{A with _time: time , _stop: time , _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]\n\n// promqlMinute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute : (timestamp: float) => float\n\n// promqlMonth() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth : (timestamp: float) => float\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile : (<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) => [B] where A: Record, B: Record\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp : (<-tables: [{A with _value: float}]) => [{A with _value: float}]\n\n// promqlYear() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear : (timestamp: float) => float\n\n// quantile() accounts checks for quantile values that are out of range, above 1.0 or \n// below 0.0, by either returning positive infinity or negative infinity in the `_value` \n// column respectively. q must be a float \n\nquantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))\n\njoin = experimental.join",
+				Source: "package promql\n\n\nimport \"math\"\nimport \"universe\"\nimport \"experimental\"\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth : (timestamp: float) => float\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek : (timestamp: float) => float\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth : (timestamp: float) => float\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable : () => [{_start: time, _stop: time, _time: time, _value: float}]\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate : (<-tables: [{A with _start: time, _stop: time, _time: time, _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters : (<-tables: [{A with _time: time, _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour : (timestamp: float) => float\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate : (<-tables: [{A with _time: time, _value: float}], ?isRate: bool) => [{B with _value: float}]\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace : (\n    <-tables: [{A with _value: float}],\n    source: string,\n    destination: string,\n    regex: string,\n    replacement: string,\n) => [{B with _value: float}]\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression : (<-tables: [{A with _time: time, _stop: time, _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]\n\n// promqlMinute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute : (timestamp: float) => float\n\n// promqlMonth() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth : (timestamp: float) => float\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile : (\n    <-tables: [A],\n    ?quantile: float,\n    ?countColumn: string,\n    ?upperBoundColumn: string,\n    ?valueColumn: string,\n) => [B] where A: Record, B: Record\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp : (<-tables: [{A with _value: float}]) => [{A with _value: float}]\n\n// promqlYear() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear : (timestamp: float) => float\n\n// quantile() accounts checks for quantile values that are out of range, above 1.0 or \n// below 0.0, by either returning positive infinity or negative infinity in the `_value` \n// column respectively. q must be a float \nquantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)\njoin = experimental.join",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   11,
+						Line:   12,
 					},
 					File:   "promql.flux",
 					Source: "builtin changes",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   12,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   11,
+							Line:   12,
 						},
 						File:   "promql.flux",
 						Source: "changes",
 						Start: ast.Position{
 							Column: 9,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 83,
-							Line:   11,
+							Line:   12,
 						},
 						File:   "promql.flux",
 						Source: "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
 						Start: ast.Position{
 							Column: 19,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 83,
-								Line:   11,
+								Line:   12,
 							},
 							File:   "promql.flux",
 							Source: "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
 							Start: ast.Position{
 								Column: 19,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "promql.flux",
 								Source: "<-tables: [{A with _value: float}]",
 								Start: ast.Position{
 									Column: 20,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 22,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "promql.flux",
 									Source: "[{A with _value: float}]",
 									Start: ast.Position{
 										Column: 30,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
-											Line:   11,
+											Line:   12,
 										},
 										File:   "promql.flux",
 										Source: "{A with _value: float}",
 										Start: ast.Position{
 											Column: 31,
-											Line:   11,
+											Line:   12,
 										},
 									},
 								},
@@ -184,13 +184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 52,
-												Line:   11,
+												Line:   12,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 39,
-												Line:   11,
+												Line:   12,
 											},
 										},
 									},
@@ -201,13 +201,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   11,
+													Line:   12,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 39,
-													Line:   11,
+													Line:   12,
 												},
 											},
 										},
@@ -220,13 +220,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 52,
-													Line:   11,
+													Line:   12,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 47,
-													Line:   11,
+													Line:   12,
 												},
 											},
 										},
@@ -237,13 +237,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 52,
-														Line:   11,
+														Line:   12,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 47,
-														Line:   11,
+														Line:   12,
 													},
 												},
 											},
@@ -258,13 +258,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   11,
+												Line:   12,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 32,
-												Line:   11,
+												Line:   12,
 											},
 										},
 									},
@@ -280,13 +280,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 83,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "promql.flux",
 								Source: "[{B with _value: float}]",
 								Start: ast.Position{
 									Column: 59,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -297,13 +297,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 82,
-										Line:   11,
+										Line:   12,
 									},
 									File:   "promql.flux",
 									Source: "{B with _value: float}",
 									Start: ast.Position{
 										Column: 60,
-										Line:   11,
+										Line:   12,
 									},
 								},
 							},
@@ -314,13 +314,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
-											Line:   11,
+											Line:   12,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 68,
-											Line:   11,
+											Line:   12,
 										},
 									},
 								},
@@ -331,13 +331,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 74,
-												Line:   11,
+												Line:   12,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 68,
-												Line:   11,
+												Line:   12,
 											},
 										},
 									},
@@ -350,13 +350,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 81,
-												Line:   11,
+												Line:   12,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 76,
-												Line:   11,
+												Line:   12,
 											},
 										},
 									},
@@ -367,13 +367,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 81,
-													Line:   11,
+													Line:   12,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 76,
-													Line:   11,
+													Line:   12,
 												},
 											},
 										},
@@ -388,13 +388,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 62,
-											Line:   11,
+											Line:   12,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
 											Column: 61,
-											Line:   11,
+											Line:   12,
 										},
 									},
 								},
@@ -411,13 +411,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   16,
+						Line:   17,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlDayOfMonth",
 					Start: ast.Position{
 						Column: 1,
-						Line:   16,
+						Line:   17,
 					},
 				},
 			},
@@ -429,13 +429,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   16,
+							Line:   17,
 						},
 						File:   "promql.flux",
 						Source: "promqlDayOfMonth",
 						Start: ast.Position{
 							Column: 9,
-							Line:   16,
+							Line:   17,
 						},
 					},
 				},
@@ -448,13 +448,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 55,
-							Line:   16,
+							Line:   17,
 						},
 						File:   "promql.flux",
 						Source: "(timestamp: float) => float",
 						Start: ast.Position{
 							Column: 28,
-							Line:   16,
+							Line:   17,
 						},
 					},
 				},
@@ -466,13 +466,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 55,
-								Line:   16,
+								Line:   17,
 							},
 							File:   "promql.flux",
 							Source: "(timestamp: float) => float",
 							Start: ast.Position{
 								Column: 28,
-								Line:   16,
+								Line:   17,
 							},
 						},
 					},
@@ -483,13 +483,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   16,
+									Line:   17,
 								},
 								File:   "promql.flux",
 								Source: "timestamp: float",
 								Start: ast.Position{
 									Column: 29,
-									Line:   16,
+									Line:   17,
 								},
 							},
 						},
@@ -501,13 +501,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   16,
+										Line:   17,
 									},
 									File:   "promql.flux",
 									Source: "timestamp",
 									Start: ast.Position{
 										Column: 29,
-										Line:   16,
+										Line:   17,
 									},
 								},
 							},
@@ -520,13 +520,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 45,
-										Line:   16,
+										Line:   17,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 40,
-										Line:   16,
+										Line:   17,
 									},
 								},
 							},
@@ -537,13 +537,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 45,
-											Line:   16,
+											Line:   17,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 40,
-											Line:   16,
+											Line:   17,
 										},
 									},
 								},
@@ -558,13 +558,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 55,
-									Line:   16,
+									Line:   17,
 								},
 								File:   "promql.flux",
 								Source: "float",
 								Start: ast.Position{
 									Column: 50,
-									Line:   16,
+									Line:   17,
 								},
 							},
 						},
@@ -575,13 +575,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   16,
+										Line:   17,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 50,
-										Line:   16,
+										Line:   17,
 									},
 								},
 							},
@@ -597,13 +597,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 24,
-						Line:   21,
+						Line:   22,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlDayOfWeek",
 					Start: ast.Position{
 						Column: 1,
-						Line:   21,
+						Line:   22,
 					},
 				},
 			},
@@ -615,13 +615,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 24,
-							Line:   21,
+							Line:   22,
 						},
 						File:   "promql.flux",
 						Source: "promqlDayOfWeek",
 						Start: ast.Position{
 							Column: 9,
-							Line:   21,
+							Line:   22,
 						},
 					},
 				},
@@ -634,13 +634,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   21,
+							Line:   22,
 						},
 						File:   "promql.flux",
 						Source: "(timestamp: float) => float",
 						Start: ast.Position{
 							Column: 27,
-							Line:   21,
+							Line:   22,
 						},
 					},
 				},
@@ -652,13 +652,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   21,
+								Line:   22,
 							},
 							File:   "promql.flux",
 							Source: "(timestamp: float) => float",
 							Start: ast.Position{
 								Column: 27,
-								Line:   21,
+								Line:   22,
 							},
 						},
 					},
@@ -669,13 +669,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 44,
-									Line:   21,
+									Line:   22,
 								},
 								File:   "promql.flux",
 								Source: "timestamp: float",
 								Start: ast.Position{
 									Column: 28,
-									Line:   21,
+									Line:   22,
 								},
 							},
 						},
@@ -687,13 +687,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   21,
+										Line:   22,
 									},
 									File:   "promql.flux",
 									Source: "timestamp",
 									Start: ast.Position{
 										Column: 28,
-										Line:   21,
+										Line:   22,
 									},
 								},
 							},
@@ -706,13 +706,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 44,
-										Line:   21,
+										Line:   22,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 39,
-										Line:   21,
+										Line:   22,
 									},
 								},
 							},
@@ -723,13 +723,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 44,
-											Line:   21,
+											Line:   22,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 39,
-											Line:   21,
+											Line:   22,
 										},
 									},
 								},
@@ -744,13 +744,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   21,
+									Line:   22,
 								},
 								File:   "promql.flux",
 								Source: "float",
 								Start: ast.Position{
 									Column: 49,
-									Line:   21,
+									Line:   22,
 								},
 							},
 						},
@@ -761,13 +761,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   21,
+										Line:   22,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 49,
-										Line:   21,
+										Line:   22,
 									},
 								},
 							},
@@ -783,13 +783,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 26,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlDaysInMonth",
 					Start: ast.Position{
 						Column: 1,
-						Line:   26,
+						Line:   27,
 					},
 				},
 			},
@@ -801,13 +801,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "promql.flux",
 						Source: "promqlDaysInMonth",
 						Start: ast.Position{
 							Column: 9,
-							Line:   26,
+							Line:   27,
 						},
 					},
 				},
@@ -820,13 +820,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 56,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "promql.flux",
 						Source: "(timestamp: float) => float",
 						Start: ast.Position{
 							Column: 29,
-							Line:   26,
+							Line:   27,
 						},
 					},
 				},
@@ -838,13 +838,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 56,
-								Line:   26,
+								Line:   27,
 							},
 							File:   "promql.flux",
 							Source: "(timestamp: float) => float",
 							Start: ast.Position{
 								Column: 29,
-								Line:   26,
+								Line:   27,
 							},
 						},
 					},
@@ -855,13 +855,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   26,
+									Line:   27,
 								},
 								File:   "promql.flux",
 								Source: "timestamp: float",
 								Start: ast.Position{
 									Column: 30,
-									Line:   26,
+									Line:   27,
 								},
 							},
 						},
@@ -873,13 +873,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   26,
+										Line:   27,
 									},
 									File:   "promql.flux",
 									Source: "timestamp",
 									Start: ast.Position{
 										Column: 30,
-										Line:   26,
+										Line:   27,
 									},
 								},
 							},
@@ -892,13 +892,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   26,
+										Line:   27,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 41,
-										Line:   26,
+										Line:   27,
 									},
 								},
 							},
@@ -909,13 +909,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   26,
+											Line:   27,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 41,
-											Line:   26,
+											Line:   27,
 										},
 									},
 								},
@@ -930,13 +930,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
-									Line:   26,
+									Line:   27,
 								},
 								File:   "promql.flux",
 								Source: "float",
 								Start: ast.Position{
 									Column: 51,
-									Line:   26,
+									Line:   27,
 								},
 							},
 						},
@@ -947,13 +947,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 56,
-										Line:   26,
+										Line:   27,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 51,
-										Line:   26,
+										Line:   27,
 									},
 								},
 							},
@@ -969,13 +969,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   33,
+						Line:   34,
 					},
 					File:   "promql.flux",
 					Source: "builtin emptyTable",
 					Start: ast.Position{
 						Column: 1,
-						Line:   33,
+						Line:   34,
 					},
 				},
 			},
@@ -987,13 +987,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   33,
+							Line:   34,
 						},
 						File:   "promql.flux",
 						Source: "emptyTable",
 						Start: ast.Position{
 							Column: 9,
-							Line:   33,
+							Line:   34,
 						},
 					},
 				},
@@ -1005,14 +1005,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 88,
-							Line:   33,
+							Column: 85,
+							Line:   34,
 						},
 						File:   "promql.flux",
-						Source: "() => [{_start: time , _stop: time , _time: time , _value: float}]",
+						Source: "() => [{_start: time, _stop: time, _time: time, _value: float}]",
 						Start: ast.Position{
 							Column: 22,
-							Line:   33,
+							Line:   34,
 						},
 					},
 				},
@@ -1023,14 +1023,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 88,
-								Line:   33,
+								Column: 85,
+								Line:   34,
 							},
 							File:   "promql.flux",
-							Source: "() => [{_start: time , _stop: time , _time: time , _value: float}]",
+							Source: "() => [{_start: time, _stop: time, _time: time, _value: float}]",
 							Start: ast.Position{
 								Column: 22,
-								Line:   33,
+								Line:   34,
 							},
 						},
 					},
@@ -1041,14 +1041,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 88,
-									Line:   33,
+									Column: 85,
+									Line:   34,
 								},
 								File:   "promql.flux",
-								Source: "[{_start: time , _stop: time , _time: time , _value: float}]",
+								Source: "[{_start: time, _stop: time, _time: time, _value: float}]",
 								Start: ast.Position{
 									Column: 28,
-									Line:   33,
+									Line:   34,
 								},
 							},
 						},
@@ -1058,14 +1058,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 87,
-										Line:   33,
+										Column: 84,
+										Line:   34,
 									},
 									File:   "promql.flux",
-									Source: "{_start: time , _stop: time , _time: time , _value: float}",
+									Source: "{_start: time, _stop: time, _time: time, _value: float}",
 									Start: ast.Position{
 										Column: 29,
-										Line:   33,
+										Line:   34,
 									},
 								},
 							},
@@ -1076,13 +1076,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   33,
+											Line:   34,
 										},
 										File:   "promql.flux",
 										Source: "_start: time",
 										Start: ast.Position{
 											Column: 30,
-											Line:   33,
+											Line:   34,
 										},
 									},
 								},
@@ -1093,13 +1093,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   33,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "_start",
 											Start: ast.Position{
 												Column: 30,
-												Line:   33,
+												Line:   34,
 											},
 										},
 									},
@@ -1112,13 +1112,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
-												Line:   33,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "time",
 											Start: ast.Position{
 												Column: 38,
-												Line:   33,
+												Line:   34,
 											},
 										},
 									},
@@ -1129,13 +1129,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   33,
+													Line:   34,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 38,
-													Line:   33,
+													Line:   34,
 												},
 											},
 										},
@@ -1148,14 +1148,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 56,
-											Line:   33,
+											Column: 55,
+											Line:   34,
 										},
 										File:   "promql.flux",
 										Source: "_stop: time",
 										Start: ast.Position{
-											Column: 45,
-											Line:   33,
+											Column: 44,
+											Line:   34,
 										},
 									},
 								},
@@ -1165,14 +1165,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 50,
-												Line:   33,
+												Column: 49,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "_stop",
 											Start: ast.Position{
-												Column: 45,
-												Line:   33,
+												Column: 44,
+												Line:   34,
 											},
 										},
 									},
@@ -1184,14 +1184,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 56,
-												Line:   33,
+												Column: 55,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "time",
 											Start: ast.Position{
-												Column: 52,
-												Line:   33,
+												Column: 51,
+												Line:   34,
 											},
 										},
 									},
@@ -1201,14 +1201,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 56,
-													Line:   33,
+													Column: 55,
+													Line:   34,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 52,
-													Line:   33,
+													Column: 51,
+													Line:   34,
 												},
 											},
 										},
@@ -1221,14 +1221,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 70,
-											Line:   33,
+											Column: 68,
+											Line:   34,
 										},
 										File:   "promql.flux",
 										Source: "_time: time",
 										Start: ast.Position{
-											Column: 59,
-											Line:   33,
+											Column: 57,
+											Line:   34,
 										},
 									},
 								},
@@ -1238,14 +1238,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 64,
-												Line:   33,
+												Column: 62,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "_time",
 											Start: ast.Position{
-												Column: 59,
-												Line:   33,
+												Column: 57,
+												Line:   34,
 											},
 										},
 									},
@@ -1257,14 +1257,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 70,
-												Line:   33,
+												Column: 68,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "time",
 											Start: ast.Position{
-												Column: 66,
-												Line:   33,
+												Column: 64,
+												Line:   34,
 											},
 										},
 									},
@@ -1274,14 +1274,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 70,
-													Line:   33,
+													Column: 68,
+													Line:   34,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 66,
-													Line:   33,
+													Column: 64,
+													Line:   34,
 												},
 											},
 										},
@@ -1294,14 +1294,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 86,
-											Line:   33,
+											Column: 83,
+											Line:   34,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
-											Column: 73,
-											Line:   33,
+											Column: 70,
+											Line:   34,
 										},
 									},
 								},
@@ -1311,14 +1311,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
-												Line:   33,
+												Column: 76,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 73,
-												Line:   33,
+												Column: 70,
+												Line:   34,
 											},
 										},
 									},
@@ -1330,14 +1330,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 86,
-												Line:   33,
+												Column: 83,
+												Line:   34,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
-												Column: 81,
-												Line:   33,
+												Column: 78,
+												Line:   34,
 											},
 										},
 									},
@@ -1347,14 +1347,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 86,
-													Line:   33,
+													Column: 83,
+													Line:   34,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 81,
-													Line:   33,
+													Column: 78,
+													Line:   34,
 												},
 											},
 										},
@@ -1374,13 +1374,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   41,
+						Line:   42,
 					},
 					File:   "promql.flux",
 					Source: "builtin extrapolatedRate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   41,
+						Line:   42,
 					},
 				},
 			},
@@ -1392,13 +1392,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   41,
+							Line:   42,
 						},
 						File:   "promql.flux",
 						Source: "extrapolatedRate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   41,
+							Line:   42,
 						},
 					},
 				},
@@ -1410,14 +1410,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 168,
-							Line:   41,
+							Column: 165,
+							Line:   42,
 						},
 						File:   "promql.flux",
-						Source: "(<-tables: [{A with _start: time , _stop: time , _time: time , _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]",
+						Source: "(<-tables: [{A with _start: time, _stop: time, _time: time, _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]",
 						Start: ast.Position{
 							Column: 28,
-							Line:   41,
+							Line:   42,
 						},
 					},
 				},
@@ -1428,14 +1428,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 168,
-								Line:   41,
+								Column: 165,
+								Line:   42,
 							},
 							File:   "promql.flux",
-							Source: "(<-tables: [{A with _start: time , _stop: time , _time: time , _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]",
+							Source: "(<-tables: [{A with _start: time, _stop: time, _time: time, _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]",
 							Start: ast.Position{
 								Column: 28,
-								Line:   41,
+								Line:   42,
 							},
 						},
 					},
@@ -1445,14 +1445,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 106,
-									Line:   41,
+									Column: 103,
+									Line:   42,
 								},
 								File:   "promql.flux",
-								Source: "<-tables: [{A with _start: time , _stop: time , _time: time , _value: float}]",
+								Source: "<-tables: [{A with _start: time, _stop: time, _time: time, _value: float}]",
 								Start: ast.Position{
 									Column: 29,
-									Line:   41,
+									Line:   42,
 								},
 							},
 						},
@@ -1464,13 +1464,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   41,
+										Line:   42,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 31,
-										Line:   41,
+										Line:   42,
 									},
 								},
 							},
@@ -1482,14 +1482,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 106,
-										Line:   41,
+										Column: 103,
+										Line:   42,
 									},
 									File:   "promql.flux",
-									Source: "[{A with _start: time , _stop: time , _time: time , _value: float}]",
+									Source: "[{A with _start: time, _stop: time, _time: time, _value: float}]",
 									Start: ast.Position{
 										Column: 39,
-										Line:   41,
+										Line:   42,
 									},
 								},
 							},
@@ -1499,14 +1499,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 105,
-											Line:   41,
+											Column: 102,
+											Line:   42,
 										},
 										File:   "promql.flux",
-										Source: "{A with _start: time , _stop: time , _time: time , _value: float}",
+										Source: "{A with _start: time, _stop: time, _time: time, _value: float}",
 										Start: ast.Position{
 											Column: 40,
-											Line:   41,
+											Line:   42,
 										},
 									},
 								},
@@ -1517,13 +1517,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 60,
-												Line:   41,
+												Line:   42,
 											},
 											File:   "promql.flux",
 											Source: "_start: time",
 											Start: ast.Position{
 												Column: 48,
-												Line:   41,
+												Line:   42,
 											},
 										},
 									},
@@ -1534,13 +1534,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   41,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "_start",
 												Start: ast.Position{
 													Column: 48,
-													Line:   41,
+													Line:   42,
 												},
 											},
 										},
@@ -1553,13 +1553,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   41,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 56,
-													Line:   41,
+													Line:   42,
 												},
 											},
 										},
@@ -1570,13 +1570,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 60,
-														Line:   41,
+														Line:   42,
 													},
 													File:   "promql.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 56,
-														Line:   41,
+														Line:   42,
 													},
 												},
 											},
@@ -1589,14 +1589,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 74,
-												Line:   41,
+												Column: 73,
+												Line:   42,
 											},
 											File:   "promql.flux",
 											Source: "_stop: time",
 											Start: ast.Position{
-												Column: 63,
-												Line:   41,
+												Column: 62,
+												Line:   42,
 											},
 										},
 									},
@@ -1606,14 +1606,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 68,
-													Line:   41,
+													Column: 67,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "_stop",
 												Start: ast.Position{
-													Column: 63,
-													Line:   41,
+													Column: 62,
+													Line:   42,
 												},
 											},
 										},
@@ -1625,14 +1625,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 74,
-													Line:   41,
+													Column: 73,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 70,
-													Line:   41,
+													Column: 69,
+													Line:   42,
 												},
 											},
 										},
@@ -1642,14 +1642,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 74,
-														Line:   41,
+														Column: 73,
+														Line:   42,
 													},
 													File:   "promql.flux",
 													Source: "time",
 													Start: ast.Position{
-														Column: 70,
-														Line:   41,
+														Column: 69,
+														Line:   42,
 													},
 												},
 											},
@@ -1662,14 +1662,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 88,
-												Line:   41,
+												Column: 86,
+												Line:   42,
 											},
 											File:   "promql.flux",
 											Source: "_time: time",
 											Start: ast.Position{
-												Column: 77,
-												Line:   41,
+												Column: 75,
+												Line:   42,
 											},
 										},
 									},
@@ -1679,14 +1679,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 82,
-													Line:   41,
+													Column: 80,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "_time",
 												Start: ast.Position{
-													Column: 77,
-													Line:   41,
+													Column: 75,
+													Line:   42,
 												},
 											},
 										},
@@ -1698,14 +1698,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 88,
-													Line:   41,
+													Column: 86,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 84,
-													Line:   41,
+													Column: 82,
+													Line:   42,
 												},
 											},
 										},
@@ -1715,14 +1715,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 88,
-														Line:   41,
+														Column: 86,
+														Line:   42,
 													},
 													File:   "promql.flux",
 													Source: "time",
 													Start: ast.Position{
-														Column: 84,
-														Line:   41,
+														Column: 82,
+														Line:   42,
 													},
 												},
 											},
@@ -1735,14 +1735,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 104,
-												Line:   41,
+												Column: 101,
+												Line:   42,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
-												Column: 91,
-												Line:   41,
+												Column: 88,
+												Line:   42,
 											},
 										},
 									},
@@ -1752,14 +1752,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 97,
-													Line:   41,
+													Column: 94,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
-													Column: 91,
-													Line:   41,
+													Column: 88,
+													Line:   42,
 												},
 											},
 										},
@@ -1771,14 +1771,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 104,
-													Line:   41,
+													Column: 101,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 99,
-													Line:   41,
+													Column: 96,
+													Line:   42,
 												},
 											},
 										},
@@ -1788,14 +1788,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 104,
-														Line:   41,
+														Column: 101,
+														Line:   42,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
-														Column: 99,
-														Line:   41,
+														Column: 96,
+														Line:   42,
 													},
 												},
 											},
@@ -1810,13 +1810,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
-												Line:   41,
+												Line:   42,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 41,
-												Line:   41,
+												Line:   42,
 											},
 										},
 									},
@@ -1830,14 +1830,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 124,
-									Line:   41,
+									Column: 121,
+									Line:   42,
 								},
 								File:   "promql.flux",
 								Source: "?isCounter: bool",
 								Start: ast.Position{
-									Column: 108,
-									Line:   41,
+									Column: 105,
+									Line:   42,
 								},
 							},
 						},
@@ -1848,14 +1848,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 118,
-										Line:   41,
+										Column: 115,
+										Line:   42,
 									},
 									File:   "promql.flux",
 									Source: "isCounter",
 									Start: ast.Position{
-										Column: 109,
-										Line:   41,
+										Column: 106,
+										Line:   42,
 									},
 								},
 							},
@@ -1867,14 +1867,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 124,
-										Line:   41,
+										Column: 121,
+										Line:   42,
 									},
 									File:   "promql.flux",
 									Source: "bool",
 									Start: ast.Position{
-										Column: 120,
-										Line:   41,
+										Column: 117,
+										Line:   42,
 									},
 								},
 							},
@@ -1884,14 +1884,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 124,
-											Line:   41,
+											Column: 121,
+											Line:   42,
 										},
 										File:   "promql.flux",
 										Source: "bool",
 										Start: ast.Position{
-											Column: 120,
-											Line:   41,
+											Column: 117,
+											Line:   42,
 										},
 									},
 								},
@@ -1904,14 +1904,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 139,
-									Line:   41,
+									Column: 136,
+									Line:   42,
 								},
 								File:   "promql.flux",
 								Source: "?isRate: bool",
 								Start: ast.Position{
-									Column: 126,
-									Line:   41,
+									Column: 123,
+									Line:   42,
 								},
 							},
 						},
@@ -1922,14 +1922,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 133,
-										Line:   41,
+										Column: 130,
+										Line:   42,
 									},
 									File:   "promql.flux",
 									Source: "isRate",
 									Start: ast.Position{
-										Column: 127,
-										Line:   41,
+										Column: 124,
+										Line:   42,
 									},
 								},
 							},
@@ -1941,14 +1941,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 139,
-										Line:   41,
+										Column: 136,
+										Line:   42,
 									},
 									File:   "promql.flux",
 									Source: "bool",
 									Start: ast.Position{
-										Column: 135,
-										Line:   41,
+										Column: 132,
+										Line:   42,
 									},
 								},
 							},
@@ -1958,14 +1958,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 139,
-											Line:   41,
+											Column: 136,
+											Line:   42,
 										},
 										File:   "promql.flux",
 										Source: "bool",
 										Start: ast.Position{
-											Column: 135,
-											Line:   41,
+											Column: 132,
+											Line:   42,
 										},
 									},
 								},
@@ -1979,14 +1979,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 168,
-									Line:   41,
+									Column: 165,
+									Line:   42,
 								},
 								File:   "promql.flux",
 								Source: "[{B with _value: float}]",
 								Start: ast.Position{
-									Column: 144,
-									Line:   41,
+									Column: 141,
+									Line:   42,
 								},
 							},
 						},
@@ -1996,14 +1996,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 167,
-										Line:   41,
+										Column: 164,
+										Line:   42,
 									},
 									File:   "promql.flux",
 									Source: "{B with _value: float}",
 									Start: ast.Position{
-										Column: 145,
-										Line:   41,
+										Column: 142,
+										Line:   42,
 									},
 								},
 							},
@@ -2013,14 +2013,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 166,
-											Line:   41,
+											Column: 163,
+											Line:   42,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
-											Column: 153,
-											Line:   41,
+											Column: 150,
+											Line:   42,
 										},
 									},
 								},
@@ -2030,14 +2030,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 159,
-												Line:   41,
+												Column: 156,
+												Line:   42,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 153,
-												Line:   41,
+												Column: 150,
+												Line:   42,
 											},
 										},
 									},
@@ -2049,14 +2049,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 166,
-												Line:   41,
+												Column: 163,
+												Line:   42,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
-												Column: 161,
-												Line:   41,
+												Column: 158,
+												Line:   42,
 											},
 										},
 									},
@@ -2066,14 +2066,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 166,
-													Line:   41,
+													Column: 163,
+													Line:   42,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 161,
-													Line:   41,
+													Column: 158,
+													Line:   42,
 												},
 											},
 										},
@@ -2087,14 +2087,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 147,
-											Line:   41,
+											Column: 144,
+											Line:   42,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
-											Column: 146,
-											Line:   41,
+											Column: 143,
+											Line:   42,
 										},
 									},
 								},
@@ -2111,13 +2111,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   47,
+						Line:   48,
 					},
 					File:   "promql.flux",
 					Source: "builtin holtWinters",
 					Start: ast.Position{
 						Column: 1,
-						Line:   47,
+						Line:   48,
 					},
 				},
 			},
@@ -2129,13 +2129,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   47,
+							Line:   48,
 						},
 						File:   "promql.flux",
 						Source: "holtWinters",
 						Start: ast.Position{
 							Column: 9,
-							Line:   47,
+							Line:   48,
 						},
 					},
 				},
@@ -2147,14 +2147,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 147,
-							Line:   47,
+							Column: 146,
+							Line:   48,
 						},
 						File:   "promql.flux",
-						Source: "(<-tables: [{A with _time: time , _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]",
+						Source: "(<-tables: [{A with _time: time, _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]",
 						Start: ast.Position{
 							Column: 23,
-							Line:   47,
+							Line:   48,
 						},
 					},
 				},
@@ -2165,14 +2165,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 147,
-								Line:   47,
+								Column: 146,
+								Line:   48,
 							},
 							File:   "promql.flux",
-							Source: "(<-tables: [{A with _time: time , _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]",
+							Source: "(<-tables: [{A with _time: time, _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]",
 							Start: ast.Position{
 								Column: 23,
-								Line:   47,
+								Line:   48,
 							},
 						},
 					},
@@ -2182,14 +2182,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 72,
-									Line:   47,
+									Column: 71,
+									Line:   48,
 								},
 								File:   "promql.flux",
-								Source: "<-tables: [{A with _time: time , _value: float}]",
+								Source: "<-tables: [{A with _time: time, _value: float}]",
 								Start: ast.Position{
 									Column: 24,
-									Line:   47,
+									Line:   48,
 								},
 							},
 						},
@@ -2201,13 +2201,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   47,
+										Line:   48,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 26,
-										Line:   47,
+										Line:   48,
 									},
 								},
 							},
@@ -2219,14 +2219,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 72,
-										Line:   47,
+										Column: 71,
+										Line:   48,
 									},
 									File:   "promql.flux",
-									Source: "[{A with _time: time , _value: float}]",
+									Source: "[{A with _time: time, _value: float}]",
 									Start: ast.Position{
 										Column: 34,
-										Line:   47,
+										Line:   48,
 									},
 								},
 							},
@@ -2236,14 +2236,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 71,
-											Line:   47,
+											Column: 70,
+											Line:   48,
 										},
 										File:   "promql.flux",
-										Source: "{A with _time: time , _value: float}",
+										Source: "{A with _time: time, _value: float}",
 										Start: ast.Position{
 											Column: 35,
-											Line:   47,
+											Line:   48,
 										},
 									},
 								},
@@ -2254,13 +2254,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   47,
+												Line:   48,
 											},
 											File:   "promql.flux",
 											Source: "_time: time",
 											Start: ast.Position{
 												Column: 43,
-												Line:   47,
+												Line:   48,
 											},
 										},
 									},
@@ -2271,13 +2271,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   47,
+													Line:   48,
 												},
 												File:   "promql.flux",
 												Source: "_time",
 												Start: ast.Position{
 													Column: 43,
-													Line:   47,
+													Line:   48,
 												},
 											},
 										},
@@ -2290,13 +2290,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   47,
+													Line:   48,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 50,
-													Line:   47,
+													Line:   48,
 												},
 											},
 										},
@@ -2307,13 +2307,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 54,
-														Line:   47,
+														Line:   48,
 													},
 													File:   "promql.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 50,
-														Line:   47,
+														Line:   48,
 													},
 												},
 											},
@@ -2326,14 +2326,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 70,
-												Line:   47,
+												Column: 69,
+												Line:   48,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
-												Column: 57,
-												Line:   47,
+												Column: 56,
+												Line:   48,
 											},
 										},
 									},
@@ -2343,14 +2343,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 63,
-													Line:   47,
+													Column: 62,
+													Line:   48,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
-													Column: 57,
-													Line:   47,
+													Column: 56,
+													Line:   48,
 												},
 											},
 										},
@@ -2362,14 +2362,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 70,
-													Line:   47,
+													Column: 69,
+													Line:   48,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 65,
-													Line:   47,
+													Column: 64,
+													Line:   48,
 												},
 											},
 										},
@@ -2379,14 +2379,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 70,
-														Line:   47,
+														Column: 69,
+														Line:   48,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
-														Column: 65,
-														Line:   47,
+														Column: 64,
+														Line:   48,
 													},
 												},
 											},
@@ -2401,13 +2401,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   47,
+												Line:   48,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 36,
-												Line:   47,
+												Line:   48,
 											},
 										},
 									},
@@ -2421,14 +2421,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 97,
-									Line:   47,
+									Column: 96,
+									Line:   48,
 								},
 								File:   "promql.flux",
 								Source: "?smoothingFactor: float",
 								Start: ast.Position{
-									Column: 74,
-									Line:   47,
+									Column: 73,
+									Line:   48,
 								},
 							},
 						},
@@ -2439,14 +2439,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 90,
-										Line:   47,
+										Column: 89,
+										Line:   48,
 									},
 									File:   "promql.flux",
 									Source: "smoothingFactor",
 									Start: ast.Position{
-										Column: 75,
-										Line:   47,
+										Column: 74,
+										Line:   48,
 									},
 								},
 							},
@@ -2458,14 +2458,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 97,
-										Line:   47,
+										Column: 96,
+										Line:   48,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
-										Column: 92,
-										Line:   47,
+										Column: 91,
+										Line:   48,
 									},
 								},
 							},
@@ -2475,14 +2475,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 97,
-											Line:   47,
+											Column: 96,
+											Line:   48,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
-											Column: 92,
-											Line:   47,
+											Column: 91,
+											Line:   48,
 										},
 									},
 								},
@@ -2495,14 +2495,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 118,
-									Line:   47,
+									Column: 117,
+									Line:   48,
 								},
 								File:   "promql.flux",
 								Source: "?trendFactor: float",
 								Start: ast.Position{
-									Column: 99,
-									Line:   47,
+									Column: 98,
+									Line:   48,
 								},
 							},
 						},
@@ -2513,14 +2513,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 111,
-										Line:   47,
+										Column: 110,
+										Line:   48,
 									},
 									File:   "promql.flux",
 									Source: "trendFactor",
 									Start: ast.Position{
-										Column: 100,
-										Line:   47,
+										Column: 99,
+										Line:   48,
 									},
 								},
 							},
@@ -2532,14 +2532,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 118,
-										Line:   47,
+										Column: 117,
+										Line:   48,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
-										Column: 113,
-										Line:   47,
+										Column: 112,
+										Line:   48,
 									},
 								},
 							},
@@ -2549,14 +2549,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 118,
-											Line:   47,
+											Column: 117,
+											Line:   48,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
-											Column: 113,
-											Line:   47,
+											Column: 112,
+											Line:   48,
 										},
 									},
 								},
@@ -2570,14 +2570,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 147,
-									Line:   47,
+									Column: 146,
+									Line:   48,
 								},
 								File:   "promql.flux",
 								Source: "[{B with _value: float}]",
 								Start: ast.Position{
-									Column: 123,
-									Line:   47,
+									Column: 122,
+									Line:   48,
 								},
 							},
 						},
@@ -2587,14 +2587,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 146,
-										Line:   47,
+										Column: 145,
+										Line:   48,
 									},
 									File:   "promql.flux",
 									Source: "{B with _value: float}",
 									Start: ast.Position{
-										Column: 124,
-										Line:   47,
+										Column: 123,
+										Line:   48,
 									},
 								},
 							},
@@ -2604,14 +2604,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 145,
-											Line:   47,
+											Column: 144,
+											Line:   48,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
-											Column: 132,
-											Line:   47,
+											Column: 131,
+											Line:   48,
 										},
 									},
 								},
@@ -2621,14 +2621,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 138,
-												Line:   47,
+												Column: 137,
+												Line:   48,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 132,
-												Line:   47,
+												Column: 131,
+												Line:   48,
 											},
 										},
 									},
@@ -2640,14 +2640,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 145,
-												Line:   47,
+												Column: 144,
+												Line:   48,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
-												Column: 140,
-												Line:   47,
+												Column: 139,
+												Line:   48,
 											},
 										},
 									},
@@ -2657,14 +2657,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 145,
-													Line:   47,
+													Column: 144,
+													Line:   48,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 140,
-													Line:   47,
+													Column: 139,
+													Line:   48,
 												},
 											},
 										},
@@ -2678,14 +2678,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 126,
-											Line:   47,
+											Column: 125,
+											Line:   48,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
-											Column: 125,
-											Line:   47,
+											Column: 124,
+											Line:   48,
 										},
 									},
 								},
@@ -2702,13 +2702,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   52,
+						Line:   53,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlHour",
 					Start: ast.Position{
 						Column: 1,
-						Line:   52,
+						Line:   53,
 					},
 				},
 			},
@@ -2720,13 +2720,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   52,
+							Line:   53,
 						},
 						File:   "promql.flux",
 						Source: "promqlHour",
 						Start: ast.Position{
 							Column: 9,
-							Line:   52,
+							Line:   53,
 						},
 					},
 				},
@@ -2739,13 +2739,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 49,
-							Line:   52,
+							Line:   53,
 						},
 						File:   "promql.flux",
 						Source: "(timestamp: float) => float",
 						Start: ast.Position{
 							Column: 22,
-							Line:   52,
+							Line:   53,
 						},
 					},
 				},
@@ -2757,13 +2757,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 49,
-								Line:   52,
+								Line:   53,
 							},
 							File:   "promql.flux",
 							Source: "(timestamp: float) => float",
 							Start: ast.Position{
 								Column: 22,
-								Line:   52,
+								Line:   53,
 							},
 						},
 					},
@@ -2774,13 +2774,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   52,
+									Line:   53,
 								},
 								File:   "promql.flux",
 								Source: "timestamp: float",
 								Start: ast.Position{
 									Column: 23,
-									Line:   52,
+									Line:   53,
 								},
 							},
 						},
@@ -2792,13 +2792,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   52,
+										Line:   53,
 									},
 									File:   "promql.flux",
 									Source: "timestamp",
 									Start: ast.Position{
 										Column: 23,
-										Line:   52,
+										Line:   53,
 									},
 								},
 							},
@@ -2811,13 +2811,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   52,
+										Line:   53,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 34,
-										Line:   52,
+										Line:   53,
 									},
 								},
 							},
@@ -2828,13 +2828,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   52,
+											Line:   53,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 34,
-											Line:   52,
+											Line:   53,
 										},
 									},
 								},
@@ -2849,13 +2849,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   52,
+									Line:   53,
 								},
 								File:   "promql.flux",
 								Source: "float",
 								Start: ast.Position{
 									Column: 44,
-									Line:   52,
+									Line:   53,
 								},
 							},
 						},
@@ -2866,13 +2866,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   52,
+										Line:   53,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 44,
-										Line:   52,
+										Line:   53,
 									},
 								},
 							},
@@ -2888,13 +2888,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   59,
+						Line:   60,
 					},
 					File:   "promql.flux",
 					Source: "builtin instantRate",
 					Start: ast.Position{
 						Column: 1,
-						Line:   59,
+						Line:   60,
 					},
 				},
 			},
@@ -2906,13 +2906,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   59,
+							Line:   60,
 						},
 						File:   "promql.flux",
 						Source: "instantRate",
 						Start: ast.Position{
 							Column: 9,
-							Line:   59,
+							Line:   60,
 						},
 					},
 				},
@@ -2924,14 +2924,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 116,
-							Line:   59,
+							Column: 115,
+							Line:   60,
 						},
 						File:   "promql.flux",
-						Source: "(<-tables: [{A with _time: time , _value: float}], ?isRate: bool) => [{B with _value: float}]",
+						Source: "(<-tables: [{A with _time: time, _value: float}], ?isRate: bool) => [{B with _value: float}]",
 						Start: ast.Position{
 							Column: 23,
-							Line:   59,
+							Line:   60,
 						},
 					},
 				},
@@ -2942,14 +2942,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 116,
-								Line:   59,
+								Column: 115,
+								Line:   60,
 							},
 							File:   "promql.flux",
-							Source: "(<-tables: [{A with _time: time , _value: float}], ?isRate: bool) => [{B with _value: float}]",
+							Source: "(<-tables: [{A with _time: time, _value: float}], ?isRate: bool) => [{B with _value: float}]",
 							Start: ast.Position{
 								Column: 23,
-								Line:   59,
+								Line:   60,
 							},
 						},
 					},
@@ -2959,14 +2959,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 72,
-									Line:   59,
+									Column: 71,
+									Line:   60,
 								},
 								File:   "promql.flux",
-								Source: "<-tables: [{A with _time: time , _value: float}]",
+								Source: "<-tables: [{A with _time: time, _value: float}]",
 								Start: ast.Position{
 									Column: 24,
-									Line:   59,
+									Line:   60,
 								},
 							},
 						},
@@ -2978,13 +2978,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   59,
+										Line:   60,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 26,
-										Line:   59,
+										Line:   60,
 									},
 								},
 							},
@@ -2996,14 +2996,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 72,
-										Line:   59,
+										Column: 71,
+										Line:   60,
 									},
 									File:   "promql.flux",
-									Source: "[{A with _time: time , _value: float}]",
+									Source: "[{A with _time: time, _value: float}]",
 									Start: ast.Position{
 										Column: 34,
-										Line:   59,
+										Line:   60,
 									},
 								},
 							},
@@ -3013,14 +3013,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 71,
-											Line:   59,
+											Column: 70,
+											Line:   60,
 										},
 										File:   "promql.flux",
-										Source: "{A with _time: time , _value: float}",
+										Source: "{A with _time: time, _value: float}",
 										Start: ast.Position{
 											Column: 35,
-											Line:   59,
+											Line:   60,
 										},
 									},
 								},
@@ -3031,13 +3031,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   59,
+												Line:   60,
 											},
 											File:   "promql.flux",
 											Source: "_time: time",
 											Start: ast.Position{
 												Column: 43,
-												Line:   59,
+												Line:   60,
 											},
 										},
 									},
@@ -3048,13 +3048,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   59,
+													Line:   60,
 												},
 												File:   "promql.flux",
 												Source: "_time",
 												Start: ast.Position{
 													Column: 43,
-													Line:   59,
+													Line:   60,
 												},
 											},
 										},
@@ -3067,13 +3067,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   59,
+													Line:   60,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 50,
-													Line:   59,
+													Line:   60,
 												},
 											},
 										},
@@ -3084,13 +3084,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 54,
-														Line:   59,
+														Line:   60,
 													},
 													File:   "promql.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 50,
-														Line:   59,
+														Line:   60,
 													},
 												},
 											},
@@ -3103,14 +3103,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 70,
-												Line:   59,
+												Column: 69,
+												Line:   60,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
-												Column: 57,
-												Line:   59,
+												Column: 56,
+												Line:   60,
 											},
 										},
 									},
@@ -3120,14 +3120,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 63,
-													Line:   59,
+													Column: 62,
+													Line:   60,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
-													Column: 57,
-													Line:   59,
+													Column: 56,
+													Line:   60,
 												},
 											},
 										},
@@ -3139,14 +3139,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 70,
-													Line:   59,
+													Column: 69,
+													Line:   60,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 65,
-													Line:   59,
+													Column: 64,
+													Line:   60,
 												},
 											},
 										},
@@ -3156,14 +3156,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 70,
-														Line:   59,
+														Column: 69,
+														Line:   60,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
-														Column: 65,
-														Line:   59,
+														Column: 64,
+														Line:   60,
 													},
 												},
 											},
@@ -3178,13 +3178,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   59,
+												Line:   60,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 36,
-												Line:   59,
+												Line:   60,
 											},
 										},
 									},
@@ -3198,14 +3198,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 87,
-									Line:   59,
+									Column: 86,
+									Line:   60,
 								},
 								File:   "promql.flux",
 								Source: "?isRate: bool",
 								Start: ast.Position{
-									Column: 74,
-									Line:   59,
+									Column: 73,
+									Line:   60,
 								},
 							},
 						},
@@ -3216,14 +3216,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 81,
-										Line:   59,
+										Column: 80,
+										Line:   60,
 									},
 									File:   "promql.flux",
 									Source: "isRate",
 									Start: ast.Position{
-										Column: 75,
-										Line:   59,
+										Column: 74,
+										Line:   60,
 									},
 								},
 							},
@@ -3235,14 +3235,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 87,
-										Line:   59,
+										Column: 86,
+										Line:   60,
 									},
 									File:   "promql.flux",
 									Source: "bool",
 									Start: ast.Position{
-										Column: 83,
-										Line:   59,
+										Column: 82,
+										Line:   60,
 									},
 								},
 							},
@@ -3252,14 +3252,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 87,
-											Line:   59,
+											Column: 86,
+											Line:   60,
 										},
 										File:   "promql.flux",
 										Source: "bool",
 										Start: ast.Position{
-											Column: 83,
-											Line:   59,
+											Column: 82,
+											Line:   60,
 										},
 									},
 								},
@@ -3273,14 +3273,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 116,
-									Line:   59,
+									Column: 115,
+									Line:   60,
 								},
 								File:   "promql.flux",
 								Source: "[{B with _value: float}]",
 								Start: ast.Position{
-									Column: 92,
-									Line:   59,
+									Column: 91,
+									Line:   60,
 								},
 							},
 						},
@@ -3290,14 +3290,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 115,
-										Line:   59,
+										Column: 114,
+										Line:   60,
 									},
 									File:   "promql.flux",
 									Source: "{B with _value: float}",
 									Start: ast.Position{
-										Column: 93,
-										Line:   59,
+										Column: 92,
+										Line:   60,
 									},
 								},
 							},
@@ -3307,14 +3307,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 114,
-											Line:   59,
+											Column: 113,
+											Line:   60,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
-											Column: 101,
-											Line:   59,
+											Column: 100,
+											Line:   60,
 										},
 									},
 								},
@@ -3324,14 +3324,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 107,
-												Line:   59,
+												Column: 106,
+												Line:   60,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 101,
-												Line:   59,
+												Column: 100,
+												Line:   60,
 											},
 										},
 									},
@@ -3343,14 +3343,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 114,
-												Line:   59,
+												Column: 113,
+												Line:   60,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
-												Column: 109,
-												Line:   59,
+												Column: 108,
+												Line:   60,
 											},
 										},
 									},
@@ -3360,14 +3360,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 114,
-													Line:   59,
+													Column: 113,
+													Line:   60,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 109,
-													Line:   59,
+													Column: 108,
+													Line:   60,
 												},
 											},
 										},
@@ -3381,14 +3381,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 95,
-											Line:   59,
+											Column: 94,
+											Line:   60,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
-											Column: 94,
-											Line:   59,
+											Column: 93,
+											Line:   60,
 										},
 									},
 								},
@@ -3405,13 +3405,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 21,
-						Line:   64,
+						Line:   65,
 					},
 					File:   "promql.flux",
 					Source: "builtin labelReplace",
 					Start: ast.Position{
 						Column: 1,
-						Line:   64,
+						Line:   65,
 					},
 				},
 			},
@@ -3423,13 +3423,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   64,
+							Line:   65,
 						},
 						File:   "promql.flux",
 						Source: "labelReplace",
 						Start: ast.Position{
 							Column: 9,
-							Line:   64,
+							Line:   65,
 						},
 					},
 				},
@@ -3441,14 +3441,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 161,
-							Line:   64,
+							Column: 30,
+							Line:   71,
 						},
 						File:   "promql.flux",
-						Source: "(<-tables: [{A with _value: float}], source: string, destination: string, regex: string, replacement: string) => [{B with _value: float}]",
+						Source: "(\n    <-tables: [{A with _value: float}],\n    source: string,\n    destination: string,\n    regex: string,\n    replacement: string,\n) => [{B with _value: float}]",
 						Start: ast.Position{
 							Column: 24,
-							Line:   64,
+							Line:   65,
 						},
 					},
 				},
@@ -3459,14 +3459,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 161,
-								Line:   64,
+								Column: 30,
+								Line:   71,
 							},
 							File:   "promql.flux",
-							Source: "(<-tables: [{A with _value: float}], source: string, destination: string, regex: string, replacement: string) => [{B with _value: float}]",
+							Source: "(\n    <-tables: [{A with _value: float}],\n    source: string,\n    destination: string,\n    regex: string,\n    replacement: string,\n) => [{B with _value: float}]",
 							Start: ast.Position{
 								Column: 24,
-								Line:   64,
+								Line:   65,
 							},
 						},
 					},
@@ -3476,14 +3476,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 59,
-									Line:   64,
+									Column: 39,
+									Line:   66,
 								},
 								File:   "promql.flux",
 								Source: "<-tables: [{A with _value: float}]",
 								Start: ast.Position{
-									Column: 25,
-									Line:   64,
+									Column: 5,
+									Line:   66,
 								},
 							},
 						},
@@ -3494,14 +3494,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 33,
-										Line:   64,
+										Column: 13,
+										Line:   66,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
-										Column: 27,
-										Line:   64,
+										Column: 7,
+										Line:   66,
 									},
 								},
 							},
@@ -3513,14 +3513,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 59,
-										Line:   64,
+										Column: 39,
+										Line:   66,
 									},
 									File:   "promql.flux",
 									Source: "[{A with _value: float}]",
 									Start: ast.Position{
-										Column: 35,
-										Line:   64,
+										Column: 15,
+										Line:   66,
 									},
 								},
 							},
@@ -3530,14 +3530,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 58,
-											Line:   64,
+											Column: 38,
+											Line:   66,
 										},
 										File:   "promql.flux",
 										Source: "{A with _value: float}",
 										Start: ast.Position{
-											Column: 36,
-											Line:   64,
+											Column: 16,
+											Line:   66,
 										},
 									},
 								},
@@ -3547,14 +3547,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 57,
-												Line:   64,
+												Column: 37,
+												Line:   66,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
-												Column: 44,
-												Line:   64,
+												Column: 24,
+												Line:   66,
 											},
 										},
 									},
@@ -3564,14 +3564,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 50,
-													Line:   64,
+													Column: 30,
+													Line:   66,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
-													Column: 44,
-													Line:   64,
+													Column: 24,
+													Line:   66,
 												},
 											},
 										},
@@ -3583,14 +3583,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 57,
-													Line:   64,
+													Column: 37,
+													Line:   66,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 52,
-													Line:   64,
+													Column: 32,
+													Line:   66,
 												},
 											},
 										},
@@ -3600,14 +3600,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 57,
-														Line:   64,
+														Column: 37,
+														Line:   66,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
-														Column: 52,
-														Line:   64,
+														Column: 32,
+														Line:   66,
 													},
 												},
 											},
@@ -3621,14 +3621,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 38,
-												Line:   64,
+												Column: 18,
+												Line:   66,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
-												Column: 37,
-												Line:   64,
+												Column: 17,
+												Line:   66,
 											},
 										},
 									},
@@ -3642,14 +3642,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 75,
-									Line:   64,
+									Column: 19,
+									Line:   67,
 								},
 								File:   "promql.flux",
 								Source: "source: string",
 								Start: ast.Position{
-									Column: 61,
-									Line:   64,
+									Column: 5,
+									Line:   67,
 								},
 							},
 						},
@@ -3660,14 +3660,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 67,
-										Line:   64,
+										Column: 11,
+										Line:   67,
 									},
 									File:   "promql.flux",
 									Source: "source",
 									Start: ast.Position{
-										Column: 61,
-										Line:   64,
+										Column: 5,
+										Line:   67,
 									},
 								},
 							},
@@ -3679,14 +3679,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 75,
-										Line:   64,
+										Column: 19,
+										Line:   67,
 									},
 									File:   "promql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 69,
-										Line:   64,
+										Column: 13,
+										Line:   67,
 									},
 								},
 							},
@@ -3696,14 +3696,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 75,
-											Line:   64,
+											Column: 19,
+											Line:   67,
 										},
 										File:   "promql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 69,
-											Line:   64,
+											Column: 13,
+											Line:   67,
 										},
 									},
 								},
@@ -3716,14 +3716,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 96,
-									Line:   64,
+									Column: 24,
+									Line:   68,
 								},
 								File:   "promql.flux",
 								Source: "destination: string",
 								Start: ast.Position{
-									Column: 77,
-									Line:   64,
+									Column: 5,
+									Line:   68,
 								},
 							},
 						},
@@ -3734,14 +3734,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 88,
-										Line:   64,
+										Column: 16,
+										Line:   68,
 									},
 									File:   "promql.flux",
 									Source: "destination",
 									Start: ast.Position{
-										Column: 77,
-										Line:   64,
+										Column: 5,
+										Line:   68,
 									},
 								},
 							},
@@ -3753,14 +3753,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 96,
-										Line:   64,
+										Column: 24,
+										Line:   68,
 									},
 									File:   "promql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 90,
-										Line:   64,
+										Column: 18,
+										Line:   68,
 									},
 								},
 							},
@@ -3770,14 +3770,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 96,
-											Line:   64,
+											Column: 24,
+											Line:   68,
 										},
 										File:   "promql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 90,
-											Line:   64,
+											Column: 18,
+											Line:   68,
 										},
 									},
 								},
@@ -3790,14 +3790,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 111,
-									Line:   64,
+									Column: 18,
+									Line:   69,
 								},
 								File:   "promql.flux",
 								Source: "regex: string",
 								Start: ast.Position{
-									Column: 98,
-									Line:   64,
+									Column: 5,
+									Line:   69,
 								},
 							},
 						},
@@ -3808,14 +3808,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 103,
-										Line:   64,
+										Column: 10,
+										Line:   69,
 									},
 									File:   "promql.flux",
 									Source: "regex",
 									Start: ast.Position{
-										Column: 98,
-										Line:   64,
+										Column: 5,
+										Line:   69,
 									},
 								},
 							},
@@ -3827,14 +3827,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 111,
-										Line:   64,
+										Column: 18,
+										Line:   69,
 									},
 									File:   "promql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 105,
-										Line:   64,
+										Column: 12,
+										Line:   69,
 									},
 								},
 							},
@@ -3844,14 +3844,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 111,
-											Line:   64,
+											Column: 18,
+											Line:   69,
 										},
 										File:   "promql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 105,
-											Line:   64,
+											Column: 12,
+											Line:   69,
 										},
 									},
 								},
@@ -3864,14 +3864,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 132,
-									Line:   64,
+									Column: 24,
+									Line:   70,
 								},
 								File:   "promql.flux",
 								Source: "replacement: string",
 								Start: ast.Position{
-									Column: 113,
-									Line:   64,
+									Column: 5,
+									Line:   70,
 								},
 							},
 						},
@@ -3882,14 +3882,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 124,
-										Line:   64,
+										Column: 16,
+										Line:   70,
 									},
 									File:   "promql.flux",
 									Source: "replacement",
 									Start: ast.Position{
-										Column: 113,
-										Line:   64,
+										Column: 5,
+										Line:   70,
 									},
 								},
 							},
@@ -3901,14 +3901,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 132,
-										Line:   64,
+										Column: 24,
+										Line:   70,
 									},
 									File:   "promql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 126,
-										Line:   64,
+										Column: 18,
+										Line:   70,
 									},
 								},
 							},
@@ -3918,14 +3918,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 132,
-											Line:   64,
+											Column: 24,
+											Line:   70,
 										},
 										File:   "promql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 126,
-											Line:   64,
+											Column: 18,
+											Line:   70,
 										},
 									},
 								},
@@ -3939,14 +3939,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 161,
-									Line:   64,
+									Column: 30,
+									Line:   71,
 								},
 								File:   "promql.flux",
 								Source: "[{B with _value: float}]",
 								Start: ast.Position{
-									Column: 137,
-									Line:   64,
+									Column: 6,
+									Line:   71,
 								},
 							},
 						},
@@ -3956,14 +3956,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 160,
-										Line:   64,
+										Column: 29,
+										Line:   71,
 									},
 									File:   "promql.flux",
 									Source: "{B with _value: float}",
 									Start: ast.Position{
-										Column: 138,
-										Line:   64,
+										Column: 7,
+										Line:   71,
 									},
 								},
 							},
@@ -3973,14 +3973,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 159,
-											Line:   64,
+											Column: 28,
+											Line:   71,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
-											Column: 146,
-											Line:   64,
+											Column: 15,
+											Line:   71,
 										},
 									},
 								},
@@ -3990,14 +3990,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 152,
-												Line:   64,
+												Column: 21,
+												Line:   71,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 146,
-												Line:   64,
+												Column: 15,
+												Line:   71,
 											},
 										},
 									},
@@ -4009,14 +4009,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 159,
-												Line:   64,
+												Column: 28,
+												Line:   71,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
-												Column: 154,
-												Line:   64,
+												Column: 23,
+												Line:   71,
 											},
 										},
 									},
@@ -4026,14 +4026,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 159,
-													Line:   64,
+													Column: 28,
+													Line:   71,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 154,
-													Line:   64,
+													Column: 23,
+													Line:   71,
 												},
 											},
 										},
@@ -4047,14 +4047,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 140,
-											Line:   64,
+											Column: 9,
+											Line:   71,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
-											Column: 139,
-											Line:   64,
+											Column: 8,
+											Line:   71,
 										},
 									},
 								},
@@ -4071,13 +4071,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   71,
+						Line:   78,
 					},
 					File:   "promql.flux",
 					Source: "builtin linearRegression",
 					Start: ast.Position{
 						Column: 1,
-						Line:   71,
+						Line:   78,
 					},
 				},
 			},
@@ -4089,13 +4089,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   71,
+							Line:   78,
 						},
 						File:   "promql.flux",
 						Source: "linearRegression",
 						Start: ast.Position{
 							Column: 9,
-							Line:   71,
+							Line:   78,
 						},
 					},
 				},
@@ -4107,14 +4107,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 153,
-							Line:   71,
+							Column: 151,
+							Line:   78,
 						},
 						File:   "promql.flux",
-						Source: "(<-tables: [{A with _time: time , _stop: time , _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]",
+						Source: "(<-tables: [{A with _time: time, _stop: time, _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]",
 						Start: ast.Position{
 							Column: 28,
-							Line:   71,
+							Line:   78,
 						},
 					},
 				},
@@ -4125,14 +4125,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 153,
-								Line:   71,
+								Column: 151,
+								Line:   78,
 							},
 							File:   "promql.flux",
-							Source: "(<-tables: [{A with _time: time , _stop: time , _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]",
+							Source: "(<-tables: [{A with _time: time, _stop: time, _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]",
 							Start: ast.Position{
 								Column: 28,
-								Line:   71,
+								Line:   78,
 							},
 						},
 					},
@@ -4142,14 +4142,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 91,
-									Line:   71,
+									Column: 89,
+									Line:   78,
 								},
 								File:   "promql.flux",
-								Source: "<-tables: [{A with _time: time , _stop: time , _value: float}]",
+								Source: "<-tables: [{A with _time: time, _stop: time, _value: float}]",
 								Start: ast.Position{
 									Column: 29,
-									Line:   71,
+									Line:   78,
 								},
 							},
 						},
@@ -4161,13 +4161,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 37,
-										Line:   71,
+										Line:   78,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 31,
-										Line:   71,
+										Line:   78,
 									},
 								},
 							},
@@ -4179,14 +4179,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 91,
-										Line:   71,
+										Column: 89,
+										Line:   78,
 									},
 									File:   "promql.flux",
-									Source: "[{A with _time: time , _stop: time , _value: float}]",
+									Source: "[{A with _time: time, _stop: time, _value: float}]",
 									Start: ast.Position{
 										Column: 39,
-										Line:   71,
+										Line:   78,
 									},
 								},
 							},
@@ -4196,14 +4196,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 90,
-											Line:   71,
+											Column: 88,
+											Line:   78,
 										},
 										File:   "promql.flux",
-										Source: "{A with _time: time , _stop: time , _value: float}",
+										Source: "{A with _time: time, _stop: time, _value: float}",
 										Start: ast.Position{
 											Column: 40,
-											Line:   71,
+											Line:   78,
 										},
 									},
 								},
@@ -4214,13 +4214,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 59,
-												Line:   71,
+												Line:   78,
 											},
 											File:   "promql.flux",
 											Source: "_time: time",
 											Start: ast.Position{
 												Column: 48,
-												Line:   71,
+												Line:   78,
 											},
 										},
 									},
@@ -4231,13 +4231,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
-													Line:   71,
+													Line:   78,
 												},
 												File:   "promql.flux",
 												Source: "_time",
 												Start: ast.Position{
 													Column: 48,
-													Line:   71,
+													Line:   78,
 												},
 											},
 										},
@@ -4250,13 +4250,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   71,
+													Line:   78,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 55,
-													Line:   71,
+													Line:   78,
 												},
 											},
 										},
@@ -4267,13 +4267,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 59,
-														Line:   71,
+														Line:   78,
 													},
 													File:   "promql.flux",
 													Source: "time",
 													Start: ast.Position{
 														Column: 55,
-														Line:   71,
+														Line:   78,
 													},
 												},
 											},
@@ -4286,14 +4286,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 73,
-												Line:   71,
+												Column: 72,
+												Line:   78,
 											},
 											File:   "promql.flux",
 											Source: "_stop: time",
 											Start: ast.Position{
-												Column: 62,
-												Line:   71,
+												Column: 61,
+												Line:   78,
 											},
 										},
 									},
@@ -4303,14 +4303,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 67,
-													Line:   71,
+													Column: 66,
+													Line:   78,
 												},
 												File:   "promql.flux",
 												Source: "_stop",
 												Start: ast.Position{
-													Column: 62,
-													Line:   71,
+													Column: 61,
+													Line:   78,
 												},
 											},
 										},
@@ -4322,14 +4322,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 73,
-													Line:   71,
+													Column: 72,
+													Line:   78,
 												},
 												File:   "promql.flux",
 												Source: "time",
 												Start: ast.Position{
-													Column: 69,
-													Line:   71,
+													Column: 68,
+													Line:   78,
 												},
 											},
 										},
@@ -4339,14 +4339,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 73,
-														Line:   71,
+														Column: 72,
+														Line:   78,
 													},
 													File:   "promql.flux",
 													Source: "time",
 													Start: ast.Position{
-														Column: 69,
-														Line:   71,
+														Column: 68,
+														Line:   78,
 													},
 												},
 											},
@@ -4359,14 +4359,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 89,
-												Line:   71,
+												Column: 87,
+												Line:   78,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
-												Column: 76,
-												Line:   71,
+												Column: 74,
+												Line:   78,
 											},
 										},
 									},
@@ -4376,14 +4376,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 82,
-													Line:   71,
+													Column: 80,
+													Line:   78,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
-													Column: 76,
-													Line:   71,
+													Column: 74,
+													Line:   78,
 												},
 											},
 										},
@@ -4395,14 +4395,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 89,
-													Line:   71,
+													Column: 87,
+													Line:   78,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 84,
-													Line:   71,
+													Column: 82,
+													Line:   78,
 												},
 											},
 										},
@@ -4412,14 +4412,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 89,
-														Line:   71,
+														Column: 87,
+														Line:   78,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
-														Column: 84,
-														Line:   71,
+														Column: 82,
+														Line:   78,
 													},
 												},
 											},
@@ -4434,13 +4434,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 42,
-												Line:   71,
+												Line:   78,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 41,
-												Line:   71,
+												Line:   78,
 											},
 										},
 									},
@@ -4454,14 +4454,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 107,
-									Line:   71,
+									Column: 105,
+									Line:   78,
 								},
 								File:   "promql.flux",
 								Source: "?predict: bool",
 								Start: ast.Position{
-									Column: 93,
-									Line:   71,
+									Column: 91,
+									Line:   78,
 								},
 							},
 						},
@@ -4472,14 +4472,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 101,
-										Line:   71,
+										Column: 99,
+										Line:   78,
 									},
 									File:   "promql.flux",
 									Source: "predict",
 									Start: ast.Position{
-										Column: 94,
-										Line:   71,
+										Column: 92,
+										Line:   78,
 									},
 								},
 							},
@@ -4491,14 +4491,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 107,
-										Line:   71,
+										Column: 105,
+										Line:   78,
 									},
 									File:   "promql.flux",
 									Source: "bool",
 									Start: ast.Position{
-										Column: 103,
-										Line:   71,
+										Column: 101,
+										Line:   78,
 									},
 								},
 							},
@@ -4508,14 +4508,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 107,
-											Line:   71,
+											Column: 105,
+											Line:   78,
 										},
 										File:   "promql.flux",
 										Source: "bool",
 										Start: ast.Position{
-											Column: 103,
-											Line:   71,
+											Column: 101,
+											Line:   78,
 										},
 									},
 								},
@@ -4528,14 +4528,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 124,
-									Line:   71,
+									Column: 122,
+									Line:   78,
 								},
 								File:   "promql.flux",
 								Source: "?fromNow: float",
 								Start: ast.Position{
-									Column: 109,
-									Line:   71,
+									Column: 107,
+									Line:   78,
 								},
 							},
 						},
@@ -4546,14 +4546,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 117,
-										Line:   71,
+										Column: 115,
+										Line:   78,
 									},
 									File:   "promql.flux",
 									Source: "fromNow",
 									Start: ast.Position{
-										Column: 110,
-										Line:   71,
+										Column: 108,
+										Line:   78,
 									},
 								},
 							},
@@ -4565,14 +4565,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 124,
-										Line:   71,
+										Column: 122,
+										Line:   78,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
-										Column: 119,
-										Line:   71,
+										Column: 117,
+										Line:   78,
 									},
 								},
 							},
@@ -4582,14 +4582,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 124,
-											Line:   71,
+											Column: 122,
+											Line:   78,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
-											Column: 119,
-											Line:   71,
+											Column: 117,
+											Line:   78,
 										},
 									},
 								},
@@ -4603,14 +4603,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 153,
-									Line:   71,
+									Column: 151,
+									Line:   78,
 								},
 								File:   "promql.flux",
 								Source: "[{B with _value: float}]",
 								Start: ast.Position{
-									Column: 129,
-									Line:   71,
+									Column: 127,
+									Line:   78,
 								},
 							},
 						},
@@ -4620,14 +4620,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 152,
-										Line:   71,
+										Column: 150,
+										Line:   78,
 									},
 									File:   "promql.flux",
 									Source: "{B with _value: float}",
 									Start: ast.Position{
-										Column: 130,
-										Line:   71,
+										Column: 128,
+										Line:   78,
 									},
 								},
 							},
@@ -4637,14 +4637,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 151,
-											Line:   71,
+											Column: 149,
+											Line:   78,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
-											Column: 138,
-											Line:   71,
+											Column: 136,
+											Line:   78,
 										},
 									},
 								},
@@ -4654,14 +4654,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 144,
-												Line:   71,
+												Column: 142,
+												Line:   78,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
-												Column: 138,
-												Line:   71,
+												Column: 136,
+												Line:   78,
 											},
 										},
 									},
@@ -4673,14 +4673,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 151,
-												Line:   71,
+												Column: 149,
+												Line:   78,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
-												Column: 146,
-												Line:   71,
+												Column: 144,
+												Line:   78,
 											},
 										},
 									},
@@ -4690,14 +4690,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 151,
-													Line:   71,
+													Column: 149,
+													Line:   78,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
-													Column: 146,
-													Line:   71,
+													Column: 144,
+													Line:   78,
 												},
 											},
 										},
@@ -4711,14 +4711,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 132,
-											Line:   71,
+											Column: 130,
+											Line:   78,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
-											Column: 131,
-											Line:   71,
+											Column: 129,
+											Line:   78,
 										},
 									},
 								},
@@ -4735,13 +4735,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 21,
-						Line:   76,
+						Line:   83,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlMinute",
 					Start: ast.Position{
 						Column: 1,
-						Line:   76,
+						Line:   83,
 					},
 				},
 			},
@@ -4753,13 +4753,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 21,
-							Line:   76,
+							Line:   83,
 						},
 						File:   "promql.flux",
 						Source: "promqlMinute",
 						Start: ast.Position{
 							Column: 9,
-							Line:   76,
+							Line:   83,
 						},
 					},
 				},
@@ -4772,13 +4772,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   76,
+							Line:   83,
 						},
 						File:   "promql.flux",
 						Source: "(timestamp: float) => float",
 						Start: ast.Position{
 							Column: 24,
-							Line:   76,
+							Line:   83,
 						},
 					},
 				},
@@ -4790,13 +4790,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   76,
+								Line:   83,
 							},
 							File:   "promql.flux",
 							Source: "(timestamp: float) => float",
 							Start: ast.Position{
 								Column: 24,
-								Line:   76,
+								Line:   83,
 							},
 						},
 					},
@@ -4807,13 +4807,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   76,
+									Line:   83,
 								},
 								File:   "promql.flux",
 								Source: "timestamp: float",
 								Start: ast.Position{
 									Column: 25,
-									Line:   76,
+									Line:   83,
 								},
 							},
 						},
@@ -4825,13 +4825,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   76,
+										Line:   83,
 									},
 									File:   "promql.flux",
 									Source: "timestamp",
 									Start: ast.Position{
 										Column: 25,
-										Line:   76,
+										Line:   83,
 									},
 								},
 							},
@@ -4844,13 +4844,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 41,
-										Line:   76,
+										Line:   83,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 36,
-										Line:   76,
+										Line:   83,
 									},
 								},
 							},
@@ -4861,13 +4861,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 41,
-											Line:   76,
+											Line:   83,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 36,
-											Line:   76,
+											Line:   83,
 										},
 									},
 								},
@@ -4882,13 +4882,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   76,
+									Line:   83,
 								},
 								File:   "promql.flux",
 								Source: "float",
 								Start: ast.Position{
 									Column: 46,
-									Line:   76,
+									Line:   83,
 								},
 							},
 						},
@@ -4899,13 +4899,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   76,
+										Line:   83,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 46,
-										Line:   76,
+										Line:   83,
 									},
 								},
 							},
@@ -4921,13 +4921,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   81,
+						Line:   88,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlMonth",
 					Start: ast.Position{
 						Column: 1,
-						Line:   81,
+						Line:   88,
 					},
 				},
 			},
@@ -4939,13 +4939,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   81,
+							Line:   88,
 						},
 						File:   "promql.flux",
 						Source: "promqlMonth",
 						Start: ast.Position{
 							Column: 9,
-							Line:   81,
+							Line:   88,
 						},
 					},
 				},
@@ -4958,13 +4958,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 50,
-							Line:   81,
+							Line:   88,
 						},
 						File:   "promql.flux",
 						Source: "(timestamp: float) => float",
 						Start: ast.Position{
 							Column: 23,
-							Line:   81,
+							Line:   88,
 						},
 					},
 				},
@@ -4976,13 +4976,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   81,
+								Line:   88,
 							},
 							File:   "promql.flux",
 							Source: "(timestamp: float) => float",
 							Start: ast.Position{
 								Column: 23,
-								Line:   81,
+								Line:   88,
 							},
 						},
 					},
@@ -4993,13 +4993,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   81,
+									Line:   88,
 								},
 								File:   "promql.flux",
 								Source: "timestamp: float",
 								Start: ast.Position{
 									Column: 24,
-									Line:   81,
+									Line:   88,
 								},
 							},
 						},
@@ -5011,13 +5011,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   81,
+										Line:   88,
 									},
 									File:   "promql.flux",
 									Source: "timestamp",
 									Start: ast.Position{
 										Column: 24,
-										Line:   81,
+										Line:   88,
 									},
 								},
 							},
@@ -5030,13 +5030,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   81,
+										Line:   88,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 35,
-										Line:   81,
+										Line:   88,
 									},
 								},
 							},
@@ -5047,13 +5047,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   81,
+											Line:   88,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 35,
-											Line:   81,
+											Line:   88,
 										},
 									},
 								},
@@ -5068,13 +5068,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   81,
+									Line:   88,
 								},
 								File:   "promql.flux",
 								Source: "float",
 								Start: ast.Position{
 									Column: 45,
-									Line:   81,
+									Line:   88,
 								},
 							},
 						},
@@ -5085,13 +5085,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 50,
-										Line:   81,
+										Line:   88,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 45,
-										Line:   81,
+										Line:   88,
 									},
 								},
 							},
@@ -5107,13 +5107,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 30,
-						Line:   87,
+						Line:   94,
 					},
 					File:   "promql.flux",
 					Source: "builtin promHistogramQuantile",
 					Start: ast.Position{
 						Column: 1,
-						Line:   87,
+						Line:   94,
 					},
 				},
 			},
@@ -5125,13 +5125,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 30,
-							Line:   87,
+							Line:   94,
 						},
 						File:   "promql.flux",
 						Source: "promHistogramQuantile",
 						Start: ast.Position{
 							Column: 9,
-							Line:   87,
+							Line:   94,
 						},
 					},
 				},
@@ -5143,14 +5143,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 171,
-							Line:   87,
+							Column: 36,
+							Line:   100,
 						},
 						File:   "promql.flux",
-						Source: "(<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) => [B] where A: Record, B: Record",
+						Source: "(\n    <-tables: [A],\n    ?quantile: float,\n    ?countColumn: string,\n    ?upperBoundColumn: string,\n    ?valueColumn: string,\n) => [B] where A: Record, B: Record",
 						Start: ast.Position{
 							Column: 33,
-							Line:   87,
+							Line:   94,
 						},
 					},
 				},
@@ -5160,14 +5160,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 160,
-								Line:   87,
+								Column: 25,
+								Line:   100,
 							},
 							File:   "promql.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 151,
-								Line:   87,
+								Column: 16,
+								Line:   100,
 							},
 						},
 					},
@@ -5177,14 +5177,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 160,
-									Line:   87,
+									Column: 25,
+									Line:   100,
 								},
 								File:   "promql.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 154,
-									Line:   87,
+									Column: 19,
+									Line:   100,
 								},
 							},
 						},
@@ -5196,14 +5196,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 152,
-									Line:   87,
+									Column: 17,
+									Line:   100,
 								},
 								File:   "promql.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 151,
-									Line:   87,
+									Column: 16,
+									Line:   100,
 								},
 							},
 						},
@@ -5215,14 +5215,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 171,
-								Line:   87,
+								Column: 36,
+								Line:   100,
 							},
 							File:   "promql.flux",
 							Source: "B: Record",
 							Start: ast.Position{
-								Column: 162,
-								Line:   87,
+								Column: 27,
+								Line:   100,
 							},
 						},
 					},
@@ -5232,14 +5232,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 171,
-									Line:   87,
+									Column: 36,
+									Line:   100,
 								},
 								File:   "promql.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 165,
-									Line:   87,
+									Column: 30,
+									Line:   100,
 								},
 							},
 						},
@@ -5251,14 +5251,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 163,
-									Line:   87,
+									Column: 28,
+									Line:   100,
 								},
 								File:   "promql.flux",
 								Source: "B",
 								Start: ast.Position{
-									Column: 162,
-									Line:   87,
+									Column: 27,
+									Line:   100,
 								},
 							},
 						},
@@ -5271,14 +5271,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 144,
-								Line:   87,
+								Column: 9,
+								Line:   100,
 							},
 							File:   "promql.flux",
-							Source: "(<-tables: [A], ?quantile: float, ?countColumn: string, ?upperBoundColumn: string, ?valueColumn: string) => [B]",
+							Source: "(\n    <-tables: [A],\n    ?quantile: float,\n    ?countColumn: string,\n    ?upperBoundColumn: string,\n    ?valueColumn: string,\n) => [B]",
 							Start: ast.Position{
 								Column: 33,
-								Line:   87,
+								Line:   94,
 							},
 						},
 					},
@@ -5288,14 +5288,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 47,
-									Line:   87,
+									Column: 18,
+									Line:   95,
 								},
 								File:   "promql.flux",
 								Source: "<-tables: [A]",
 								Start: ast.Position{
-									Column: 34,
-									Line:   87,
+									Column: 5,
+									Line:   95,
 								},
 							},
 						},
@@ -5306,14 +5306,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 42,
-										Line:   87,
+										Column: 13,
+										Line:   95,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
-										Column: 36,
-										Line:   87,
+										Column: 7,
+										Line:   95,
 									},
 								},
 							},
@@ -5325,14 +5325,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 47,
-										Line:   87,
+										Column: 18,
+										Line:   95,
 									},
 									File:   "promql.flux",
 									Source: "[A]",
 									Start: ast.Position{
-										Column: 44,
-										Line:   87,
+										Column: 15,
+										Line:   95,
 									},
 								},
 							},
@@ -5342,14 +5342,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 46,
-											Line:   87,
+											Column: 17,
+											Line:   95,
 										},
 										File:   "promql.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 45,
-											Line:   87,
+											Column: 16,
+											Line:   95,
 										},
 									},
 								},
@@ -5359,14 +5359,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 46,
-												Line:   87,
+												Column: 17,
+												Line:   95,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
-												Column: 45,
-												Line:   87,
+												Column: 16,
+												Line:   95,
 											},
 										},
 									},
@@ -5380,14 +5380,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 65,
-									Line:   87,
+									Column: 21,
+									Line:   96,
 								},
 								File:   "promql.flux",
 								Source: "?quantile: float",
 								Start: ast.Position{
-									Column: 49,
-									Line:   87,
+									Column: 5,
+									Line:   96,
 								},
 							},
 						},
@@ -5398,14 +5398,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 58,
-										Line:   87,
+										Column: 14,
+										Line:   96,
 									},
 									File:   "promql.flux",
 									Source: "quantile",
 									Start: ast.Position{
-										Column: 50,
-										Line:   87,
+										Column: 6,
+										Line:   96,
 									},
 								},
 							},
@@ -5417,14 +5417,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 65,
-										Line:   87,
+										Column: 21,
+										Line:   96,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
-										Column: 60,
-										Line:   87,
+										Column: 16,
+										Line:   96,
 									},
 								},
 							},
@@ -5434,14 +5434,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 65,
-											Line:   87,
+											Column: 21,
+											Line:   96,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
-											Column: 60,
-											Line:   87,
+											Column: 16,
+											Line:   96,
 										},
 									},
 								},
@@ -5454,14 +5454,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 87,
-									Line:   87,
+									Column: 25,
+									Line:   97,
 								},
 								File:   "promql.flux",
 								Source: "?countColumn: string",
 								Start: ast.Position{
-									Column: 67,
-									Line:   87,
+									Column: 5,
+									Line:   97,
 								},
 							},
 						},
@@ -5472,14 +5472,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 79,
-										Line:   87,
+										Column: 17,
+										Line:   97,
 									},
 									File:   "promql.flux",
 									Source: "countColumn",
 									Start: ast.Position{
-										Column: 68,
-										Line:   87,
+										Column: 6,
+										Line:   97,
 									},
 								},
 							},
@@ -5491,14 +5491,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 87,
-										Line:   87,
+										Column: 25,
+										Line:   97,
 									},
 									File:   "promql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 81,
-										Line:   87,
+										Column: 19,
+										Line:   97,
 									},
 								},
 							},
@@ -5508,14 +5508,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 87,
-											Line:   87,
+											Column: 25,
+											Line:   97,
 										},
 										File:   "promql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 81,
-											Line:   87,
+											Column: 19,
+											Line:   97,
 										},
 									},
 								},
@@ -5528,14 +5528,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 114,
-									Line:   87,
+									Column: 30,
+									Line:   98,
 								},
 								File:   "promql.flux",
 								Source: "?upperBoundColumn: string",
 								Start: ast.Position{
-									Column: 89,
-									Line:   87,
+									Column: 5,
+									Line:   98,
 								},
 							},
 						},
@@ -5546,14 +5546,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 106,
-										Line:   87,
+										Column: 22,
+										Line:   98,
 									},
 									File:   "promql.flux",
 									Source: "upperBoundColumn",
 									Start: ast.Position{
-										Column: 90,
-										Line:   87,
+										Column: 6,
+										Line:   98,
 									},
 								},
 							},
@@ -5565,14 +5565,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 114,
-										Line:   87,
+										Column: 30,
+										Line:   98,
 									},
 									File:   "promql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 108,
-										Line:   87,
+										Column: 24,
+										Line:   98,
 									},
 								},
 							},
@@ -5582,14 +5582,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 114,
-											Line:   87,
+											Column: 30,
+											Line:   98,
 										},
 										File:   "promql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 108,
-											Line:   87,
+											Column: 24,
+											Line:   98,
 										},
 									},
 								},
@@ -5602,14 +5602,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 136,
-									Line:   87,
+									Column: 25,
+									Line:   99,
 								},
 								File:   "promql.flux",
 								Source: "?valueColumn: string",
 								Start: ast.Position{
-									Column: 116,
-									Line:   87,
+									Column: 5,
+									Line:   99,
 								},
 							},
 						},
@@ -5620,14 +5620,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 128,
-										Line:   87,
+										Column: 17,
+										Line:   99,
 									},
 									File:   "promql.flux",
 									Source: "valueColumn",
 									Start: ast.Position{
-										Column: 117,
-										Line:   87,
+										Column: 6,
+										Line:   99,
 									},
 								},
 							},
@@ -5639,14 +5639,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 136,
-										Line:   87,
+										Column: 25,
+										Line:   99,
 									},
 									File:   "promql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 130,
-										Line:   87,
+										Column: 19,
+										Line:   99,
 									},
 								},
 							},
@@ -5656,14 +5656,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 136,
-											Line:   87,
+											Column: 25,
+											Line:   99,
 										},
 										File:   "promql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 130,
-											Line:   87,
+											Column: 19,
+											Line:   99,
 										},
 									},
 								},
@@ -5677,14 +5677,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 144,
-									Line:   87,
+									Column: 9,
+									Line:   100,
 								},
 								File:   "promql.flux",
 								Source: "[B]",
 								Start: ast.Position{
-									Column: 141,
-									Line:   87,
+									Column: 6,
+									Line:   100,
 								},
 							},
 						},
@@ -5694,14 +5694,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 143,
-										Line:   87,
+										Column: 8,
+										Line:   100,
 									},
 									File:   "promql.flux",
 									Source: "B",
 									Start: ast.Position{
-										Column: 142,
-										Line:   87,
+										Column: 7,
+										Line:   100,
 									},
 								},
 							},
@@ -5711,14 +5711,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 143,
-											Line:   87,
+											Column: 8,
+											Line:   100,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
-											Column: 142,
-											Line:   87,
+											Column: 7,
+											Line:   100,
 										},
 									},
 								},
@@ -5735,13 +5735,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   92,
+						Line:   105,
 					},
 					File:   "promql.flux",
 					Source: "builtin resets",
 					Start: ast.Position{
 						Column: 1,
-						Line:   92,
+						Line:   105,
 					},
 				},
 			},
@@ -5753,13 +5753,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   92,
+							Line:   105,
 						},
 						File:   "promql.flux",
 						Source: "resets",
 						Start: ast.Position{
 							Column: 9,
-							Line:   92,
+							Line:   105,
 						},
 					},
 				},
@@ -5772,13 +5772,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 82,
-							Line:   92,
+							Line:   105,
 						},
 						File:   "promql.flux",
 						Source: "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
 						Start: ast.Position{
 							Column: 18,
-							Line:   92,
+							Line:   105,
 						},
 					},
 				},
@@ -5790,13 +5790,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 82,
-								Line:   92,
+								Line:   105,
 							},
 							File:   "promql.flux",
 							Source: "(<-tables: [{A with _value: float}]) => [{B with _value: float}]",
 							Start: ast.Position{
 								Column: 18,
-								Line:   92,
+								Line:   105,
 							},
 						},
 					},
@@ -5807,13 +5807,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   92,
+									Line:   105,
 								},
 								File:   "promql.flux",
 								Source: "<-tables: [{A with _value: float}]",
 								Start: ast.Position{
 									Column: 19,
-									Line:   92,
+									Line:   105,
 								},
 							},
 						},
@@ -5825,13 +5825,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   92,
+										Line:   105,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 21,
-										Line:   92,
+										Line:   105,
 									},
 								},
 							},
@@ -5844,13 +5844,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   92,
+										Line:   105,
 									},
 									File:   "promql.flux",
 									Source: "[{A with _value: float}]",
 									Start: ast.Position{
 										Column: 29,
-										Line:   92,
+										Line:   105,
 									},
 								},
 							},
@@ -5861,13 +5861,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 52,
-											Line:   92,
+											Line:   105,
 										},
 										File:   "promql.flux",
 										Source: "{A with _value: float}",
 										Start: ast.Position{
 											Column: 30,
-											Line:   92,
+											Line:   105,
 										},
 									},
 								},
@@ -5878,13 +5878,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 51,
-												Line:   92,
+												Line:   105,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 38,
-												Line:   92,
+												Line:   105,
 											},
 										},
 									},
@@ -5895,13 +5895,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 44,
-													Line:   92,
+													Line:   105,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 38,
-													Line:   92,
+													Line:   105,
 												},
 											},
 										},
@@ -5914,13 +5914,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
-													Line:   92,
+													Line:   105,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 46,
-													Line:   92,
+													Line:   105,
 												},
 											},
 										},
@@ -5931,13 +5931,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 51,
-														Line:   92,
+														Line:   105,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 46,
-														Line:   92,
+														Line:   105,
 													},
 												},
 											},
@@ -5952,13 +5952,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   92,
+												Line:   105,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 31,
-												Line:   92,
+												Line:   105,
 											},
 										},
 									},
@@ -5974,13 +5974,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 82,
-									Line:   92,
+									Line:   105,
 								},
 								File:   "promql.flux",
 								Source: "[{B with _value: float}]",
 								Start: ast.Position{
 									Column: 58,
-									Line:   92,
+									Line:   105,
 								},
 							},
 						},
@@ -5991,13 +5991,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 81,
-										Line:   92,
+										Line:   105,
 									},
 									File:   "promql.flux",
 									Source: "{B with _value: float}",
 									Start: ast.Position{
 										Column: 59,
-										Line:   92,
+										Line:   105,
 									},
 								},
 							},
@@ -6008,13 +6008,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
-											Line:   92,
+											Line:   105,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 67,
-											Line:   92,
+											Line:   105,
 										},
 									},
 								},
@@ -6025,13 +6025,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 73,
-												Line:   92,
+												Line:   105,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 67,
-												Line:   92,
+												Line:   105,
 											},
 										},
 									},
@@ -6044,13 +6044,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 80,
-												Line:   92,
+												Line:   105,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 75,
-												Line:   92,
+												Line:   105,
 											},
 										},
 									},
@@ -6061,13 +6061,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 80,
-													Line:   92,
+													Line:   105,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 75,
-													Line:   92,
+													Line:   105,
 												},
 											},
 										},
@@ -6082,13 +6082,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 61,
-											Line:   92,
+											Line:   105,
 										},
 										File:   "promql.flux",
 										Source: "B",
 										Start: ast.Position{
 											Column: 60,
-											Line:   92,
+											Line:   105,
 										},
 									},
 								},
@@ -6105,13 +6105,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   97,
+						Line:   110,
 					},
 					File:   "promql.flux",
 					Source: "builtin timestamp",
 					Start: ast.Position{
 						Column: 1,
-						Line:   97,
+						Line:   110,
 					},
 				},
 			},
@@ -6123,13 +6123,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   97,
+							Line:   110,
 						},
 						File:   "promql.flux",
 						Source: "timestamp",
 						Start: ast.Position{
 							Column: 9,
-							Line:   97,
+							Line:   110,
 						},
 					},
 				},
@@ -6142,13 +6142,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 85,
-							Line:   97,
+							Line:   110,
 						},
 						File:   "promql.flux",
 						Source: "(<-tables: [{A with _value: float}]) => [{A with _value: float}]",
 						Start: ast.Position{
 							Column: 21,
-							Line:   97,
+							Line:   110,
 						},
 					},
 				},
@@ -6160,13 +6160,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 85,
-								Line:   97,
+								Line:   110,
 							},
 							File:   "promql.flux",
 							Source: "(<-tables: [{A with _value: float}]) => [{A with _value: float}]",
 							Start: ast.Position{
 								Column: 21,
-								Line:   97,
+								Line:   110,
 							},
 						},
 					},
@@ -6177,13 +6177,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 56,
-									Line:   97,
+									Line:   110,
 								},
 								File:   "promql.flux",
 								Source: "<-tables: [{A with _value: float}]",
 								Start: ast.Position{
 									Column: 22,
-									Line:   97,
+									Line:   110,
 								},
 							},
 						},
@@ -6195,13 +6195,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   97,
+										Line:   110,
 									},
 									File:   "promql.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 24,
-										Line:   97,
+										Line:   110,
 									},
 								},
 							},
@@ -6214,13 +6214,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 56,
-										Line:   97,
+										Line:   110,
 									},
 									File:   "promql.flux",
 									Source: "[{A with _value: float}]",
 									Start: ast.Position{
 										Column: 32,
-										Line:   97,
+										Line:   110,
 									},
 								},
 							},
@@ -6231,13 +6231,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 55,
-											Line:   97,
+											Line:   110,
 										},
 										File:   "promql.flux",
 										Source: "{A with _value: float}",
 										Start: ast.Position{
 											Column: 33,
-											Line:   97,
+											Line:   110,
 										},
 									},
 								},
@@ -6248,13 +6248,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   97,
+												Line:   110,
 											},
 											File:   "promql.flux",
 											Source: "_value: float",
 											Start: ast.Position{
 												Column: 41,
-												Line:   97,
+												Line:   110,
 											},
 										},
 									},
@@ -6265,13 +6265,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   97,
+													Line:   110,
 												},
 												File:   "promql.flux",
 												Source: "_value",
 												Start: ast.Position{
 													Column: 41,
-													Line:   97,
+													Line:   110,
 												},
 											},
 										},
@@ -6284,13 +6284,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   97,
+													Line:   110,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 49,
-													Line:   97,
+													Line:   110,
 												},
 											},
 										},
@@ -6301,13 +6301,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 54,
-														Line:   97,
+														Line:   110,
 													},
 													File:   "promql.flux",
 													Source: "float",
 													Start: ast.Position{
 														Column: 49,
-														Line:   97,
+														Line:   110,
 													},
 												},
 											},
@@ -6322,13 +6322,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   97,
+												Line:   110,
 											},
 											File:   "promql.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 34,
-												Line:   97,
+												Line:   110,
 											},
 										},
 									},
@@ -6344,13 +6344,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 85,
-									Line:   97,
+									Line:   110,
 								},
 								File:   "promql.flux",
 								Source: "[{A with _value: float}]",
 								Start: ast.Position{
 									Column: 61,
-									Line:   97,
+									Line:   110,
 								},
 							},
 						},
@@ -6361,13 +6361,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 84,
-										Line:   97,
+										Line:   110,
 									},
 									File:   "promql.flux",
 									Source: "{A with _value: float}",
 									Start: ast.Position{
 										Column: 62,
-										Line:   97,
+										Line:   110,
 									},
 								},
 							},
@@ -6378,13 +6378,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 83,
-											Line:   97,
+											Line:   110,
 										},
 										File:   "promql.flux",
 										Source: "_value: float",
 										Start: ast.Position{
 											Column: 70,
-											Line:   97,
+											Line:   110,
 										},
 									},
 								},
@@ -6395,13 +6395,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 76,
-												Line:   97,
+												Line:   110,
 											},
 											File:   "promql.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 70,
-												Line:   97,
+												Line:   110,
 											},
 										},
 									},
@@ -6414,13 +6414,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 83,
-												Line:   97,
+												Line:   110,
 											},
 											File:   "promql.flux",
 											Source: "float",
 											Start: ast.Position{
 												Column: 78,
-												Line:   97,
+												Line:   110,
 											},
 										},
 									},
@@ -6431,13 +6431,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 83,
-													Line:   97,
+													Line:   110,
 												},
 												File:   "promql.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 78,
-													Line:   97,
+													Line:   110,
 												},
 											},
 										},
@@ -6452,13 +6452,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 64,
-											Line:   97,
+											Line:   110,
 										},
 										File:   "promql.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 63,
-											Line:   97,
+											Line:   110,
 										},
 									},
 								},
@@ -6475,13 +6475,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 19,
-						Line:   102,
+						Line:   115,
 					},
 					File:   "promql.flux",
 					Source: "builtin promqlYear",
 					Start: ast.Position{
 						Column: 1,
-						Line:   102,
+						Line:   115,
 					},
 				},
 			},
@@ -6493,13 +6493,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   102,
+							Line:   115,
 						},
 						File:   "promql.flux",
 						Source: "promqlYear",
 						Start: ast.Position{
 							Column: 9,
-							Line:   102,
+							Line:   115,
 						},
 					},
 				},
@@ -6512,13 +6512,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 49,
-							Line:   102,
+							Line:   115,
 						},
 						File:   "promql.flux",
 						Source: "(timestamp: float) => float",
 						Start: ast.Position{
 							Column: 22,
-							Line:   102,
+							Line:   115,
 						},
 					},
 				},
@@ -6530,13 +6530,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 49,
-								Line:   102,
+								Line:   115,
 							},
 							File:   "promql.flux",
 							Source: "(timestamp: float) => float",
 							Start: ast.Position{
 								Column: 22,
-								Line:   102,
+								Line:   115,
 							},
 						},
 					},
@@ -6547,13 +6547,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   102,
+									Line:   115,
 								},
 								File:   "promql.flux",
 								Source: "timestamp: float",
 								Start: ast.Position{
 									Column: 23,
-									Line:   102,
+									Line:   115,
 								},
 							},
 						},
@@ -6565,13 +6565,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   102,
+										Line:   115,
 									},
 									File:   "promql.flux",
 									Source: "timestamp",
 									Start: ast.Position{
 										Column: 23,
-										Line:   102,
+										Line:   115,
 									},
 								},
 							},
@@ -6584,13 +6584,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   102,
+										Line:   115,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 34,
-										Line:   102,
+										Line:   115,
 									},
 								},
 							},
@@ -6601,13 +6601,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   102,
+											Line:   115,
 										},
 										File:   "promql.flux",
 										Source: "float",
 										Start: ast.Position{
 											Column: 34,
-											Line:   102,
+											Line:   115,
 										},
 									},
 								},
@@ -6622,13 +6622,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 49,
-									Line:   102,
+									Line:   115,
 								},
 								File:   "promql.flux",
 								Source: "float",
 								Start: ast.Position{
 									Column: 44,
-									Line:   102,
+									Line:   115,
 								},
 							},
 						},
@@ -6639,13 +6639,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   102,
+										Line:   115,
 									},
 									File:   "promql.flux",
 									Source: "float",
 									Start: ast.Position{
 										Column: 44,
-										Line:   102,
+										Line:   115,
 									},
 								},
 							},
@@ -6660,14 +6660,14 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 96,
-						Line:   118,
+						Column: 99,
+						Line:   130,
 					},
 					File:   "promql.flux",
-					Source: "quantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+					Source: "quantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   108,
+						Line:   120,
 					},
 				},
 			},
@@ -6678,13 +6678,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   108,
+							Line:   120,
 						},
 						File:   "promql.flux",
 						Source: "quantile",
 						Start: ast.Position{
 							Column: 1,
-							Line:   108,
+							Line:   120,
 						},
 					},
 				},
@@ -6697,1113 +6697,1073 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 96,
-							Line:   118,
+							Column: 99,
+							Line:   130,
 						},
 						File:   "promql.flux",
-						Source: "(q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+						Source: "(q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 						Start: ast.Position{
 							Column: 12,
-							Line:   108,
+							Line:   120,
 						},
 					},
 				},
 				Body: &ast.ConditionalExpression{
 					Alternate: &ast.ConditionalExpression{
-						Alternate: &ast.ParenExpression{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 96,
-										Line:   118,
-									},
-									File:   "promql.flux",
-									Source: "(tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
-									Start: ast.Position{
-										Column: 5,
-										Line:   117,
-									},
-								},
-							},
-							Expression: &ast.PipeExpression{
-								Argument: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 12,
-												Line:   117,
-											},
-											File:   "promql.flux",
-											Source: "tables",
-											Start: ast.Position{
-												Column: 6,
-												Line:   117,
-											},
-										},
-									},
-									Name: "tables",
-								},
+						Alternate: &ast.PipeExpression{
+							Argument: &ast.Identifier{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 95,
-											Line:   118,
+											Column: 15,
+											Line:   129,
 										},
 										File:   "promql.flux",
-										Source: "tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+										Source: "tables",
 										Start: ast.Position{
-											Column: 6,
-											Line:   117,
+											Column: 9,
+											Line:   129,
 										},
 									},
 								},
-								Call: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
+								Name: "tables",
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 99,
+										Line:   130,
+									},
+									File:   "promql.flux",
+									Source: "tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+									Start: ast.Position{
+										Column: 9,
+										Line:   129,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 98,
+												Line:   130,
+											},
+											File:   "promql.flux",
+											Source: "identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator",
+											Start: ast.Position{
+												Column: 23,
+												Line:   130,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 94,
-													Line:   118,
+													Column: 61,
+													Line:   130,
 												},
 												File:   "promql.flux",
-												Source: "identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator",
+												Source: "identity: {_value: math.mInf(sign: 1)}",
 												Start: ast.Position{
-													Column: 19,
-													Line:   118,
+													Column: 23,
+													Line:   130,
 												},
 											},
 										},
-										Lbrace: nil,
-										Properties: []*ast.Property{&ast.Property{
+										Comma: nil,
+										Key: &ast.Identifier{
 											BaseNode: ast.BaseNode{
 												Comments: nil,
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 57,
-														Line:   118,
+														Column: 31,
+														Line:   130,
 													},
 													File:   "promql.flux",
-													Source: "identity: {_value: math.mInf(sign: 1)}",
+													Source: "identity",
 													Start: ast.Position{
-														Column: 19,
-														Line:   118,
+														Column: 23,
+														Line:   130,
 													},
 												},
 											},
-											Comma: nil,
-											Key: &ast.Identifier{
+											Name: "identity",
+										},
+										Separator: nil,
+										Value: &ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 61,
+														Line:   130,
+													},
+													File:   "promql.flux",
+													Source: "{_value: math.mInf(sign: 1)}",
+													Start: ast.Position{
+														Column: 33,
+														Line:   130,
+													},
+												},
+											},
+											Lbrace: nil,
+											Properties: []*ast.Property{&ast.Property{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   118,
+															Column: 60,
+															Line:   130,
 														},
 														File:   "promql.flux",
-														Source: "identity",
+														Source: "_value: math.mInf(sign: 1)",
 														Start: ast.Position{
-															Column: 19,
-															Line:   118,
+															Column: 34,
+															Line:   130,
 														},
 													},
 												},
-												Name: "identity",
-											},
-											Separator: nil,
-											Value: &ast.ObjectExpression{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 57,
-															Line:   118,
-														},
-														File:   "promql.flux",
-														Source: "{_value: math.mInf(sign: 1)}",
-														Start: ast.Position{
-															Column: 29,
-															Line:   118,
-														},
-													},
-												},
-												Lbrace: nil,
-												Properties: []*ast.Property{&ast.Property{
+												Comma: nil,
+												Key: &ast.Identifier{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 56,
-																Line:   118,
+																Column: 40,
+																Line:   130,
 															},
 															File:   "promql.flux",
-															Source: "_value: math.mInf(sign: 1)",
+															Source: "_value",
 															Start: ast.Position{
-																Column: 30,
-																Line:   118,
+																Column: 34,
+																Line:   130,
 															},
 														},
 													},
-													Comma: nil,
-													Key: &ast.Identifier{
+													Name: "_value",
+												},
+												Separator: nil,
+												Value: &ast.CallExpression{
+													Arguments: []ast.Expression{&ast.ObjectExpression{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 36,
-																	Line:   118,
+																	Column: 59,
+																	Line:   130,
 																},
 																File:   "promql.flux",
-																Source: "_value",
+																Source: "sign: 1",
 																Start: ast.Position{
-																	Column: 30,
-																	Line:   118,
+																	Column: 52,
+																	Line:   130,
 																},
 															},
 														},
-														Name: "_value",
-													},
-													Separator: nil,
-													Value: &ast.CallExpression{
-														Arguments: []ast.Expression{&ast.ObjectExpression{
+														Lbrace: nil,
+														Properties: []*ast.Property{&ast.Property{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 55,
-																		Line:   118,
+																		Column: 59,
+																		Line:   130,
 																	},
 																	File:   "promql.flux",
 																	Source: "sign: 1",
 																	Start: ast.Position{
-																		Column: 48,
-																		Line:   118,
+																		Column: 52,
+																		Line:   130,
 																	},
 																},
 															},
-															Lbrace: nil,
-															Properties: []*ast.Property{&ast.Property{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 55,
-																			Line:   118,
-																		},
-																		File:   "promql.flux",
-																		Source: "sign: 1",
-																		Start: ast.Position{
-																			Column: 48,
-																			Line:   118,
-																		},
-																	},
-																},
-																Comma: nil,
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 52,
-																				Line:   118,
-																			},
-																			File:   "promql.flux",
-																			Source: "sign",
-																			Start: ast.Position{
-																				Column: 48,
-																				Line:   118,
-																			},
-																		},
-																	},
-																	Name: "sign",
-																},
-																Separator: nil,
-																Value: &ast.IntegerLiteral{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 55,
-																				Line:   118,
-																			},
-																			File:   "promql.flux",
-																			Source: "1",
-																			Start: ast.Position{
-																				Column: 54,
-																				Line:   118,
-																			},
-																		},
-																	},
-																	Value: int64(1),
-																},
-															}},
-															Rbrace: nil,
-															With:   nil,
-														}},
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 56,
-																	Line:   118,
-																},
-																File:   "promql.flux",
-																Source: "math.mInf(sign: 1)",
-																Start: ast.Position{
-																	Column: 38,
-																	Line:   118,
-																},
-															},
-														},
-														Callee: &ast.MemberExpression{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 47,
-																		Line:   118,
-																	},
-																	File:   "promql.flux",
-																	Source: "math.mInf",
-																	Start: ast.Position{
-																		Column: 38,
-																		Line:   118,
-																	},
-																},
-															},
-															Lbrack: nil,
-															Object: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 42,
-																			Line:   118,
-																		},
-																		File:   "promql.flux",
-																		Source: "math",
-																		Start: ast.Position{
-																			Column: 38,
-																			Line:   118,
-																		},
-																	},
-																},
-																Name: "math",
-															},
-															Property: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 47,
-																			Line:   118,
-																		},
-																		File:   "promql.flux",
-																		Source: "mInf",
-																		Start: ast.Position{
-																			Column: 43,
-																			Line:   118,
-																		},
-																	},
-																},
-																Name: "mInf",
-															},
-															Rbrack: nil,
-														},
-														Lparen: nil,
-														Rparen: nil,
-													},
-												}},
-												Rbrace: nil,
-												With:   nil,
-											},
-										}, &ast.Property{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 94,
-														Line:   118,
-													},
-													File:   "promql.flux",
-													Source: "fn: (r, accumulator) => accumulator",
-													Start: ast.Position{
-														Column: 59,
-														Line:   118,
-													},
-												},
-											},
-											Comma: nil,
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 61,
-															Line:   118,
-														},
-														File:   "promql.flux",
-														Source: "fn",
-														Start: ast.Position{
-															Column: 59,
-															Line:   118,
-														},
-													},
-												},
-												Name: "fn",
-											},
-											Separator: nil,
-											Value: &ast.FunctionExpression{
-												Arrow: nil,
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 94,
-															Line:   118,
-														},
-														File:   "promql.flux",
-														Source: "(r, accumulator) => accumulator",
-														Start: ast.Position{
-															Column: 63,
-															Line:   118,
-														},
-													},
-												},
-												Body: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 94,
-																Line:   118,
-															},
-															File:   "promql.flux",
-															Source: "accumulator",
-															Start: ast.Position{
-																Column: 83,
-																Line:   118,
-															},
-														},
-													},
-													Name: "accumulator",
-												},
-												Lparen: nil,
-												Params: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 65,
-																Line:   118,
-															},
-															File:   "promql.flux",
-															Source: "r",
-															Start: ast.Position{
-																Column: 64,
-																Line:   118,
-															},
-														},
-													},
-													Comma: nil,
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 65,
-																	Line:   118,
-																},
-																File:   "promql.flux",
-																Source: "r",
-																Start: ast.Position{
-																	Column: 64,
-																	Line:   118,
-																},
-															},
-														},
-														Name: "r",
-													},
-													Separator: nil,
-													Value:     nil,
-												}, &ast.Property{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 78,
-																Line:   118,
-															},
-															File:   "promql.flux",
-															Source: "accumulator",
-															Start: ast.Position{
-																Column: 67,
-																Line:   118,
-															},
-														},
-													},
-													Comma: nil,
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 78,
-																	Line:   118,
-																},
-																File:   "promql.flux",
-																Source: "accumulator",
-																Start: ast.Position{
-																	Column: 67,
-																	Line:   118,
-																},
-															},
-														},
-														Name: "accumulator",
-													},
-													Separator: nil,
-													Value:     nil,
-												}},
-												Rparan: nil,
-											},
-										}},
-										Rbrace: nil,
-										With:   nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 95,
-												Line:   118,
-											},
-											File:   "promql.flux",
-											Source: "reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
-											Start: ast.Position{
-												Column: 12,
-												Line:   118,
-											},
-										},
-									},
-									Callee: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 18,
-													Line:   118,
-												},
-												File:   "promql.flux",
-												Source: "reduce",
-												Start: ast.Position{
-													Column: 12,
-													Line:   118,
-												},
-											},
-										},
-										Name: "reduce",
-									},
-									Lparen: nil,
-									Rparen: nil,
-								},
-							},
-							Lparen: nil,
-							Rparen: nil,
-						},
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 96,
-									Line:   118,
-								},
-								File:   "promql.flux",
-								Source: "if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
-								Start: ast.Position{
-									Column: 10,
-									Line:   113,
-								},
-							},
-						},
-						Consequent: &ast.ParenExpression{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 97,
-										Line:   115,
-									},
-									File:   "promql.flux",
-									Source: "(tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))",
-									Start: ast.Position{
-										Column: 5,
-										Line:   114,
-									},
-								},
-							},
-							Expression: &ast.PipeExpression{
-								Argument: &ast.Identifier{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 12,
-												Line:   114,
-											},
-											File:   "promql.flux",
-											Source: "tables",
-											Start: ast.Position{
-												Column: 6,
-												Line:   114,
-											},
-										},
-									},
-									Name: "tables",
-								},
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 96,
-											Line:   115,
-										},
-										File:   "promql.flux",
-										Source: "tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
-										Start: ast.Position{
-											Column: 6,
-											Line:   114,
-										},
-									},
-								},
-								Call: &ast.CallExpression{
-									Arguments: []ast.Expression{&ast.ObjectExpression{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 95,
-													Line:   115,
-												},
-												File:   "promql.flux",
-												Source: "identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator",
-												Start: ast.Position{
-													Column: 19,
-													Line:   115,
-												},
-											},
-										},
-										Lbrace: nil,
-										Properties: []*ast.Property{&ast.Property{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 58,
-														Line:   115,
-													},
-													File:   "promql.flux",
-													Source: "identity: {_value: math.mInf(sign: -1)}",
-													Start: ast.Position{
-														Column: 19,
-														Line:   115,
-													},
-												},
-											},
-											Comma: nil,
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 27,
-															Line:   115,
-														},
-														File:   "promql.flux",
-														Source: "identity",
-														Start: ast.Position{
-															Column: 19,
-															Line:   115,
-														},
-													},
-												},
-												Name: "identity",
-											},
-											Separator: nil,
-											Value: &ast.ObjectExpression{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 58,
-															Line:   115,
-														},
-														File:   "promql.flux",
-														Source: "{_value: math.mInf(sign: -1)}",
-														Start: ast.Position{
-															Column: 29,
-															Line:   115,
-														},
-													},
-												},
-												Lbrace: nil,
-												Properties: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 57,
-																Line:   115,
-															},
-															File:   "promql.flux",
-															Source: "_value: math.mInf(sign: -1)",
-															Start: ast.Position{
-																Column: 30,
-																Line:   115,
-															},
-														},
-													},
-													Comma: nil,
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 36,
-																	Line:   115,
-																},
-																File:   "promql.flux",
-																Source: "_value",
-																Start: ast.Position{
-																	Column: 30,
-																	Line:   115,
-																},
-															},
-														},
-														Name: "_value",
-													},
-													Separator: nil,
-													Value: &ast.CallExpression{
-														Arguments: []ast.Expression{&ast.ObjectExpression{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 56,
-																		Line:   115,
-																	},
-																	File:   "promql.flux",
-																	Source: "sign: -1",
-																	Start: ast.Position{
-																		Column: 48,
-																		Line:   115,
-																	},
-																},
-															},
-															Lbrace: nil,
-															Properties: []*ast.Property{&ast.Property{
+															Comma: nil,
+															Key: &ast.Identifier{
 																BaseNode: ast.BaseNode{
 																	Comments: nil,
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 56,
-																			Line:   115,
+																			Line:   130,
 																		},
 																		File:   "promql.flux",
-																		Source: "sign: -1",
+																		Source: "sign",
 																		Start: ast.Position{
-																			Column: 48,
-																			Line:   115,
+																			Column: 52,
+																			Line:   130,
 																		},
 																	},
 																},
-																Comma: nil,
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 52,
-																				Line:   115,
-																			},
-																			File:   "promql.flux",
-																			Source: "sign",
-																			Start: ast.Position{
-																				Column: 48,
-																				Line:   115,
-																			},
+																Name: "sign",
+															},
+															Separator: nil,
+															Value: &ast.IntegerLiteral{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 59,
+																			Line:   130,
+																		},
+																		File:   "promql.flux",
+																		Source: "1",
+																		Start: ast.Position{
+																			Column: 58,
+																			Line:   130,
 																		},
 																	},
-																	Name: "sign",
 																},
-																Separator: nil,
-																Value: &ast.UnaryExpression{
-																	Argument: &ast.IntegerLiteral{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 56,
-																					Line:   115,
-																				},
-																				File:   "promql.flux",
-																				Source: "1",
-																				Start: ast.Position{
-																					Column: 55,
-																					Line:   115,
-																				},
-																			},
-																		},
-																		Value: int64(1),
-																	},
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 56,
-																				Line:   115,
-																			},
-																			File:   "promql.flux",
-																			Source: "-1",
-																			Start: ast.Position{
-																				Column: 54,
-																				Line:   115,
-																			},
-																		},
-																	},
-																	Operator: 6,
-																},
-															}},
-															Rbrace: nil,
-															With:   nil,
+																Value: int64(1),
+															},
 														}},
+														Rbrace: nil,
+														With:   nil,
+													}},
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 60,
+																Line:   130,
+															},
+															File:   "promql.flux",
+															Source: "math.mInf(sign: 1)",
+															Start: ast.Position{
+																Column: 42,
+																Line:   130,
+															},
+														},
+													},
+													Callee: &ast.MemberExpression{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 57,
-																	Line:   115,
+																	Column: 51,
+																	Line:   130,
 																},
 																File:   "promql.flux",
-																Source: "math.mInf(sign: -1)",
+																Source: "math.mInf",
 																Start: ast.Position{
-																	Column: 38,
-																	Line:   115,
+																	Column: 42,
+																	Line:   130,
 																},
 															},
 														},
-														Callee: &ast.MemberExpression{
+														Lbrack: nil,
+														Object: &ast.Identifier{
 															BaseNode: ast.BaseNode{
 																Comments: nil,
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 47,
-																		Line:   115,
+																		Column: 46,
+																		Line:   130,
 																	},
 																	File:   "promql.flux",
-																	Source: "math.mInf",
+																	Source: "math",
 																	Start: ast.Position{
-																		Column: 38,
-																		Line:   115,
+																		Column: 42,
+																		Line:   130,
 																	},
 																},
 															},
-															Lbrack: nil,
-															Object: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 42,
-																			Line:   115,
-																		},
-																		File:   "promql.flux",
-																		Source: "math",
-																		Start: ast.Position{
-																			Column: 38,
-																			Line:   115,
-																		},
+															Name: "math",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 51,
+																		Line:   130,
+																	},
+																	File:   "promql.flux",
+																	Source: "mInf",
+																	Start: ast.Position{
+																		Column: 47,
+																		Line:   130,
 																	},
 																},
-																Name: "math",
 															},
-															Property: &ast.Identifier{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 47,
-																			Line:   115,
-																		},
-																		File:   "promql.flux",
-																		Source: "mInf",
-																		Start: ast.Position{
-																			Column: 43,
-																			Line:   115,
-																		},
-																	},
-																},
-																Name: "mInf",
-															},
-															Rbrack: nil,
+															Name: "mInf",
 														},
-														Lparen: nil,
-														Rparen: nil,
+														Rbrack: nil,
 													},
-												}},
-												Rbrace: nil,
-												With:   nil,
-											},
-										}, &ast.Property{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 95,
-														Line:   115,
-													},
-													File:   "promql.flux",
-													Source: "fn: (r, accumulator) => accumulator",
-													Start: ast.Position{
-														Column: 60,
-														Line:   115,
-													},
+													Lparen: nil,
+													Rparen: nil,
 												},
-											},
-											Comma: nil,
-											Key: &ast.Identifier{
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 62,
-															Line:   115,
-														},
-														File:   "promql.flux",
-														Source: "fn",
-														Start: ast.Position{
-															Column: 60,
-															Line:   115,
-														},
-													},
-												},
-												Name: "fn",
-											},
-											Separator: nil,
-											Value: &ast.FunctionExpression{
-												Arrow: nil,
-												BaseNode: ast.BaseNode{
-													Comments: nil,
-													Errors:   nil,
-													Loc: &ast.SourceLocation{
-														End: ast.Position{
-															Column: 95,
-															Line:   115,
-														},
-														File:   "promql.flux",
-														Source: "(r, accumulator) => accumulator",
-														Start: ast.Position{
-															Column: 64,
-															Line:   115,
-														},
-													},
-												},
-												Body: &ast.Identifier{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 95,
-																Line:   115,
-															},
-															File:   "promql.flux",
-															Source: "accumulator",
-															Start: ast.Position{
-																Column: 84,
-																Line:   115,
-															},
-														},
-													},
-													Name: "accumulator",
-												},
-												Lparen: nil,
-												Params: []*ast.Property{&ast.Property{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 66,
-																Line:   115,
-															},
-															File:   "promql.flux",
-															Source: "r",
-															Start: ast.Position{
-																Column: 65,
-																Line:   115,
-															},
-														},
-													},
-													Comma: nil,
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 66,
-																	Line:   115,
-																},
-																File:   "promql.flux",
-																Source: "r",
-																Start: ast.Position{
-																	Column: 65,
-																	Line:   115,
-																},
-															},
-														},
-														Name: "r",
-													},
-													Separator: nil,
-													Value:     nil,
-												}, &ast.Property{
-													BaseNode: ast.BaseNode{
-														Comments: nil,
-														Errors:   nil,
-														Loc: &ast.SourceLocation{
-															End: ast.Position{
-																Column: 79,
-																Line:   115,
-															},
-															File:   "promql.flux",
-															Source: "accumulator",
-															Start: ast.Position{
-																Column: 68,
-																Line:   115,
-															},
-														},
-													},
-													Comma: nil,
-													Key: &ast.Identifier{
-														BaseNode: ast.BaseNode{
-															Comments: nil,
-															Errors:   nil,
-															Loc: &ast.SourceLocation{
-																End: ast.Position{
-																	Column: 79,
-																	Line:   115,
-																},
-																File:   "promql.flux",
-																Source: "accumulator",
-																Start: ast.Position{
-																	Column: 68,
-																	Line:   115,
-																},
-															},
-														},
-														Name: "accumulator",
-													},
-													Separator: nil,
-													Value:     nil,
-												}},
-												Rparan: nil,
-											},
-										}},
-										Rbrace: nil,
-										With:   nil,
-									}},
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 96,
-												Line:   115,
-											},
-											File:   "promql.flux",
-											Source: "reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
-											Start: ast.Position{
-												Column: 12,
-												Line:   115,
-											},
+											}},
+											Rbrace: nil,
+											With:   nil,
 										},
-									},
-									Callee: &ast.Identifier{
+									}, &ast.Property{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 18,
-													Line:   115,
+													Column: 98,
+													Line:   130,
 												},
 												File:   "promql.flux",
-												Source: "reduce",
+												Source: "fn: (r, accumulator) => accumulator",
 												Start: ast.Position{
-													Column: 12,
-													Line:   115,
+													Column: 63,
+													Line:   130,
 												},
 											},
 										},
-										Name: "reduce",
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 65,
+														Line:   130,
+													},
+													File:   "promql.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 63,
+														Line:   130,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Separator: nil,
+										Value: &ast.FunctionExpression{
+											Arrow: nil,
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 98,
+														Line:   130,
+													},
+													File:   "promql.flux",
+													Source: "(r, accumulator) => accumulator",
+													Start: ast.Position{
+														Column: 67,
+														Line:   130,
+													},
+												},
+											},
+											Body: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 98,
+															Line:   130,
+														},
+														File:   "promql.flux",
+														Source: "accumulator",
+														Start: ast.Position{
+															Column: 87,
+															Line:   130,
+														},
+													},
+												},
+												Name: "accumulator",
+											},
+											Lparen: nil,
+											Params: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 69,
+															Line:   130,
+														},
+														File:   "promql.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 68,
+															Line:   130,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 69,
+																Line:   130,
+															},
+															File:   "promql.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 68,
+																Line:   130,
+															},
+														},
+													},
+													Name: "r",
+												},
+												Separator: nil,
+												Value:     nil,
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 82,
+															Line:   130,
+														},
+														File:   "promql.flux",
+														Source: "accumulator",
+														Start: ast.Position{
+															Column: 71,
+															Line:   130,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 82,
+																Line:   130,
+															},
+															File:   "promql.flux",
+															Source: "accumulator",
+															Start: ast.Position{
+																Column: 71,
+																Line:   130,
+															},
+														},
+													},
+													Name: "accumulator",
+												},
+												Separator: nil,
+												Value:     nil,
+											}},
+											Rparan: nil,
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 99,
+											Line:   130,
+										},
+										File:   "promql.flux",
+										Source: "reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+										Start: ast.Position{
+											Column: 16,
+											Line:   130,
+										},
 									},
-									Lparen: nil,
-									Rparen: nil,
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   130,
+											},
+											File:   "promql.flux",
+											Source: "reduce",
+											Start: ast.Position{
+												Column: 16,
+												Line:   130,
+											},
+										},
+									},
+									Name: "reduce",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 99,
+									Line:   130,
+								},
+								File:   "promql.flux",
+								Source: "if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+								Start: ast.Position{
+									Column: 6,
+									Line:   125,
 								},
 							},
-							Lparen: nil,
-							Rparen: nil,
+						},
+						Consequent: &ast.PipeExpression{
+							Argument: &ast.Identifier{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 15,
+											Line:   126,
+										},
+										File:   "promql.flux",
+										Source: "tables",
+										Start: ast.Position{
+											Column: 9,
+											Line:   126,
+										},
+									},
+								},
+								Name: "tables",
+							},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 100,
+										Line:   127,
+									},
+									File:   "promql.flux",
+									Source: "tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
+									Start: ast.Position{
+										Column: 9,
+										Line:   126,
+									},
+								},
+							},
+							Call: &ast.CallExpression{
+								Arguments: []ast.Expression{&ast.ObjectExpression{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 99,
+												Line:   127,
+											},
+											File:   "promql.flux",
+											Source: "identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator",
+											Start: ast.Position{
+												Column: 23,
+												Line:   127,
+											},
+										},
+									},
+									Lbrace: nil,
+									Properties: []*ast.Property{&ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 62,
+													Line:   127,
+												},
+												File:   "promql.flux",
+												Source: "identity: {_value: math.mInf(sign: -1)}",
+												Start: ast.Position{
+													Column: 23,
+													Line:   127,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 31,
+														Line:   127,
+													},
+													File:   "promql.flux",
+													Source: "identity",
+													Start: ast.Position{
+														Column: 23,
+														Line:   127,
+													},
+												},
+											},
+											Name: "identity",
+										},
+										Separator: nil,
+										Value: &ast.ObjectExpression{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 62,
+														Line:   127,
+													},
+													File:   "promql.flux",
+													Source: "{_value: math.mInf(sign: -1)}",
+													Start: ast.Position{
+														Column: 33,
+														Line:   127,
+													},
+												},
+											},
+											Lbrace: nil,
+											Properties: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 61,
+															Line:   127,
+														},
+														File:   "promql.flux",
+														Source: "_value: math.mInf(sign: -1)",
+														Start: ast.Position{
+															Column: 34,
+															Line:   127,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 40,
+																Line:   127,
+															},
+															File:   "promql.flux",
+															Source: "_value",
+															Start: ast.Position{
+																Column: 34,
+																Line:   127,
+															},
+														},
+													},
+													Name: "_value",
+												},
+												Separator: nil,
+												Value: &ast.CallExpression{
+													Arguments: []ast.Expression{&ast.ObjectExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 60,
+																	Line:   127,
+																},
+																File:   "promql.flux",
+																Source: "sign: -1",
+																Start: ast.Position{
+																	Column: 52,
+																	Line:   127,
+																},
+															},
+														},
+														Lbrace: nil,
+														Properties: []*ast.Property{&ast.Property{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 60,
+																		Line:   127,
+																	},
+																	File:   "promql.flux",
+																	Source: "sign: -1",
+																	Start: ast.Position{
+																		Column: 52,
+																		Line:   127,
+																	},
+																},
+															},
+															Comma: nil,
+															Key: &ast.Identifier{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 56,
+																			Line:   127,
+																		},
+																		File:   "promql.flux",
+																		Source: "sign",
+																		Start: ast.Position{
+																			Column: 52,
+																			Line:   127,
+																		},
+																	},
+																},
+																Name: "sign",
+															},
+															Separator: nil,
+															Value: &ast.UnaryExpression{
+																Argument: &ast.IntegerLiteral{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 60,
+																				Line:   127,
+																			},
+																			File:   "promql.flux",
+																			Source: "1",
+																			Start: ast.Position{
+																				Column: 59,
+																				Line:   127,
+																			},
+																		},
+																	},
+																	Value: int64(1),
+																},
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 60,
+																			Line:   127,
+																		},
+																		File:   "promql.flux",
+																		Source: "-1",
+																		Start: ast.Position{
+																			Column: 58,
+																			Line:   127,
+																		},
+																	},
+																},
+																Operator: 6,
+															},
+														}},
+														Rbrace: nil,
+														With:   nil,
+													}},
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 61,
+																Line:   127,
+															},
+															File:   "promql.flux",
+															Source: "math.mInf(sign: -1)",
+															Start: ast.Position{
+																Column: 42,
+																Line:   127,
+															},
+														},
+													},
+													Callee: &ast.MemberExpression{
+														BaseNode: ast.BaseNode{
+															Comments: nil,
+															Errors:   nil,
+															Loc: &ast.SourceLocation{
+																End: ast.Position{
+																	Column: 51,
+																	Line:   127,
+																},
+																File:   "promql.flux",
+																Source: "math.mInf",
+																Start: ast.Position{
+																	Column: 42,
+																	Line:   127,
+																},
+															},
+														},
+														Lbrack: nil,
+														Object: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 46,
+																		Line:   127,
+																	},
+																	File:   "promql.flux",
+																	Source: "math",
+																	Start: ast.Position{
+																		Column: 42,
+																		Line:   127,
+																	},
+																},
+															},
+															Name: "math",
+														},
+														Property: &ast.Identifier{
+															BaseNode: ast.BaseNode{
+																Comments: nil,
+																Errors:   nil,
+																Loc: &ast.SourceLocation{
+																	End: ast.Position{
+																		Column: 51,
+																		Line:   127,
+																	},
+																	File:   "promql.flux",
+																	Source: "mInf",
+																	Start: ast.Position{
+																		Column: 47,
+																		Line:   127,
+																	},
+																},
+															},
+															Name: "mInf",
+														},
+														Rbrack: nil,
+													},
+													Lparen: nil,
+													Rparen: nil,
+												},
+											}},
+											Rbrace: nil,
+											With:   nil,
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 99,
+													Line:   127,
+												},
+												File:   "promql.flux",
+												Source: "fn: (r, accumulator) => accumulator",
+												Start: ast.Position{
+													Column: 64,
+													Line:   127,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 66,
+														Line:   127,
+													},
+													File:   "promql.flux",
+													Source: "fn",
+													Start: ast.Position{
+														Column: 64,
+														Line:   127,
+													},
+												},
+											},
+											Name: "fn",
+										},
+										Separator: nil,
+										Value: &ast.FunctionExpression{
+											Arrow: nil,
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 99,
+														Line:   127,
+													},
+													File:   "promql.flux",
+													Source: "(r, accumulator) => accumulator",
+													Start: ast.Position{
+														Column: 68,
+														Line:   127,
+													},
+												},
+											},
+											Body: &ast.Identifier{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 99,
+															Line:   127,
+														},
+														File:   "promql.flux",
+														Source: "accumulator",
+														Start: ast.Position{
+															Column: 88,
+															Line:   127,
+														},
+													},
+												},
+												Name: "accumulator",
+											},
+											Lparen: nil,
+											Params: []*ast.Property{&ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 70,
+															Line:   127,
+														},
+														File:   "promql.flux",
+														Source: "r",
+														Start: ast.Position{
+															Column: 69,
+															Line:   127,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 70,
+																Line:   127,
+															},
+															File:   "promql.flux",
+															Source: "r",
+															Start: ast.Position{
+																Column: 69,
+																Line:   127,
+															},
+														},
+													},
+													Name: "r",
+												},
+												Separator: nil,
+												Value:     nil,
+											}, &ast.Property{
+												BaseNode: ast.BaseNode{
+													Comments: nil,
+													Errors:   nil,
+													Loc: &ast.SourceLocation{
+														End: ast.Position{
+															Column: 83,
+															Line:   127,
+														},
+														File:   "promql.flux",
+														Source: "accumulator",
+														Start: ast.Position{
+															Column: 72,
+															Line:   127,
+														},
+													},
+												},
+												Comma: nil,
+												Key: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 83,
+																Line:   127,
+															},
+															File:   "promql.flux",
+															Source: "accumulator",
+															Start: ast.Position{
+																Column: 72,
+																Line:   127,
+															},
+														},
+													},
+													Name: "accumulator",
+												},
+												Separator: nil,
+												Value:     nil,
+											}},
+											Rparan: nil,
+										},
+									}},
+									Rbrace: nil,
+									With:   nil,
+								}},
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 100,
+											Line:   127,
+										},
+										File:   "promql.flux",
+										Source: "reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)",
+										Start: ast.Position{
+											Column: 16,
+											Line:   127,
+										},
+									},
+								},
+								Callee: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 22,
+												Line:   127,
+											},
+											File:   "promql.flux",
+											Source: "reduce",
+											Start: ast.Position{
+												Column: 16,
+												Line:   127,
+											},
+										},
+									},
+									Name: "reduce",
+								},
+								Lparen: nil,
+								Rparen: nil,
+							},
 						},
 						Test: &ast.BinaryExpression{
 							BaseNode: ast.BaseNode{
@@ -7811,14 +7771,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 20,
-										Line:   113,
+										Column: 16,
+										Line:   125,
 									},
 									File:   "promql.flux",
 									Source: "q < 0.0",
 									Start: ast.Position{
-										Column: 13,
-										Line:   113,
+										Column: 9,
+										Line:   125,
 									},
 								},
 							},
@@ -7828,14 +7788,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 14,
-											Line:   113,
+											Column: 10,
+											Line:   125,
 										},
 										File:   "promql.flux",
 										Source: "q",
 										Start: ast.Position{
-											Column: 13,
-											Line:   113,
+											Column: 9,
+											Line:   125,
 										},
 									},
 								},
@@ -7848,14 +7808,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 20,
-											Line:   113,
+											Column: 16,
+											Line:   125,
 										},
 										File:   "promql.flux",
 										Source: "0.0",
 										Start: ast.Position{
-											Column: 17,
-											Line:   113,
+											Column: 13,
+											Line:   125,
 										},
 									},
 								},
@@ -7871,287 +7831,267 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 96,
-								Line:   118,
+								Column: 99,
+								Line:   130,
 							},
 							File:   "promql.flux",
-							Source: "if q <= 1.0 and q >= 0.0 then \n    (tables\n        |> universe.quantile(q: q, method: method))\n    else if q < 0.0 then\n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator))\n    else \n    (tables\n        |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator))",
+							Source: "if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 							Start: ast.Position{
 								Column: 5,
-								Line:   110,
+								Line:   122,
 							},
 						},
 					},
-					Consequent: &ast.ParenExpression{
-						BaseNode: ast.BaseNode{
-							Comments: nil,
-							Errors:   nil,
-							Loc: &ast.SourceLocation{
-								End: ast.Position{
-									Column: 52,
-									Line:   112,
-								},
-								File:   "promql.flux",
-								Source: "(tables\n        |> universe.quantile(q: q, method: method))",
-								Start: ast.Position{
-									Column: 5,
-									Line:   111,
-								},
-							},
-						},
-						Expression: &ast.PipeExpression{
-							Argument: &ast.Identifier{
-								BaseNode: ast.BaseNode{
-									Comments: nil,
-									Errors:   nil,
-									Loc: &ast.SourceLocation{
-										End: ast.Position{
-											Column: 12,
-											Line:   111,
-										},
-										File:   "promql.flux",
-										Source: "tables",
-										Start: ast.Position{
-											Column: 6,
-											Line:   111,
-										},
-									},
-								},
-								Name: "tables",
-							},
+					Consequent: &ast.PipeExpression{
+						Argument: &ast.Identifier{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 51,
-										Line:   112,
+										Column: 15,
+										Line:   123,
 									},
 									File:   "promql.flux",
-									Source: "tables\n        |> universe.quantile(q: q, method: method)",
+									Source: "tables",
 									Start: ast.Position{
-										Column: 6,
-										Line:   111,
+										Column: 9,
+										Line:   123,
 									},
 								},
 							},
-							Call: &ast.CallExpression{
-								Arguments: []ast.Expression{&ast.ObjectExpression{
-									BaseNode: ast.BaseNode{
-										Comments: nil,
-										Errors:   nil,
-										Loc: &ast.SourceLocation{
-											End: ast.Position{
-												Column: 50,
-												Line:   112,
-											},
-											File:   "promql.flux",
-											Source: "q: q, method: method",
-											Start: ast.Position{
-												Column: 30,
-												Line:   112,
-											},
-										},
-									},
-									Lbrace: nil,
-									Properties: []*ast.Property{&ast.Property{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 34,
-													Line:   112,
-												},
-												File:   "promql.flux",
-												Source: "q: q",
-												Start: ast.Position{
-													Column: 30,
-													Line:   112,
-												},
-											},
-										},
-										Comma: nil,
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 31,
-														Line:   112,
-													},
-													File:   "promql.flux",
-													Source: "q",
-													Start: ast.Position{
-														Column: 30,
-														Line:   112,
-													},
-												},
-											},
-											Name: "q",
-										},
-										Separator: nil,
-										Value: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 34,
-														Line:   112,
-													},
-													File:   "promql.flux",
-													Source: "q",
-													Start: ast.Position{
-														Column: 33,
-														Line:   112,
-													},
-												},
-											},
-											Name: "q",
-										},
-									}, &ast.Property{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 50,
-													Line:   112,
-												},
-												File:   "promql.flux",
-												Source: "method: method",
-												Start: ast.Position{
-													Column: 36,
-													Line:   112,
-												},
-											},
-										},
-										Comma: nil,
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 42,
-														Line:   112,
-													},
-													File:   "promql.flux",
-													Source: "method",
-													Start: ast.Position{
-														Column: 36,
-														Line:   112,
-													},
-												},
-											},
-											Name: "method",
-										},
-										Separator: nil,
-										Value: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 50,
-														Line:   112,
-													},
-													File:   "promql.flux",
-													Source: "method",
-													Start: ast.Position{
-														Column: 44,
-														Line:   112,
-													},
-												},
-											},
-											Name: "method",
-										},
-									}},
-									Rbrace: nil,
-									With:   nil,
-								}},
+							Name: "tables",
+						},
+						BaseNode: ast.BaseNode{
+							Comments: nil,
+							Errors:   nil,
+							Loc: &ast.SourceLocation{
+								End: ast.Position{
+									Column: 55,
+									Line:   124,
+								},
+								File:   "promql.flux",
+								Source: "tables\n            |> universe.quantile(q: q, method: method)",
+								Start: ast.Position{
+									Column: 9,
+									Line:   123,
+								},
+							},
+						},
+						Call: &ast.CallExpression{
+							Arguments: []ast.Expression{&ast.ObjectExpression{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 51,
-											Line:   112,
+											Column: 54,
+											Line:   124,
 										},
 										File:   "promql.flux",
-										Source: "universe.quantile(q: q, method: method)",
+										Source: "q: q, method: method",
 										Start: ast.Position{
-											Column: 12,
-											Line:   112,
+											Column: 34,
+											Line:   124,
 										},
 									},
 								},
-								Callee: &ast.MemberExpression{
+								Lbrace: nil,
+								Properties: []*ast.Property{&ast.Property{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 29,
-												Line:   112,
+												Column: 38,
+												Line:   124,
 											},
 											File:   "promql.flux",
-											Source: "universe.quantile",
+											Source: "q: q",
 											Start: ast.Position{
-												Column: 12,
-												Line:   112,
+												Column: 34,
+												Line:   124,
 											},
 										},
 									},
-									Lbrack: nil,
-									Object: &ast.Identifier{
+									Comma: nil,
+									Key: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
-													Line:   112,
+													Column: 35,
+													Line:   124,
 												},
 												File:   "promql.flux",
-												Source: "universe",
+												Source: "q",
 												Start: ast.Position{
-													Column: 12,
-													Line:   112,
+													Column: 34,
+													Line:   124,
 												},
 											},
 										},
-										Name: "universe",
+										Name: "q",
 									},
-									Property: &ast.Identifier{
+									Separator: nil,
+									Value: &ast.Identifier{
 										BaseNode: ast.BaseNode{
 											Comments: nil,
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 29,
-													Line:   112,
+													Column: 38,
+													Line:   124,
 												},
 												File:   "promql.flux",
-												Source: "quantile",
+												Source: "q",
 												Start: ast.Position{
-													Column: 21,
-													Line:   112,
+													Column: 37,
+													Line:   124,
 												},
 											},
 										},
-										Name: "quantile",
+										Name: "q",
 									},
-									Rbrack: nil,
+								}, &ast.Property{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 54,
+												Line:   124,
+											},
+											File:   "promql.flux",
+											Source: "method: method",
+											Start: ast.Position{
+												Column: 40,
+												Line:   124,
+											},
+										},
+									},
+									Comma: nil,
+									Key: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 46,
+													Line:   124,
+												},
+												File:   "promql.flux",
+												Source: "method",
+												Start: ast.Position{
+													Column: 40,
+													Line:   124,
+												},
+											},
+										},
+										Name: "method",
+									},
+									Separator: nil,
+									Value: &ast.Identifier{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 54,
+													Line:   124,
+												},
+												File:   "promql.flux",
+												Source: "method",
+												Start: ast.Position{
+													Column: 48,
+													Line:   124,
+												},
+											},
+										},
+										Name: "method",
+									},
+								}},
+								Rbrace: nil,
+								With:   nil,
+							}},
+							BaseNode: ast.BaseNode{
+								Comments: nil,
+								Errors:   nil,
+								Loc: &ast.SourceLocation{
+									End: ast.Position{
+										Column: 55,
+										Line:   124,
+									},
+									File:   "promql.flux",
+									Source: "universe.quantile(q: q, method: method)",
+									Start: ast.Position{
+										Column: 16,
+										Line:   124,
+									},
 								},
-								Lparen: nil,
-								Rparen: nil,
 							},
+							Callee: &ast.MemberExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 33,
+											Line:   124,
+										},
+										File:   "promql.flux",
+										Source: "universe.quantile",
+										Start: ast.Position{
+											Column: 16,
+											Line:   124,
+										},
+									},
+								},
+								Lbrack: nil,
+								Object: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 24,
+												Line:   124,
+											},
+											File:   "promql.flux",
+											Source: "universe",
+											Start: ast.Position{
+												Column: 16,
+												Line:   124,
+											},
+										},
+									},
+									Name: "universe",
+								},
+								Property: &ast.Identifier{
+									BaseNode: ast.BaseNode{
+										Comments: nil,
+										Errors:   nil,
+										Loc: &ast.SourceLocation{
+											End: ast.Position{
+												Column: 33,
+												Line:   124,
+											},
+											File:   "promql.flux",
+											Source: "quantile",
+											Start: ast.Position{
+												Column: 25,
+												Line:   124,
+											},
+										},
+									},
+									Name: "quantile",
+								},
+								Rbrack: nil,
+							},
+							Lparen: nil,
+							Rparen: nil,
 						},
-						Lparen: nil,
-						Rparen: nil,
 					},
 					Test: &ast.LogicalExpression{
 						BaseNode: ast.BaseNode{
@@ -8160,13 +8100,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   110,
+									Line:   122,
 								},
 								File:   "promql.flux",
 								Source: "q <= 1.0 and q >= 0.0",
 								Start: ast.Position{
 									Column: 8,
-									Line:   110,
+									Line:   122,
 								},
 							},
 						},
@@ -8177,13 +8117,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   110,
+										Line:   122,
 									},
 									File:   "promql.flux",
 									Source: "q <= 1.0",
 									Start: ast.Position{
 										Column: 8,
-										Line:   110,
+										Line:   122,
 									},
 								},
 							},
@@ -8194,13 +8134,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 9,
-											Line:   110,
+											Line:   122,
 										},
 										File:   "promql.flux",
 										Source: "q",
 										Start: ast.Position{
 											Column: 8,
-											Line:   110,
+											Line:   122,
 										},
 									},
 								},
@@ -8214,13 +8154,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   110,
+											Line:   122,
 										},
 										File:   "promql.flux",
 										Source: "1.0",
 										Start: ast.Position{
 											Column: 13,
-											Line:   110,
+											Line:   122,
 										},
 									},
 								},
@@ -8235,13 +8175,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   110,
+										Line:   122,
 									},
 									File:   "promql.flux",
 									Source: "q >= 0.0",
 									Start: ast.Position{
 										Column: 21,
-										Line:   110,
+										Line:   122,
 									},
 								},
 							},
@@ -8252,13 +8192,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   110,
+											Line:   122,
 										},
 										File:   "promql.flux",
 										Source: "q",
 										Start: ast.Position{
 											Column: 21,
-											Line:   110,
+											Line:   122,
 										},
 									},
 								},
@@ -8272,13 +8212,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   110,
+											Line:   122,
 										},
 										File:   "promql.flux",
 										Source: "0.0",
 										Start: ast.Position{
 											Column: 26,
-											Line:   110,
+											Line:   122,
 										},
 									},
 								},
@@ -8298,13 +8238,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   108,
+								Line:   120,
 							},
 							File:   "promql.flux",
 							Source: "q",
 							Start: ast.Position{
 								Column: 13,
-								Line:   108,
+								Line:   120,
 							},
 						},
 					},
@@ -8316,13 +8256,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   108,
+									Line:   120,
 								},
 								File:   "promql.flux",
 								Source: "q",
 								Start: ast.Position{
 									Column: 13,
-									Line:   108,
+									Line:   120,
 								},
 							},
 						},
@@ -8337,13 +8277,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   108,
+								Line:   120,
 							},
 							File:   "promql.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 16,
-								Line:   108,
+								Line:   120,
 							},
 						},
 					},
@@ -8355,13 +8295,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   108,
+									Line:   120,
 								},
 								File:   "promql.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 16,
-									Line:   108,
+									Line:   120,
 								},
 							},
 						},
@@ -8374,13 +8314,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   108,
+								Line:   120,
 							},
 							File:   "promql.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   108,
+								Line:   120,
 							},
 						},
 					}},
@@ -8391,13 +8331,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 46,
-								Line:   108,
+								Line:   120,
 							},
 							File:   "promql.flux",
 							Source: "method=\"exact_mean\"",
 							Start: ast.Position{
 								Column: 27,
-								Line:   108,
+								Line:   120,
 							},
 						},
 					},
@@ -8409,13 +8349,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   108,
+									Line:   120,
 								},
 								File:   "promql.flux",
 								Source: "method",
 								Start: ast.Position{
 									Column: 27,
-									Line:   108,
+									Line:   120,
 								},
 							},
 						},
@@ -8429,13 +8369,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   108,
+									Line:   120,
 								},
 								File:   "promql.flux",
 								Source: "\"exact_mean\"",
 								Start: ast.Position{
 									Column: 34,
-									Line:   108,
+									Line:   120,
 								},
 							},
 						},
@@ -8451,13 +8391,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   120,
+						Line:   131,
 					},
 					File:   "promql.flux",
 					Source: "join = experimental.join",
 					Start: ast.Position{
 						Column: 1,
-						Line:   120,
+						Line:   131,
 					},
 				},
 			},
@@ -8468,13 +8408,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   120,
+							Line:   131,
 						},
 						File:   "promql.flux",
 						Source: "join",
 						Start: ast.Position{
 							Column: 1,
-							Line:   120,
+							Line:   131,
 						},
 					},
 				},
@@ -8487,13 +8427,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   120,
+							Line:   131,
 						},
 						File:   "promql.flux",
 						Source: "experimental.join",
 						Start: ast.Position{
 							Column: 8,
-							Line:   120,
+							Line:   131,
 						},
 					},
 				},
@@ -8505,13 +8445,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 20,
-								Line:   120,
+								Line:   131,
 							},
 							File:   "promql.flux",
 							Source: "experimental",
 							Start: ast.Position{
 								Column: 8,
-								Line:   120,
+								Line:   131,
 							},
 						},
 					},
@@ -8524,13 +8464,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   120,
+								Line:   131,
 							},
 							File:   "promql.flux",
 							Source: "join",
 							Start: ast.Position{
 								Column: 21,
-								Line:   120,
+								Line:   131,
 							},
 						},
 					},
@@ -8548,13 +8488,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "promql.flux",
 					Source: "import \"math\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -8565,13 +8505,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "promql.flux",
 						Source: "\"math\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -8585,13 +8525,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "promql.flux",
 					Source: "import \"universe\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -8602,13 +8542,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "promql.flux",
 						Source: "\"universe\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -8622,13 +8562,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 22,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "promql.flux",
 					Source: "import \"experimental\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -8639,13 +8579,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 22,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "promql.flux",
 						Source: "\"experimental\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
