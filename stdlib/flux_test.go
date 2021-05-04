@@ -56,9 +56,6 @@ var skip = map[string]map[string]string{
 func TestFluxEndToEnd(t *testing.T) {
 	runEndToEnd(t, stdlib.FluxTestPackages)
 }
-func BenchmarkFluxEndToEnd(b *testing.B) {
-	benchEndToEnd(b, stdlib.FluxTestPackages)
-}
 
 func runEndToEnd(t *testing.T, pkgs []*ast.Package) {
 	for _, pkg := range pkgs {
@@ -93,56 +90,6 @@ func makeTestPackage(file *ast.File) *ast.Package {
 		Files:   []*ast.File{file},
 	}
 	return pkg
-}
-
-func benchEndToEnd(b *testing.B, pkgs []*ast.Package) {
-	for _, pkg := range pkgs {
-		benchmark := func(b *testing.B, f func(b *testing.B)) {
-			b.Run(pkg.Path, f)
-		}
-		if pkg.Path == "universe" {
-			benchmark = func(b *testing.B, f func(b *testing.B)) {
-				f(b)
-			}
-		}
-
-		benchmark(b, func(b *testing.B) {
-			for _, file := range pkg.Files {
-				pkgpath := pkg.Path
-				name := strings.TrimSuffix(file.Name, "_test.flux")
-
-				// Construct the package before running the benchmark to avoid
-				// constructing this multiple times.
-				pkg := makeTestPackage(file)
-				// Annotate the package with the benchmark calls.
-				pkg.Files = append(pkg.Files, stdlib.TestingBenchmarkCalls(pkg))
-
-				// Execute the benchmark.
-				b.Run(name, func(b *testing.B) {
-					if reason, ok := skip[pkgpath][name]; ok {
-						b.Skip(reason)
-					}
-					bs, err := json.Marshal(pkg)
-					if err != nil {
-						b.Fatal(err)
-					}
-					c := &lang.ASTCompiler{AST: bs}
-
-					b.ResetTimer()
-					b.ReportAllocs()
-					aggstats := flux.Statistics{}
-					for i := 0; i < b.N; i++ {
-						stats := doTestRun(b, c)
-						if b.Failed() {
-							return
-						}
-						aggstats = aggstats.Add(stats)
-					}
-					reportStatistics(b, aggstats)
-				})
-			}
-		})
-	}
 }
 
 func testFlux(t testing.TB, file *ast.File) flux.Statistics {
