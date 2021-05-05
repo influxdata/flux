@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   44,
+					Line:   51,
 				},
 				File:   "linearreg.flux",
-				Source: "package statsmodels\n\nimport \"math\"\nimport \"generate\"\n\n// performs linear regression, calculates y_hat, and residuals squared (rse) \n\nlinearRegression = (tables=<-) => {\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
+				Source: "package statsmodels\n\n\nimport \"math\"\nimport \"generate\"\n\n// performs linear regression, calculates y_hat, and residuals squared (rse) \nlinearRegression = (tables=<-) => {\n    renameAndSum = tables\n        |> rename(columns: {_value: \"y\"})\n        |> map(fn: (r) => ({r with x: 1.0}))\n        |> cumulativeSum(columns: [\"x\"])\n    t = renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )\n        |> tableFind(fn: (key) => true)\n        |> getRecord(idx: 0)\n    xbar = t.sx / t.N\n    ybar = t.sy / t.N\n    slope = (t.sxy - xbar * ybar * t.N) / (t.sxx - t.N * xbar * xbar)\n    intercept = ybar - slope * xbar\n    y_hat = (r) => ({r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    })\n    rse = (r) => ({r with errors: (r.y - r.y_hat) ^ 2.0})\n    output = renameAndSum\n        |> map(fn: y_hat)\n        |> map(fn: rse)\n\n    return output\n}",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,10 +41,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   44,
+						Line:   51,
 					},
 					File:   "linearreg.flux",
-					Source: "linearRegression = (tables=<-) => {\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
+					Source: "linearRegression = (tables=<-) => {\n    renameAndSum = tables\n        |> rename(columns: {_value: \"y\"})\n        |> map(fn: (r) => ({r with x: 1.0}))\n        |> cumulativeSum(columns: [\"x\"])\n    t = renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )\n        |> tableFind(fn: (key) => true)\n        |> getRecord(idx: 0)\n    xbar = t.sx / t.N\n    ybar = t.sy / t.N\n    slope = (t.sxy - xbar * ybar * t.N) / (t.sxx - t.N * xbar * xbar)\n    intercept = ybar - slope * xbar\n    y_hat = (r) => ({r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    })\n    rse = (r) => ({r with errors: (r.y - r.y_hat) ^ 2.0})\n    output = renameAndSum\n        |> map(fn: y_hat)\n        |> map(fn: rse)\n\n    return output\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   8,
@@ -78,10 +78,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   44,
+							Line:   51,
 						},
 						File:   "linearreg.flux",
-						Source: "(tables=<-) => {\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
+						Source: "(tables=<-) => {\n    renameAndSum = tables\n        |> rename(columns: {_value: \"y\"})\n        |> map(fn: (r) => ({r with x: 1.0}))\n        |> cumulativeSum(columns: [\"x\"])\n    t = renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )\n        |> tableFind(fn: (key) => true)\n        |> getRecord(idx: 0)\n    xbar = t.sx / t.N\n    ybar = t.sy / t.N\n    slope = (t.sxy - xbar * ybar * t.N) / (t.sxx - t.N * xbar * xbar)\n    intercept = ybar - slope * xbar\n    y_hat = (r) => ({r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    })\n    rse = (r) => ({r with errors: (r.y - r.y_hat) ^ 2.0})\n    output = renameAndSum\n        |> map(fn: y_hat)\n        |> map(fn: rse)\n\n    return output\n}",
 						Start: ast.Position{
 							Column: 20,
 							Line:   8,
@@ -95,10 +95,10 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   44,
+								Line:   51,
 							},
 							File:   "linearreg.flux",
-							Source: "{\n  renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])\n\n  t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)\n\n  xbar = t.sx/t.N \n\n  ybar = t.sy/t.N\n\n  slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)\n\n  intercept = (ybar - slope * xbar)\n\n  y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})\n\n  rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})\n\n  output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)\n    \n  return output\n}",
+							Source: "{\n    renameAndSum = tables\n        |> rename(columns: {_value: \"y\"})\n        |> map(fn: (r) => ({r with x: 1.0}))\n        |> cumulativeSum(columns: [\"x\"])\n    t = renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )\n        |> tableFind(fn: (key) => true)\n        |> getRecord(idx: 0)\n    xbar = t.sx / t.N\n    ybar = t.sy / t.N\n    slope = (t.sxy - xbar * ybar * t.N) / (t.sxx - t.N * xbar * xbar)\n    intercept = ybar - slope * xbar\n    y_hat = (r) => ({r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    })\n    rse = (r) => ({r with errors: (r.y - r.y_hat) ^ 2.0})\n    output = renameAndSum\n        |> map(fn: y_hat)\n        |> map(fn: rse)\n\n    return output\n}",
 							Start: ast.Position{
 								Column: 35,
 								Line:   8,
@@ -111,13 +111,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 37,
+									Column: 41,
 									Line:   12,
 								},
 								File:   "linearreg.flux",
-								Source: "renameAndSum = tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])",
+								Source: "renameAndSum = tables\n        |> rename(columns: {_value: \"y\"})\n        |> map(fn: (r) => ({r with x: 1.0}))\n        |> cumulativeSum(columns: [\"x\"])",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   9,
 								},
 							},
@@ -128,13 +128,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
+										Column: 17,
 										Line:   9,
 									},
 									File:   "linearreg.flux",
 									Source: "renameAndSum",
 									Start: ast.Position{
-										Column: 3,
+										Column: 5,
 										Line:   9,
 									},
 								},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 24,
+													Column: 26,
 													Line:   9,
 												},
 												File:   "linearreg.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 18,
+													Column: 20,
 													Line:   9,
 												},
 											},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 38,
+												Column: 42,
 												Line:   10,
 											},
 											File:   "linearreg.flux",
-											Source: "tables\n    |> rename(columns: {_value: \"y\"})",
+											Source: "tables\n        |> rename(columns: {_value: \"y\"})",
 											Start: ast.Position{
-												Column: 18,
+												Column: 20,
 												Line:   9,
 											},
 										},
@@ -186,13 +186,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
+														Column: 41,
 														Line:   10,
 													},
 													File:   "linearreg.flux",
 													Source: "columns: {_value: \"y\"}",
 													Start: ast.Position{
-														Column: 15,
+														Column: 19,
 														Line:   10,
 													},
 												},
@@ -204,13 +204,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 37,
+															Column: 41,
 															Line:   10,
 														},
 														File:   "linearreg.flux",
 														Source: "columns: {_value: \"y\"}",
 														Start: ast.Position{
-															Column: 15,
+															Column: 19,
 															Line:   10,
 														},
 													},
@@ -222,13 +222,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 22,
+																Column: 26,
 																Line:   10,
 															},
 															File:   "linearreg.flux",
 															Source: "columns",
 															Start: ast.Position{
-																Column: 15,
+																Column: 19,
 																Line:   10,
 															},
 														},
@@ -242,13 +242,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 37,
+																Column: 41,
 																Line:   10,
 															},
 															File:   "linearreg.flux",
 															Source: "{_value: \"y\"}",
 															Start: ast.Position{
-																Column: 24,
+																Column: 28,
 																Line:   10,
 															},
 														},
@@ -260,13 +260,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 36,
+																	Column: 40,
 																	Line:   10,
 																},
 																File:   "linearreg.flux",
 																Source: "_value: \"y\"",
 																Start: ast.Position{
-																	Column: 25,
+																	Column: 29,
 																	Line:   10,
 																},
 															},
@@ -278,13 +278,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 31,
+																		Column: 35,
 																		Line:   10,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "_value",
 																	Start: ast.Position{
-																		Column: 25,
+																		Column: 29,
 																		Line:   10,
 																	},
 																},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 36,
+																		Column: 40,
 																		Line:   10,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "\"y\"",
 																	Start: ast.Position{
-																		Column: 33,
+																		Column: 37,
 																		Line:   10,
 																	},
 																},
@@ -324,13 +324,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 38,
+													Column: 42,
 													Line:   10,
 												},
 												File:   "linearreg.flux",
 												Source: "rename(columns: {_value: \"y\"})",
 												Start: ast.Position{
-													Column: 8,
+													Column: 12,
 													Line:   10,
 												},
 											},
@@ -341,13 +341,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
+														Column: 18,
 														Line:   10,
 													},
 													File:   "linearreg.flux",
 													Source: "rename",
 													Start: ast.Position{
-														Column: 8,
+														Column: 12,
 														Line:   10,
 													},
 												},
@@ -363,13 +363,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
+											Column: 45,
 											Line:   11,
 										},
 										File:   "linearreg.flux",
-										Source: "tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))",
+										Source: "tables\n        |> rename(columns: {_value: \"y\"})\n        |> map(fn: (r) => ({r with x: 1.0}))",
 										Start: ast.Position{
-											Column: 18,
+											Column: 20,
 											Line:   9,
 										},
 									},
@@ -381,13 +381,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
+													Column: 44,
 													Line:   11,
 												},
 												File:   "linearreg.flux",
 												Source: "fn: (r) => ({r with x: 1.0})",
 												Start: ast.Position{
-													Column: 12,
+													Column: 16,
 													Line:   11,
 												},
 											},
@@ -399,13 +399,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 40,
+														Column: 44,
 														Line:   11,
 													},
 													File:   "linearreg.flux",
 													Source: "fn: (r) => ({r with x: 1.0})",
 													Start: ast.Position{
-														Column: 12,
+														Column: 16,
 														Line:   11,
 													},
 												},
@@ -417,13 +417,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 14,
+															Column: 18,
 															Line:   11,
 														},
 														File:   "linearreg.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 12,
+															Column: 16,
 															Line:   11,
 														},
 													},
@@ -438,13 +438,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
+															Column: 44,
 															Line:   11,
 														},
 														File:   "linearreg.flux",
 														Source: "(r) => ({r with x: 1.0})",
 														Start: ast.Position{
-															Column: 16,
+															Column: 20,
 															Line:   11,
 														},
 													},
@@ -455,13 +455,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 40,
+																Column: 44,
 																Line:   11,
 															},
 															File:   "linearreg.flux",
 															Source: "({r with x: 1.0})",
 															Start: ast.Position{
-																Column: 23,
+																Column: 27,
 																Line:   11,
 															},
 														},
@@ -472,13 +472,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 39,
+																	Column: 43,
 																	Line:   11,
 																},
 																File:   "linearreg.flux",
 																Source: "{r with x: 1.0}",
 																Start: ast.Position{
-																	Column: 24,
+																	Column: 28,
 																	Line:   11,
 																},
 															},
@@ -490,13 +490,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
+																		Column: 42,
 																		Line:   11,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "x: 1.0",
 																	Start: ast.Position{
-																		Column: 32,
+																		Column: 36,
 																		Line:   11,
 																	},
 																},
@@ -508,13 +508,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 33,
+																			Column: 37,
 																			Line:   11,
 																		},
 																		File:   "linearreg.flux",
 																		Source: "x",
 																		Start: ast.Position{
-																			Column: 32,
+																			Column: 36,
 																			Line:   11,
 																		},
 																	},
@@ -528,13 +528,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 38,
+																			Column: 42,
 																			Line:   11,
 																		},
 																		File:   "linearreg.flux",
 																		Source: "1.0",
 																		Start: ast.Position{
-																			Column: 35,
+																			Column: 39,
 																			Line:   11,
 																		},
 																	},
@@ -549,13 +549,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 26,
+																		Column: 30,
 																		Line:   11,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 25,
+																		Column: 29,
 																		Line:   11,
 																	},
 																},
@@ -573,13 +573,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
+																Column: 22,
 																Line:   11,
 															},
 															File:   "linearreg.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 17,
+																Column: 21,
 																Line:   11,
 															},
 														},
@@ -591,13 +591,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
+																	Column: 22,
 																	Line:   11,
 																},
 																File:   "linearreg.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 17,
+																	Column: 21,
 																	Line:   11,
 																},
 															},
@@ -618,13 +618,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
+												Column: 45,
 												Line:   11,
 											},
 											File:   "linearreg.flux",
 											Source: "map(fn: (r) => ({r with x: 1.0}))",
 											Start: ast.Position{
-												Column: 8,
+												Column: 12,
 												Line:   11,
 											},
 										},
@@ -635,13 +635,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
+													Column: 15,
 													Line:   11,
 												},
 												File:   "linearreg.flux",
 												Source: "map",
 												Start: ast.Position{
-													Column: 8,
+													Column: 12,
 													Line:   11,
 												},
 											},
@@ -657,13 +657,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 37,
+										Column: 41,
 										Line:   12,
 									},
 									File:   "linearreg.flux",
-									Source: "tables\n    |> rename(columns: {_value: \"y\"})\n    |> map(fn: (r) => ({r with x: 1.0}))\n    |> cumulativeSum(columns: [\"x\"])",
+									Source: "tables\n        |> rename(columns: {_value: \"y\"})\n        |> map(fn: (r) => ({r with x: 1.0}))\n        |> cumulativeSum(columns: [\"x\"])",
 									Start: ast.Position{
-										Column: 18,
+										Column: 20,
 										Line:   9,
 									},
 								},
@@ -675,13 +675,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 36,
+												Column: 40,
 												Line:   12,
 											},
 											File:   "linearreg.flux",
 											Source: "columns: [\"x\"]",
 											Start: ast.Position{
-												Column: 22,
+												Column: 26,
 												Line:   12,
 											},
 										},
@@ -693,13 +693,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
+													Column: 40,
 													Line:   12,
 												},
 												File:   "linearreg.flux",
 												Source: "columns: [\"x\"]",
 												Start: ast.Position{
-													Column: 22,
+													Column: 26,
 													Line:   12,
 												},
 											},
@@ -711,13 +711,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 29,
+														Column: 33,
 														Line:   12,
 													},
 													File:   "linearreg.flux",
 													Source: "columns",
 													Start: ast.Position{
-														Column: 22,
+														Column: 26,
 														Line:   12,
 													},
 												},
@@ -731,13 +731,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
+														Column: 40,
 														Line:   12,
 													},
 													File:   "linearreg.flux",
 													Source: "[\"x\"]",
 													Start: ast.Position{
-														Column: 31,
+														Column: 35,
 														Line:   12,
 													},
 												},
@@ -748,13 +748,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
+															Column: 39,
 															Line:   12,
 														},
 														File:   "linearreg.flux",
 														Source: "\"x\"",
 														Start: ast.Position{
-															Column: 32,
+															Column: 36,
 															Line:   12,
 														},
 													},
@@ -773,13 +773,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
+											Column: 41,
 											Line:   12,
 										},
 										File:   "linearreg.flux",
 										Source: "cumulativeSum(columns: [\"x\"])",
 										Start: ast.Position{
-											Column: 8,
+											Column: 12,
 											Line:   12,
 										},
 									},
@@ -790,13 +790,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 21,
+												Column: 25,
 												Line:   12,
 											},
 											File:   "linearreg.flux",
 											Source: "cumulativeSum",
 											Start: ast.Position{
-												Column: 8,
+												Column: 12,
 												Line:   12,
 											},
 										},
@@ -813,14 +813,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   25,
+									Column: 29,
+									Line:   31,
 								},
 								File:   "linearreg.flux",
-								Source: "t = renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)",
+								Source: "t = renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )\n        |> tableFind(fn: (key) => true)\n        |> getRecord(idx: 0)",
 								Start: ast.Position{
-									Column: 3,
-									Line:   14,
+									Column: 5,
+									Line:   13,
 								},
 							},
 						},
@@ -830,14 +830,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 4,
-										Line:   14,
+										Column: 6,
+										Line:   13,
 									},
 									File:   "linearreg.flux",
 									Source: "t",
 									Start: ast.Position{
-										Column: 3,
-										Line:   14,
+										Column: 5,
+										Line:   13,
 									},
 								},
 							},
@@ -852,14 +852,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   14,
+													Column: 21,
+													Line:   13,
 												},
 												File:   "linearreg.flux",
 												Source: "renameAndSum",
 												Start: ast.Position{
-													Column: 7,
-													Line:   14,
+													Column: 9,
+													Line:   13,
 												},
 											},
 										},
@@ -870,14 +870,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 60,
-												Line:   23,
+												Column: 10,
+												Line:   29,
 											},
 											File:   "linearreg.flux",
-											Source: "renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})",
+											Source: "renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )",
 											Start: ast.Position{
-												Column: 7,
-												Line:   14,
+												Column: 9,
+												Line:   13,
 											},
 										},
 									},
@@ -888,14 +888,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 59,
-														Line:   23,
+														Column: 14,
+														Line:   28,
 													},
 													File:   "linearreg.flux",
-													Source: "fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0}",
+													Source: "fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            }",
 													Start: ast.Position{
-														Column: 7,
-														Line:   16,
+														Column: 13,
+														Line:   15,
 													},
 												},
 											},
@@ -906,14 +906,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 9,
-															Line:   22,
+															Column: 15,
+															Line:   21,
 														},
 														File:   "linearreg.flux",
-														Source: "fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      })",
+														Source: "fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            })",
 														Start: ast.Position{
-															Column: 7,
-															Line:   16,
+															Column: 13,
+															Line:   15,
 														},
 													},
 												},
@@ -924,14 +924,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 9,
-																Line:   16,
+																Column: 15,
+																Line:   15,
 															},
 															File:   "linearreg.flux",
 															Source: "fn",
 															Start: ast.Position{
-																Column: 7,
-																Line:   16,
+																Column: 13,
+																Line:   15,
 															},
 														},
 													},
@@ -945,14 +945,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 9,
-																Line:   22,
+																Column: 15,
+																Line:   21,
 															},
 															File:   "linearreg.flux",
-															Source: "(r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      })",
+															Source: "(r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            })",
 															Start: ast.Position{
-																Column: 11,
-																Line:   16,
+																Column: 17,
+																Line:   15,
 															},
 														},
 													},
@@ -962,14 +962,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 9,
-																	Line:   22,
+																	Column: 15,
+																	Line:   21,
 																},
 																File:   "linearreg.flux",
-																Source: "({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      })",
+																Source: "({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            })",
 																Start: ast.Position{
-																	Column: 31,
-																	Line:   16,
+																	Column: 37,
+																	Line:   15,
 																},
 															},
 														},
@@ -979,14 +979,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 8,
-																		Line:   22,
+																		Column: 14,
+																		Line:   21,
 																	},
 																	File:   "linearreg.flux",
-																	Source: "{\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }",
+																	Source: "{\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }",
 																	Start: ast.Position{
-																		Column: 32,
-																		Line:   16,
+																		Column: 38,
+																		Line:   15,
 																	},
 																},
 															},
@@ -997,14 +997,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 33,
-																			Line:   17,
+																			Column: 41,
+																			Line:   16,
 																		},
 																		File:   "linearreg.flux",
 																		Source: "sx: r.x + accumulator.sx",
 																		Start: ast.Position{
-																			Column: 9,
-																			Line:   17,
+																			Column: 17,
+																			Line:   16,
 																		},
 																	},
 																},
@@ -1015,14 +1015,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 11,
-																				Line:   17,
+																				Column: 19,
+																				Line:   16,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "sx",
 																			Start: ast.Position{
-																				Column: 9,
-																				Line:   17,
+																				Column: 17,
+																				Line:   16,
 																			},
 																		},
 																	},
@@ -1035,14 +1035,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 33,
-																				Line:   17,
+																				Column: 41,
+																				Line:   16,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "r.x + accumulator.sx",
 																			Start: ast.Position{
-																				Column: 13,
-																				Line:   17,
+																				Column: 21,
+																				Line:   16,
 																			},
 																		},
 																	},
@@ -1052,14 +1052,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 16,
-																					Line:   17,
+																					Column: 24,
+																					Line:   16,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "r.x",
 																				Start: ast.Position{
-																					Column: 13,
-																					Line:   17,
+																					Column: 21,
+																					Line:   16,
 																				},
 																			},
 																		},
@@ -1070,14 +1070,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 14,
-																						Line:   17,
+																						Column: 22,
+																						Line:   16,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "r",
 																					Start: ast.Position{
-																						Column: 13,
-																						Line:   17,
+																						Column: 21,
+																						Line:   16,
 																					},
 																				},
 																			},
@@ -1089,14 +1089,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 16,
-																						Line:   17,
+																						Column: 24,
+																						Line:   16,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "x",
 																					Start: ast.Position{
-																						Column: 15,
-																						Line:   17,
+																						Column: 23,
+																						Line:   16,
 																					},
 																				},
 																			},
@@ -1111,14 +1111,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 33,
-																					Line:   17,
+																					Column: 41,
+																					Line:   16,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "accumulator.sx",
 																				Start: ast.Position{
-																					Column: 19,
-																					Line:   17,
+																					Column: 27,
+																					Line:   16,
 																				},
 																			},
 																		},
@@ -1129,14 +1129,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 30,
-																						Line:   17,
+																						Column: 38,
+																						Line:   16,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
-																						Column: 19,
-																						Line:   17,
+																						Column: 27,
+																						Line:   16,
 																					},
 																				},
 																			},
@@ -1148,14 +1148,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 33,
-																						Line:   17,
+																						Column: 41,
+																						Line:   16,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "sx",
 																					Start: ast.Position{
-																						Column: 31,
-																						Line:   17,
+																						Column: 39,
+																						Line:   16,
 																					},
 																				},
 																			},
@@ -1170,14 +1170,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 33,
-																			Line:   18,
+																			Column: 41,
+																			Line:   17,
 																		},
 																		File:   "linearreg.flux",
 																		Source: "sy: r.y + accumulator.sy",
 																		Start: ast.Position{
-																			Column: 9,
-																			Line:   18,
+																			Column: 17,
+																			Line:   17,
 																		},
 																	},
 																},
@@ -1188,14 +1188,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 11,
-																				Line:   18,
+																				Column: 19,
+																				Line:   17,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "sy",
 																			Start: ast.Position{
-																				Column: 9,
-																				Line:   18,
+																				Column: 17,
+																				Line:   17,
 																			},
 																		},
 																	},
@@ -1208,14 +1208,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 33,
-																				Line:   18,
+																				Column: 41,
+																				Line:   17,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "r.y + accumulator.sy",
 																			Start: ast.Position{
-																				Column: 13,
-																				Line:   18,
+																				Column: 21,
+																				Line:   17,
 																			},
 																		},
 																	},
@@ -1225,14 +1225,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 16,
-																					Line:   18,
+																					Column: 24,
+																					Line:   17,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "r.y",
 																				Start: ast.Position{
-																					Column: 13,
-																					Line:   18,
+																					Column: 21,
+																					Line:   17,
 																				},
 																			},
 																		},
@@ -1243,14 +1243,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 14,
-																						Line:   18,
+																						Column: 22,
+																						Line:   17,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "r",
 																					Start: ast.Position{
-																						Column: 13,
-																						Line:   18,
+																						Column: 21,
+																						Line:   17,
 																					},
 																				},
 																			},
@@ -1262,14 +1262,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 16,
-																						Line:   18,
+																						Column: 24,
+																						Line:   17,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "y",
 																					Start: ast.Position{
-																						Column: 15,
-																						Line:   18,
+																						Column: 23,
+																						Line:   17,
 																					},
 																				},
 																			},
@@ -1284,13 +1284,127 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 33,
-																					Line:   18,
+																					Column: 41,
+																					Line:   17,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "accumulator.sy",
 																				Start: ast.Position{
-																					Column: 19,
+																					Column: 27,
+																					Line:   17,
+																				},
+																			},
+																		},
+																		Lbrack: nil,
+																		Object: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 38,
+																						Line:   17,
+																					},
+																					File:   "linearreg.flux",
+																					Source: "accumulator",
+																					Start: ast.Position{
+																						Column: 27,
+																						Line:   17,
+																					},
+																				},
+																			},
+																			Name: "accumulator",
+																		},
+																		Property: &ast.Identifier{
+																			BaseNode: ast.BaseNode{
+																				Comments: nil,
+																				Errors:   nil,
+																				Loc: &ast.SourceLocation{
+																					End: ast.Position{
+																						Column: 41,
+																						Line:   17,
+																					},
+																					File:   "linearreg.flux",
+																					Source: "sy",
+																					Start: ast.Position{
+																						Column: 39,
+																						Line:   17,
+																					},
+																				},
+																			},
+																			Name: "sy",
+																		},
+																		Rbrack: nil,
+																	},
+																},
+															}, &ast.Property{
+																BaseNode: ast.BaseNode{
+																	Comments: nil,
+																	Errors:   nil,
+																	Loc: &ast.SourceLocation{
+																		End: ast.Position{
+																			Column: 39,
+																			Line:   18,
+																		},
+																		File:   "linearreg.flux",
+																		Source: "N: accumulator.N + 1.0",
+																		Start: ast.Position{
+																			Column: 17,
+																			Line:   18,
+																		},
+																	},
+																},
+																Comma: nil,
+																Key: &ast.Identifier{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 18,
+																				Line:   18,
+																			},
+																			File:   "linearreg.flux",
+																			Source: "N",
+																			Start: ast.Position{
+																				Column: 17,
+																				Line:   18,
+																			},
+																		},
+																	},
+																	Name: "N",
+																},
+																Separator: nil,
+																Value: &ast.BinaryExpression{
+																	BaseNode: ast.BaseNode{
+																		Comments: nil,
+																		Errors:   nil,
+																		Loc: &ast.SourceLocation{
+																			End: ast.Position{
+																				Column: 39,
+																				Line:   18,
+																			},
+																			File:   "linearreg.flux",
+																			Source: "accumulator.N + 1.0",
+																			Start: ast.Position{
+																				Column: 20,
+																				Line:   18,
+																			},
+																		},
+																	},
+																	Left: &ast.MemberExpression{
+																		BaseNode: ast.BaseNode{
+																			Comments: nil,
+																			Errors:   nil,
+																			Loc: &ast.SourceLocation{
+																				End: ast.Position{
+																					Column: 33,
+																					Line:   18,
+																				},
+																				File:   "linearreg.flux",
+																				Source: "accumulator.N",
+																				Start: ast.Position{
+																					Column: 20,
 																					Line:   18,
 																				},
 																			},
@@ -1302,13 +1416,13 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 30,
+																						Column: 31,
 																						Line:   18,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
-																						Column: 19,
+																						Column: 20,
 																						Line:   18,
 																					},
 																				},
@@ -1325,124 +1439,10 @@ var pkgAST = &ast.Package{
 																						Line:   18,
 																					},
 																					File:   "linearreg.flux",
-																					Source: "sy",
-																					Start: ast.Position{
-																						Column: 31,
-																						Line:   18,
-																					},
-																				},
-																			},
-																			Name: "sy",
-																		},
-																		Rbrack: nil,
-																	},
-																},
-															}, &ast.Property{
-																BaseNode: ast.BaseNode{
-																	Comments: nil,
-																	Errors:   nil,
-																	Loc: &ast.SourceLocation{
-																		End: ast.Position{
-																			Column: 31,
-																			Line:   19,
-																		},
-																		File:   "linearreg.flux",
-																		Source: "N: accumulator.N + 1.0",
-																		Start: ast.Position{
-																			Column: 9,
-																			Line:   19,
-																		},
-																	},
-																},
-																Comma: nil,
-																Key: &ast.Identifier{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 10,
-																				Line:   19,
-																			},
-																			File:   "linearreg.flux",
-																			Source: "N",
-																			Start: ast.Position{
-																				Column: 9,
-																				Line:   19,
-																			},
-																		},
-																	},
-																	Name: "N",
-																},
-																Separator: nil,
-																Value: &ast.BinaryExpression{
-																	BaseNode: ast.BaseNode{
-																		Comments: nil,
-																		Errors:   nil,
-																		Loc: &ast.SourceLocation{
-																			End: ast.Position{
-																				Column: 31,
-																				Line:   19,
-																			},
-																			File:   "linearreg.flux",
-																			Source: "accumulator.N + 1.0",
-																			Start: ast.Position{
-																				Column: 12,
-																				Line:   19,
-																			},
-																		},
-																	},
-																	Left: &ast.MemberExpression{
-																		BaseNode: ast.BaseNode{
-																			Comments: nil,
-																			Errors:   nil,
-																			Loc: &ast.SourceLocation{
-																				End: ast.Position{
-																					Column: 25,
-																					Line:   19,
-																				},
-																				File:   "linearreg.flux",
-																				Source: "accumulator.N",
-																				Start: ast.Position{
-																					Column: 12,
-																					Line:   19,
-																				},
-																			},
-																		},
-																		Lbrack: nil,
-																		Object: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 23,
-																						Line:   19,
-																					},
-																					File:   "linearreg.flux",
-																					Source: "accumulator",
-																					Start: ast.Position{
-																						Column: 12,
-																						Line:   19,
-																					},
-																				},
-																			},
-																			Name: "accumulator",
-																		},
-																		Property: &ast.Identifier{
-																			BaseNode: ast.BaseNode{
-																				Comments: nil,
-																				Errors:   nil,
-																				Loc: &ast.SourceLocation{
-																					End: ast.Position{
-																						Column: 25,
-																						Line:   19,
-																					},
-																					File:   "linearreg.flux",
 																					Source: "N",
 																					Start: ast.Position{
-																						Column: 24,
-																						Line:   19,
+																						Column: 32,
+																						Line:   18,
 																					},
 																				},
 																			},
@@ -1457,14 +1457,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 31,
-																					Line:   19,
+																					Column: 39,
+																					Line:   18,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "1.0",
 																				Start: ast.Position{
-																					Column: 28,
-																					Line:   19,
+																					Column: 36,
+																					Line:   18,
 																				},
 																			},
 																		},
@@ -1477,14 +1477,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 41,
-																			Line:   20,
+																			Column: 49,
+																			Line:   19,
 																		},
 																		File:   "linearreg.flux",
 																		Source: "sxy: r.x * r.y + accumulator.sxy",
 																		Start: ast.Position{
-																			Column: 9,
-																			Line:   20,
+																			Column: 17,
+																			Line:   19,
 																		},
 																	},
 																},
@@ -1495,14 +1495,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 12,
-																				Line:   20,
+																				Column: 20,
+																				Line:   19,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "sxy",
 																			Start: ast.Position{
-																				Column: 9,
-																				Line:   20,
+																				Column: 17,
+																				Line:   19,
 																			},
 																		},
 																	},
@@ -1515,14 +1515,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 41,
-																				Line:   20,
+																				Column: 49,
+																				Line:   19,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "r.x * r.y + accumulator.sxy",
 																			Start: ast.Position{
-																				Column: 14,
-																				Line:   20,
+																				Column: 22,
+																				Line:   19,
 																			},
 																		},
 																	},
@@ -1532,14 +1532,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 23,
-																					Line:   20,
+																					Column: 31,
+																					Line:   19,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "r.x * r.y",
 																				Start: ast.Position{
-																					Column: 14,
-																					Line:   20,
+																					Column: 22,
+																					Line:   19,
 																				},
 																			},
 																		},
@@ -1549,14 +1549,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 17,
-																						Line:   20,
+																						Column: 25,
+																						Line:   19,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "r.x",
 																					Start: ast.Position{
-																						Column: 14,
-																						Line:   20,
+																						Column: 22,
+																						Line:   19,
 																					},
 																				},
 																			},
@@ -1567,14 +1567,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 15,
-																							Line:   20,
+																							Column: 23,
+																							Line:   19,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 14,
-																							Line:   20,
+																							Column: 22,
+																							Line:   19,
 																						},
 																					},
 																				},
@@ -1586,14 +1586,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 17,
-																							Line:   20,
+																							Column: 25,
+																							Line:   19,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "x",
 																						Start: ast.Position{
-																							Column: 16,
-																							Line:   20,
+																							Column: 24,
+																							Line:   19,
 																						},
 																					},
 																				},
@@ -1608,14 +1608,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 23,
-																						Line:   20,
+																						Column: 31,
+																						Line:   19,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "r.y",
 																					Start: ast.Position{
-																						Column: 20,
-																						Line:   20,
+																						Column: 28,
+																						Line:   19,
 																					},
 																				},
 																			},
@@ -1626,14 +1626,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 21,
-																							Line:   20,
+																							Column: 29,
+																							Line:   19,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 20,
-																							Line:   20,
+																							Column: 28,
+																							Line:   19,
 																						},
 																					},
 																				},
@@ -1645,14 +1645,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 23,
-																							Line:   20,
+																							Column: 31,
+																							Line:   19,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "y",
 																						Start: ast.Position{
-																							Column: 22,
-																							Line:   20,
+																							Column: 30,
+																							Line:   19,
 																						},
 																					},
 																				},
@@ -1668,14 +1668,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 41,
-																					Line:   20,
+																					Column: 49,
+																					Line:   19,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "accumulator.sxy",
 																				Start: ast.Position{
-																					Column: 26,
-																					Line:   20,
+																					Column: 34,
+																					Line:   19,
 																				},
 																			},
 																		},
@@ -1686,14 +1686,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 37,
-																						Line:   20,
+																						Column: 45,
+																						Line:   19,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
-																						Column: 26,
-																						Line:   20,
+																						Column: 34,
+																						Line:   19,
 																					},
 																				},
 																			},
@@ -1705,14 +1705,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 41,
-																						Line:   20,
+																						Column: 49,
+																						Line:   19,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "sxy",
 																					Start: ast.Position{
-																						Column: 38,
-																						Line:   20,
+																						Column: 46,
+																						Line:   19,
 																					},
 																				},
 																			},
@@ -1727,14 +1727,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 41,
-																			Line:   21,
+																			Column: 49,
+																			Line:   20,
 																		},
 																		File:   "linearreg.flux",
 																		Source: "sxx: r.x * r.x + accumulator.sxx",
 																		Start: ast.Position{
-																			Column: 9,
-																			Line:   21,
+																			Column: 17,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1745,14 +1745,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 12,
-																				Line:   21,
+																				Column: 20,
+																				Line:   20,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "sxx",
 																			Start: ast.Position{
-																				Column: 9,
-																				Line:   21,
+																				Column: 17,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1765,14 +1765,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 41,
-																				Line:   21,
+																				Column: 49,
+																				Line:   20,
 																			},
 																			File:   "linearreg.flux",
 																			Source: "r.x * r.x + accumulator.sxx",
 																			Start: ast.Position{
-																				Column: 14,
-																				Line:   21,
+																				Column: 22,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1782,14 +1782,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 23,
-																					Line:   21,
+																					Column: 31,
+																					Line:   20,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "r.x * r.x",
 																				Start: ast.Position{
-																					Column: 14,
-																					Line:   21,
+																					Column: 22,
+																					Line:   20,
 																				},
 																			},
 																		},
@@ -1799,14 +1799,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 17,
-																						Line:   21,
+																						Column: 25,
+																						Line:   20,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "r.x",
 																					Start: ast.Position{
-																						Column: 14,
-																						Line:   21,
+																						Column: 22,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1817,14 +1817,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 15,
-																							Line:   21,
+																							Column: 23,
+																							Line:   20,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 14,
-																							Line:   21,
+																							Column: 22,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1836,14 +1836,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 17,
-																							Line:   21,
+																							Column: 25,
+																							Line:   20,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "x",
 																						Start: ast.Position{
-																							Column: 16,
-																							Line:   21,
+																							Column: 24,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1858,14 +1858,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 23,
-																						Line:   21,
+																						Column: 31,
+																						Line:   20,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "r.x",
 																					Start: ast.Position{
-																						Column: 20,
-																						Line:   21,
+																						Column: 28,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1876,14 +1876,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 21,
-																							Line:   21,
+																							Column: 29,
+																							Line:   20,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 20,
-																							Line:   21,
+																							Column: 28,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1895,14 +1895,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 23,
-																							Line:   21,
+																							Column: 31,
+																							Line:   20,
 																						},
 																						File:   "linearreg.flux",
 																						Source: "x",
 																						Start: ast.Position{
-																							Column: 22,
-																							Line:   21,
+																							Column: 30,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1918,14 +1918,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 41,
-																					Line:   21,
+																					Column: 49,
+																					Line:   20,
 																				},
 																				File:   "linearreg.flux",
 																				Source: "accumulator.sxx",
 																				Start: ast.Position{
-																					Column: 26,
-																					Line:   21,
+																					Column: 34,
+																					Line:   20,
 																				},
 																			},
 																		},
@@ -1936,14 +1936,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 37,
-																						Line:   21,
+																						Column: 45,
+																						Line:   20,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "accumulator",
 																					Start: ast.Position{
-																						Column: 26,
-																						Line:   21,
+																						Column: 34,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1955,14 +1955,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 41,
-																						Line:   21,
+																						Column: 49,
+																						Line:   20,
 																					},
 																					File:   "linearreg.flux",
 																					Source: "sxx",
 																					Start: ast.Position{
-																						Column: 38,
-																						Line:   21,
+																						Column: 46,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1985,14 +1985,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 13,
-																	Line:   16,
+																	Column: 19,
+																	Line:   15,
 																},
 																File:   "linearreg.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 12,
-																	Line:   16,
+																	Column: 18,
+																	Line:   15,
 																},
 															},
 														},
@@ -2003,14 +2003,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 13,
-																		Line:   16,
+																		Column: 19,
+																		Line:   15,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 12,
-																		Line:   16,
+																		Column: 18,
+																		Line:   15,
 																	},
 																},
 															},
@@ -2024,14 +2024,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 26,
-																	Line:   16,
+																	Column: 32,
+																	Line:   15,
 																},
 																File:   "linearreg.flux",
 																Source: "accumulator",
 																Start: ast.Position{
-																	Column: 15,
-																	Line:   16,
+																	Column: 21,
+																	Line:   15,
 																},
 															},
 														},
@@ -2042,14 +2042,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 26,
-																		Line:   16,
+																		Column: 32,
+																		Line:   15,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "accumulator",
 																	Start: ast.Position{
-																		Column: 15,
-																		Line:   16,
+																		Column: 21,
+																		Line:   15,
 																	},
 																},
 															},
@@ -2066,14 +2066,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 59,
-															Line:   23,
+															Column: 14,
+															Line:   28,
 														},
 														File:   "linearreg.flux",
-														Source: "identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0}",
+														Source: "identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            }",
 														Start: ast.Position{
-															Column: 7,
-															Line:   23,
+															Column: 13,
+															Line:   22,
 														},
 													},
 												},
@@ -2084,14 +2084,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 15,
-																Line:   23,
+																Column: 21,
+																Line:   22,
 															},
 															File:   "linearreg.flux",
 															Source: "identity",
 															Start: ast.Position{
-																Column: 7,
-																Line:   23,
+																Column: 13,
+																Line:   22,
 															},
 														},
 													},
@@ -2104,14 +2104,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 59,
-																Line:   23,
+																Column: 14,
+																Line:   28,
 															},
 															File:   "linearreg.flux",
-															Source: "{sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0}",
+															Source: "{\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            }",
 															Start: ast.Position{
-																Column: 17,
-																Line:   23,
+																Column: 23,
+																Line:   22,
 															},
 														},
 													},
@@ -2122,13 +2122,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 26,
+																	Column: 25,
 																	Line:   23,
 																},
 																File:   "linearreg.flux",
 																Source: "sxy: 0.0",
 																Start: ast.Position{
-																	Column: 18,
+																	Column: 17,
 																	Line:   23,
 																},
 															},
@@ -2140,13 +2140,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 21,
+																		Column: 20,
 																		Line:   23,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "sxy",
 																	Start: ast.Position{
-																		Column: 18,
+																		Column: 17,
 																		Line:   23,
 																	},
 																},
@@ -2160,13 +2160,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 26,
+																		Column: 25,
 																		Line:   23,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
-																		Column: 23,
+																		Column: 22,
 																		Line:   23,
 																	},
 																},
@@ -2179,14 +2179,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 34,
-																	Line:   23,
+																	Column: 24,
+																	Line:   24,
 																},
 																File:   "linearreg.flux",
-																Source: "sx:0.0",
+																Source: "sx: 0.0",
 																Start: ast.Position{
-																	Column: 28,
-																	Line:   23,
+																	Column: 17,
+																	Line:   24,
 																},
 															},
 														},
@@ -2197,14 +2197,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 30,
-																		Line:   23,
+																		Column: 19,
+																		Line:   24,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "sx",
 																	Start: ast.Position{
-																		Column: 28,
-																		Line:   23,
+																		Column: 17,
+																		Line:   24,
 																	},
 																},
 															},
@@ -2217,14 +2217,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 34,
-																		Line:   23,
+																		Column: 24,
+																		Line:   24,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
-																		Column: 31,
-																		Line:   23,
+																		Column: 21,
+																		Line:   24,
 																	},
 																},
 															},
@@ -2236,14 +2236,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 42,
-																	Line:   23,
+																	Column: 24,
+																	Line:   25,
 																},
 																File:   "linearreg.flux",
-																Source: "sy:0.0",
+																Source: "sy: 0.0",
 																Start: ast.Position{
-																	Column: 36,
-																	Line:   23,
+																	Column: 17,
+																	Line:   25,
 																},
 															},
 														},
@@ -2254,14 +2254,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
-																		Line:   23,
+																		Column: 19,
+																		Line:   25,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "sy",
 																	Start: ast.Position{
-																		Column: 36,
-																		Line:   23,
+																		Column: 17,
+																		Line:   25,
 																	},
 																},
 															},
@@ -2274,14 +2274,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 42,
-																		Line:   23,
+																		Column: 24,
+																		Line:   25,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
-																		Column: 39,
-																		Line:   23,
+																		Column: 21,
+																		Line:   25,
 																	},
 																},
 															},
@@ -2293,14 +2293,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 51,
-																	Line:   23,
+																	Column: 25,
+																	Line:   26,
 																},
 																File:   "linearreg.flux",
-																Source: "sxx:0.0",
+																Source: "sxx: 0.0",
 																Start: ast.Position{
-																	Column: 44,
-																	Line:   23,
+																	Column: 17,
+																	Line:   26,
 																},
 															},
 														},
@@ -2311,14 +2311,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 47,
-																		Line:   23,
+																		Column: 20,
+																		Line:   26,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "sxx",
 																	Start: ast.Position{
-																		Column: 44,
-																		Line:   23,
+																		Column: 17,
+																		Line:   26,
 																	},
 																},
 															},
@@ -2331,14 +2331,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 51,
-																		Line:   23,
+																		Column: 25,
+																		Line:   26,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
-																		Column: 48,
-																		Line:   23,
+																		Column: 22,
+																		Line:   26,
 																	},
 																},
 															},
@@ -2350,14 +2350,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 58,
-																	Line:   23,
+																	Column: 23,
+																	Line:   27,
 																},
 																File:   "linearreg.flux",
-																Source: "N:0.0",
+																Source: "N: 0.0",
 																Start: ast.Position{
-																	Column: 53,
-																	Line:   23,
+																	Column: 17,
+																	Line:   27,
 																},
 															},
 														},
@@ -2368,14 +2368,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 54,
-																		Line:   23,
+																		Column: 18,
+																		Line:   27,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "N",
 																	Start: ast.Position{
-																		Column: 53,
-																		Line:   23,
+																		Column: 17,
+																		Line:   27,
 																	},
 																},
 															},
@@ -2388,14 +2388,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 58,
-																		Line:   23,
+																		Column: 23,
+																		Line:   27,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "0.0",
 																	Start: ast.Position{
-																		Column: 55,
-																		Line:   23,
+																		Column: 20,
+																		Line:   27,
 																	},
 																},
 															},
@@ -2414,14 +2414,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
-													Line:   23,
+													Column: 10,
+													Line:   29,
 												},
 												File:   "linearreg.flux",
-												Source: "reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})",
+												Source: "reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )",
 												Start: ast.Position{
-													Column: 8,
-													Line:   15,
+													Column: 12,
+													Line:   14,
 												},
 											},
 										},
@@ -2431,14 +2431,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   15,
+														Column: 18,
+														Line:   14,
 													},
 													File:   "linearreg.flux",
 													Source: "reduce",
 													Start: ast.Position{
-														Column: 8,
-														Line:   15,
+														Column: 12,
+														Line:   14,
 													},
 												},
 											},
@@ -2453,14 +2453,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
-											Line:   24,
+											Column: 40,
+											Line:   30,
 										},
 										File:   "linearreg.flux",
-										Source: "renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)",
+										Source: "renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )\n        |> tableFind(fn: (key) => true)",
 										Start: ast.Position{
-											Column: 7,
-											Line:   14,
+											Column: 9,
+											Line:   13,
 										},
 									},
 								},
@@ -2471,14 +2471,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 35,
-													Line:   24,
+													Column: 39,
+													Line:   30,
 												},
 												File:   "linearreg.flux",
 												Source: "fn: (key) => true",
 												Start: ast.Position{
-													Column: 18,
-													Line:   24,
+													Column: 22,
+													Line:   30,
 												},
 											},
 										},
@@ -2489,14 +2489,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 35,
-														Line:   24,
+														Column: 39,
+														Line:   30,
 													},
 													File:   "linearreg.flux",
 													Source: "fn: (key) => true",
 													Start: ast.Position{
-														Column: 18,
-														Line:   24,
+														Column: 22,
+														Line:   30,
 													},
 												},
 											},
@@ -2507,14 +2507,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 20,
-															Line:   24,
+															Column: 24,
+															Line:   30,
 														},
 														File:   "linearreg.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 18,
-															Line:   24,
+															Column: 22,
+															Line:   30,
 														},
 													},
 												},
@@ -2528,14 +2528,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
-															Line:   24,
+															Column: 39,
+															Line:   30,
 														},
 														File:   "linearreg.flux",
 														Source: "(key) => true",
 														Start: ast.Position{
-															Column: 22,
-															Line:   24,
+															Column: 26,
+															Line:   30,
 														},
 													},
 												},
@@ -2545,14 +2545,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 35,
-																Line:   24,
+																Column: 39,
+																Line:   30,
 															},
 															File:   "linearreg.flux",
 															Source: "true",
 															Start: ast.Position{
-																Column: 31,
-																Line:   24,
+																Column: 35,
+																Line:   30,
 															},
 														},
 													},
@@ -2565,14 +2565,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   24,
+																Column: 30,
+																Line:   30,
 															},
 															File:   "linearreg.flux",
 															Source: "key",
 															Start: ast.Position{
-																Column: 23,
-																Line:   24,
+																Column: 27,
+																Line:   30,
 															},
 														},
 													},
@@ -2583,14 +2583,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 26,
-																	Line:   24,
+																	Column: 30,
+																	Line:   30,
 																},
 																File:   "linearreg.flux",
 																Source: "key",
 																Start: ast.Position{
-																	Column: 23,
-																	Line:   24,
+																	Column: 27,
+																	Line:   30,
 																},
 															},
 														},
@@ -2610,14 +2610,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 36,
-												Line:   24,
+												Column: 40,
+												Line:   30,
 											},
 											File:   "linearreg.flux",
 											Source: "tableFind(fn: (key) => true)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   24,
+												Column: 12,
+												Line:   30,
 											},
 										},
 									},
@@ -2627,14 +2627,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   24,
+													Column: 21,
+													Line:   30,
 												},
 												File:   "linearreg.flux",
 												Source: "tableFind",
 												Start: ast.Position{
-													Column: 8,
-													Line:   24,
+													Column: 12,
+													Line:   30,
 												},
 											},
 										},
@@ -2649,14 +2649,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 25,
-										Line:   25,
+										Column: 29,
+										Line:   31,
 									},
 									File:   "linearreg.flux",
-									Source: "renameAndSum \n    |> reduce(\n      fn: (r, accumulator) => ({\n        sx: r.x + accumulator.sx,\n        sy: r.y + accumulator.sy,\n        N: accumulator.N + 1.0,  \n        sxy: r.x * r.y + accumulator.sxy, \n        sxx: r.x * r.x + accumulator.sxx\n      }), \n      identity: {sxy: 0.0, sx:0.0, sy:0.0, sxx:0.0, N:0.0})\n    |> tableFind(fn: (key) => true)\n    |> getRecord(idx: 0)",
+									Source: "renameAndSum\n        |> reduce(\n            fn: (r, accumulator) => ({\n                sx: r.x + accumulator.sx,\n                sy: r.y + accumulator.sy,\n                N: accumulator.N + 1.0,\n                sxy: r.x * r.y + accumulator.sxy,\n                sxx: r.x * r.x + accumulator.sxx,\n            }),\n            identity: {\n                sxy: 0.0,\n                sx: 0.0,\n                sy: 0.0,\n                sxx: 0.0,\n                N: 0.0,\n            },\n        )\n        |> tableFind(fn: (key) => true)\n        |> getRecord(idx: 0)",
 									Start: ast.Position{
-										Column: 7,
-										Line:   14,
+										Column: 9,
+										Line:   13,
 									},
 								},
 							},
@@ -2667,14 +2667,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   25,
+												Column: 28,
+												Line:   31,
 											},
 											File:   "linearreg.flux",
 											Source: "idx: 0",
 											Start: ast.Position{
-												Column: 18,
-												Line:   25,
+												Column: 22,
+												Line:   31,
 											},
 										},
 									},
@@ -2685,14 +2685,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 24,
-													Line:   25,
+													Column: 28,
+													Line:   31,
 												},
 												File:   "linearreg.flux",
 												Source: "idx: 0",
 												Start: ast.Position{
-													Column: 18,
-													Line:   25,
+													Column: 22,
+													Line:   31,
 												},
 											},
 										},
@@ -2703,14 +2703,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 21,
-														Line:   25,
+														Column: 25,
+														Line:   31,
 													},
 													File:   "linearreg.flux",
 													Source: "idx",
 													Start: ast.Position{
-														Column: 18,
-														Line:   25,
+														Column: 22,
+														Line:   31,
 													},
 												},
 											},
@@ -2723,14 +2723,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 24,
-														Line:   25,
+														Column: 28,
+														Line:   31,
 													},
 													File:   "linearreg.flux",
 													Source: "0",
 													Start: ast.Position{
-														Column: 23,
-														Line:   25,
+														Column: 27,
+														Line:   31,
 													},
 												},
 											},
@@ -2745,14 +2745,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   25,
+											Column: 29,
+											Line:   31,
 										},
 										File:   "linearreg.flux",
 										Source: "getRecord(idx: 0)",
 										Start: ast.Position{
-											Column: 8,
-											Line:   25,
+											Column: 12,
+											Line:   31,
 										},
 									},
 								},
@@ -2762,14 +2762,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 17,
-												Line:   25,
+												Column: 21,
+												Line:   31,
 											},
 											File:   "linearreg.flux",
 											Source: "getRecord",
 											Start: ast.Position{
-												Column: 8,
-												Line:   25,
+												Column: 12,
+												Line:   31,
 											},
 										},
 									},
@@ -2785,14 +2785,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 18,
-									Line:   27,
+									Column: 22,
+									Line:   32,
 								},
 								File:   "linearreg.flux",
-								Source: "xbar = t.sx/t.N",
+								Source: "xbar = t.sx / t.N",
 								Start: ast.Position{
-									Column: 3,
-									Line:   27,
+									Column: 5,
+									Line:   32,
 								},
 							},
 						},
@@ -2802,14 +2802,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
-										Line:   27,
+										Column: 9,
+										Line:   32,
 									},
 									File:   "linearreg.flux",
 									Source: "xbar",
 									Start: ast.Position{
-										Column: 3,
-										Line:   27,
+										Column: 5,
+										Line:   32,
 									},
 								},
 							},
@@ -2821,14 +2821,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 18,
-										Line:   27,
+										Column: 22,
+										Line:   32,
 									},
 									File:   "linearreg.flux",
-									Source: "t.sx/t.N",
+									Source: "t.sx / t.N",
 									Start: ast.Position{
-										Column: 10,
-										Line:   27,
+										Column: 12,
+										Line:   32,
 									},
 								},
 							},
@@ -2838,14 +2838,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 14,
-											Line:   27,
+											Column: 16,
+											Line:   32,
 										},
 										File:   "linearreg.flux",
 										Source: "t.sx",
 										Start: ast.Position{
-											Column: 10,
-											Line:   27,
+											Column: 12,
+											Line:   32,
 										},
 									},
 								},
@@ -2856,14 +2856,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   27,
+												Column: 13,
+												Line:   32,
 											},
 											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
-												Column: 10,
-												Line:   27,
+												Column: 12,
+												Line:   32,
 											},
 										},
 									},
@@ -2875,14 +2875,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   27,
+												Column: 16,
+												Line:   32,
 											},
 											File:   "linearreg.flux",
 											Source: "sx",
 											Start: ast.Position{
-												Column: 12,
-												Line:   27,
+												Column: 14,
+												Line:   32,
 											},
 										},
 									},
@@ -2897,14 +2897,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 18,
-											Line:   27,
+											Column: 22,
+											Line:   32,
 										},
 										File:   "linearreg.flux",
 										Source: "t.N",
 										Start: ast.Position{
-											Column: 15,
-											Line:   27,
+											Column: 19,
+											Line:   32,
 										},
 									},
 								},
@@ -2915,14 +2915,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 16,
-												Line:   27,
+												Column: 20,
+												Line:   32,
 											},
 											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
-												Column: 15,
-												Line:   27,
+												Column: 19,
+												Line:   32,
 											},
 										},
 									},
@@ -2934,14 +2934,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 18,
-												Line:   27,
+												Column: 22,
+												Line:   32,
 											},
 											File:   "linearreg.flux",
 											Source: "N",
 											Start: ast.Position{
-												Column: 17,
-												Line:   27,
+												Column: 21,
+												Line:   32,
 											},
 										},
 									},
@@ -2956,14 +2956,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 18,
-									Line:   29,
+									Column: 22,
+									Line:   33,
 								},
 								File:   "linearreg.flux",
-								Source: "ybar = t.sy/t.N",
+								Source: "ybar = t.sy / t.N",
 								Start: ast.Position{
-									Column: 3,
-									Line:   29,
+									Column: 5,
+									Line:   33,
 								},
 							},
 						},
@@ -2973,14 +2973,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
-										Line:   29,
+										Column: 9,
+										Line:   33,
 									},
 									File:   "linearreg.flux",
 									Source: "ybar",
 									Start: ast.Position{
-										Column: 3,
-										Line:   29,
+										Column: 5,
+										Line:   33,
 									},
 								},
 							},
@@ -2992,14 +2992,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 18,
-										Line:   29,
+										Column: 22,
+										Line:   33,
 									},
 									File:   "linearreg.flux",
-									Source: "t.sy/t.N",
+									Source: "t.sy / t.N",
 									Start: ast.Position{
-										Column: 10,
-										Line:   29,
+										Column: 12,
+										Line:   33,
 									},
 								},
 							},
@@ -3009,14 +3009,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 14,
-											Line:   29,
+											Column: 16,
+											Line:   33,
 										},
 										File:   "linearreg.flux",
 										Source: "t.sy",
 										Start: ast.Position{
-											Column: 10,
-											Line:   29,
+											Column: 12,
+											Line:   33,
 										},
 									},
 								},
@@ -3027,14 +3027,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   29,
+												Column: 13,
+												Line:   33,
 											},
 											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
-												Column: 10,
-												Line:   29,
+												Column: 12,
+												Line:   33,
 											},
 										},
 									},
@@ -3046,14 +3046,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   29,
+												Column: 16,
+												Line:   33,
 											},
 											File:   "linearreg.flux",
 											Source: "sy",
 											Start: ast.Position{
-												Column: 12,
-												Line:   29,
+												Column: 14,
+												Line:   33,
 											},
 										},
 									},
@@ -3068,14 +3068,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 18,
-											Line:   29,
+											Column: 22,
+											Line:   33,
 										},
 										File:   "linearreg.flux",
 										Source: "t.N",
 										Start: ast.Position{
-											Column: 15,
-											Line:   29,
+											Column: 19,
+											Line:   33,
 										},
 									},
 								},
@@ -3086,14 +3086,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 16,
-												Line:   29,
+												Column: 20,
+												Line:   33,
 											},
 											File:   "linearreg.flux",
 											Source: "t",
 											Start: ast.Position{
-												Column: 15,
-												Line:   29,
+												Column: 19,
+												Line:   33,
 											},
 										},
 									},
@@ -3105,14 +3105,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 18,
-												Line:   29,
+												Column: 22,
+												Line:   33,
 											},
 											File:   "linearreg.flux",
 											Source: "N",
 											Start: ast.Position{
-												Column: 17,
-												Line:   29,
+												Column: 21,
+												Line:   33,
 											},
 										},
 									},
@@ -3127,14 +3127,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 58,
-									Line:   31,
+									Column: 70,
+									Line:   34,
 								},
 								File:   "linearreg.flux",
-								Source: "slope = (t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)",
+								Source: "slope = (t.sxy - xbar * ybar * t.N) / (t.sxx - t.N * xbar * xbar)",
 								Start: ast.Position{
-									Column: 3,
-									Line:   31,
+									Column: 5,
+									Line:   34,
 								},
 							},
 						},
@@ -3144,14 +3144,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 8,
-										Line:   31,
+										Column: 10,
+										Line:   34,
 									},
 									File:   "linearreg.flux",
 									Source: "slope",
 									Start: ast.Position{
-										Column: 3,
-										Line:   31,
+										Column: 5,
+										Line:   34,
 									},
 								},
 							},
@@ -3163,14 +3163,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 58,
-										Line:   31,
+										Column: 70,
+										Line:   34,
 									},
 									File:   "linearreg.flux",
-									Source: "(t.sxy - xbar*ybar*t.N)/(t.sxx - t.N*xbar*xbar)",
+									Source: "(t.sxy - xbar * ybar * t.N) / (t.sxx - t.N * xbar * xbar)",
 									Start: ast.Position{
-										Column: 11,
-										Line:   31,
+										Column: 13,
+										Line:   34,
 									},
 								},
 							},
@@ -3180,14 +3180,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
-											Line:   31,
+											Column: 40,
+											Line:   34,
 										},
 										File:   "linearreg.flux",
-										Source: "(t.sxy - xbar*ybar*t.N)",
+										Source: "(t.sxy - xbar * ybar * t.N)",
 										Start: ast.Position{
-											Column: 11,
-											Line:   31,
+											Column: 13,
+											Line:   34,
 										},
 									},
 								},
@@ -3197,14 +3197,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 33,
-												Line:   31,
+												Column: 39,
+												Line:   34,
 											},
 											File:   "linearreg.flux",
-											Source: "t.sxy - xbar*ybar*t.N",
+											Source: "t.sxy - xbar * ybar * t.N",
 											Start: ast.Position{
-												Column: 12,
-												Line:   31,
+												Column: 14,
+												Line:   34,
 											},
 										},
 									},
@@ -3214,14 +3214,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   31,
+													Column: 19,
+													Line:   34,
 												},
 												File:   "linearreg.flux",
 												Source: "t.sxy",
 												Start: ast.Position{
-													Column: 12,
-													Line:   31,
+													Column: 14,
+													Line:   34,
 												},
 											},
 										},
@@ -3232,14 +3232,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   31,
+														Column: 15,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
 													Source: "t",
 													Start: ast.Position{
-														Column: 12,
-														Line:   31,
+														Column: 14,
+														Line:   34,
 													},
 												},
 											},
@@ -3251,14 +3251,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
-														Line:   31,
+														Column: 19,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
 													Source: "sxy",
 													Start: ast.Position{
-														Column: 14,
-														Line:   31,
+														Column: 16,
+														Line:   34,
 													},
 												},
 											},
@@ -3273,14 +3273,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 33,
-													Line:   31,
+													Column: 39,
+													Line:   34,
 												},
 												File:   "linearreg.flux",
-												Source: "xbar*ybar*t.N",
+												Source: "xbar * ybar * t.N",
 												Start: ast.Position{
-													Column: 20,
-													Line:   31,
+													Column: 22,
+													Line:   34,
 												},
 											},
 										},
@@ -3290,14 +3290,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 29,
-														Line:   31,
+														Column: 33,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
-													Source: "xbar*ybar",
+													Source: "xbar * ybar",
 													Start: ast.Position{
-														Column: 20,
-														Line:   31,
+														Column: 22,
+														Line:   34,
 													},
 												},
 											},
@@ -3307,14 +3307,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 24,
-															Line:   31,
+															Column: 26,
+															Line:   34,
 														},
 														File:   "linearreg.flux",
 														Source: "xbar",
 														Start: ast.Position{
-															Column: 20,
-															Line:   31,
+															Column: 22,
+															Line:   34,
 														},
 													},
 												},
@@ -3327,14 +3327,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 29,
-															Line:   31,
+															Column: 33,
+															Line:   34,
 														},
 														File:   "linearreg.flux",
 														Source: "ybar",
 														Start: ast.Position{
-															Column: 25,
-															Line:   31,
+															Column: 29,
+															Line:   34,
 														},
 													},
 												},
@@ -3348,14 +3348,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 33,
-														Line:   31,
+														Column: 39,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
 													Source: "t.N",
 													Start: ast.Position{
-														Column: 30,
-														Line:   31,
+														Column: 36,
+														Line:   34,
 													},
 												},
 											},
@@ -3366,14 +3366,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 31,
-															Line:   31,
+															Column: 37,
+															Line:   34,
 														},
 														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
-															Column: 30,
-															Line:   31,
+															Column: 36,
+															Line:   34,
 														},
 													},
 												},
@@ -3385,14 +3385,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 33,
-															Line:   31,
+															Column: 39,
+															Line:   34,
 														},
 														File:   "linearreg.flux",
 														Source: "N",
 														Start: ast.Position{
-															Column: 32,
-															Line:   31,
+															Column: 38,
+															Line:   34,
 														},
 													},
 												},
@@ -3412,14 +3412,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 58,
-											Line:   31,
+											Column: 70,
+											Line:   34,
 										},
 										File:   "linearreg.flux",
-										Source: "(t.sxx - t.N*xbar*xbar)",
+										Source: "(t.sxx - t.N * xbar * xbar)",
 										Start: ast.Position{
-											Column: 35,
-											Line:   31,
+											Column: 43,
+											Line:   34,
 										},
 									},
 								},
@@ -3429,14 +3429,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 57,
-												Line:   31,
+												Column: 69,
+												Line:   34,
 											},
 											File:   "linearreg.flux",
-											Source: "t.sxx - t.N*xbar*xbar",
+											Source: "t.sxx - t.N * xbar * xbar",
 											Start: ast.Position{
-												Column: 36,
-												Line:   31,
+												Column: 44,
+												Line:   34,
 											},
 										},
 									},
@@ -3446,14 +3446,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
-													Line:   31,
+													Column: 49,
+													Line:   34,
 												},
 												File:   "linearreg.flux",
 												Source: "t.sxx",
 												Start: ast.Position{
-													Column: 36,
-													Line:   31,
+													Column: 44,
+													Line:   34,
 												},
 											},
 										},
@@ -3464,14 +3464,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
-														Line:   31,
+														Column: 45,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
 													Source: "t",
 													Start: ast.Position{
-														Column: 36,
-														Line:   31,
+														Column: 44,
+														Line:   34,
 													},
 												},
 											},
@@ -3483,14 +3483,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 41,
-														Line:   31,
+														Column: 49,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
 													Source: "sxx",
 													Start: ast.Position{
-														Column: 38,
-														Line:   31,
+														Column: 46,
+														Line:   34,
 													},
 												},
 											},
@@ -3505,14 +3505,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 57,
-													Line:   31,
+													Column: 69,
+													Line:   34,
 												},
 												File:   "linearreg.flux",
-												Source: "t.N*xbar*xbar",
+												Source: "t.N * xbar * xbar",
 												Start: ast.Position{
-													Column: 44,
-													Line:   31,
+													Column: 52,
+													Line:   34,
 												},
 											},
 										},
@@ -3522,14 +3522,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 52,
-														Line:   31,
+														Column: 62,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
-													Source: "t.N*xbar",
+													Source: "t.N * xbar",
 													Start: ast.Position{
-														Column: 44,
-														Line:   31,
+														Column: 52,
+														Line:   34,
 													},
 												},
 											},
@@ -3539,14 +3539,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 47,
-															Line:   31,
+															Column: 55,
+															Line:   34,
 														},
 														File:   "linearreg.flux",
 														Source: "t.N",
 														Start: ast.Position{
-															Column: 44,
-															Line:   31,
+															Column: 52,
+															Line:   34,
 														},
 													},
 												},
@@ -3557,14 +3557,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 45,
-																Line:   31,
+																Column: 53,
+																Line:   34,
 															},
 															File:   "linearreg.flux",
 															Source: "t",
 															Start: ast.Position{
-																Column: 44,
-																Line:   31,
+																Column: 52,
+																Line:   34,
 															},
 														},
 													},
@@ -3576,14 +3576,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
-																Line:   31,
+																Column: 55,
+																Line:   34,
 															},
 															File:   "linearreg.flux",
 															Source: "N",
 															Start: ast.Position{
-																Column: 46,
-																Line:   31,
+																Column: 54,
+																Line:   34,
 															},
 														},
 													},
@@ -3598,14 +3598,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 52,
-															Line:   31,
+															Column: 62,
+															Line:   34,
 														},
 														File:   "linearreg.flux",
 														Source: "xbar",
 														Start: ast.Position{
-															Column: 48,
-															Line:   31,
+															Column: 58,
+															Line:   34,
 														},
 													},
 												},
@@ -3619,14 +3619,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 57,
-														Line:   31,
+														Column: 69,
+														Line:   34,
 													},
 													File:   "linearreg.flux",
 													Source: "xbar",
 													Start: ast.Position{
-														Column: 53,
-														Line:   31,
+														Column: 65,
+														Line:   34,
 													},
 												},
 											},
@@ -3645,13 +3645,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   33,
+									Line:   35,
 								},
 								File:   "linearreg.flux",
-								Source: "intercept = (ybar - slope * xbar)",
+								Source: "intercept = ybar - slope * xbar",
 								Start: ast.Position{
-									Column: 3,
-									Line:   33,
+									Column: 5,
+									Line:   35,
 								},
 							},
 						},
@@ -3661,50 +3661,70 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   33,
+										Column: 14,
+										Line:   35,
 									},
 									File:   "linearreg.flux",
 									Source: "intercept",
 									Start: ast.Position{
-										Column: 3,
-										Line:   33,
+										Column: 5,
+										Line:   35,
 									},
 								},
 							},
 							Name: "intercept",
 						},
-						Init: &ast.ParenExpression{
+						Init: &ast.BinaryExpression{
 							BaseNode: ast.BaseNode{
 								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 36,
-										Line:   33,
+										Line:   35,
 									},
 									File:   "linearreg.flux",
-									Source: "(ybar - slope * xbar)",
+									Source: "ybar - slope * xbar",
 									Start: ast.Position{
-										Column: 15,
-										Line:   33,
+										Column: 17,
+										Line:   35,
 									},
 								},
 							},
-							Expression: &ast.BinaryExpression{
+							Left: &ast.Identifier{
 								BaseNode: ast.BaseNode{
 									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   33,
+											Column: 21,
+											Line:   35,
 										},
 										File:   "linearreg.flux",
-										Source: "ybar - slope * xbar",
+										Source: "ybar",
 										Start: ast.Position{
-											Column: 16,
-											Line:   33,
+											Column: 17,
+											Line:   35,
+										},
+									},
+								},
+								Name: "ybar",
+							},
+							Operator: 6,
+							Right: &ast.BinaryExpression{
+								BaseNode: ast.BaseNode{
+									Comments: nil,
+									Errors:   nil,
+									Loc: &ast.SourceLocation{
+										End: ast.Position{
+											Column: 36,
+											Line:   35,
+										},
+										File:   "linearreg.flux",
+										Source: "slope * xbar",
+										Start: ast.Position{
+											Column: 24,
+											Line:   35,
 										},
 									},
 								},
@@ -3714,80 +3734,40 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   33,
+												Column: 29,
+												Line:   35,
 											},
 											File:   "linearreg.flux",
-											Source: "ybar",
+											Source: "slope",
 											Start: ast.Position{
-												Column: 16,
-												Line:   33,
+												Column: 24,
+												Line:   35,
 											},
 										},
 									},
-									Name: "ybar",
+									Name: "slope",
 								},
-								Operator: 6,
-								Right: &ast.BinaryExpression{
+								Operator: 1,
+								Right: &ast.Identifier{
 									BaseNode: ast.BaseNode{
 										Comments: nil,
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
-												Line:   33,
+												Column: 36,
+												Line:   35,
 											},
 											File:   "linearreg.flux",
-											Source: "slope * xbar",
+											Source: "xbar",
 											Start: ast.Position{
-												Column: 23,
-												Line:   33,
+												Column: 32,
+												Line:   35,
 											},
 										},
 									},
-									Left: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 28,
-													Line:   33,
-												},
-												File:   "linearreg.flux",
-												Source: "slope",
-												Start: ast.Position{
-													Column: 23,
-													Line:   33,
-												},
-											},
-										},
-										Name: "slope",
-									},
-									Operator: 1,
-									Right: &ast.Identifier{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 35,
-													Line:   33,
-												},
-												File:   "linearreg.flux",
-												Source: "xbar",
-												Start: ast.Position{
-													Column: 31,
-													Line:   33,
-												},
-											},
-										},
-										Name: "xbar",
-									},
+									Name: "xbar",
 								},
 							},
-							Lparen: nil,
-							Rparen: nil,
 						},
 					}, &ast.VariableAssignment{
 						BaseNode: ast.BaseNode{
@@ -3795,14 +3775,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 124,
-									Line:   35,
+									Column: 7,
+									Line:   44,
 								},
 								File:   "linearreg.flux",
-								Source: "y_hat = (r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})",
+								Source: "y_hat = (r) => ({r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    })",
 								Start: ast.Position{
-									Column: 3,
-									Line:   35,
+									Column: 5,
+									Line:   36,
 								},
 							},
 						},
@@ -3812,14 +3792,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 8,
-										Line:   35,
+										Column: 10,
+										Line:   36,
 									},
 									File:   "linearreg.flux",
 									Source: "y_hat",
 									Start: ast.Position{
-										Column: 3,
-										Line:   35,
+										Column: 5,
+										Line:   36,
 									},
 								},
 							},
@@ -3832,14 +3812,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 124,
-										Line:   35,
+										Column: 7,
+										Line:   44,
 									},
 									File:   "linearreg.flux",
-									Source: "(r) => ({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})",
+									Source: "(r) => ({r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    })",
 									Start: ast.Position{
-										Column: 11,
-										Line:   35,
+										Column: 13,
+										Line:   36,
 									},
 								},
 							},
@@ -3849,14 +3829,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 124,
-											Line:   35,
+											Column: 7,
+											Line:   44,
 										},
 										File:   "linearreg.flux",
-										Source: "({r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy})",
+										Source: "({r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    })",
 										Start: ast.Position{
-											Column: 18,
-											Line:   35,
+											Column: 20,
+											Line:   36,
 										},
 									},
 								},
@@ -3866,14 +3846,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 123,
-												Line:   35,
+												Column: 6,
+												Line:   44,
 											},
 											File:   "linearreg.flux",
-											Source: "{r with y_hat: slope * r.x + intercept, slope:slope, sx: t.sx, sxy: t.sxy, sxx: t.sxx, N: t.N, sy: t.sy}",
+											Source: "{r with\n        y_hat: slope * r.x + intercept,\n        slope: slope,\n        sx: t.sx,\n        sxy: t.sxy,\n        sxx: t.sxx,\n        N: t.N,\n        sy: t.sy,\n    }",
 											Start: ast.Position{
-												Column: 19,
-												Line:   35,
+												Column: 21,
+												Line:   36,
 											},
 										},
 									},
@@ -3884,14 +3864,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 57,
-													Line:   35,
+													Column: 39,
+													Line:   37,
 												},
 												File:   "linearreg.flux",
 												Source: "y_hat: slope * r.x + intercept",
 												Start: ast.Position{
-													Column: 27,
-													Line:   35,
+													Column: 9,
+													Line:   37,
 												},
 											},
 										},
@@ -3902,14 +3882,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 32,
-														Line:   35,
+														Column: 14,
+														Line:   37,
 													},
 													File:   "linearreg.flux",
 													Source: "y_hat",
 													Start: ast.Position{
-														Column: 27,
-														Line:   35,
+														Column: 9,
+														Line:   37,
 													},
 												},
 											},
@@ -3922,14 +3902,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 57,
-														Line:   35,
+														Column: 39,
+														Line:   37,
 													},
 													File:   "linearreg.flux",
 													Source: "slope * r.x + intercept",
 													Start: ast.Position{
-														Column: 34,
-														Line:   35,
+														Column: 16,
+														Line:   37,
 													},
 												},
 											},
@@ -3939,14 +3919,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 45,
-															Line:   35,
+															Column: 27,
+															Line:   37,
 														},
 														File:   "linearreg.flux",
 														Source: "slope * r.x",
 														Start: ast.Position{
-															Column: 34,
-															Line:   35,
+															Column: 16,
+															Line:   37,
 														},
 													},
 												},
@@ -3956,14 +3936,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 39,
-																Line:   35,
+																Column: 21,
+																Line:   37,
 															},
 															File:   "linearreg.flux",
 															Source: "slope",
 															Start: ast.Position{
-																Column: 34,
-																Line:   35,
+																Column: 16,
+																Line:   37,
 															},
 														},
 													},
@@ -3976,14 +3956,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 45,
-																Line:   35,
+																Column: 27,
+																Line:   37,
 															},
 															File:   "linearreg.flux",
 															Source: "r.x",
 															Start: ast.Position{
-																Column: 42,
-																Line:   35,
+																Column: 24,
+																Line:   37,
 															},
 														},
 													},
@@ -3994,14 +3974,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 43,
-																	Line:   35,
+																	Column: 25,
+																	Line:   37,
 																},
 																File:   "linearreg.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 42,
-																	Line:   35,
+																	Column: 24,
+																	Line:   37,
 																},
 															},
 														},
@@ -4013,14 +3993,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 45,
-																	Line:   35,
+																	Column: 27,
+																	Line:   37,
 																},
 																File:   "linearreg.flux",
 																Source: "x",
 																Start: ast.Position{
-																	Column: 44,
-																	Line:   35,
+																	Column: 26,
+																	Line:   37,
 																},
 															},
 														},
@@ -4036,14 +4016,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 57,
-															Line:   35,
+															Column: 39,
+															Line:   37,
 														},
 														File:   "linearreg.flux",
 														Source: "intercept",
 														Start: ast.Position{
-															Column: 48,
-															Line:   35,
+															Column: 30,
+															Line:   37,
 														},
 													},
 												},
@@ -4056,14 +4036,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 70,
-													Line:   35,
+													Column: 21,
+													Line:   38,
 												},
 												File:   "linearreg.flux",
-												Source: "slope:slope",
+												Source: "slope: slope",
 												Start: ast.Position{
-													Column: 59,
-													Line:   35,
+													Column: 9,
+													Line:   38,
 												},
 											},
 										},
@@ -4074,14 +4054,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 64,
-														Line:   35,
+														Column: 14,
+														Line:   38,
 													},
 													File:   "linearreg.flux",
 													Source: "slope",
 													Start: ast.Position{
-														Column: 59,
-														Line:   35,
+														Column: 9,
+														Line:   38,
 													},
 												},
 											},
@@ -4094,14 +4074,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 70,
-														Line:   35,
+														Column: 21,
+														Line:   38,
 													},
 													File:   "linearreg.flux",
 													Source: "slope",
 													Start: ast.Position{
-														Column: 65,
-														Line:   35,
+														Column: 16,
+														Line:   38,
 													},
 												},
 											},
@@ -4113,14 +4093,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 80,
-													Line:   35,
+													Column: 17,
+													Line:   39,
 												},
 												File:   "linearreg.flux",
 												Source: "sx: t.sx",
 												Start: ast.Position{
-													Column: 72,
-													Line:   35,
+													Column: 9,
+													Line:   39,
 												},
 											},
 										},
@@ -4131,14 +4111,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 74,
-														Line:   35,
+														Column: 11,
+														Line:   39,
 													},
 													File:   "linearreg.flux",
 													Source: "sx",
 													Start: ast.Position{
-														Column: 72,
-														Line:   35,
+														Column: 9,
+														Line:   39,
 													},
 												},
 											},
@@ -4151,14 +4131,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 80,
-														Line:   35,
+														Column: 17,
+														Line:   39,
 													},
 													File:   "linearreg.flux",
 													Source: "t.sx",
 													Start: ast.Position{
-														Column: 76,
-														Line:   35,
+														Column: 13,
+														Line:   39,
 													},
 												},
 											},
@@ -4169,14 +4149,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 77,
-															Line:   35,
+															Column: 14,
+															Line:   39,
 														},
 														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
-															Column: 76,
-															Line:   35,
+															Column: 13,
+															Line:   39,
 														},
 													},
 												},
@@ -4188,14 +4168,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 80,
-															Line:   35,
+															Column: 17,
+															Line:   39,
 														},
 														File:   "linearreg.flux",
 														Source: "sx",
 														Start: ast.Position{
-															Column: 78,
-															Line:   35,
+															Column: 15,
+															Line:   39,
 														},
 													},
 												},
@@ -4209,14 +4189,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 92,
-													Line:   35,
+													Column: 19,
+													Line:   40,
 												},
 												File:   "linearreg.flux",
 												Source: "sxy: t.sxy",
 												Start: ast.Position{
-													Column: 82,
-													Line:   35,
+													Column: 9,
+													Line:   40,
 												},
 											},
 										},
@@ -4227,14 +4207,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 85,
-														Line:   35,
+														Column: 12,
+														Line:   40,
 													},
 													File:   "linearreg.flux",
 													Source: "sxy",
 													Start: ast.Position{
-														Column: 82,
-														Line:   35,
+														Column: 9,
+														Line:   40,
 													},
 												},
 											},
@@ -4247,14 +4227,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 92,
-														Line:   35,
+														Column: 19,
+														Line:   40,
 													},
 													File:   "linearreg.flux",
 													Source: "t.sxy",
 													Start: ast.Position{
-														Column: 87,
-														Line:   35,
+														Column: 14,
+														Line:   40,
 													},
 												},
 											},
@@ -4265,14 +4245,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 88,
-															Line:   35,
+															Column: 15,
+															Line:   40,
 														},
 														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
-															Column: 87,
-															Line:   35,
+															Column: 14,
+															Line:   40,
 														},
 													},
 												},
@@ -4284,14 +4264,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 92,
-															Line:   35,
+															Column: 19,
+															Line:   40,
 														},
 														File:   "linearreg.flux",
 														Source: "sxy",
 														Start: ast.Position{
-															Column: 89,
-															Line:   35,
+															Column: 16,
+															Line:   40,
 														},
 													},
 												},
@@ -4305,14 +4285,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 104,
-													Line:   35,
+													Column: 19,
+													Line:   41,
 												},
 												File:   "linearreg.flux",
 												Source: "sxx: t.sxx",
 												Start: ast.Position{
-													Column: 94,
-													Line:   35,
+													Column: 9,
+													Line:   41,
 												},
 											},
 										},
@@ -4323,14 +4303,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 97,
-														Line:   35,
+														Column: 12,
+														Line:   41,
 													},
 													File:   "linearreg.flux",
 													Source: "sxx",
 													Start: ast.Position{
-														Column: 94,
-														Line:   35,
+														Column: 9,
+														Line:   41,
 													},
 												},
 											},
@@ -4343,14 +4323,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 104,
-														Line:   35,
+														Column: 19,
+														Line:   41,
 													},
 													File:   "linearreg.flux",
 													Source: "t.sxx",
 													Start: ast.Position{
-														Column: 99,
-														Line:   35,
+														Column: 14,
+														Line:   41,
 													},
 												},
 											},
@@ -4361,14 +4341,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 100,
-															Line:   35,
+															Column: 15,
+															Line:   41,
 														},
 														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
-															Column: 99,
-															Line:   35,
+															Column: 14,
+															Line:   41,
 														},
 													},
 												},
@@ -4380,14 +4360,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 104,
-															Line:   35,
+															Column: 19,
+															Line:   41,
 														},
 														File:   "linearreg.flux",
 														Source: "sxx",
 														Start: ast.Position{
-															Column: 101,
-															Line:   35,
+															Column: 16,
+															Line:   41,
 														},
 													},
 												},
@@ -4401,14 +4381,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 112,
-													Line:   35,
+													Column: 15,
+													Line:   42,
 												},
 												File:   "linearreg.flux",
 												Source: "N: t.N",
 												Start: ast.Position{
-													Column: 106,
-													Line:   35,
+													Column: 9,
+													Line:   42,
 												},
 											},
 										},
@@ -4419,14 +4399,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 107,
-														Line:   35,
+														Column: 10,
+														Line:   42,
 													},
 													File:   "linearreg.flux",
 													Source: "N",
 													Start: ast.Position{
-														Column: 106,
-														Line:   35,
+														Column: 9,
+														Line:   42,
 													},
 												},
 											},
@@ -4439,14 +4419,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 112,
-														Line:   35,
+														Column: 15,
+														Line:   42,
 													},
 													File:   "linearreg.flux",
 													Source: "t.N",
 													Start: ast.Position{
-														Column: 109,
-														Line:   35,
+														Column: 12,
+														Line:   42,
 													},
 												},
 											},
@@ -4457,14 +4437,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 110,
-															Line:   35,
+															Column: 13,
+															Line:   42,
 														},
 														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
-															Column: 109,
-															Line:   35,
+															Column: 12,
+															Line:   42,
 														},
 													},
 												},
@@ -4476,14 +4456,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 112,
-															Line:   35,
+															Column: 15,
+															Line:   42,
 														},
 														File:   "linearreg.flux",
 														Source: "N",
 														Start: ast.Position{
-															Column: 111,
-															Line:   35,
+															Column: 14,
+															Line:   42,
 														},
 													},
 												},
@@ -4497,14 +4477,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 122,
-													Line:   35,
+													Column: 17,
+													Line:   43,
 												},
 												File:   "linearreg.flux",
 												Source: "sy: t.sy",
 												Start: ast.Position{
-													Column: 114,
-													Line:   35,
+													Column: 9,
+													Line:   43,
 												},
 											},
 										},
@@ -4515,14 +4495,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 116,
-														Line:   35,
+														Column: 11,
+														Line:   43,
 													},
 													File:   "linearreg.flux",
 													Source: "sy",
 													Start: ast.Position{
-														Column: 114,
-														Line:   35,
+														Column: 9,
+														Line:   43,
 													},
 												},
 											},
@@ -4535,14 +4515,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 122,
-														Line:   35,
+														Column: 17,
+														Line:   43,
 													},
 													File:   "linearreg.flux",
 													Source: "t.sy",
 													Start: ast.Position{
-														Column: 118,
-														Line:   35,
+														Column: 13,
+														Line:   43,
 													},
 												},
 											},
@@ -4553,14 +4533,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 119,
-															Line:   35,
+															Column: 14,
+															Line:   43,
 														},
 														File:   "linearreg.flux",
 														Source: "t",
 														Start: ast.Position{
-															Column: 118,
-															Line:   35,
+															Column: 13,
+															Line:   43,
 														},
 													},
 												},
@@ -4572,14 +4552,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 122,
-															Line:   35,
+															Column: 17,
+															Line:   43,
 														},
 														File:   "linearreg.flux",
 														Source: "sy",
 														Start: ast.Position{
-															Column: 120,
-															Line:   35,
+															Column: 15,
+															Line:   43,
 														},
 													},
 												},
@@ -4595,14 +4575,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 21,
-													Line:   35,
+													Column: 23,
+													Line:   36,
 												},
 												File:   "linearreg.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 20,
-													Line:   35,
+													Column: 22,
+													Line:   36,
 												},
 											},
 										},
@@ -4619,14 +4599,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
-											Line:   35,
+											Column: 15,
+											Line:   36,
 										},
 										File:   "linearreg.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 12,
-											Line:   35,
+											Column: 14,
+											Line:   36,
 										},
 									},
 								},
@@ -4637,14 +4617,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 13,
-												Line:   35,
+												Column: 15,
+												Line:   36,
 											},
 											File:   "linearreg.flux",
 											Source: "r",
 											Start: ast.Position{
-												Column: 12,
-												Line:   35,
+												Column: 14,
+												Line:   36,
 											},
 										},
 									},
@@ -4661,14 +4641,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 54,
-									Line:   37,
+									Column: 58,
+									Line:   45,
 								},
 								File:   "linearreg.flux",
-								Source: "rse = (r) => ({r with errors: (r.y - r.y_hat)^2.0})",
+								Source: "rse = (r) => ({r with errors: (r.y - r.y_hat) ^ 2.0})",
 								Start: ast.Position{
-									Column: 3,
-									Line:   37,
+									Column: 5,
+									Line:   45,
 								},
 							},
 						},
@@ -4678,14 +4658,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   37,
+										Column: 8,
+										Line:   45,
 									},
 									File:   "linearreg.flux",
 									Source: "rse",
 									Start: ast.Position{
-										Column: 3,
-										Line:   37,
+										Column: 5,
+										Line:   45,
 									},
 								},
 							},
@@ -4698,14 +4678,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 54,
-										Line:   37,
+										Column: 58,
+										Line:   45,
 									},
 									File:   "linearreg.flux",
-									Source: "(r) => ({r with errors: (r.y - r.y_hat)^2.0})",
+									Source: "(r) => ({r with errors: (r.y - r.y_hat) ^ 2.0})",
 									Start: ast.Position{
-										Column: 9,
-										Line:   37,
+										Column: 11,
+										Line:   45,
 									},
 								},
 							},
@@ -4715,14 +4695,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 54,
-											Line:   37,
+											Column: 58,
+											Line:   45,
 										},
 										File:   "linearreg.flux",
-										Source: "({r with errors: (r.y - r.y_hat)^2.0})",
+										Source: "({r with errors: (r.y - r.y_hat) ^ 2.0})",
 										Start: ast.Position{
-											Column: 16,
-											Line:   37,
+											Column: 18,
+											Line:   45,
 										},
 									},
 								},
@@ -4732,14 +4712,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 53,
-												Line:   37,
+												Column: 57,
+												Line:   45,
 											},
 											File:   "linearreg.flux",
-											Source: "{r with errors: (r.y - r.y_hat)^2.0}",
+											Source: "{r with errors: (r.y - r.y_hat) ^ 2.0}",
 											Start: ast.Position{
-												Column: 17,
-												Line:   37,
+												Column: 19,
+												Line:   45,
 											},
 										},
 									},
@@ -4750,14 +4730,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 52,
-													Line:   37,
+													Column: 56,
+													Line:   45,
 												},
 												File:   "linearreg.flux",
-												Source: "errors: (r.y - r.y_hat)^2.0",
+												Source: "errors: (r.y - r.y_hat) ^ 2.0",
 												Start: ast.Position{
-													Column: 25,
-													Line:   37,
+													Column: 27,
+													Line:   45,
 												},
 											},
 										},
@@ -4768,14 +4748,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 31,
-														Line:   37,
+														Column: 33,
+														Line:   45,
 													},
 													File:   "linearreg.flux",
 													Source: "errors",
 													Start: ast.Position{
-														Column: 25,
-														Line:   37,
+														Column: 27,
+														Line:   45,
 													},
 												},
 											},
@@ -4788,14 +4768,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 52,
-														Line:   37,
+														Column: 56,
+														Line:   45,
 													},
 													File:   "linearreg.flux",
-													Source: "(r.y - r.y_hat)^2.0",
+													Source: "(r.y - r.y_hat) ^ 2.0",
 													Start: ast.Position{
-														Column: 33,
-														Line:   37,
+														Column: 35,
+														Line:   45,
 													},
 												},
 											},
@@ -4805,14 +4785,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 48,
-															Line:   37,
+															Column: 50,
+															Line:   45,
 														},
 														File:   "linearreg.flux",
 														Source: "(r.y - r.y_hat)",
 														Start: ast.Position{
-															Column: 33,
-															Line:   37,
+															Column: 35,
+															Line:   45,
 														},
 													},
 												},
@@ -4822,14 +4802,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
-																Line:   37,
+																Column: 49,
+																Line:   45,
 															},
 															File:   "linearreg.flux",
 															Source: "r.y - r.y_hat",
 															Start: ast.Position{
-																Column: 34,
-																Line:   37,
+																Column: 36,
+																Line:   45,
 															},
 														},
 													},
@@ -4839,14 +4819,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 37,
-																	Line:   37,
+																	Column: 39,
+																	Line:   45,
 																},
 																File:   "linearreg.flux",
 																Source: "r.y",
 																Start: ast.Position{
-																	Column: 34,
-																	Line:   37,
+																	Column: 36,
+																	Line:   45,
 																},
 															},
 														},
@@ -4857,14 +4837,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 35,
-																		Line:   37,
+																		Column: 37,
+																		Line:   45,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 34,
-																		Line:   37,
+																		Column: 36,
+																		Line:   45,
 																	},
 																},
 															},
@@ -4876,14 +4856,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
-																		Line:   37,
+																		Column: 39,
+																		Line:   45,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "y",
 																	Start: ast.Position{
-																		Column: 36,
-																		Line:   37,
+																		Column: 38,
+																		Line:   45,
 																	},
 																},
 															},
@@ -4898,14 +4878,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
-																	Line:   37,
+																	Column: 49,
+																	Line:   45,
 																},
 																File:   "linearreg.flux",
 																Source: "r.y_hat",
 																Start: ast.Position{
-																	Column: 40,
-																	Line:   37,
+																	Column: 42,
+																	Line:   45,
 																},
 															},
 														},
@@ -4916,14 +4896,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 41,
-																		Line:   37,
+																		Column: 43,
+																		Line:   45,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 40,
-																		Line:   37,
+																		Column: 42,
+																		Line:   45,
 																	},
 																},
 															},
@@ -4935,14 +4915,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 47,
-																		Line:   37,
+																		Column: 49,
+																		Line:   45,
 																	},
 																	File:   "linearreg.flux",
 																	Source: "y_hat",
 																	Start: ast.Position{
-																		Column: 42,
-																		Line:   37,
+																		Column: 44,
+																		Line:   45,
 																	},
 																},
 															},
@@ -4961,14 +4941,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 52,
-															Line:   37,
+															Column: 56,
+															Line:   45,
 														},
 														File:   "linearreg.flux",
 														Source: "2.0",
 														Start: ast.Position{
-															Column: 49,
-															Line:   37,
+															Column: 53,
+															Line:   45,
 														},
 													},
 												},
@@ -4983,14 +4963,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   37,
+													Column: 21,
+													Line:   45,
 												},
 												File:   "linearreg.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 18,
-													Line:   37,
+													Column: 20,
+													Line:   45,
 												},
 											},
 										},
@@ -5007,14 +4987,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 11,
-											Line:   37,
+											Column: 13,
+											Line:   45,
 										},
 										File:   "linearreg.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 10,
-											Line:   37,
+											Column: 12,
+											Line:   45,
 										},
 									},
 								},
@@ -5025,14 +5005,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   37,
+												Column: 13,
+												Line:   45,
 											},
 											File:   "linearreg.flux",
 											Source: "r",
 											Start: ast.Position{
-												Column: 10,
-												Line:   37,
+												Column: 12,
+												Line:   45,
 											},
 										},
 									},
@@ -5049,14 +5029,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 20,
-									Line:   41,
+									Column: 24,
+									Line:   48,
 								},
 								File:   "linearreg.flux",
-								Source: "output = renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)",
+								Source: "output = renameAndSum\n        |> map(fn: y_hat)\n        |> map(fn: rse)",
 								Start: ast.Position{
-									Column: 3,
-									Line:   39,
+									Column: 5,
+									Line:   46,
 								},
 							},
 						},
@@ -5066,14 +5046,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 9,
-										Line:   39,
+										Column: 11,
+										Line:   46,
 									},
 									File:   "linearreg.flux",
 									Source: "output",
 									Start: ast.Position{
-										Column: 3,
-										Line:   39,
+										Column: 5,
+										Line:   46,
 									},
 								},
 							},
@@ -5087,14 +5067,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   39,
+												Column: 26,
+												Line:   46,
 											},
 											File:   "linearreg.flux",
 											Source: "renameAndSum",
 											Start: ast.Position{
-												Column: 12,
-												Line:   39,
+												Column: 14,
+												Line:   46,
 											},
 										},
 									},
@@ -5105,14 +5085,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   40,
+											Column: 26,
+											Line:   47,
 										},
 										File:   "linearreg.flux",
-										Source: "renameAndSum\n    |> map(fn: y_hat)",
+										Source: "renameAndSum\n        |> map(fn: y_hat)",
 										Start: ast.Position{
-											Column: 12,
-											Line:   39,
+											Column: 14,
+											Line:   46,
 										},
 									},
 								},
@@ -5123,14 +5103,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 21,
-													Line:   40,
+													Column: 25,
+													Line:   47,
 												},
 												File:   "linearreg.flux",
 												Source: "fn: y_hat",
 												Start: ast.Position{
-													Column: 12,
-													Line:   40,
+													Column: 16,
+													Line:   47,
 												},
 											},
 										},
@@ -5141,14 +5121,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 21,
-														Line:   40,
+														Column: 25,
+														Line:   47,
 													},
 													File:   "linearreg.flux",
 													Source: "fn: y_hat",
 													Start: ast.Position{
-														Column: 12,
-														Line:   40,
+														Column: 16,
+														Line:   47,
 													},
 												},
 											},
@@ -5159,14 +5139,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 14,
-															Line:   40,
+															Column: 18,
+															Line:   47,
 														},
 														File:   "linearreg.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 12,
-															Line:   40,
+															Column: 16,
+															Line:   47,
 														},
 													},
 												},
@@ -5179,14 +5159,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 21,
-															Line:   40,
+															Column: 25,
+															Line:   47,
 														},
 														File:   "linearreg.flux",
 														Source: "y_hat",
 														Start: ast.Position{
-															Column: 16,
-															Line:   40,
+															Column: 20,
+															Line:   47,
 														},
 													},
 												},
@@ -5201,14 +5181,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   40,
+												Column: 26,
+												Line:   47,
 											},
 											File:   "linearreg.flux",
 											Source: "map(fn: y_hat)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   40,
+												Column: 12,
+												Line:   47,
 											},
 										},
 									},
@@ -5218,14 +5198,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   40,
+													Column: 15,
+													Line:   47,
 												},
 												File:   "linearreg.flux",
 												Source: "map",
 												Start: ast.Position{
-													Column: 8,
-													Line:   40,
+													Column: 12,
+													Line:   47,
 												},
 											},
 										},
@@ -5240,14 +5220,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 20,
-										Line:   41,
+										Column: 24,
+										Line:   48,
 									},
 									File:   "linearreg.flux",
-									Source: "renameAndSum\n    |> map(fn: y_hat)\n    |> map(fn: rse)",
+									Source: "renameAndSum\n        |> map(fn: y_hat)\n        |> map(fn: rse)",
 									Start: ast.Position{
-										Column: 12,
-										Line:   39,
+										Column: 14,
+										Line:   46,
 									},
 								},
 							},
@@ -5258,14 +5238,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   41,
+												Column: 23,
+												Line:   48,
 											},
 											File:   "linearreg.flux",
 											Source: "fn: rse",
 											Start: ast.Position{
-												Column: 12,
-												Line:   41,
+												Column: 16,
+												Line:   48,
 											},
 										},
 									},
@@ -5276,14 +5256,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   41,
+													Column: 23,
+													Line:   48,
 												},
 												File:   "linearreg.flux",
 												Source: "fn: rse",
 												Start: ast.Position{
-													Column: 12,
-													Line:   41,
+													Column: 16,
+													Line:   48,
 												},
 											},
 										},
@@ -5294,14 +5274,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   41,
+														Column: 18,
+														Line:   48,
 													},
 													File:   "linearreg.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 12,
-														Line:   41,
+														Column: 16,
+														Line:   48,
 													},
 												},
 											},
@@ -5314,14 +5294,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   41,
+														Column: 23,
+														Line:   48,
 													},
 													File:   "linearreg.flux",
 													Source: "rse",
 													Start: ast.Position{
-														Column: 16,
-														Line:   41,
+														Column: 20,
+														Line:   48,
 													},
 												},
 											},
@@ -5336,14 +5316,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 20,
-											Line:   41,
+											Column: 24,
+											Line:   48,
 										},
 										File:   "linearreg.flux",
 										Source: "map(fn: rse)",
 										Start: ast.Position{
-											Column: 8,
-											Line:   41,
+											Column: 12,
+											Line:   48,
 										},
 									},
 								},
@@ -5353,14 +5333,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   41,
+												Column: 15,
+												Line:   48,
 											},
 											File:   "linearreg.flux",
 											Source: "map",
 											Start: ast.Position{
-												Column: 8,
-												Line:   41,
+												Column: 12,
+												Line:   48,
 											},
 										},
 									},
@@ -5377,14 +5357,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 16,
-										Line:   43,
+										Column: 18,
+										Line:   50,
 									},
 									File:   "linearreg.flux",
 									Source: "output",
 									Start: ast.Position{
-										Column: 10,
-										Line:   43,
+										Column: 12,
+										Line:   50,
 									},
 								},
 							},
@@ -5395,14 +5375,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
-									Line:   43,
+									Column: 18,
+									Line:   50,
 								},
 								File:   "linearreg.flux",
 								Source: "return output",
 								Start: ast.Position{
-									Column: 3,
-									Line:   43,
+									Column: 5,
+									Line:   50,
 								},
 							},
 						},
@@ -5478,13 +5458,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "linearreg.flux",
 					Source: "import \"math\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -5495,13 +5475,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "linearreg.flux",
 						Source: "\"math\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -5515,13 +5495,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "linearreg.flux",
 					Source: "import \"generate\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -5532,13 +5512,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "linearreg.flux",
 						Source: "\"generate\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},

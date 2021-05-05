@@ -1,5 +1,6 @@
 package rows_test
 
+
 import "testing"
 import "contrib/jsternberg/rows"
 
@@ -47,7 +48,6 @@ inData = "
 ,,2,m0,f0,a-2,2020-08-02T17:23:40Z,-92.49751968643372
 ,,2,m0,f0,a-2,2020-08-02T17:23:50Z,2.187536871928522
 "
-
 outData = "
 #datatype,string,long,string,string,string,dateTime:RFC3339,long
 #group,false,false,true,true,true,false,false
@@ -90,14 +90,13 @@ outData = "
 ,,2,m0,f0,a-2,2020-08-02T17:23:40Z,-92
 ,,2,m0,f0,a-2,2020-08-02T17:23:50Z,2
 "
-
 t_map = (table=<-) => table
-  |> range(start: -2m)
-  |> drop(columns: ["_start", "_stop"])
-  |> rows.map(fn: (r) => ({r with _value: int(v: r._value)}))
+    |> range(start: -2m)
+    |> drop(columns: ["_start", "_stop"])
+    |> rows.map(fn: (r) => ({r with _value: int(v: r._value)}))
 
 test _map = () => ({
-  input: testing.loadStorage(csv: inData),
-  want: testing.loadMem(csv: outData),
-  fn: t_map,
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: t_map,
 })

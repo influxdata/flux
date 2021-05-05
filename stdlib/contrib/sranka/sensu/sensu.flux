@@ -1,5 +1,6 @@
 package sensu
 
+
 import "http"
 import "json"
 
@@ -17,31 +18,32 @@ builtin toSensuName : (v: string) => string
 // `state` - string - The event state can be "failing", "passing" or "flapping". Defaults to "passing" for 0 status, "failing" otherwise. 
 // `namespace` - string - The Sensu namespace. Defaults to "default".
 // `entityName` - string - Source of the event, it can contain [a-zA-Z0-9_.\-] characters, other characters are replaced by underscore. Defaults to "influxdb".
-event = (url, apiKey, checkName, text, handlers = [], status=0, state="", namespace="default", entityName="influxdb") => {
+event = (url, apiKey, checkName, text, handlers=[], status=0, state="", namespace="default", entityName="influxdb") => {
     data = {
         entity: {
             entity_class: "proxy",
             metadata: {
-                name: toSensuName(v:entityName),
-            }
+                name: toSensuName(v: entityName),
+            },
         },
         check: {
             output: text,
             state: if state != "" then state else if status == 0 then "passing" else "failing",
             status: status,
             handlers: handlers,
-            interval: 60, // required
+            // required
+            interval: 60,
             metadata: {
-                name: toSensuName(v:checkName)
-            }
-        }
+                name: toSensuName(v: checkName),
+            },
+        },
     }
-
     headers = {
         "Content-Type": "application/json; charset=utf-8",
         "Authorization": "Key " + apiKey,
     }
-    enc = json.encode(v:data)
+    enc = json.encode(v: data)
+
     return http.post(headers: headers, url: url + "/api/core/v2/namespaces/" + namespace + "/events", data: enc)
 }
 
@@ -53,19 +55,24 @@ event = (url, apiKey, checkName, text, handlers = [], status=0, state="", namesp
 // `entityName` - string - Source of the event, it can contain [a-zA-Z0-9_.\-] characters, other characters are replaced by underscore. Defaults to "influxdb".
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` must return an object with `checkName`, `text`, and `status`, as defined in the `event` function arguments.
-endpoint = (url, apiKey, handlers = [], namespace="default", entityName="influxdb") =>
-    (mapFn) =>
-        (tables=<-) => tables
-            |> map(fn: (r) => {
-                obj = mapFn(r: r)
-                return {r with _sent: string(v: 2 == event(
-                    url: url,
-                    apiKey: apiKey,
-                    checkName: obj.checkName,
-                    text: obj.text,
-                    handlers: handlers,
-                    status: obj.status,
-                    namespace: namespace,
-                    entityName: entityName,
-                ) / 100)}
-            })
+endpoint = (url, apiKey, handlers=[], namespace="default", entityName="influxdb") => (mapFn) => (tables=<-) => tables
+    |> map(
+        fn: (r) => {
+            obj = mapFn(r: r)
+
+            return {r with
+                _sent: string(
+                    v: 2 == event(
+                        url: url,
+                        apiKey: apiKey,
+                        checkName: obj.checkName,
+                        text: obj.text,
+                        handlers: handlers,
+                        status: obj.status,
+                        namespace: namespace,
+                        entityName: entityName,
+                    ) / 100,
+                ),
+            }
+        },
+    )

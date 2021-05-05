@@ -1,5 +1,6 @@
 package experimental
 
+
 builtin addDuration : (d: duration, to: time) => time
 builtin subDuration : (d: duration, from: time) => time
 
@@ -17,37 +18,42 @@ builtin set : (<-tables: [A], o: B) => [C] where A: Record, B: Record, C: Record
 // - Any column in the group key is made a tag in storage
 // - All other columns are fields
 // - An error will be thrown for incompatible data types
-builtin to : (<-tables: [A], ?bucket: string, ?bucketID: string, ?org: string, ?orgID: string, ?host: string, ?token: string) => [A] where A: Record
+builtin to : (
+    <-tables: [A],
+    ?bucket: string,
+    ?bucketID: string,
+    ?org: string,
+    ?orgID: string,
+    ?host: string,
+    ?token: string,
+) => [A] where A: Record
 
 // An experimental version of join.
 builtin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record
-
 builtin chain : (first: [A], second: [B]) => [B] where A: Record, B: Record
 
 // Aligns all tables to a common start time by using the same _time value for
 // the first record in each table and incrementing all subsequent _time values
 // using time elapsed between input records.
 // By default, it aligns to tables to 1970-01-01T00:00:00Z UTC.
-alignTime = (tables=<-, alignTo=time(v: 0)) =>
-  tables
+alignTime = (tables=<-, alignTo=time(v: 0)) => tables
     |> stateDuration(
-      fn: (r) => true,
-      column: "timeDiff",
-      unit: 1ns
+        fn: (r) => true,
+        column: "timeDiff",
+        unit: 1ns,
     )
-    |> map(fn: (r) =>
-      ({ r with _time: time(v: (int(v: alignTo ) + r.timeDiff)) })
+    |> map(
+        fn: (r) => ({r with _time: time(v: int(v: alignTo) + r.timeDiff)}),
     )
     |> drop(columns: ["timeDiff"])
 
-
 // An experimental version of window.
 builtin window : (
-  <-tables: [{T with _start: time, _stop: time, _time: time}]
-  ?every: duration,
-  ?period: duration,
-  ?offset: duration,
-  ?createEmpty: bool
+    <-tables: [{T with _start: time, _stop: time, _time: time}],
+    ?every: duration,
+    ?period: duration,
+    ?offset: duration,
+    ?createEmpty: bool,
 ) => [{T with _start: time, _stop: time, _time: time}]
 
 // An experimental version of integral.
@@ -72,7 +78,7 @@ builtin quantile : (<-tables: [{T with _value: float}], q: float, ?compression: 
 builtin skew : (<-tables: [{T with _value: float}]) => [{T with _value: float}]
 
 // An experimental version of spread.
-builtin spread : (<-tables: [{T with _value: A}]) =>  [{T with _value: A}] where A: Numeric
+builtin spread : (<-tables: [{T with _value: A}]) => [{T with _value: A}] where A: Numeric
 
 // An experimental version of stddev.
 builtin stddev : (<-tables: [{T with _value: float}], ?mode: string) => [{T with _value: float}]
@@ -105,4 +111,4 @@ builtin min : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 builtin unique : (<-tables: [{T with _value: A}]) => [{T with _value: A}]
 
 // An experimental version of histogram
-builtin histogram : (<-tables:  [{T with _value: float}],  bins: [float], ?normalize: bool) => [{T with _value: float, le: float}]
+builtin histogram : (<-tables: [{T with _value: float}], bins: [float], ?normalize: bool) => [{T with _value: float, le: float}]

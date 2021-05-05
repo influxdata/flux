@@ -1,9 +1,10 @@
 package experimental_test
 
+
 import "testing"
 import "experimental"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,string,double,string
@@ -16,7 +17,6 @@ inData = "
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,0,foo
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,1.5,foo
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,string,double,double,string
 #group,false,false,true,true,false,false,true
@@ -31,12 +31,9 @@ outData = "
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,1,2,foo
 ,,1,2018-05-22T19:53:00Z,y_duration_seconds,2,3,foo
 "
+t_histogram = (table=<-) => table
+    |> range(start: 2018-05-22T00:00:00Z)
+    |> experimental.histogram(bins: [-1.0, 0.0, 1.0, 2.0])
+    |> drop(columns: ["_start", "_stop"])
 
-t_histogram = (table=<-) =>
-	(table
-    |> range(start:2018-05-22T00:00:00Z)
-		|> experimental.histogram(bins: [-1.0, 0.0, 1.0, 2.0]))
-		|> drop(columns: ["_start", "_stop"])
-
-test _histogram = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram})
+test _histogram = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_histogram})

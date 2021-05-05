@@ -1,8 +1,8 @@
 package statsmodels_test
 
-import "testing"
-import "contrib/anaisdg/statsmodels" 
 
+import "testing"
+import "contrib/anaisdg/statsmodels"
 
 inData = "
 #group,false,false,true,true,false,false,true,true,true,true
@@ -24,12 +24,8 @@ outData = "
 ,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:46:25Z,0.009999999999999929,A,-1.3,10,30,41,19,calico,3,4,4.1
 ,,0,4,young,cats,2020-05-21T21:30:48.901Z,2020-05-21T21:50:48.9Z,2020-05-21T21:48:38Z,0.04000000000000007,A,-1.3,10,30,41,19,calico,4,3,2.8
 "
+t_linearRegression = (table=<-) => table
+    |> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)
+    |> statsmodels.linearRegression()
 
-
-t_linearRegression = (table=<-) =>
-	table
-		|> range(start: 2020-05-21T21:30:48.901Z, stop: 2020-05-21T21:50:48.9Z)
-		|> statsmodels.linearRegression()
-
-test _linearRegression = () =>
-({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})
+test _linearRegression = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_linearRegression})

@@ -1,9 +1,10 @@
 package experimental_test
 
+
 import "testing"
 import "experimental"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,string,string,string,dateTime:RFC3339,long
@@ -23,7 +24,6 @@ inData = "
 ,,1,m1,f1,server02,2018-12-19T22:14:10Z,
 ,,1,m1,f1,server02,2018-12-19T22:14:20Z,99
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,dateTime:RFC3339,long
 #group,false,false,true,true,true,true,true,false,false
@@ -42,11 +42,8 @@ outData = "
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:10Z,-1
 ,,1,2018-12-15T00:00:00Z,2030-01-01T00:00:00Z,m1,f1,server02,2018-12-19T22:14:20Z,99
 "
+t_fill_int = (table=<-) => table
+    |> range(start: 2018-12-15T00:00:00Z)
+    |> experimental.fill(value: -1)
 
-t_fill_int = (table=<-) =>
-	(table
-		|> range(start: 2018-12-15T00:00:00Z)
-		|> experimental.fill(value: -1))
-
-test _fill = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_fill_int})
+test _fill = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_fill_int})

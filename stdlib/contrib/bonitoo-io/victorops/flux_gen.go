@@ -23,11 +23,11 @@ var pkgAST = &ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 15,
-					Line:   50,
+					Column: 6,
+					Line:   57,
 				},
 				File:   "victorops.flux",
-				Source: "package victorops\n\nimport \"http\"\nimport \"json\"\n\n// `alert` sends an alert to VictorOps.\n// `url` - string - VictorOps REST endpoint URL. No default.\n// `messageType` - string - Alert behaviour. Valid values: \"CRITICAL\", \"WARNING\", \"INFO\".\n// `entityID` - string - Incident ID.\n// `entityDisplayName` - string - Incident summary.\n// `stateMessage` - string - Incident verbose message.\n// `timestamp` - time - Incident timestamp. Default value: now().\n// `monitoringTool` - string - Monitoring agent name. Default value: \"InfluxDB\".\nalert = (url, messageType, entityID=\"\", entityDisplayName=\"\", stateMessage=\"\", timestamp=now(), monitoringTool=\"InfluxDB\") => {\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000), // required in seconds\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}\n\n// `endpoint` creates the endpoint for the VictorOps.\n// `url` - string - VictorOps REST endpoint URL. No default.\n// The returned factory function accepts a `mapFn` parameter.\n// `monitoringTool` - string - Monitoring agent name. Default value: \"InfluxDB\".\n// The `mapFn` must return an object with `messageType`, `entityID`, `entityDisplayName`, `stateMessage`, `timestamp` fields as defined in the `alert` function arguments.\nendpoint = (url, monitoringTool=\"InfluxDB\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            })",
+				Source: "package victorops\n\n\nimport \"http\"\nimport \"json\"\n\n// `alert` sends an alert to VictorOps.\n// `url` - string - VictorOps REST endpoint URL. No default.\n// `messageType` - string - Alert behaviour. Valid values: \"CRITICAL\", \"WARNING\", \"INFO\".\n// `entityID` - string - Incident ID.\n// `entityDisplayName` - string - Incident summary.\n// `stateMessage` - string - Incident verbose message.\n// `timestamp` - time - Incident timestamp. Default value: now().\n// `monitoringTool` - string - Monitoring agent name. Default value: \"InfluxDB\".\nalert = (url, messageType, entityID=\"\", entityDisplayName=\"\", stateMessage=\"\", timestamp=now(), monitoringTool=\"InfluxDB\") => {\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        // required in seconds\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000),\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}\n\n// `endpoint` creates the endpoint for the VictorOps.\n// `url` - string - VictorOps REST endpoint URL. No default.\n// The returned factory function accepts a `mapFn` parameter.\n// `monitoringTool` - string - Monitoring agent name. Default value: \"InfluxDB\".\n// The `mapFn` must return an object with `messageType`, `entityID`, `entityDisplayName`, `stateMessage`, `timestamp` fields as defined in the `alert` function arguments.\nendpoint = (url, monitoringTool=\"InfluxDB\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   29,
+						Line:   31,
 					},
 					File:   "victorops.flux",
-					Source: "alert = (url, messageType, entityID=\"\", entityDisplayName=\"\", stateMessage=\"\", timestamp=now(), monitoringTool=\"InfluxDB\") => {\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000), // required in seconds\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
+					Source: "alert = (url, messageType, entityID=\"\", entityDisplayName=\"\", stateMessage=\"\", timestamp=now(), monitoringTool=\"InfluxDB\") => {\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        // required in seconds\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000),\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   14,
+						Line:   15,
 					},
 				},
 			},
@@ -58,13 +58,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   14,
+							Line:   15,
 						},
 						File:   "victorops.flux",
 						Source: "alert",
 						Start: ast.Position{
 							Column: 1,
-							Line:   14,
+							Line:   15,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   29,
+							Line:   31,
 						},
 						File:   "victorops.flux",
-						Source: "(url, messageType, entityID=\"\", entityDisplayName=\"\", stateMessage=\"\", timestamp=now(), monitoringTool=\"InfluxDB\") => {\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000), // required in seconds\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
+						Source: "(url, messageType, entityID=\"\", entityDisplayName=\"\", stateMessage=\"\", timestamp=now(), monitoringTool=\"InfluxDB\") => {\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        // required in seconds\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000),\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 						Start: ast.Position{
 							Column: 9,
-							Line:   14,
+							Line:   15,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   29,
+								Line:   31,
 							},
 							File:   "victorops.flux",
-							Source: "{\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000), // required in seconds\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v:alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
+							Source: "{\n    alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        // required in seconds\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000),\n        monitoring_tool: monitoringTool,\n    }\n    headers = {\n        \"Content-Type\": \"application/json\",\n    }\n    body = json.encode(v: alert)\n\n    return http.post(headers: headers, url: url, data: body)\n}",
 							Start: ast.Position{
 								Column: 127,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   22,
+									Line:   24,
 								},
 								File:   "victorops.flux",
-								Source: "alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000), // required in seconds\n        monitoring_tool: monitoringTool,\n    }",
+								Source: "alert = {\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        // required in seconds\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000),\n        monitoring_tool: monitoringTool,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -129,13 +129,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   15,
+										Line:   16,
 									},
 									File:   "victorops.flux",
 									Source: "alert",
 									Start: ast.Position{
 										Column: 5,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -148,13 +148,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   22,
+										Line:   24,
 									},
 									File:   "victorops.flux",
-									Source: "{\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000), // required in seconds\n        monitoring_tool: monitoringTool,\n    }",
+									Source: "{\n        message_type: messageType,\n        entity_id: entityID,\n        entity_display_name: entityDisplayName,\n        state_message: stateMessage,\n        // required in seconds\n        state_start_time: uint(v: timestamp) / uint(v: 1000000000),\n        monitoring_tool: monitoringTool,\n    }",
 									Start: ast.Position{
 										Column: 13,
-										Line:   15,
+										Line:   16,
 									},
 								},
 							},
@@ -166,13 +166,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   16,
+											Line:   17,
 										},
 										File:   "victorops.flux",
 										Source: "message_type: messageType",
 										Start: ast.Position{
 											Column: 9,
-											Line:   16,
+											Line:   17,
 										},
 									},
 								},
@@ -184,13 +184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   16,
+												Line:   17,
 											},
 											File:   "victorops.flux",
 											Source: "message_type",
 											Start: ast.Position{
 												Column: 9,
-												Line:   16,
+												Line:   17,
 											},
 										},
 									},
@@ -204,13 +204,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   16,
+												Line:   17,
 											},
 											File:   "victorops.flux",
 											Source: "messageType",
 											Start: ast.Position{
 												Column: 23,
-												Line:   16,
+												Line:   17,
 											},
 										},
 									},
@@ -223,13 +223,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   17,
+											Line:   18,
 										},
 										File:   "victorops.flux",
 										Source: "entity_id: entityID",
 										Start: ast.Position{
 											Column: 9,
-											Line:   17,
+											Line:   18,
 										},
 									},
 								},
@@ -241,13 +241,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   17,
+												Line:   18,
 											},
 											File:   "victorops.flux",
 											Source: "entity_id",
 											Start: ast.Position{
 												Column: 9,
-												Line:   17,
+												Line:   18,
 											},
 										},
 									},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   17,
+												Line:   18,
 											},
 											File:   "victorops.flux",
 											Source: "entityID",
 											Start: ast.Position{
 												Column: 20,
-												Line:   17,
+												Line:   18,
 											},
 										},
 									},
@@ -280,13 +280,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   18,
+											Line:   19,
 										},
 										File:   "victorops.flux",
 										Source: "entity_display_name: entityDisplayName",
 										Start: ast.Position{
 											Column: 9,
-											Line:   18,
+											Line:   19,
 										},
 									},
 								},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   18,
+												Line:   19,
 											},
 											File:   "victorops.flux",
 											Source: "entity_display_name",
 											Start: ast.Position{
 												Column: 9,
-												Line:   18,
+												Line:   19,
 											},
 										},
 									},
@@ -318,13 +318,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   18,
+												Line:   19,
 											},
 											File:   "victorops.flux",
 											Source: "entityDisplayName",
 											Start: ast.Position{
 												Column: 30,
-												Line:   18,
+												Line:   19,
 											},
 										},
 									},
@@ -337,13 +337,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 36,
-											Line:   19,
+											Line:   20,
 										},
 										File:   "victorops.flux",
 										Source: "state_message: stateMessage",
 										Start: ast.Position{
 											Column: 9,
-											Line:   19,
+											Line:   20,
 										},
 									},
 								},
@@ -355,13 +355,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 22,
-												Line:   19,
+												Line:   20,
 											},
 											File:   "victorops.flux",
 											Source: "state_message",
 											Start: ast.Position{
 												Column: 9,
-												Line:   19,
+												Line:   20,
 											},
 										},
 									},
@@ -375,13 +375,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   19,
+												Line:   20,
 											},
 											File:   "victorops.flux",
 											Source: "stateMessage",
 											Start: ast.Position{
 												Column: 24,
-												Line:   19,
+												Line:   20,
 											},
 										},
 									},
@@ -394,31 +394,31 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 67,
-											Line:   20,
+											Line:   22,
 										},
 										File:   "victorops.flux",
 										Source: "state_start_time: uint(v: timestamp) / uint(v: 1000000000)",
 										Start: ast.Position{
 											Column: 9,
-											Line:   20,
+											Line:   22,
 										},
 									},
 								},
 								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Comments: nil,
+										Comments: []ast.Comment{ast.Comment{Text: "// required in seconds\n"}},
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   20,
+												Line:   22,
 											},
 											File:   "victorops.flux",
 											Source: "state_start_time",
 											Start: ast.Position{
 												Column: 9,
-												Line:   20,
+												Line:   22,
 											},
 										},
 									},
@@ -432,13 +432,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 67,
-												Line:   20,
+												Line:   22,
 											},
 											File:   "victorops.flux",
 											Source: "uint(v: timestamp) / uint(v: 1000000000)",
 											Start: ast.Position{
 												Column: 27,
-												Line:   20,
+												Line:   22,
 											},
 										},
 									},
@@ -450,13 +450,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 44,
-														Line:   20,
+														Line:   22,
 													},
 													File:   "victorops.flux",
 													Source: "v: timestamp",
 													Start: ast.Position{
 														Column: 32,
-														Line:   20,
+														Line:   22,
 													},
 												},
 											},
@@ -468,13 +468,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
-															Line:   20,
+															Line:   22,
 														},
 														File:   "victorops.flux",
 														Source: "v: timestamp",
 														Start: ast.Position{
 															Column: 32,
-															Line:   20,
+															Line:   22,
 														},
 													},
 												},
@@ -486,13 +486,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 33,
-																Line:   20,
+																Line:   22,
 															},
 															File:   "victorops.flux",
 															Source: "v",
 															Start: ast.Position{
 																Column: 32,
-																Line:   20,
+																Line:   22,
 															},
 														},
 													},
@@ -506,13 +506,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 44,
-																Line:   20,
+																Line:   22,
 															},
 															File:   "victorops.flux",
 															Source: "timestamp",
 															Start: ast.Position{
 																Column: 35,
-																Line:   20,
+																Line:   22,
 															},
 														},
 													},
@@ -528,13 +528,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 45,
-													Line:   20,
+													Line:   22,
 												},
 												File:   "victorops.flux",
 												Source: "uint(v: timestamp)",
 												Start: ast.Position{
 													Column: 27,
-													Line:   20,
+													Line:   22,
 												},
 											},
 										},
@@ -545,13 +545,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 31,
-														Line:   20,
+														Line:   22,
 													},
 													File:   "victorops.flux",
 													Source: "uint",
 													Start: ast.Position{
 														Column: 27,
-														Line:   20,
+														Line:   22,
 													},
 												},
 											},
@@ -569,13 +569,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 66,
-														Line:   20,
+														Line:   22,
 													},
 													File:   "victorops.flux",
 													Source: "v: 1000000000",
 													Start: ast.Position{
 														Column: 53,
-														Line:   20,
+														Line:   22,
 													},
 												},
 											},
@@ -587,13 +587,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 66,
-															Line:   20,
+															Line:   22,
 														},
 														File:   "victorops.flux",
 														Source: "v: 1000000000",
 														Start: ast.Position{
 															Column: 53,
-															Line:   20,
+															Line:   22,
 														},
 													},
 												},
@@ -605,13 +605,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 54,
-																Line:   20,
+																Line:   22,
 															},
 															File:   "victorops.flux",
 															Source: "v",
 															Start: ast.Position{
 																Column: 53,
-																Line:   20,
+																Line:   22,
 															},
 														},
 													},
@@ -625,13 +625,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 66,
-																Line:   20,
+																Line:   22,
 															},
 															File:   "victorops.flux",
 															Source: "1000000000",
 															Start: ast.Position{
 																Column: 56,
-																Line:   20,
+																Line:   22,
 															},
 														},
 													},
@@ -647,13 +647,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 67,
-													Line:   20,
+													Line:   22,
 												},
 												File:   "victorops.flux",
 												Source: "uint(v: 1000000000)",
 												Start: ast.Position{
 													Column: 48,
-													Line:   20,
+													Line:   22,
 												},
 											},
 										},
@@ -664,13 +664,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 52,
-														Line:   20,
+														Line:   22,
 													},
 													File:   "victorops.flux",
 													Source: "uint",
 													Start: ast.Position{
 														Column: 48,
-														Line:   20,
+														Line:   22,
 													},
 												},
 											},
@@ -687,31 +687,31 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 40,
-											Line:   21,
+											Line:   23,
 										},
 										File:   "victorops.flux",
 										Source: "monitoring_tool: monitoringTool",
 										Start: ast.Position{
 											Column: 9,
-											Line:   21,
+											Line:   23,
 										},
 									},
 								},
 								Comma: nil,
 								Key: &ast.Identifier{
 									BaseNode: ast.BaseNode{
-										Comments: []ast.Comment{ast.Comment{Text: "// required in seconds\n"}},
+										Comments: nil,
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   21,
+												Line:   23,
 											},
 											File:   "victorops.flux",
 											Source: "monitoring_tool",
 											Start: ast.Position{
 												Column: 9,
-												Line:   21,
+												Line:   23,
 											},
 										},
 									},
@@ -725,13 +725,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
-												Line:   21,
+												Line:   23,
 											},
 											File:   "victorops.flux",
 											Source: "monitoringTool",
 											Start: ast.Position{
 												Column: 26,
-												Line:   21,
+												Line:   23,
 											},
 										},
 									},
@@ -748,13 +748,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   25,
+									Line:   27,
 								},
 								File:   "victorops.flux",
 								Source: "headers = {\n        \"Content-Type\": \"application/json\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   23,
+									Line:   25,
 								},
 							},
 						},
@@ -765,13 +765,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   23,
+										Line:   25,
 									},
 									File:   "victorops.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   23,
+										Line:   25,
 									},
 								},
 							},
@@ -784,13 +784,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   25,
+										Line:   27,
 									},
 									File:   "victorops.flux",
 									Source: "{\n        \"Content-Type\": \"application/json\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   23,
+										Line:   25,
 									},
 								},
 							},
@@ -802,13 +802,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 43,
-											Line:   24,
+											Line:   26,
 										},
 										File:   "victorops.flux",
 										Source: "\"Content-Type\": \"application/json\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   24,
+											Line:   26,
 										},
 									},
 								},
@@ -820,13 +820,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   24,
+												Line:   26,
 											},
 											File:   "victorops.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   24,
+												Line:   26,
 											},
 										},
 									},
@@ -840,13 +840,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   24,
+												Line:   26,
 											},
 											File:   "victorops.flux",
 											Source: "\"application/json\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   24,
+												Line:   26,
 											},
 										},
 									},
@@ -862,14 +862,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 32,
-									Line:   26,
+									Column: 33,
+									Line:   28,
 								},
 								File:   "victorops.flux",
-								Source: "body = json.encode(v:alert)",
+								Source: "body = json.encode(v: alert)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   26,
+									Line:   28,
 								},
 							},
 						},
@@ -880,13 +880,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   26,
+										Line:   28,
 									},
 									File:   "victorops.flux",
 									Source: "body",
 									Start: ast.Position{
 										Column: 5,
-										Line:   26,
+										Line:   28,
 									},
 								},
 							},
@@ -899,14 +899,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 31,
-											Line:   26,
+											Column: 32,
+											Line:   28,
 										},
 										File:   "victorops.flux",
-										Source: "v:alert",
+										Source: "v: alert",
 										Start: ast.Position{
 											Column: 24,
-											Line:   26,
+											Line:   28,
 										},
 									},
 								},
@@ -917,14 +917,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 31,
-												Line:   26,
+												Column: 32,
+												Line:   28,
 											},
 											File:   "victorops.flux",
-											Source: "v:alert",
+											Source: "v: alert",
 											Start: ast.Position{
 												Column: 24,
-												Line:   26,
+												Line:   28,
 											},
 										},
 									},
@@ -936,13 +936,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   26,
+													Line:   28,
 												},
 												File:   "victorops.flux",
 												Source: "v",
 												Start: ast.Position{
 													Column: 24,
-													Line:   26,
+													Line:   28,
 												},
 											},
 										},
@@ -955,14 +955,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 31,
-													Line:   26,
+													Column: 32,
+													Line:   28,
 												},
 												File:   "victorops.flux",
 												Source: "alert",
 												Start: ast.Position{
-													Column: 26,
-													Line:   26,
+													Column: 27,
+													Line:   28,
 												},
 											},
 										},
@@ -977,14 +977,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 32,
-										Line:   26,
+										Column: 33,
+										Line:   28,
 									},
 									File:   "victorops.flux",
-									Source: "json.encode(v:alert)",
+									Source: "json.encode(v: alert)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   26,
+										Line:   28,
 									},
 								},
 							},
@@ -995,13 +995,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   26,
+											Line:   28,
 										},
 										File:   "victorops.flux",
 										Source: "json.encode",
 										Start: ast.Position{
 											Column: 12,
-											Line:   26,
+											Line:   28,
 										},
 									},
 								},
@@ -1013,13 +1013,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   26,
+												Line:   28,
 											},
 											File:   "victorops.flux",
 											Source: "json",
 											Start: ast.Position{
 												Column: 12,
-												Line:   26,
+												Line:   28,
 											},
 										},
 									},
@@ -1032,13 +1032,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   26,
+												Line:   28,
 											},
 											File:   "victorops.flux",
 											Source: "encode",
 											Start: ast.Position{
 												Column: 17,
-												Line:   26,
+												Line:   28,
 											},
 										},
 									},
@@ -1058,13 +1058,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 60,
-											Line:   28,
+											Line:   30,
 										},
 										File:   "victorops.flux",
 										Source: "headers: headers, url: url, data: body",
 										Start: ast.Position{
 											Column: 22,
-											Line:   28,
+											Line:   30,
 										},
 									},
 								},
@@ -1076,13 +1076,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   28,
+												Line:   30,
 											},
 											File:   "victorops.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   28,
+												Line:   30,
 											},
 										},
 									},
@@ -1094,13 +1094,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   28,
+													Line:   30,
 												},
 												File:   "victorops.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   28,
+													Line:   30,
 												},
 											},
 										},
@@ -1114,13 +1114,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   28,
+													Line:   30,
 												},
 												File:   "victorops.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   28,
+													Line:   30,
 												},
 											},
 										},
@@ -1133,13 +1133,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   28,
+												Line:   30,
 											},
 											File:   "victorops.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   28,
+												Line:   30,
 											},
 										},
 									},
@@ -1151,13 +1151,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   28,
+													Line:   30,
 												},
 												File:   "victorops.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   28,
+													Line:   30,
 												},
 											},
 										},
@@ -1171,13 +1171,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   28,
+													Line:   30,
 												},
 												File:   "victorops.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   28,
+													Line:   30,
 												},
 											},
 										},
@@ -1190,13 +1190,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 60,
-												Line:   28,
+												Line:   30,
 											},
 											File:   "victorops.flux",
 											Source: "data: body",
 											Start: ast.Position{
 												Column: 50,
-												Line:   28,
+												Line:   30,
 											},
 										},
 									},
@@ -1208,13 +1208,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   28,
+													Line:   30,
 												},
 												File:   "victorops.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   28,
+													Line:   30,
 												},
 											},
 										},
@@ -1228,13 +1228,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 60,
-													Line:   28,
+													Line:   30,
 												},
 												File:   "victorops.flux",
 												Source: "body",
 												Start: ast.Position{
 													Column: 56,
-													Line:   28,
+													Line:   30,
 												},
 											},
 										},
@@ -1250,13 +1250,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 61,
-										Line:   28,
+										Line:   30,
 									},
 									File:   "victorops.flux",
 									Source: "http.post(headers: headers, url: url, data: body)",
 									Start: ast.Position{
 										Column: 12,
-										Line:   28,
+										Line:   30,
 									},
 								},
 							},
@@ -1267,13 +1267,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   28,
+											Line:   30,
 										},
 										File:   "victorops.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   28,
+											Line:   30,
 										},
 									},
 								},
@@ -1285,13 +1285,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   28,
+												Line:   30,
 											},
 											File:   "victorops.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   28,
+												Line:   30,
 											},
 										},
 									},
@@ -1304,13 +1304,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   28,
+												Line:   30,
 											},
 											File:   "victorops.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   28,
+												Line:   30,
 											},
 										},
 									},
@@ -1327,13 +1327,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   28,
+									Line:   30,
 								},
 								File:   "victorops.flux",
 								Source: "return http.post(headers: headers, url: url, data: body)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   28,
+									Line:   30,
 								},
 							},
 						},
@@ -1349,13 +1349,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "victorops.flux",
 							Source: "url",
 							Start: ast.Position{
 								Column: 10,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1367,13 +1367,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 10,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1388,13 +1388,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "victorops.flux",
 							Source: "messageType",
 							Start: ast.Position{
 								Column: 15,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1406,13 +1406,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "messageType",
 								Start: ast.Position{
 									Column: 15,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1427,13 +1427,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 39,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "victorops.flux",
 							Source: "entityID=\"\"",
 							Start: ast.Position{
 								Column: 28,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1445,13 +1445,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "entityID",
 								Start: ast.Position{
 									Column: 28,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1465,13 +1465,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 37,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1484,13 +1484,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 61,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "victorops.flux",
 							Source: "entityDisplayName=\"\"",
 							Start: ast.Position{
 								Column: 41,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1502,13 +1502,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 58,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "entityDisplayName",
 								Start: ast.Position{
 									Column: 41,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1522,13 +1522,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 59,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1541,13 +1541,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 78,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "victorops.flux",
 							Source: "stateMessage=\"\"",
 							Start: ast.Position{
 								Column: 63,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1559,13 +1559,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 75,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "stateMessage",
 								Start: ast.Position{
 									Column: 63,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1579,13 +1579,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 78,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 76,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1598,13 +1598,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 95,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "victorops.flux",
 							Source: "timestamp=now()",
 							Start: ast.Position{
 								Column: 80,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1616,13 +1616,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 89,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "timestamp",
 								Start: ast.Position{
 									Column: 80,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1637,13 +1637,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 95,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "now()",
 								Start: ast.Position{
 									Column: 90,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1654,13 +1654,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 93,
-										Line:   14,
+										Line:   15,
 									},
 									File:   "victorops.flux",
 									Source: "now",
 									Start: ast.Position{
 										Column: 90,
-										Line:   14,
+										Line:   15,
 									},
 								},
 							},
@@ -1676,13 +1676,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 122,
-								Line:   14,
+								Line:   15,
 							},
 							File:   "victorops.flux",
 							Source: "monitoringTool=\"InfluxDB\"",
 							Start: ast.Position{
 								Column: 97,
-								Line:   14,
+								Line:   15,
 							},
 						},
 					},
@@ -1694,13 +1694,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 111,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "monitoringTool",
 								Start: ast.Position{
 									Column: 97,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1714,13 +1714,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 122,
-									Line:   14,
+									Line:   15,
 								},
 								File:   "victorops.flux",
 								Source: "\"InfluxDB\"",
 								Start: ast.Position{
 									Column: 112,
-									Line:   14,
+									Line:   15,
 								},
 							},
 						},
@@ -1735,14 +1735,14 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 15,
-						Line:   50,
+						Column: 6,
+						Line:   57,
 					},
 					File:   "victorops.flux",
-					Source: "endpoint = (url, monitoringTool=\"InfluxDB\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            })",
+					Source: "endpoint = (url, monitoringTool=\"InfluxDB\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   36,
+						Line:   38,
 					},
 				},
 			},
@@ -1753,13 +1753,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   36,
+							Line:   38,
 						},
 						File:   "victorops.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   36,
+							Line:   38,
 						},
 					},
 				},
@@ -1772,14 +1772,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 15,
-							Line:   50,
+							Column: 6,
+							Line:   57,
 						},
 						File:   "victorops.flux",
-						Source: "(url, monitoringTool=\"InfluxDB\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            })",
+						Source: "(url, monitoringTool=\"InfluxDB\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   36,
+							Line:   38,
 						},
 					},
 				},
@@ -1790,14 +1790,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 15,
-								Line:   50,
+								Column: 6,
+								Line:   57,
 							},
 							File:   "victorops.flux",
-							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            })",
+							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
-								Column: 5,
-								Line:   37,
+								Column: 48,
+								Line:   38,
 							},
 						},
 					},
@@ -1808,13 +1808,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
-									Line:   50,
+									Column: 6,
+									Line:   57,
 								},
 								File:   "victorops.flux",
-								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            })",
+								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
-									Column: 9,
+									Column: 59,
 									Line:   38,
 								},
 							},
@@ -1826,13 +1826,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 30,
+											Column: 80,
 											Line:   38,
 										},
 										File:   "victorops.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 24,
+											Column: 74,
 											Line:   38,
 										},
 									},
@@ -1844,13 +1844,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
-										Line:   50,
+										Column: 6,
+										Line:   57,
 									},
 									File:   "victorops.flux",
-									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            })",
+									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
-										Column: 24,
+										Column: 74,
 										Line:   38,
 									},
 								},
@@ -1862,14 +1862,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   50,
+												Column: 10,
+												Line:   56,
 											},
 											File:   "victorops.flux",
-											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            }",
+											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
-												Column: 20,
-												Line:   39,
+												Column: 9,
+												Line:   40,
 											},
 										},
 									},
@@ -1880,14 +1880,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 14,
-													Line:   50,
+													Column: 10,
+													Line:   56,
 												},
 												File:   "victorops.flux",
-												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            }",
+												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
-													Column: 20,
-													Line:   39,
+													Column: 9,
+													Line:   40,
 												},
 											},
 										},
@@ -1898,14 +1898,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   39,
+														Column: 11,
+														Line:   40,
 													},
 													File:   "victorops.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 20,
-														Line:   39,
+														Column: 9,
+														Line:   40,
 													},
 												},
 											},
@@ -1919,14 +1919,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   50,
+														Column: 10,
+														Line:   56,
 													},
 													File:   "victorops.flux",
-													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            }",
+													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
-														Column: 24,
-														Line:   39,
+														Column: 13,
+														Line:   40,
 													},
 												},
 											},
@@ -1936,14 +1936,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 14,
-															Line:   50,
+															Column: 10,
+															Line:   56,
 														},
 														File:   "victorops.flux",
-														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            }",
+														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
-															Column: 31,
-															Line:   39,
+															Column: 20,
+															Line:   40,
 														},
 													},
 												},
@@ -1953,14 +1953,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 34,
-																Line:   40,
+																Column: 30,
+																Line:   41,
 															},
 															File:   "victorops.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
-																Column: 17,
-																Line:   40,
+																Column: 13,
+																Line:   41,
 															},
 														},
 													},
@@ -1970,14 +1970,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
-																	Line:   40,
+																	Column: 16,
+																	Line:   41,
 																},
 																File:   "victorops.flux",
 																Source: "obj",
 																Start: ast.Position{
-																	Column: 17,
-																	Line:   40,
+																	Column: 13,
+																	Line:   41,
 																},
 															},
 														},
@@ -1990,14 +1990,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 33,
-																		Line:   40,
+																		Column: 29,
+																		Line:   41,
 																	},
 																	File:   "victorops.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
-																		Column: 29,
-																		Line:   40,
+																		Column: 25,
+																		Line:   41,
 																	},
 																},
 															},
@@ -2008,14 +2008,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 33,
-																			Line:   40,
+																			Column: 29,
+																			Line:   41,
 																		},
 																		File:   "victorops.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
-																			Column: 29,
-																			Line:   40,
+																			Column: 25,
+																			Line:   41,
 																		},
 																	},
 																},
@@ -2026,14 +2026,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 30,
-																				Line:   40,
+																				Column: 26,
+																				Line:   41,
 																			},
 																			File:   "victorops.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 29,
-																				Line:   40,
+																				Column: 25,
+																				Line:   41,
 																			},
 																		},
 																	},
@@ -2046,14 +2046,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 33,
-																				Line:   40,
+																				Column: 29,
+																				Line:   41,
 																			},
 																			File:   "victorops.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   40,
+																				Column: 28,
+																				Line:   41,
 																			},
 																		},
 																	},
@@ -2068,14 +2068,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 34,
-																	Line:   40,
+																	Column: 30,
+																	Line:   41,
 																},
 																File:   "victorops.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
-																	Column: 23,
-																	Line:   40,
+																	Column: 19,
+																	Line:   41,
 																},
 															},
 														},
@@ -2085,14 +2085,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 28,
-																		Line:   40,
+																		Column: 24,
+																		Line:   41,
 																	},
 																	File:   "victorops.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   40,
+																		Column: 19,
+																		Line:   41,
 																	},
 																},
 															},
@@ -2108,14 +2108,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 26,
-																	Line:   49,
+																	Column: 14,
+																	Line:   55,
 																},
 																File:   "victorops.flux",
-																Source: "{r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}",
+																Source: "{r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
-																	Column: 24,
-																	Line:   41,
+																	Column: 20,
+																	Line:   43,
 																},
 															},
 														},
@@ -2126,14 +2126,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 25,
-																		Line:   49,
+																		Column: 18,
+																		Line:   54,
 																	},
 																	File:   "victorops.flux",
-																	Source: "_sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)",
+																	Source: "_sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
-																		Column: 32,
-																		Line:   41,
+																		Column: 17,
+																		Line:   44,
 																	},
 																},
 															},
@@ -2144,14 +2144,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   41,
+																			Column: 22,
+																			Line:   44,
 																		},
 																		File:   "victorops.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
-																			Column: 32,
-																			Line:   41,
+																			Column: 17,
+																			Line:   44,
 																		},
 																	},
 																},
@@ -2165,14 +2165,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 24,
-																				Line:   49,
+																				Column: 28,
+																				Line:   53,
 																			},
 																			File:   "victorops.flux",
-																			Source: "v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100",
+																			Source: "v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100",
 																			Start: ast.Position{
-																				Column: 46,
-																				Line:   41,
+																				Column: 21,
+																				Line:   45,
 																			},
 																		},
 																	},
@@ -2183,14 +2183,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 24,
-																					Line:   49,
+																					Column: 28,
+																					Line:   53,
 																				},
 																				File:   "victorops.flux",
-																				Source: "v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100",
+																				Source: "v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100",
 																				Start: ast.Position{
-																					Column: 46,
-																					Line:   41,
+																					Column: 21,
+																					Line:   45,
 																				},
 																			},
 																		},
@@ -2201,14 +2201,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 47,
-																						Line:   41,
+																						Column: 22,
+																						Line:   45,
 																					},
 																					File:   "victorops.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 46,
-																						Line:   41,
+																						Column: 21,
+																						Line:   45,
 																					},
 																				},
 																			},
@@ -2221,14 +2221,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 24,
-																						Line:   49,
+																						Column: 28,
+																						Line:   53,
 																					},
 																					File:   "victorops.flux",
-																					Source: "2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100",
+																					Source: "2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100",
 																					Start: ast.Position{
-																						Column: 49,
-																						Line:   41,
+																						Column: 24,
+																						Line:   45,
 																					},
 																				},
 																			},
@@ -2238,14 +2238,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 50,
-																							Line:   41,
+																							Column: 25,
+																							Line:   45,
 																						},
 																						File:   "victorops.flux",
 																						Source: "2",
 																						Start: ast.Position{
-																							Column: 49,
-																							Line:   41,
+																							Column: 24,
+																							Line:   45,
 																						},
 																					},
 																				},
@@ -2258,14 +2258,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 24,
-																							Line:   49,
+																							Column: 28,
+																							Line:   53,
 																						},
 																						File:   "victorops.flux",
-																						Source: "alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100",
+																						Source: "alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100",
 																						Start: ast.Position{
-																							Column: 54,
-																							Line:   41,
+																							Column: 29,
+																							Line:   45,
 																						},
 																					},
 																				},
@@ -2276,14 +2276,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 51,
-																									Line:   48,
+																									Column: 55,
+																									Line:   52,
 																								},
 																								File:   "victorops.flux",
-																								Source: "url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool",
+																								Source: "url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool",
 																								Start: ast.Position{
-																									Column: 21,
-																									Line:   42,
+																									Column: 25,
+																									Line:   46,
 																								},
 																							},
 																						},
@@ -2294,14 +2294,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 29,
-																										Line:   42,
+																										Column: 33,
+																										Line:   46,
 																									},
 																									File:   "victorops.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   42,
+																										Column: 25,
+																										Line:   46,
 																									},
 																								},
 																							},
@@ -2312,14 +2312,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 24,
-																											Line:   42,
+																											Column: 28,
+																											Line:   46,
 																										},
 																										File:   "victorops.flux",
 																										Source: "url",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   42,
+																											Column: 25,
+																											Line:   46,
 																										},
 																									},
 																								},
@@ -2332,14 +2332,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 29,
-																											Line:   42,
+																											Column: 33,
+																											Line:   46,
 																										},
 																										File:   "victorops.flux",
 																										Source: "url",
 																										Start: ast.Position{
-																											Column: 26,
-																											Line:   42,
+																											Column: 30,
+																											Line:   46,
 																										},
 																									},
 																								},
@@ -2351,14 +2351,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 52,
-																										Line:   43,
+																										Column: 53,
+																										Line:   47,
 																									},
 																									File:   "victorops.flux",
-																									Source: "messageType:    obj.messageType",
+																									Source: "messageType: obj.messageType",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   43,
+																										Column: 25,
+																										Line:   47,
 																									},
 																								},
 																							},
@@ -2369,14 +2369,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 32,
-																											Line:   43,
+																											Column: 36,
+																											Line:   47,
 																										},
 																										File:   "victorops.flux",
 																										Source: "messageType",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   43,
+																											Column: 25,
+																											Line:   47,
 																										},
 																									},
 																								},
@@ -2389,14 +2389,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 52,
-																											Line:   43,
+																											Column: 53,
+																											Line:   47,
 																										},
 																										File:   "victorops.flux",
 																										Source: "obj.messageType",
 																										Start: ast.Position{
-																											Column: 37,
-																											Line:   43,
+																											Column: 38,
+																											Line:   47,
 																										},
 																									},
 																								},
@@ -2407,14 +2407,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 40,
-																												Line:   43,
+																												Column: 41,
+																												Line:   47,
 																											},
 																											File:   "victorops.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 37,
-																												Line:   43,
+																												Column: 38,
+																												Line:   47,
 																											},
 																										},
 																									},
@@ -2426,14 +2426,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 52,
-																												Line:   43,
+																												Column: 53,
+																												Line:   47,
 																											},
 																											File:   "victorops.flux",
 																											Source: "messageType",
 																											Start: ast.Position{
-																												Column: 41,
-																												Line:   43,
+																												Column: 42,
+																												Line:   47,
 																											},
 																										},
 																									},
@@ -2447,14 +2447,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 49,
-																										Line:   44,
+																										Column: 47,
+																										Line:   48,
 																									},
 																									File:   "victorops.flux",
-																									Source: "entityID:       obj.entityID",
+																									Source: "entityID: obj.entityID",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   44,
+																										Column: 25,
+																										Line:   48,
 																									},
 																								},
 																							},
@@ -2465,14 +2465,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 29,
-																											Line:   44,
+																											Column: 33,
+																											Line:   48,
 																										},
 																										File:   "victorops.flux",
 																										Source: "entityID",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   44,
+																											Column: 25,
+																											Line:   48,
 																										},
 																									},
 																								},
@@ -2485,14 +2485,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 49,
-																											Line:   44,
+																											Column: 47,
+																											Line:   48,
 																										},
 																										File:   "victorops.flux",
 																										Source: "obj.entityID",
 																										Start: ast.Position{
-																											Column: 37,
-																											Line:   44,
+																											Column: 35,
+																											Line:   48,
 																										},
 																									},
 																								},
@@ -2503,14 +2503,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 40,
-																												Line:   44,
+																												Column: 38,
+																												Line:   48,
 																											},
 																											File:   "victorops.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 37,
-																												Line:   44,
+																												Column: 35,
+																												Line:   48,
 																											},
 																										},
 																									},
@@ -2522,14 +2522,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 49,
-																												Line:   44,
+																												Column: 47,
+																												Line:   48,
 																											},
 																											File:   "victorops.flux",
 																											Source: "entityID",
 																											Start: ast.Position{
-																												Column: 41,
-																												Line:   44,
+																												Column: 39,
+																												Line:   48,
 																											},
 																										},
 																									},
@@ -2543,14 +2543,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 61,
-																										Line:   45,
+																										Column: 65,
+																										Line:   49,
 																									},
 																									File:   "victorops.flux",
 																									Source: "entityDisplayName: obj.entityDisplayName",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   45,
+																										Column: 25,
+																										Line:   49,
 																									},
 																								},
 																							},
@@ -2561,14 +2561,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 38,
-																											Line:   45,
+																											Column: 42,
+																											Line:   49,
 																										},
 																										File:   "victorops.flux",
 																										Source: "entityDisplayName",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   45,
+																											Column: 25,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -2581,14 +2581,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 61,
-																											Line:   45,
+																											Column: 65,
+																											Line:   49,
 																										},
 																										File:   "victorops.flux",
 																										Source: "obj.entityDisplayName",
 																										Start: ast.Position{
-																											Column: 40,
-																											Line:   45,
+																											Column: 44,
+																											Line:   49,
 																										},
 																									},
 																								},
@@ -2599,14 +2599,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 43,
-																												Line:   45,
+																												Column: 47,
+																												Line:   49,
 																											},
 																											File:   "victorops.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 40,
-																												Line:   45,
+																												Column: 44,
+																												Line:   49,
 																											},
 																										},
 																									},
@@ -2618,14 +2618,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 61,
-																												Line:   45,
+																												Column: 65,
+																												Line:   49,
 																											},
 																											File:   "victorops.flux",
 																											Source: "entityDisplayName",
 																											Start: ast.Position{
-																												Column: 44,
-																												Line:   45,
+																												Column: 48,
+																												Line:   49,
 																											},
 																										},
 																									},
@@ -2639,14 +2639,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 53,
-																										Line:   46,
+																										Column: 55,
+																										Line:   50,
 																									},
 																									File:   "victorops.flux",
-																									Source: "stateMessage:   obj.stateMessage",
+																									Source: "stateMessage: obj.stateMessage",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   46,
+																										Column: 25,
+																										Line:   50,
 																									},
 																								},
 																							},
@@ -2657,14 +2657,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 33,
-																											Line:   46,
+																											Column: 37,
+																											Line:   50,
 																										},
 																										File:   "victorops.flux",
 																										Source: "stateMessage",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   46,
+																											Column: 25,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -2677,14 +2677,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 53,
-																											Line:   46,
+																											Column: 55,
+																											Line:   50,
 																										},
 																										File:   "victorops.flux",
 																										Source: "obj.stateMessage",
 																										Start: ast.Position{
-																											Column: 37,
-																											Line:   46,
+																											Column: 39,
+																											Line:   50,
 																										},
 																									},
 																								},
@@ -2695,14 +2695,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 40,
-																												Line:   46,
+																												Column: 42,
+																												Line:   50,
 																											},
 																											File:   "victorops.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 37,
-																												Line:   46,
+																												Column: 39,
+																												Line:   50,
 																											},
 																										},
 																									},
@@ -2714,14 +2714,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 53,
-																												Line:   46,
+																												Column: 55,
+																												Line:   50,
 																											},
 																											File:   "victorops.flux",
 																											Source: "stateMessage",
 																											Start: ast.Position{
-																												Column: 41,
-																												Line:   46,
+																												Column: 43,
+																												Line:   50,
 																											},
 																										},
 																									},
@@ -2735,14 +2735,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 50,
-																										Line:   47,
+																										Column: 49,
+																										Line:   51,
 																									},
 																									File:   "victorops.flux",
-																									Source: "timestamp:      obj.timestamp",
+																									Source: "timestamp: obj.timestamp",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   47,
+																										Column: 25,
+																										Line:   51,
 																									},
 																								},
 																							},
@@ -2753,14 +2753,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 30,
-																											Line:   47,
+																											Column: 34,
+																											Line:   51,
 																										},
 																										File:   "victorops.flux",
 																										Source: "timestamp",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   47,
+																											Column: 25,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2773,14 +2773,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 50,
-																											Line:   47,
+																											Column: 49,
+																											Line:   51,
 																										},
 																										File:   "victorops.flux",
 																										Source: "obj.timestamp",
 																										Start: ast.Position{
-																											Column: 37,
-																											Line:   47,
+																											Column: 36,
+																											Line:   51,
 																										},
 																									},
 																								},
@@ -2791,14 +2791,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 40,
-																												Line:   47,
+																												Column: 39,
+																												Line:   51,
 																											},
 																											File:   "victorops.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 37,
-																												Line:   47,
+																												Column: 36,
+																												Line:   51,
 																											},
 																										},
 																									},
@@ -2810,14 +2810,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 50,
-																												Line:   47,
+																												Column: 49,
+																												Line:   51,
 																											},
 																											File:   "victorops.flux",
 																											Source: "timestamp",
 																											Start: ast.Position{
-																												Column: 41,
-																												Line:   47,
+																												Column: 40,
+																												Line:   51,
 																											},
 																										},
 																									},
@@ -2831,14 +2831,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 51,
-																										Line:   48,
+																										Column: 55,
+																										Line:   52,
 																									},
 																									File:   "victorops.flux",
 																									Source: "monitoringTool: monitoringTool",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   48,
+																										Column: 25,
+																										Line:   52,
 																									},
 																								},
 																							},
@@ -2849,14 +2849,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 35,
-																											Line:   48,
+																											Column: 39,
+																											Line:   52,
 																										},
 																										File:   "victorops.flux",
 																										Source: "monitoringTool",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   48,
+																											Column: 25,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2869,14 +2869,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 51,
-																											Line:   48,
+																											Column: 55,
+																											Line:   52,
 																										},
 																										File:   "victorops.flux",
 																										Source: "monitoringTool",
 																										Start: ast.Position{
-																											Column: 37,
-																											Line:   48,
+																											Column: 41,
+																											Line:   52,
 																										},
 																									},
 																								},
@@ -2891,14 +2891,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 18,
-																								Line:   49,
+																								Column: 22,
+																								Line:   53,
 																							},
 																							File:   "victorops.flux",
-																							Source: "alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                )",
+																							Source: "alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    )",
 																							Start: ast.Position{
-																								Column: 54,
-																								Line:   41,
+																								Column: 29,
+																								Line:   45,
 																							},
 																						},
 																					},
@@ -2908,14 +2908,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 59,
-																									Line:   41,
+																									Column: 34,
+																									Line:   45,
 																								},
 																								File:   "victorops.flux",
 																								Source: "alert",
 																								Start: ast.Position{
-																									Column: 54,
-																									Line:   41,
+																									Column: 29,
+																									Line:   45,
 																								},
 																							},
 																						},
@@ -2931,14 +2931,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 24,
-																								Line:   49,
+																								Column: 28,
+																								Line:   53,
 																							},
 																							File:   "victorops.flux",
 																							Source: "100",
 																							Start: ast.Position{
-																								Column: 21,
-																								Line:   49,
+																								Column: 25,
+																								Line:   53,
 																							},
 																						},
 																					},
@@ -2955,14 +2955,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 25,
-																			Line:   49,
+																			Column: 18,
+																			Line:   54,
 																		},
 																		File:   "victorops.flux",
-																		Source: "string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)",
+																		Source: "string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
-																			Column: 39,
-																			Line:   41,
+																			Column: 24,
+																			Line:   44,
 																		},
 																	},
 																},
@@ -2972,14 +2972,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   41,
+																				Column: 30,
+																				Line:   44,
 																			},
 																			File:   "victorops.flux",
 																			Source: "string",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   41,
+																				Column: 24,
+																				Line:   44,
 																			},
 																		},
 																	},
@@ -2996,14 +2996,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 26,
-																		Line:   41,
+																		Column: 22,
+																		Line:   43,
 																	},
 																	File:   "victorops.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 25,
-																		Line:   41,
+																		Column: 21,
+																		Line:   43,
 																	},
 																},
 															},
@@ -3015,14 +3015,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   49,
+																Column: 14,
+																Line:   55,
 															},
 															File:   "victorops.flux",
-															Source: "return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}",
+															Source: "return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
-																Column: 17,
-																Line:   41,
+																Column: 13,
+																Line:   43,
 															},
 														},
 													},
@@ -3037,14 +3037,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   39,
+															Column: 15,
+															Line:   40,
 														},
 														File:   "victorops.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 25,
-															Line:   39,
+															Column: 14,
+															Line:   40,
 														},
 													},
 												},
@@ -3055,14 +3055,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   39,
+																Column: 15,
+																Line:   40,
 															},
 															File:   "victorops.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 25,
-																Line:   39,
+																Column: 14,
+																Line:   40,
 															},
 														},
 													},
@@ -3082,13 +3082,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   50,
+											Column: 6,
+											Line:   57,
 										},
 										File:   "victorops.flux",
-										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == alert(\n                    url: url,\n                    messageType:    obj.messageType,\n                    entityID:       obj.entityID,\n                    entityDisplayName: obj.entityDisplayName,\n                    stateMessage:   obj.stateMessage,\n                    timestamp:      obj.timestamp,\n                    monitoringTool: monitoringTool\n                ) / 100)}\n            })",
+										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == alert(\n                        url: url,\n                        messageType: obj.messageType,\n                        entityID: obj.entityID,\n                        entityDisplayName: obj.entityDisplayName,\n                        stateMessage: obj.stateMessage,\n                        timestamp: obj.timestamp,\n                        monitoringTool: monitoringTool,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
-											Column: 16,
+											Column: 8,
 											Line:   39,
 										},
 									},
@@ -3099,13 +3099,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
+												Column: 11,
 												Line:   39,
 											},
 											File:   "victorops.flux",
 											Source: "map",
 											Start: ast.Position{
-												Column: 16,
+												Column: 8,
 												Line:   39,
 											},
 										},
@@ -3123,13 +3123,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
+										Column: 69,
 										Line:   38,
 									},
 									File:   "victorops.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
-										Column: 10,
+										Column: 60,
 										Line:   38,
 									},
 								},
@@ -3141,13 +3141,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 16,
+											Column: 66,
 											Line:   38,
 										},
 										File:   "victorops.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 10,
+											Column: 60,
 											Line:   38,
 										},
 									},
@@ -3160,13 +3160,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
+										Column: 69,
 										Line:   38,
 									},
 									File:   "victorops.flux",
 									Source: "<-",
 									Start: ast.Position{
-										Column: 17,
+										Column: 67,
 										Line:   38,
 									},
 								},
@@ -3181,14 +3181,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   37,
+									Column: 54,
+									Line:   38,
 								},
 								File:   "victorops.flux",
 								Source: "mapFn",
 								Start: ast.Position{
-									Column: 6,
-									Line:   37,
+									Column: 49,
+									Line:   38,
 								},
 							},
 						},
@@ -3199,14 +3199,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   37,
+										Column: 54,
+										Line:   38,
 									},
 									File:   "victorops.flux",
 									Source: "mapFn",
 									Start: ast.Position{
-										Column: 6,
-										Line:   37,
+										Column: 49,
+										Line:   38,
 									},
 								},
 							},
@@ -3225,13 +3225,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   36,
+								Line:   38,
 							},
 							File:   "victorops.flux",
 							Source: "url",
 							Start: ast.Position{
 								Column: 13,
-								Line:   36,
+								Line:   38,
 							},
 						},
 					},
@@ -3243,13 +3243,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   36,
+									Line:   38,
 								},
 								File:   "victorops.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   36,
+									Line:   38,
 								},
 							},
 						},
@@ -3264,13 +3264,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   36,
+								Line:   38,
 							},
 							File:   "victorops.flux",
 							Source: "monitoringTool=\"InfluxDB\"",
 							Start: ast.Position{
 								Column: 18,
-								Line:   36,
+								Line:   38,
 							},
 						},
 					},
@@ -3282,13 +3282,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   36,
+									Line:   38,
 								},
 								File:   "victorops.flux",
 								Source: "monitoringTool",
 								Start: ast.Position{
 									Column: 18,
-									Line:   36,
+									Line:   38,
 								},
 							},
 						},
@@ -3302,13 +3302,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   36,
+									Line:   38,
 								},
 								File:   "victorops.flux",
 								Source: "\"InfluxDB\"",
 								Start: ast.Position{
 									Column: 33,
-									Line:   36,
+									Line:   38,
 								},
 							},
 						},
@@ -3327,13 +3327,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "victorops.flux",
 					Source: "import \"http\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -3344,13 +3344,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "victorops.flux",
 						Source: "\"http\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -3364,13 +3364,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "victorops.flux",
 					Source: "import \"json\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -3381,13 +3381,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "victorops.flux",
 						Source: "\"json\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
