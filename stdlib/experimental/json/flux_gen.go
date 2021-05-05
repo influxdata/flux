@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 14,
-					Line:   6,
+					Line:   7,
 				},
 				File:   "json.flux",
-				Source: "package json\n\n// Parse will consume json data as bytes and return a value.\n// Lists, objects, strings, booleans and float values can be produced.\n// All numeric values are represented using the float type.\nbuiltin parse",
+				Source: "package json\n\n\n// Parse will consume json data as bytes and return a value.\n// Lists, objects, strings, booleans and float values can be produced.\n// All numeric values are represented using the float type.\nbuiltin parse",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "json.flux",
 					Source: "builtin parse",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "json.flux",
 						Source: "parse",
 						Start: ast.Position{
 							Column: 9,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "json.flux",
 						Source: "(data: bytes) => A",
 						Start: ast.Position{
 							Column: 17,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 35,
-								Line:   6,
+								Line:   7,
 							},
 							File:   "json.flux",
 							Source: "(data: bytes) => A",
 							Start: ast.Position{
 								Column: 17,
-								Line:   6,
+								Line:   7,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   6,
+									Line:   7,
 								},
 								File:   "json.flux",
 								Source: "data: bytes",
 								Start: ast.Position{
 									Column: 18,
-									Line:   6,
+									Line:   7,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   6,
+										Line:   7,
 									},
 									File:   "json.flux",
 									Source: "data",
 									Start: ast.Position{
 										Column: 18,
-										Line:   6,
+										Line:   7,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   6,
+										Line:   7,
 									},
 									File:   "json.flux",
 									Source: "bytes",
 									Start: ast.Position{
 										Column: 24,
-										Line:   6,
+										Line:   7,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   6,
+											Line:   7,
 										},
 										File:   "json.flux",
 										Source: "bytes",
 										Start: ast.Position{
 											Column: 24,
-											Line:   6,
+											Line:   7,
 										},
 									},
 								},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   6,
+									Line:   7,
 								},
 								File:   "json.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 34,
-									Line:   6,
+									Line:   7,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   6,
+										Line:   7,
 									},
 									File:   "json.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 34,
-										Line:   6,
+										Line:   7,
 									},
 								},
 							},

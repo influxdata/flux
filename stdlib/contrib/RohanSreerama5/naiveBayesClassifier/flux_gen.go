@@ -25,13 +25,13 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   89,
+					Line:   81,
 				},
 				File:   "naiveBayesClassifier.flux",
-				Source: "package naiveBayesClassifier\n\nimport \"system\"\n\nnaiveBayes = (tables=<-, myClass, myField, myMeasurement) => {\n \ntraining_data = tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z) //data for 3 days \n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"trainingData\")\n\ntest_data = tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z) //data for 1 day\n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"test data\")\n\n//data preparation \nr = training_data\n\t|> group(columns: [\"_field\"])\n\t|> count()\n\t|> tableFind(fn: (key) =>\n\t\t(key._field == myField))\nr2 = getRecord(table: r, idx: 0)\ntotal_count = r2._value\nP_Class_k = training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()\n\t|> map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n\t|> group()\n\n//one table for each class, where r.p_k == P(Class_k)\nP_value_x = training_data\n\t|> group(columns: [\"_value\", \"_field\"])\n\t|> count(column: myClass)\n\t|> map(fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n// one table for each value, where r.p_x == P(value_x)\nP_k_x = training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])\n\t|> reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})\n\t|> group()\n\n// one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\nP_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n    |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n\nP_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t|> limit(n: 1)\n\n\t|> map(fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n//added P(value_x) to table\n//calculated probabilities for training data \nProbability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n\t|> map(fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\t\n \t//|> yield(name: \"final\")\n\n//predictions for test data computed \npredictOverall = (tables=<-) => {\n  r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])\n\n  output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n  return output \n}\n\nreturn test_data |> predictOverall() \n\n}",
+				Source: "package naiveBayesClassifier\n\n\nimport \"system\"\n\nnaiveBayes = (tables=<-, myClass, myField, myMeasurement) => {\n    training_data = tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"trainingData\")\n    test_data = tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"test data\")\n    //data preparation \n    r = training_data\n        |> group(columns: [\"_field\"])\n        |> count()\n        |> tableFind(fn: (key) => key._field == myField)\n    r2 = getRecord(table: r, idx: 0)\n    total_count = r2._value\n    P_Class_k = training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()\n        |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n        |> group()\n\n    //one table for each class, where r.p_k == P(Class_k)\n    P_value_x = training_data\n        |> group(columns: [\"_value\", \"_field\"])\n        |> count(column: myClass)\n        |> map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n    // one table for each value, where r.p_x == P(value_x)\n    P_k_x = training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])\n        |> reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )\n        |> group()\n\n    // one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\n    P_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n        |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n    P_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n    //added P(value_x) to table\n    //calculated probabilities for training data \n    Probability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n        |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\n    //|> yield(name: \"final\")\n    //predictions for test data computed \n    predictOverall = (tables=<-) => {\n        r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])\n        output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n\n        return output\n    }\n\n    return test_data |> predictOverall()\n}",
 				Start: ast.Position{
 					Column: 1,
-					Line:   5,
+					Line:   4,
 				},
 			},
 		},
@@ -42,10 +42,10 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   89,
+						Line:   81,
 					},
 					File:   "naiveBayesClassifier.flux",
-					Source: "naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {\n \ntraining_data = tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z) //data for 3 days \n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"trainingData\")\n\ntest_data = tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z) //data for 1 day\n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"test data\")\n\n//data preparation \nr = training_data\n\t|> group(columns: [\"_field\"])\n\t|> count()\n\t|> tableFind(fn: (key) =>\n\t\t(key._field == myField))\nr2 = getRecord(table: r, idx: 0)\ntotal_count = r2._value\nP_Class_k = training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()\n\t|> map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n\t|> group()\n\n//one table for each class, where r.p_k == P(Class_k)\nP_value_x = training_data\n\t|> group(columns: [\"_value\", \"_field\"])\n\t|> count(column: myClass)\n\t|> map(fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n// one table for each value, where r.p_x == P(value_x)\nP_k_x = training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])\n\t|> reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})\n\t|> group()\n\n// one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\nP_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n    |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n\nP_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t|> limit(n: 1)\n\n\t|> map(fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n//added P(value_x) to table\n//calculated probabilities for training data \nProbability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n\t|> map(fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\t\n \t//|> yield(name: \"final\")\n\n//predictions for test data computed \npredictOverall = (tables=<-) => {\n  r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])\n\n  output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n  return output \n}\n\nreturn test_data |> predictOverall() \n\n}",
+					Source: "naiveBayes = (tables=<-, myClass, myField, myMeasurement) => {\n    training_data = tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"trainingData\")\n    test_data = tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"test data\")\n    //data preparation \n    r = training_data\n        |> group(columns: [\"_field\"])\n        |> count()\n        |> tableFind(fn: (key) => key._field == myField)\n    r2 = getRecord(table: r, idx: 0)\n    total_count = r2._value\n    P_Class_k = training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()\n        |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n        |> group()\n\n    //one table for each class, where r.p_k == P(Class_k)\n    P_value_x = training_data\n        |> group(columns: [\"_value\", \"_field\"])\n        |> count(column: myClass)\n        |> map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n    // one table for each value, where r.p_x == P(value_x)\n    P_k_x = training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])\n        |> reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )\n        |> group()\n\n    // one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\n    P_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n        |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n    P_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n    //added P(value_x) to table\n    //calculated probabilities for training data \n    Probability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n        |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\n    //|> yield(name: \"final\")\n    //predictions for test data computed \n    predictOverall = (tables=<-) => {\n        r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])\n        output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n\n        return output\n    }\n\n    return test_data |> predictOverall()\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   9,
@@ -79,10 +79,10 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   89,
+							Line:   81,
 						},
 						File:   "naiveBayesClassifier.flux",
-						Source: "(tables=<-, myClass, myField, myMeasurement) => {\n \ntraining_data = tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z) //data for 3 days \n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"trainingData\")\n\ntest_data = tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z) //data for 1 day\n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"test data\")\n\n//data preparation \nr = training_data\n\t|> group(columns: [\"_field\"])\n\t|> count()\n\t|> tableFind(fn: (key) =>\n\t\t(key._field == myField))\nr2 = getRecord(table: r, idx: 0)\ntotal_count = r2._value\nP_Class_k = training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()\n\t|> map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n\t|> group()\n\n//one table for each class, where r.p_k == P(Class_k)\nP_value_x = training_data\n\t|> group(columns: [\"_value\", \"_field\"])\n\t|> count(column: myClass)\n\t|> map(fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n// one table for each value, where r.p_x == P(value_x)\nP_k_x = training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])\n\t|> reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})\n\t|> group()\n\n// one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\nP_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n    |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n\nP_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t|> limit(n: 1)\n\n\t|> map(fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n//added P(value_x) to table\n//calculated probabilities for training data \nProbability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n\t|> map(fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\t\n \t//|> yield(name: \"final\")\n\n//predictions for test data computed \npredictOverall = (tables=<-) => {\n  r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])\n\n  output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n  return output \n}\n\nreturn test_data |> predictOverall() \n\n}",
+						Source: "(tables=<-, myClass, myField, myMeasurement) => {\n    training_data = tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"trainingData\")\n    test_data = tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"test data\")\n    //data preparation \n    r = training_data\n        |> group(columns: [\"_field\"])\n        |> count()\n        |> tableFind(fn: (key) => key._field == myField)\n    r2 = getRecord(table: r, idx: 0)\n    total_count = r2._value\n    P_Class_k = training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()\n        |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n        |> group()\n\n    //one table for each class, where r.p_k == P(Class_k)\n    P_value_x = training_data\n        |> group(columns: [\"_value\", \"_field\"])\n        |> count(column: myClass)\n        |> map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n    // one table for each value, where r.p_x == P(value_x)\n    P_k_x = training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])\n        |> reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )\n        |> group()\n\n    // one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\n    P_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n        |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n    P_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n    //added P(value_x) to table\n    //calculated probabilities for training data \n    Probability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n        |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\n    //|> yield(name: \"final\")\n    //predictions for test data computed \n    predictOverall = (tables=<-) => {\n        r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])\n        output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n\n        return output\n    }\n\n    return test_data |> predictOverall()\n}",
 						Start: ast.Position{
 							Column: 14,
 							Line:   9,
@@ -96,10 +96,10 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   89,
+								Line:   81,
 							},
 							File:   "naiveBayesClassifier.flux",
-							Source: "{\n \ntraining_data = tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z) //data for 3 days \n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"trainingData\")\n\ntest_data = tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z) //data for 1 day\n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()\n  //|> yield(name: \"test data\")\n\n//data preparation \nr = training_data\n\t|> group(columns: [\"_field\"])\n\t|> count()\n\t|> tableFind(fn: (key) =>\n\t\t(key._field == myField))\nr2 = getRecord(table: r, idx: 0)\ntotal_count = r2._value\nP_Class_k = training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()\n\t|> map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n\t|> group()\n\n//one table for each class, where r.p_k == P(Class_k)\nP_value_x = training_data\n\t|> group(columns: [\"_value\", \"_field\"])\n\t|> count(column: myClass)\n\t|> map(fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n// one table for each value, where r.p_x == P(value_x)\nP_k_x = training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])\n\t|> reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})\n\t|> group()\n\n// one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\nP_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n    |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n\nP_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t|> limit(n: 1)\n\n\t|> map(fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n//added P(value_x) to table\n//calculated probabilities for training data \nProbability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n\t|> map(fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\t\n \t//|> yield(name: \"final\")\n\n//predictions for test data computed \npredictOverall = (tables=<-) => {\n  r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])\n\n  output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n  return output \n}\n\nreturn test_data |> predictOverall() \n\n}",
+							Source: "{\n    training_data = tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"trainingData\")\n    test_data = tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()\n\n    //|> yield(name: \"test data\")\n    //data preparation \n    r = training_data\n        |> group(columns: [\"_field\"])\n        |> count()\n        |> tableFind(fn: (key) => key._field == myField)\n    r2 = getRecord(table: r, idx: 0)\n    total_count = r2._value\n    P_Class_k = training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()\n        |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n        |> group()\n\n    //one table for each class, where r.p_k == P(Class_k)\n    P_value_x = training_data\n        |> group(columns: [\"_value\", \"_field\"])\n        |> count(column: myClass)\n        |> map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))\n\n    // one table for each value, where r.p_x == P(value_x)\n    P_k_x = training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])\n        |> reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )\n        |> group()\n\n    // one table for each value and Class pair, where r.p_k_x == P(value_x | Class_k)\n    P_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n        |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})\n    P_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n\n    //added P(value_x) to table\n    //calculated probabilities for training data \n    Probability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n        |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))\n\n    //|> yield(name: \"final\")\n    //predictions for test data computed \n    predictOverall = (tables=<-) => {\n        r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])\n        output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n\n        return output\n    }\n\n    return test_data |> predictOverall()\n}",
 							Start: ast.Position{
 								Column: 62,
 								Line:   9,
@@ -112,14 +112,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
+									Column: 19,
 									Line:   14,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "training_data = tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z) //data for 3 days \n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()",
+								Source: "training_data = tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()",
 								Start: ast.Position{
-									Column: 1,
-									Line:   11,
+									Column: 5,
+									Line:   10,
 								},
 							},
 						},
@@ -129,14 +129,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 14,
-										Line:   11,
+										Column: 18,
+										Line:   10,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "training_data",
 									Start: ast.Position{
-										Column: 1,
-										Line:   11,
+										Column: 5,
+										Line:   10,
 									},
 								},
 							},
@@ -151,32 +151,32 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   11,
+													Column: 27,
+													Line:   10,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 17,
-													Line:   11,
+													Column: 21,
+													Line:   10,
 												},
 											},
 										},
 										Name: "tables",
 									},
 									BaseNode: ast.BaseNode{
-										Comments: nil,
+										Comments: []ast.Comment{ast.Comment{Text: "//data for 3 days\n"}},
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 67,
+												Column: 74,
 												Line:   12,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)",
+											Source: "tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)",
 											Start: ast.Position{
-												Column: 17,
-												Line:   11,
+												Column: 21,
+												Line:   10,
 											},
 										},
 									},
@@ -187,13 +187,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 66,
+														Column: 73,
 														Line:   12,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z",
+													Source: "start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z",
 													Start: ast.Position{
-														Column: 12,
+														Column: 18,
 														Line:   12,
 													},
 												},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 38,
+															Column: 45,
 															Line:   12,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "start:2020-01-02T00:00:00Z",
+														Source: "start: 2020-01-02T00:00:00Z",
 														Start: ast.Position{
-															Column: 12,
+															Column: 18,
 															Line:   12,
 														},
 													},
@@ -223,13 +223,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 17,
+																Column: 23,
 																Line:   12,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "start",
 															Start: ast.Position{
-																Column: 12,
+																Column: 18,
 																Line:   12,
 															},
 														},
@@ -243,13 +243,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
+																Column: 45,
 																Line:   12,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "2020-01-02T00:00:00Z",
 															Start: ast.Position{
-																Column: 18,
+																Column: 25,
 																Line:   12,
 															},
 														},
@@ -262,13 +262,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 66,
+															Column: 73,
 															Line:   12,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "stop: 2020-01-06T23:00:00Z",
 														Start: ast.Position{
-															Column: 40,
+															Column: 47,
 															Line:   12,
 														},
 													},
@@ -280,13 +280,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 44,
+																Column: 51,
 																Line:   12,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "stop",
 															Start: ast.Position{
-																Column: 40,
+																Column: 47,
 																Line:   12,
 															},
 														},
@@ -300,13 +300,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 66,
+																Column: 73,
 																Line:   12,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "2020-01-06T23:00:00Z",
 															Start: ast.Position{
-																Column: 46,
+																Column: 53,
 																Line:   12,
 															},
 														},
@@ -322,13 +322,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 67,
+													Column: 74,
 													Line:   12,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)",
+												Source: "range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)",
 												Start: ast.Position{
-													Column: 6,
+													Column: 12,
 													Line:   12,
 												},
 											},
@@ -339,13 +339,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
+														Column: 17,
 														Line:   12,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "range",
 													Start: ast.Position{
-														Column: 6,
+														Column: 12,
 														Line:   12,
 													},
 												},
@@ -357,18 +357,18 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Comments: []ast.Comment{ast.Comment{Text: "//data for 3 days \n"}},
+									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 86,
+											Column: 92,
 											Line:   13,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z) //data for 3 days \n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)",
+										Source: "tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)",
 										Start: ast.Position{
-											Column: 17,
-											Line:   11,
+											Column: 21,
+											Line:   10,
 										},
 									},
 								},
@@ -379,13 +379,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 85,
+													Column: 91,
 													Line:   13,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 												Start: ast.Position{
-													Column: 13,
+													Column: 19,
 													Line:   13,
 												},
 											},
@@ -397,13 +397,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 85,
+														Column: 91,
 														Line:   13,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 													Start: ast.Position{
-														Column: 13,
+														Column: 19,
 														Line:   13,
 													},
 												},
@@ -415,13 +415,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
+															Column: 21,
 															Line:   13,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 13,
+															Column: 19,
 															Line:   13,
 														},
 													},
@@ -436,13 +436,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 85,
+															Column: 91,
 															Line:   13,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "(r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 														Start: ast.Position{
-															Column: 17,
+															Column: 23,
 															Line:   13,
 														},
 													},
@@ -453,13 +453,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 85,
+																Column: 91,
 																Line:   13,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 															Start: ast.Position{
-																Column: 24,
+																Column: 30,
 																Line:   13,
 															},
 														},
@@ -470,13 +470,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 58,
+																	Column: 64,
 																	Line:   13,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r[\"_measurement\"] == myMeasurement",
 																Start: ast.Position{
-																	Column: 24,
+																	Column: 30,
 																	Line:   13,
 																},
 															},
@@ -487,13 +487,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 41,
+																		Column: 47,
 																		Line:   13,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r[\"_measurement\"]",
 																	Start: ast.Position{
-																		Column: 24,
+																		Column: 30,
 																		Line:   13,
 																	},
 																},
@@ -505,13 +505,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 25,
+																			Column: 31,
 																			Line:   13,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 24,
+																			Column: 30,
 																			Line:   13,
 																		},
 																	},
@@ -524,13 +524,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 40,
+																			Column: 46,
 																			Line:   13,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "\"_measurement\"",
 																		Start: ast.Position{
-																			Column: 26,
+																			Column: 32,
 																			Line:   13,
 																		},
 																	},
@@ -546,13 +546,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 58,
+																		Column: 64,
 																		Line:   13,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "myMeasurement",
 																	Start: ast.Position{
-																		Column: 45,
+																		Column: 51,
 																		Line:   13,
 																	},
 																},
@@ -567,13 +567,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 85,
+																	Column: 91,
 																	Line:   13,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r[\"_field\"] == myField",
 																Start: ast.Position{
-																	Column: 63,
+																	Column: 69,
 																	Line:   13,
 																},
 															},
@@ -584,13 +584,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 74,
+																		Column: 80,
 																		Line:   13,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r[\"_field\"]",
 																	Start: ast.Position{
-																		Column: 63,
+																		Column: 69,
 																		Line:   13,
 																	},
 																},
@@ -602,13 +602,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 64,
+																			Column: 70,
 																			Line:   13,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 63,
+																			Column: 69,
 																			Line:   13,
 																		},
 																	},
@@ -621,13 +621,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 73,
+																			Column: 79,
 																			Line:   13,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "\"_field\"",
 																		Start: ast.Position{
-																			Column: 65,
+																			Column: 71,
 																			Line:   13,
 																		},
 																	},
@@ -643,13 +643,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 85,
+																		Column: 91,
 																		Line:   13,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "myField",
 																	Start: ast.Position{
-																		Column: 78,
+																		Column: 84,
 																		Line:   13,
 																	},
 																},
@@ -665,13 +665,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 19,
+																Column: 25,
 																Line:   13,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 18,
+																Column: 24,
 																Line:   13,
 															},
 														},
@@ -683,13 +683,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
+																	Column: 25,
 																	Line:   13,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 18,
+																	Column: 24,
 																	Line:   13,
 																},
 															},
@@ -710,13 +710,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 86,
+												Column: 92,
 												Line:   13,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)",
 											Start: ast.Position{
-												Column: 6,
+												Column: 12,
 												Line:   13,
 											},
 										},
@@ -727,13 +727,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 12,
+													Column: 18,
 													Line:   13,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "filter",
 												Start: ast.Position{
-													Column: 6,
+													Column: 12,
 													Line:   13,
 												},
 											},
@@ -749,14 +749,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 13,
+										Column: 19,
 										Line:   14,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "tables\n  |> range(start:2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z) //data for 3 days \n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()",
+									Source: "tables\n        //data for 3 days\n        |> range(start: 2020-01-02T00:00:00Z, stop: 2020-01-06T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()",
 									Start: ast.Position{
-										Column: 17,
-										Line:   11,
+										Column: 21,
+										Line:   10,
 									},
 								},
 							},
@@ -767,13 +767,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
+											Column: 19,
 											Line:   14,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "group()",
 										Start: ast.Position{
-											Column: 6,
+											Column: 12,
 											Line:   14,
 										},
 									},
@@ -784,13 +784,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
+												Column: 17,
 												Line:   14,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "group",
 											Start: ast.Position{
-												Column: 6,
+												Column: 12,
 												Line:   14,
 											},
 										},
@@ -807,13 +807,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
-									Line:   20,
+									Column: 19,
+									Line:   21,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "test_data = tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z) //data for 1 day\n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()",
+								Source: "test_data = tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()",
 								Start: ast.Position{
-									Column: 1,
+									Column: 5,
 									Line:   17,
 								},
 							},
@@ -824,13 +824,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
+										Column: 14,
 										Line:   17,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "test_data",
 									Start: ast.Position{
-										Column: 1,
+										Column: 5,
 										Line:   17,
 									},
 								},
@@ -846,13 +846,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
+													Column: 23,
 													Line:   17,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 13,
+													Column: 17,
 													Line:   17,
 												},
 											},
@@ -860,17 +860,17 @@ var pkgAST = &ast.Package{
 										Name: "tables",
 									},
 									BaseNode: ast.BaseNode{
-										Comments: nil,
+										Comments: []ast.Comment{ast.Comment{Text: "//data for 1 day\n"}},
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 67,
-												Line:   18,
+												Column: 74,
+												Line:   19,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)",
+											Source: "tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)",
 											Start: ast.Position{
-												Column: 13,
+												Column: 17,
 												Line:   17,
 											},
 										},
@@ -882,14 +882,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 66,
-														Line:   18,
+														Column: 73,
+														Line:   19,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z",
+													Source: "start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z",
 													Start: ast.Position{
-														Column: 12,
-														Line:   18,
+														Column: 18,
+														Line:   19,
 													},
 												},
 											},
@@ -900,14 +900,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 38,
-															Line:   18,
+															Column: 45,
+															Line:   19,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "start:2020-01-01T00:00:00Z",
+														Source: "start: 2020-01-01T00:00:00Z",
 														Start: ast.Position{
-															Column: 12,
-															Line:   18,
+															Column: 18,
+															Line:   19,
 														},
 													},
 												},
@@ -918,14 +918,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 17,
-																Line:   18,
+																Column: 23,
+																Line:   19,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "start",
 															Start: ast.Position{
-																Column: 12,
-																Line:   18,
+																Column: 18,
+																Line:   19,
 															},
 														},
 													},
@@ -938,14 +938,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
-																Line:   18,
+																Column: 45,
+																Line:   19,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "2020-01-01T00:00:00Z",
 															Start: ast.Position{
-																Column: 18,
-																Line:   18,
+																Column: 25,
+																Line:   19,
 															},
 														},
 													},
@@ -957,14 +957,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 66,
-															Line:   18,
+															Column: 73,
+															Line:   19,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "stop: 2020-01-01T23:00:00Z",
 														Start: ast.Position{
-															Column: 40,
-															Line:   18,
+															Column: 47,
+															Line:   19,
 														},
 													},
 												},
@@ -975,14 +975,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 44,
-																Line:   18,
+																Column: 51,
+																Line:   19,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "stop",
 															Start: ast.Position{
-																Column: 40,
-																Line:   18,
+																Column: 47,
+																Line:   19,
 															},
 														},
 													},
@@ -995,14 +995,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 66,
-																Line:   18,
+																Column: 73,
+																Line:   19,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "2020-01-01T23:00:00Z",
 															Start: ast.Position{
-																Column: 46,
-																Line:   18,
+																Column: 53,
+																Line:   19,
 															},
 														},
 													},
@@ -1017,14 +1017,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 67,
-													Line:   18,
+													Column: 74,
+													Line:   19,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)",
+												Source: "range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)",
 												Start: ast.Position{
-													Column: 6,
-													Line:   18,
+													Column: 12,
+													Line:   19,
 												},
 											},
 										},
@@ -1034,14 +1034,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   18,
+														Column: 17,
+														Line:   19,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "range",
 													Start: ast.Position{
-														Column: 6,
-														Line:   18,
+														Column: 12,
+														Line:   19,
 													},
 												},
 											},
@@ -1052,17 +1052,17 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Comments: []ast.Comment{ast.Comment{Text: "//data for 1 day\n"}},
+									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 86,
-											Line:   19,
+											Column: 92,
+											Line:   20,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z) //data for 1 day\n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)",
+										Source: "tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)",
 										Start: ast.Position{
-											Column: 13,
+											Column: 17,
 											Line:   17,
 										},
 									},
@@ -1074,14 +1074,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 85,
-													Line:   19,
+													Column: 91,
+													Line:   20,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 												Start: ast.Position{
-													Column: 13,
-													Line:   19,
+													Column: 19,
+													Line:   20,
 												},
 											},
 										},
@@ -1092,14 +1092,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 85,
-														Line:   19,
+														Column: 91,
+														Line:   20,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 													Start: ast.Position{
-														Column: 13,
-														Line:   19,
+														Column: 19,
+														Line:   20,
 													},
 												},
 											},
@@ -1110,14 +1110,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   19,
+															Column: 21,
+															Line:   20,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 13,
-															Line:   19,
+															Column: 19,
+															Line:   20,
 														},
 													},
 												},
@@ -1131,14 +1131,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 85,
-															Line:   19,
+															Column: 91,
+															Line:   20,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "(r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 														Start: ast.Position{
-															Column: 17,
-															Line:   19,
+															Column: 23,
+															Line:   20,
 														},
 													},
 												},
@@ -1148,14 +1148,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 85,
-																Line:   19,
+																Column: 91,
+																Line:   20,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField",
 															Start: ast.Position{
-																Column: 24,
-																Line:   19,
+																Column: 30,
+																Line:   20,
 															},
 														},
 													},
@@ -1165,14 +1165,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 58,
-																	Line:   19,
+																	Column: 64,
+																	Line:   20,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r[\"_measurement\"] == myMeasurement",
 																Start: ast.Position{
-																	Column: 24,
-																	Line:   19,
+																	Column: 30,
+																	Line:   20,
 																},
 															},
 														},
@@ -1182,14 +1182,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 41,
-																		Line:   19,
+																		Column: 47,
+																		Line:   20,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r[\"_measurement\"]",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   19,
+																		Column: 30,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1200,14 +1200,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 25,
-																			Line:   19,
+																			Column: 31,
+																			Line:   20,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 24,
-																			Line:   19,
+																			Column: 30,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1219,14 +1219,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 40,
-																			Line:   19,
+																			Column: 46,
+																			Line:   20,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "\"_measurement\"",
 																		Start: ast.Position{
-																			Column: 26,
-																			Line:   19,
+																			Column: 32,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1241,14 +1241,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 58,
-																		Line:   19,
+																		Column: 64,
+																		Line:   20,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "myMeasurement",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   19,
+																		Column: 51,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1262,14 +1262,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 85,
-																	Line:   19,
+																	Column: 91,
+																	Line:   20,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r[\"_field\"] == myField",
 																Start: ast.Position{
-																	Column: 63,
-																	Line:   19,
+																	Column: 69,
+																	Line:   20,
 																},
 															},
 														},
@@ -1279,14 +1279,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 74,
-																		Line:   19,
+																		Column: 80,
+																		Line:   20,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r[\"_field\"]",
 																	Start: ast.Position{
-																		Column: 63,
-																		Line:   19,
+																		Column: 69,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1297,14 +1297,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 64,
-																			Line:   19,
+																			Column: 70,
+																			Line:   20,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 63,
-																			Line:   19,
+																			Column: 69,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1316,14 +1316,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 73,
-																			Line:   19,
+																			Column: 79,
+																			Line:   20,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "\"_field\"",
 																		Start: ast.Position{
-																			Column: 65,
-																			Line:   19,
+																			Column: 71,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1338,14 +1338,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 85,
-																		Line:   19,
+																		Column: 91,
+																		Line:   20,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "myField",
 																	Start: ast.Position{
-																		Column: 78,
-																		Line:   19,
+																		Column: 84,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1360,14 +1360,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 19,
-																Line:   19,
+																Column: 25,
+																Line:   20,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 18,
-																Line:   19,
+																Column: 24,
+																Line:   20,
 															},
 														},
 													},
@@ -1378,14 +1378,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
-																	Line:   19,
+																	Column: 25,
+																	Line:   20,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 18,
-																	Line:   19,
+																	Column: 24,
+																	Line:   20,
 																},
 															},
 														},
@@ -1405,14 +1405,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 86,
-												Line:   19,
+												Column: 92,
+												Line:   20,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)",
 											Start: ast.Position{
-												Column: 6,
-												Line:   19,
+												Column: 12,
+												Line:   20,
 											},
 										},
 									},
@@ -1422,14 +1422,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 12,
-													Line:   19,
+													Column: 18,
+													Line:   20,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "filter",
 												Start: ast.Position{
-													Column: 6,
-													Line:   19,
+													Column: 12,
+													Line:   20,
 												},
 											},
 										},
@@ -1444,13 +1444,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 13,
-										Line:   20,
+										Column: 19,
+										Line:   21,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "tables\n  |> range(start:2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z) //data for 1 day\n  |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n  |> group()",
+									Source: "tables\n        //data for 1 day\n        |> range(start: 2020-01-01T00:00:00Z, stop: 2020-01-01T23:00:00Z)\n        |> filter(fn: (r) => r[\"_measurement\"] == myMeasurement and r[\"_field\"] == myField)\n        |> group()",
 									Start: ast.Position{
-										Column: 13,
+										Column: 17,
 										Line:   17,
 									},
 								},
@@ -1462,14 +1462,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
-											Line:   20,
+											Column: 19,
+											Line:   21,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "group()",
 										Start: ast.Position{
-											Column: 6,
-											Line:   20,
+											Column: 12,
+											Line:   21,
 										},
 									},
 								},
@@ -1479,14 +1479,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   20,
+												Column: 17,
+												Line:   21,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "group",
 											Start: ast.Position{
-												Column: 6,
-												Line:   20,
+												Column: 12,
+												Line:   21,
 											},
 										},
 									},
@@ -1502,14 +1502,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 27,
+									Column: 57,
 									Line:   28,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "r = training_data\n\t|> group(columns: [\"_field\"])\n\t|> count()\n\t|> tableFind(fn: (key) =>\n\t\t(key._field == myField))",
+								Source: "r = training_data\n        |> group(columns: [\"_field\"])\n        |> count()\n        |> tableFind(fn: (key) => key._field == myField)",
 								Start: ast.Position{
-									Column: 1,
-									Line:   24,
+									Column: 5,
+									Line:   25,
 								},
 							},
 						},
@@ -1519,14 +1519,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 2,
-										Line:   24,
+										Column: 6,
+										Line:   25,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 1,
-										Line:   24,
+										Column: 5,
+										Line:   25,
 									},
 								},
 							},
@@ -1541,14 +1541,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 18,
-													Line:   24,
+													Column: 22,
+													Line:   25,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "training_data",
 												Start: ast.Position{
-													Column: 5,
-													Line:   24,
+													Column: 9,
+													Line:   25,
 												},
 											},
 										},
@@ -1559,14 +1559,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 31,
-												Line:   25,
+												Column: 38,
+												Line:   26,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "training_data\n\t|> group(columns: [\"_field\"])",
+											Source: "training_data\n        |> group(columns: [\"_field\"])",
 											Start: ast.Position{
-												Column: 5,
-												Line:   24,
+												Column: 9,
+												Line:   25,
 											},
 										},
 									},
@@ -1577,14 +1577,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 30,
-														Line:   25,
+														Column: 37,
+														Line:   26,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "columns: [\"_field\"]",
 													Start: ast.Position{
-														Column: 11,
-														Line:   25,
+														Column: 18,
+														Line:   26,
 													},
 												},
 											},
@@ -1595,14 +1595,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 30,
-															Line:   25,
+															Column: 37,
+															Line:   26,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "columns: [\"_field\"]",
 														Start: ast.Position{
-															Column: 11,
-															Line:   25,
+															Column: 18,
+															Line:   26,
 														},
 													},
 												},
@@ -1613,14 +1613,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
-																Line:   25,
+																Column: 25,
+																Line:   26,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "columns",
 															Start: ast.Position{
-																Column: 11,
-																Line:   25,
+																Column: 18,
+																Line:   26,
 															},
 														},
 													},
@@ -1633,14 +1633,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 30,
-																Line:   25,
+																Column: 37,
+																Line:   26,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "[\"_field\"]",
 															Start: ast.Position{
-																Column: 20,
-																Line:   25,
+																Column: 27,
+																Line:   26,
 															},
 														},
 													},
@@ -1650,14 +1650,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 29,
-																	Line:   25,
+																	Column: 36,
+																	Line:   26,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"_field\"",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   25,
+																	Column: 28,
+																	Line:   26,
 																},
 															},
 														},
@@ -1675,14 +1675,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 31,
-													Line:   25,
+													Column: 38,
+													Line:   26,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "group(columns: [\"_field\"])",
 												Start: ast.Position{
-													Column: 5,
-													Line:   25,
+													Column: 12,
+													Line:   26,
 												},
 											},
 										},
@@ -1692,14 +1692,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 10,
-														Line:   25,
+														Column: 17,
+														Line:   26,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "group",
 													Start: ast.Position{
-														Column: 5,
-														Line:   25,
+														Column: 12,
+														Line:   26,
 													},
 												},
 											},
@@ -1714,14 +1714,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
-											Line:   26,
+											Column: 19,
+											Line:   27,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "training_data\n\t|> group(columns: [\"_field\"])\n\t|> count()",
+										Source: "training_data\n        |> group(columns: [\"_field\"])\n        |> count()",
 										Start: ast.Position{
-											Column: 5,
-											Line:   24,
+											Column: 9,
+											Line:   25,
 										},
 									},
 								},
@@ -1732,14 +1732,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 12,
-												Line:   26,
+												Column: 19,
+												Line:   27,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "count()",
 											Start: ast.Position{
-												Column: 5,
-												Line:   26,
+												Column: 12,
+												Line:   27,
 											},
 										},
 									},
@@ -1749,14 +1749,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 10,
-													Line:   26,
+													Column: 17,
+													Line:   27,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "count",
 												Start: ast.Position{
-													Column: 5,
-													Line:   26,
+													Column: 12,
+													Line:   27,
 												},
 											},
 										},
@@ -1771,14 +1771,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 27,
+										Column: 57,
 										Line:   28,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "training_data\n\t|> group(columns: [\"_field\"])\n\t|> count()\n\t|> tableFind(fn: (key) =>\n\t\t(key._field == myField))",
+									Source: "training_data\n        |> group(columns: [\"_field\"])\n        |> count()\n        |> tableFind(fn: (key) => key._field == myField)",
 									Start: ast.Position{
-										Column: 5,
-										Line:   24,
+										Column: 9,
+										Line:   25,
 									},
 								},
 							},
@@ -1789,14 +1789,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 26,
+												Column: 56,
 												Line:   28,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "fn: (key) =>\n\t\t(key._field == myField)",
+											Source: "fn: (key) => key._field == myField",
 											Start: ast.Position{
-												Column: 15,
-												Line:   27,
+												Column: 22,
+												Line:   28,
 											},
 										},
 									},
@@ -1807,14 +1807,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 26,
+													Column: 56,
 													Line:   28,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "fn: (key) =>\n\t\t(key._field == myField)",
+												Source: "fn: (key) => key._field == myField",
 												Start: ast.Position{
-													Column: 15,
-													Line:   27,
+													Column: 22,
+													Line:   28,
 												},
 											},
 										},
@@ -1825,14 +1825,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
-														Line:   27,
+														Column: 24,
+														Line:   28,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 15,
-														Line:   27,
+														Column: 22,
+														Line:   28,
 													},
 												},
 											},
@@ -1846,132 +1846,112 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 26,
+														Column: 56,
 														Line:   28,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "(key) =>\n\t\t(key._field == myField)",
+													Source: "(key) => key._field == myField",
 													Start: ast.Position{
-														Column: 19,
-														Line:   27,
+														Column: 26,
+														Line:   28,
 													},
 												},
 											},
-											Body: &ast.ParenExpression{
+											Body: &ast.BinaryExpression{
 												BaseNode: ast.BaseNode{
 													Comments: nil,
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
+															Column: 56,
 															Line:   28,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "(key._field == myField)",
+														Source: "key._field == myField",
 														Start: ast.Position{
-															Column: 3,
+															Column: 35,
 															Line:   28,
 														},
 													},
 												},
-												Expression: &ast.BinaryExpression{
+												Left: &ast.MemberExpression{
 													BaseNode: ast.BaseNode{
 														Comments: nil,
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 25,
+																Column: 45,
 																Line:   28,
 															},
 															File:   "naiveBayesClassifier.flux",
-															Source: "key._field == myField",
+															Source: "key._field",
 															Start: ast.Position{
-																Column: 4,
+																Column: 35,
 																Line:   28,
 															},
 														},
 													},
-													Left: &ast.MemberExpression{
+													Lbrack: nil,
+													Object: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 14,
+																	Column: 38,
 																	Line:   28,
 																},
 																File:   "naiveBayesClassifier.flux",
-																Source: "key._field",
+																Source: "key",
 																Start: ast.Position{
-																	Column: 4,
+																	Column: 35,
 																	Line:   28,
 																},
 															},
 														},
-														Lbrack: nil,
-														Object: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 7,
-																		Line:   28,
-																	},
-																	File:   "naiveBayesClassifier.flux",
-																	Source: "key",
-																	Start: ast.Position{
-																		Column: 4,
-																		Line:   28,
-																	},
-																},
-															},
-															Name: "key",
-														},
-														Property: &ast.Identifier{
-															BaseNode: ast.BaseNode{
-																Comments: nil,
-																Errors:   nil,
-																Loc: &ast.SourceLocation{
-																	End: ast.Position{
-																		Column: 14,
-																		Line:   28,
-																	},
-																	File:   "naiveBayesClassifier.flux",
-																	Source: "_field",
-																	Start: ast.Position{
-																		Column: 8,
-																		Line:   28,
-																	},
-																},
-															},
-															Name: "_field",
-														},
-														Rbrack: nil,
+														Name: "key",
 													},
-													Operator: 17,
-													Right: &ast.Identifier{
+													Property: &ast.Identifier{
 														BaseNode: ast.BaseNode{
 															Comments: nil,
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 25,
+																	Column: 45,
 																	Line:   28,
 																},
 																File:   "naiveBayesClassifier.flux",
-																Source: "myField",
+																Source: "_field",
 																Start: ast.Position{
-																	Column: 18,
+																	Column: 39,
 																	Line:   28,
 																},
 															},
 														},
-														Name: "myField",
+														Name: "_field",
 													},
+													Rbrack: nil,
 												},
-												Lparen: nil,
-												Rparen: nil,
+												Operator: 17,
+												Right: &ast.Identifier{
+													BaseNode: ast.BaseNode{
+														Comments: nil,
+														Errors:   nil,
+														Loc: &ast.SourceLocation{
+															End: ast.Position{
+																Column: 56,
+																Line:   28,
+															},
+															File:   "naiveBayesClassifier.flux",
+															Source: "myField",
+															Start: ast.Position{
+																Column: 49,
+																Line:   28,
+															},
+														},
+													},
+													Name: "myField",
+												},
 											},
 											Lparen: nil,
 											Params: []*ast.Property{&ast.Property{
@@ -1980,14 +1960,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 23,
-															Line:   27,
+															Column: 30,
+															Line:   28,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "key",
 														Start: ast.Position{
-															Column: 20,
-															Line:   27,
+															Column: 27,
+															Line:   28,
 														},
 													},
 												},
@@ -1998,14 +1978,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
-																Line:   27,
+																Column: 30,
+																Line:   28,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "key",
 															Start: ast.Position{
-																Column: 20,
-																Line:   27,
+																Column: 27,
+																Line:   28,
 															},
 														},
 													},
@@ -2025,14 +2005,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
+											Column: 57,
 											Line:   28,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "tableFind(fn: (key) =>\n\t\t(key._field == myField))",
+										Source: "tableFind(fn: (key) => key._field == myField)",
 										Start: ast.Position{
-											Column: 5,
-											Line:   27,
+											Column: 12,
+											Line:   28,
 										},
 									},
 								},
@@ -2042,14 +2022,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   27,
+												Column: 21,
+												Line:   28,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "tableFind",
 											Start: ast.Position{
-												Column: 5,
-												Line:   27,
+												Column: 12,
+												Line:   28,
 											},
 										},
 									},
@@ -2065,13 +2045,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 33,
+									Column: 37,
 									Line:   29,
 								},
 								File:   "naiveBayesClassifier.flux",
 								Source: "r2 = getRecord(table: r, idx: 0)",
 								Start: ast.Position{
-									Column: 1,
+									Column: 5,
 									Line:   29,
 								},
 							},
@@ -2082,13 +2062,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 3,
+										Column: 7,
 										Line:   29,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "r2",
 									Start: ast.Position{
-										Column: 1,
+										Column: 5,
 										Line:   29,
 									},
 								},
@@ -2102,13 +2082,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 32,
+											Column: 36,
 											Line:   29,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "table: r, idx: 0",
 										Start: ast.Position{
-											Column: 16,
+											Column: 20,
 											Line:   29,
 										},
 									},
@@ -2120,13 +2100,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
+												Column: 28,
 												Line:   29,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "table: r",
 											Start: ast.Position{
-												Column: 16,
+												Column: 20,
 												Line:   29,
 											},
 										},
@@ -2138,13 +2118,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 21,
+													Column: 25,
 													Line:   29,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "table",
 												Start: ast.Position{
-													Column: 16,
+													Column: 20,
 													Line:   29,
 												},
 											},
@@ -2158,13 +2138,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 24,
+													Column: 28,
 													Line:   29,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 23,
+													Column: 27,
 													Line:   29,
 												},
 											},
@@ -2177,13 +2157,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 32,
+												Column: 36,
 												Line:   29,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "idx: 0",
 											Start: ast.Position{
-												Column: 26,
+												Column: 30,
 												Line:   29,
 											},
 										},
@@ -2195,13 +2175,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 29,
+													Column: 33,
 													Line:   29,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "idx",
 												Start: ast.Position{
-													Column: 26,
+													Column: 30,
 													Line:   29,
 												},
 											},
@@ -2215,13 +2195,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 32,
+													Column: 36,
 													Line:   29,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "0",
 												Start: ast.Position{
-													Column: 31,
+													Column: 35,
 													Line:   29,
 												},
 											},
@@ -2237,13 +2217,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 33,
+										Column: 37,
 										Line:   29,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "getRecord(table: r, idx: 0)",
 									Start: ast.Position{
-										Column: 6,
+										Column: 10,
 										Line:   29,
 									},
 								},
@@ -2254,13 +2234,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
+											Column: 19,
 											Line:   29,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "getRecord",
 										Start: ast.Position{
-											Column: 6,
+											Column: 10,
 											Line:   29,
 										},
 									},
@@ -2276,13 +2256,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 24,
+									Column: 28,
 									Line:   30,
 								},
 								File:   "naiveBayesClassifier.flux",
 								Source: "total_count = r2._value",
 								Start: ast.Position{
-									Column: 1,
+									Column: 5,
 									Line:   30,
 								},
 							},
@@ -2293,13 +2273,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 16,
 										Line:   30,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "total_count",
 									Start: ast.Position{
-										Column: 1,
+										Column: 5,
 										Line:   30,
 									},
 								},
@@ -2312,13 +2292,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 24,
+										Column: 28,
 										Line:   30,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "r2._value",
 									Start: ast.Position{
-										Column: 15,
+										Column: 19,
 										Line:   30,
 									},
 								},
@@ -2330,13 +2310,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 17,
+											Column: 21,
 											Line:   30,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "r2",
 										Start: ast.Position{
-											Column: 15,
+											Column: 19,
 											Line:   30,
 										},
 									},
@@ -2349,13 +2329,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
+											Column: 28,
 											Line:   30,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "_value",
 										Start: ast.Position{
-											Column: 18,
+											Column: 22,
 											Line:   30,
 										},
 									},
@@ -2370,13 +2350,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   36,
+									Column: 19,
+									Line:   35,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "P_Class_k = training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()\n\t|> map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n\t|> group()",
+								Source: "P_Class_k = training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()\n        |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n        |> group()",
 								Start: ast.Position{
-									Column: 1,
+									Column: 5,
 									Line:   31,
 								},
 							},
@@ -2387,13 +2367,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
+										Column: 14,
 										Line:   31,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "P_Class_k",
 									Start: ast.Position{
-										Column: 1,
+										Column: 5,
 										Line:   31,
 									},
 								},
@@ -2410,13 +2390,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 26,
+														Column: 30,
 														Line:   31,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "training_data",
 													Start: ast.Position{
-														Column: 13,
+														Column: 17,
 														Line:   31,
 													},
 												},
@@ -2428,13 +2408,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
+													Column: 47,
 													Line:   32,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "training_data\n\t|> group(columns: [myClass, \"_field\"])",
+												Source: "training_data\n        |> group(columns: [myClass, \"_field\"])",
 												Start: ast.Position{
-													Column: 13,
+													Column: 17,
 													Line:   31,
 												},
 											},
@@ -2446,13 +2426,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
+															Column: 46,
 															Line:   32,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "columns: [myClass, \"_field\"]",
 														Start: ast.Position{
-															Column: 11,
+															Column: 18,
 															Line:   32,
 														},
 													},
@@ -2464,13 +2444,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 39,
+																Column: 46,
 																Line:   32,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "columns: [myClass, \"_field\"]",
 															Start: ast.Position{
-																Column: 11,
+																Column: 18,
 																Line:   32,
 															},
 														},
@@ -2482,13 +2462,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
+																	Column: 25,
 																	Line:   32,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "columns",
 																Start: ast.Position{
-																	Column: 11,
+																	Column: 18,
 																	Line:   32,
 																},
 															},
@@ -2502,13 +2482,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 39,
+																	Column: 46,
 																	Line:   32,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "[myClass, \"_field\"]",
 																Start: ast.Position{
-																	Column: 20,
+																	Column: 27,
 																	Line:   32,
 																},
 															},
@@ -2519,13 +2499,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 28,
+																		Column: 35,
 																		Line:   32,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "myClass",
 																	Start: ast.Position{
-																		Column: 21,
+																		Column: 28,
 																		Line:   32,
 																	},
 																},
@@ -2537,13 +2517,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
+																		Column: 45,
 																		Line:   32,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"_field\"",
 																	Start: ast.Position{
-																		Column: 30,
+																		Column: 37,
 																		Line:   32,
 																	},
 																},
@@ -2562,13 +2542,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 40,
+														Column: 47,
 														Line:   32,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "group(columns: [myClass, \"_field\"])",
 													Start: ast.Position{
-														Column: 5,
+														Column: 12,
 														Line:   32,
 													},
 												},
@@ -2579,13 +2559,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 10,
+															Column: 17,
 															Line:   32,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "group",
 														Start: ast.Position{
-															Column: 5,
+															Column: 12,
 															Line:   32,
 														},
 													},
@@ -2601,13 +2581,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 12,
+												Column: 19,
 												Line:   33,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()",
+											Source: "training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()",
 											Start: ast.Position{
-												Column: 13,
+												Column: 17,
 												Line:   31,
 											},
 										},
@@ -2619,13 +2599,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 12,
+													Column: 19,
 													Line:   33,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "count()",
 												Start: ast.Position{
-													Column: 5,
+													Column: 12,
 													Line:   33,
 												},
 											},
@@ -2636,13 +2616,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 10,
+														Column: 17,
 														Line:   33,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "count",
 													Start: ast.Position{
-														Column: 5,
+														Column: 12,
 														Line:   33,
 													},
 												},
@@ -2658,13 +2638,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 79,
-											Line:   35,
+											Column: 103,
+											Line:   34,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()\n\t|> map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))",
+										Source: "training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()\n        |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))",
 										Start: ast.Position{
-											Column: 13,
+											Column: 17,
 											Line:   31,
 										},
 									},
@@ -2676,13 +2656,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 78,
-													Line:   35,
+													Column: 102,
+													Line:   34,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count})",
+												Source: "fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count})",
 												Start: ast.Position{
-													Column: 9,
+													Column: 16,
 													Line:   34,
 												},
 											},
@@ -2694,13 +2674,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 78,
-														Line:   35,
+														Column: 102,
+														Line:   34,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count})",
+													Source: "fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count})",
 													Start: ast.Position{
-														Column: 9,
+														Column: 16,
 														Line:   34,
 													},
 												},
@@ -2712,13 +2692,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 11,
+															Column: 18,
 															Line:   34,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 9,
+															Column: 16,
 															Line:   34,
 														},
 													},
@@ -2733,13 +2713,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 78,
-															Line:   35,
+															Column: 102,
+															Line:   34,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "(r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count})",
+														Source: "(r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count})",
 														Start: ast.Position{
-															Column: 13,
+															Column: 20,
 															Line:   34,
 														},
 													},
@@ -2750,14 +2730,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 78,
-																Line:   35,
+																Column: 102,
+																Line:   34,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count})",
 															Start: ast.Position{
-																Column: 3,
-																Line:   35,
+																Column: 27,
+																Line:   34,
 															},
 														},
 													},
@@ -2767,14 +2747,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 77,
-																	Line:   35,
+																	Column: 101,
+																	Line:   34,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "{r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}",
 																Start: ast.Position{
-																	Column: 4,
-																	Line:   35,
+																	Column: 28,
+																	Line:   34,
 																},
 															},
 														},
@@ -2785,14 +2765,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 59,
-																		Line:   35,
+																		Column: 83,
+																		Line:   34,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "p_k: float(v: r._value) / float(v: total_count)",
 																	Start: ast.Position{
-																		Column: 12,
-																		Line:   35,
+																		Column: 36,
+																		Line:   34,
 																	},
 																},
 															},
@@ -2803,14 +2783,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 15,
-																			Line:   35,
+																			Column: 39,
+																			Line:   34,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "p_k",
 																		Start: ast.Position{
-																			Column: 12,
-																			Line:   35,
+																			Column: 36,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -2823,14 +2803,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 59,
-																			Line:   35,
+																			Column: 83,
+																			Line:   34,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "float(v: r._value) / float(v: total_count)",
 																		Start: ast.Position{
-																			Column: 17,
-																			Line:   35,
+																			Column: 41,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -2841,14 +2821,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 34,
-																					Line:   35,
+																					Column: 58,
+																					Line:   34,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "v: r._value",
 																				Start: ast.Position{
-																					Column: 23,
-																					Line:   35,
+																					Column: 47,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -2859,14 +2839,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 34,
-																						Line:   35,
+																						Column: 58,
+																						Line:   34,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "v: r._value",
 																					Start: ast.Position{
-																						Column: 23,
-																						Line:   35,
+																						Column: 47,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -2877,14 +2857,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 24,
-																							Line:   35,
+																							Column: 48,
+																							Line:   34,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "v",
 																						Start: ast.Position{
-																							Column: 23,
-																							Line:   35,
+																							Column: 47,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -2897,14 +2877,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 34,
-																							Line:   35,
+																							Column: 58,
+																							Line:   34,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "r._value",
 																						Start: ast.Position{
-																							Column: 26,
-																							Line:   35,
+																							Column: 50,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -2915,14 +2895,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 27,
-																								Line:   35,
+																								Column: 51,
+																								Line:   34,
 																							},
 																							File:   "naiveBayesClassifier.flux",
 																							Source: "r",
 																							Start: ast.Position{
-																								Column: 26,
-																								Line:   35,
+																								Column: 50,
+																								Line:   34,
 																							},
 																						},
 																					},
@@ -2934,14 +2914,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 34,
-																								Line:   35,
+																								Column: 58,
+																								Line:   34,
 																							},
 																							File:   "naiveBayesClassifier.flux",
 																							Source: "_value",
 																							Start: ast.Position{
-																								Column: 28,
-																								Line:   35,
+																								Column: 52,
+																								Line:   34,
 																							},
 																						},
 																					},
@@ -2958,14 +2938,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 35,
-																				Line:   35,
+																				Column: 59,
+																				Line:   34,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "float(v: r._value)",
 																			Start: ast.Position{
-																				Column: 17,
-																				Line:   35,
+																				Column: 41,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -2975,14 +2955,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 22,
-																					Line:   35,
+																					Column: 46,
+																					Line:   34,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "float",
 																				Start: ast.Position{
-																					Column: 17,
-																					Line:   35,
+																					Column: 41,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -2999,14 +2979,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 58,
-																					Line:   35,
+																					Column: 82,
+																					Line:   34,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "v: total_count",
 																				Start: ast.Position{
-																					Column: 44,
-																					Line:   35,
+																					Column: 68,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -3017,14 +2997,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 58,
-																						Line:   35,
+																						Column: 82,
+																						Line:   34,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "v: total_count",
 																					Start: ast.Position{
-																						Column: 44,
-																						Line:   35,
+																						Column: 68,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -3035,14 +3015,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 45,
-																							Line:   35,
+																							Column: 69,
+																							Line:   34,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "v",
 																						Start: ast.Position{
-																							Column: 44,
-																							Line:   35,
+																							Column: 68,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -3055,14 +3035,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 58,
-																							Line:   35,
+																							Column: 82,
+																							Line:   34,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "total_count",
 																						Start: ast.Position{
-																							Column: 47,
-																							Line:   35,
+																							Column: 71,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -3077,14 +3057,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 59,
-																				Line:   35,
+																				Column: 83,
+																				Line:   34,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "float(v: total_count)",
 																			Start: ast.Position{
-																				Column: 38,
-																				Line:   35,
+																				Column: 62,
+																				Line:   34,
 																			},
 																		},
 																	},
@@ -3094,14 +3074,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 43,
-																					Line:   35,
+																					Column: 67,
+																					Line:   34,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "float",
 																				Start: ast.Position{
-																					Column: 38,
-																					Line:   35,
+																					Column: 62,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -3117,14 +3097,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 76,
-																		Line:   35,
+																		Column: 100,
+																		Line:   34,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "tc: total_count",
 																	Start: ast.Position{
-																		Column: 61,
-																		Line:   35,
+																		Column: 85,
+																		Line:   34,
 																	},
 																},
 															},
@@ -3135,14 +3115,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 63,
-																			Line:   35,
+																			Column: 87,
+																			Line:   34,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "tc",
 																		Start: ast.Position{
-																			Column: 61,
-																			Line:   35,
+																			Column: 85,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -3155,14 +3135,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 76,
-																			Line:   35,
+																			Column: 100,
+																			Line:   34,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "total_count",
 																		Start: ast.Position{
-																			Column: 65,
-																			Line:   35,
+																			Column: 89,
+																			Line:   34,
 																		},
 																	},
 																},
@@ -3176,14 +3156,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 6,
-																		Line:   35,
+																		Column: 30,
+																		Line:   34,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 5,
-																		Line:   35,
+																		Column: 29,
+																		Line:   34,
 																	},
 																},
 															},
@@ -3200,13 +3180,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 15,
+																Column: 22,
 																Line:   34,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 14,
+																Column: 21,
 																Line:   34,
 															},
 														},
@@ -3218,13 +3198,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 15,
+																	Column: 22,
 																	Line:   34,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 14,
+																	Column: 21,
 																	Line:   34,
 																},
 															},
@@ -3245,13 +3225,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 79,
-												Line:   35,
+												Column: 103,
+												Line:   34,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))",
+											Source: "map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))",
 											Start: ast.Position{
-												Column: 5,
+												Column: 12,
 												Line:   34,
 											},
 										},
@@ -3262,13 +3242,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 8,
+													Column: 15,
 													Line:   34,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "map",
 												Start: ast.Position{
-													Column: 5,
+													Column: 12,
 													Line:   34,
 												},
 											},
@@ -3284,13 +3264,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   36,
+										Column: 19,
+										Line:   35,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "training_data\n\t|> group(columns: [myClass, \"_field\"])\n\t|> count()\n\t|> map(fn: (r) =>\n\t\t({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n\t|> group()",
+									Source: "training_data\n        |> group(columns: [myClass, \"_field\"])\n        |> count()\n        |> map(fn: (r) => ({r with p_k: float(v: r._value) / float(v: total_count), tc: total_count}))\n        |> group()",
 									Start: ast.Position{
-										Column: 13,
+										Column: 17,
 										Line:   31,
 									},
 								},
@@ -3302,14 +3282,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
-											Line:   36,
+											Column: 19,
+											Line:   35,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "group()",
 										Start: ast.Position{
-											Column: 5,
-											Line:   36,
+											Column: 12,
+											Line:   35,
 										},
 									},
 								},
@@ -3319,14 +3299,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 10,
-												Line:   36,
+												Column: 17,
+												Line:   35,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "group",
 											Start: ast.Position{
-												Column: 5,
-												Line:   36,
+												Column: 12,
+												Line:   35,
 											},
 										},
 									},
@@ -3342,14 +3322,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 81,
-									Line:   43,
+									Column: 105,
+									Line:   41,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "P_value_x = training_data\n\t|> group(columns: [\"_value\", \"_field\"])\n\t|> count(column: myClass)\n\t|> map(fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))",
+								Source: "P_value_x = training_data\n        |> group(columns: [\"_value\", \"_field\"])\n        |> count(column: myClass)\n        |> map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))",
 								Start: ast.Position{
-									Column: 1,
-									Line:   39,
+									Column: 5,
+									Line:   38,
 								},
 							},
 						},
@@ -3359,14 +3339,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   39,
+										Column: 14,
+										Line:   38,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "P_value_x",
 									Start: ast.Position{
-										Column: 1,
-										Line:   39,
+										Column: 5,
+										Line:   38,
 									},
 								},
 							},
@@ -3381,14 +3361,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 26,
-													Line:   39,
+													Column: 30,
+													Line:   38,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "training_data",
 												Start: ast.Position{
-													Column: 13,
-													Line:   39,
+													Column: 17,
+													Line:   38,
 												},
 											},
 										},
@@ -3399,14 +3379,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   40,
+												Column: 48,
+												Line:   39,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "training_data\n\t|> group(columns: [\"_value\", \"_field\"])",
+											Source: "training_data\n        |> group(columns: [\"_value\", \"_field\"])",
 											Start: ast.Position{
-												Column: 13,
-												Line:   39,
+												Column: 17,
+												Line:   38,
 											},
 										},
 									},
@@ -3417,14 +3397,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 40,
-														Line:   40,
+														Column: 47,
+														Line:   39,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "columns: [\"_value\", \"_field\"]",
 													Start: ast.Position{
-														Column: 11,
-														Line:   40,
+														Column: 18,
+														Line:   39,
 													},
 												},
 											},
@@ -3435,14 +3415,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
-															Line:   40,
+															Column: 47,
+															Line:   39,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "columns: [\"_value\", \"_field\"]",
 														Start: ast.Position{
-															Column: 11,
-															Line:   40,
+															Column: 18,
+															Line:   39,
 														},
 													},
 												},
@@ -3453,14 +3433,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
-																Line:   40,
+																Column: 25,
+																Line:   39,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "columns",
 															Start: ast.Position{
-																Column: 11,
-																Line:   40,
+																Column: 18,
+																Line:   39,
 															},
 														},
 													},
@@ -3473,14 +3453,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 40,
-																Line:   40,
+																Column: 47,
+																Line:   39,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "[\"_value\", \"_field\"]",
 															Start: ast.Position{
-																Column: 20,
-																Line:   40,
+																Column: 27,
+																Line:   39,
 															},
 														},
 													},
@@ -3490,14 +3470,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 29,
-																	Line:   40,
+																	Column: 36,
+																	Line:   39,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"_value\"",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   40,
+																	Column: 28,
+																	Line:   39,
 																},
 															},
 														},
@@ -3508,14 +3488,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 39,
-																	Line:   40,
+																	Column: 46,
+																	Line:   39,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"_field\"",
 																Start: ast.Position{
-																	Column: 31,
-																	Line:   40,
+																	Column: 38,
+																	Line:   39,
 																},
 															},
 														},
@@ -3533,14 +3513,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
-													Line:   40,
+													Column: 48,
+													Line:   39,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "group(columns: [\"_value\", \"_field\"])",
 												Start: ast.Position{
-													Column: 5,
-													Line:   40,
+													Column: 12,
+													Line:   39,
 												},
 											},
 										},
@@ -3550,14 +3530,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 10,
-														Line:   40,
+														Column: 17,
+														Line:   39,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "group",
 													Start: ast.Position{
-														Column: 5,
-														Line:   40,
+														Column: 12,
+														Line:   39,
 													},
 												},
 											},
@@ -3572,14 +3552,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   41,
+											Column: 34,
+											Line:   40,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "training_data\n\t|> group(columns: [\"_value\", \"_field\"])\n\t|> count(column: myClass)",
+										Source: "training_data\n        |> group(columns: [\"_value\", \"_field\"])\n        |> count(column: myClass)",
 										Start: ast.Position{
-											Column: 13,
-											Line:   39,
+											Column: 17,
+											Line:   38,
 										},
 									},
 								},
@@ -3590,14 +3570,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 26,
-													Line:   41,
+													Column: 33,
+													Line:   40,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "column: myClass",
 												Start: ast.Position{
-													Column: 11,
-													Line:   41,
+													Column: 18,
+													Line:   40,
 												},
 											},
 										},
@@ -3608,14 +3588,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 26,
-														Line:   41,
+														Column: 33,
+														Line:   40,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "column: myClass",
 													Start: ast.Position{
-														Column: 11,
-														Line:   41,
+														Column: 18,
+														Line:   40,
 													},
 												},
 											},
@@ -3626,14 +3606,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
-															Line:   41,
+															Column: 24,
+															Line:   40,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "column",
 														Start: ast.Position{
-															Column: 11,
-															Line:   41,
+															Column: 18,
+															Line:   40,
 														},
 													},
 												},
@@ -3646,14 +3626,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   41,
+															Column: 33,
+															Line:   40,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "myClass",
 														Start: ast.Position{
-															Column: 19,
-															Line:   41,
+															Column: 26,
+															Line:   40,
 														},
 													},
 												},
@@ -3668,14 +3648,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   41,
+												Column: 34,
+												Line:   40,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "count(column: myClass)",
 											Start: ast.Position{
-												Column: 5,
-												Line:   41,
+												Column: 12,
+												Line:   40,
 											},
 										},
 									},
@@ -3685,14 +3665,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 10,
-													Line:   41,
+													Column: 17,
+													Line:   40,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "count",
 												Start: ast.Position{
-													Column: 5,
-													Line:   41,
+													Column: 12,
+													Line:   40,
 												},
 											},
 										},
@@ -3707,14 +3687,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 81,
-										Line:   43,
+										Column: 105,
+										Line:   41,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "training_data\n\t|> group(columns: [\"_value\", \"_field\"])\n\t|> count(column: myClass)\n\t|> map(fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))",
+									Source: "training_data\n        |> group(columns: [\"_value\", \"_field\"])\n        |> count(column: myClass)\n        |> map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))",
 									Start: ast.Position{
-										Column: 13,
-										Line:   39,
+										Column: 17,
+										Line:   38,
 									},
 								},
 							},
@@ -3725,14 +3705,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 80,
-												Line:   43,
+												Column: 104,
+												Line:   41,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count})",
+											Source: "fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count})",
 											Start: ast.Position{
-												Column: 9,
-												Line:   42,
+												Column: 16,
+												Line:   41,
 											},
 										},
 									},
@@ -3743,14 +3723,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 80,
-													Line:   43,
+													Column: 104,
+													Line:   41,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count})",
+												Source: "fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count})",
 												Start: ast.Position{
-													Column: 9,
-													Line:   42,
+													Column: 16,
+													Line:   41,
 												},
 											},
 										},
@@ -3761,14 +3741,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   42,
+														Column: 18,
+														Line:   41,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 9,
-														Line:   42,
+														Column: 16,
+														Line:   41,
 													},
 												},
 											},
@@ -3782,14 +3762,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 80,
-														Line:   43,
+														Column: 104,
+														Line:   41,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "(r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count})",
+													Source: "(r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count})",
 													Start: ast.Position{
-														Column: 13,
-														Line:   42,
+														Column: 20,
+														Line:   41,
 													},
 												},
 											},
@@ -3799,14 +3779,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 80,
-															Line:   43,
+															Column: 104,
+															Line:   41,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count})",
 														Start: ast.Position{
-															Column: 3,
-															Line:   43,
+															Column: 27,
+															Line:   41,
 														},
 													},
 												},
@@ -3816,14 +3796,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 79,
-																Line:   43,
+																Column: 103,
+																Line:   41,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "{r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}",
 															Start: ast.Position{
-																Column: 4,
-																Line:   43,
+																Column: 28,
+																Line:   41,
 															},
 														},
 													},
@@ -3834,14 +3814,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 61,
-																	Line:   43,
+																	Column: 85,
+																	Line:   41,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "p_x: float(v: r.airborne) / float(v: total_count)",
 																Start: ast.Position{
-																	Column: 12,
-																	Line:   43,
+																	Column: 36,
+																	Line:   41,
 																},
 															},
 														},
@@ -3852,14 +3832,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 15,
-																		Line:   43,
+																		Column: 39,
+																		Line:   41,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "p_x",
 																	Start: ast.Position{
-																		Column: 12,
-																		Line:   43,
+																		Column: 36,
+																		Line:   41,
 																	},
 																},
 															},
@@ -3872,14 +3852,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 61,
-																		Line:   43,
+																		Column: 85,
+																		Line:   41,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "float(v: r.airborne) / float(v: total_count)",
 																	Start: ast.Position{
-																		Column: 17,
-																		Line:   43,
+																		Column: 41,
+																		Line:   41,
 																	},
 																},
 															},
@@ -3890,14 +3870,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 36,
-																				Line:   43,
+																				Column: 60,
+																				Line:   41,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "v: r.airborne",
 																			Start: ast.Position{
-																				Column: 23,
-																				Line:   43,
+																				Column: 47,
+																				Line:   41,
 																			},
 																		},
 																	},
@@ -3908,14 +3888,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 36,
-																					Line:   43,
+																					Column: 60,
+																					Line:   41,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "v: r.airborne",
 																				Start: ast.Position{
-																					Column: 23,
-																					Line:   43,
+																					Column: 47,
+																					Line:   41,
 																				},
 																			},
 																		},
@@ -3926,14 +3906,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 24,
-																						Line:   43,
+																						Column: 48,
+																						Line:   41,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 23,
-																						Line:   43,
+																						Column: 47,
+																						Line:   41,
 																					},
 																				},
 																			},
@@ -3946,14 +3926,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 36,
-																						Line:   43,
+																						Column: 60,
+																						Line:   41,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "r.airborne",
 																					Start: ast.Position{
-																						Column: 26,
-																						Line:   43,
+																						Column: 50,
+																						Line:   41,
 																					},
 																				},
 																			},
@@ -3964,14 +3944,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 27,
-																							Line:   43,
+																							Column: 51,
+																							Line:   41,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 26,
-																							Line:   43,
+																							Column: 50,
+																							Line:   41,
 																						},
 																					},
 																				},
@@ -3983,14 +3963,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 36,
-																							Line:   43,
+																							Column: 60,
+																							Line:   41,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "airborne",
 																						Start: ast.Position{
-																							Column: 28,
-																							Line:   43,
+																							Column: 52,
+																							Line:   41,
 																						},
 																					},
 																				},
@@ -4007,14 +3987,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   43,
+																			Column: 61,
+																			Line:   41,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "float(v: r.airborne)",
 																		Start: ast.Position{
-																			Column: 17,
-																			Line:   43,
+																			Column: 41,
+																			Line:   41,
 																		},
 																	},
 																},
@@ -4024,14 +4004,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 22,
-																				Line:   43,
+																				Column: 46,
+																				Line:   41,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "float",
 																			Start: ast.Position{
-																				Column: 17,
-																				Line:   43,
+																				Column: 41,
+																				Line:   41,
 																			},
 																		},
 																	},
@@ -4048,14 +4028,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 60,
-																				Line:   43,
+																				Column: 84,
+																				Line:   41,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "v: total_count",
 																			Start: ast.Position{
-																				Column: 46,
-																				Line:   43,
+																				Column: 70,
+																				Line:   41,
 																			},
 																		},
 																	},
@@ -4066,14 +4046,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 60,
-																					Line:   43,
+																					Column: 84,
+																					Line:   41,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "v: total_count",
 																				Start: ast.Position{
-																					Column: 46,
-																					Line:   43,
+																					Column: 70,
+																					Line:   41,
 																				},
 																			},
 																		},
@@ -4084,14 +4064,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 47,
-																						Line:   43,
+																						Column: 71,
+																						Line:   41,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 46,
-																						Line:   43,
+																						Column: 70,
+																						Line:   41,
 																					},
 																				},
 																			},
@@ -4104,14 +4084,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 60,
-																						Line:   43,
+																						Column: 84,
+																						Line:   41,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "total_count",
 																					Start: ast.Position{
-																						Column: 49,
-																						Line:   43,
+																						Column: 73,
+																						Line:   41,
 																					},
 																				},
 																			},
@@ -4126,14 +4106,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 61,
-																			Line:   43,
+																			Column: 85,
+																			Line:   41,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "float(v: total_count)",
 																		Start: ast.Position{
-																			Column: 40,
-																			Line:   43,
+																			Column: 64,
+																			Line:   41,
 																		},
 																	},
 																},
@@ -4143,14 +4123,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   43,
+																				Column: 69,
+																				Line:   41,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "float",
 																			Start: ast.Position{
-																				Column: 40,
-																				Line:   43,
+																				Column: 64,
+																				Line:   41,
 																			},
 																		},
 																	},
@@ -4166,14 +4146,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 78,
-																	Line:   43,
+																	Column: 102,
+																	Line:   41,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "tc: total_count",
 																Start: ast.Position{
-																	Column: 63,
-																	Line:   43,
+																	Column: 87,
+																	Line:   41,
 																},
 															},
 														},
@@ -4184,14 +4164,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 65,
-																		Line:   43,
+																		Column: 89,
+																		Line:   41,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "tc",
 																	Start: ast.Position{
-																		Column: 63,
-																		Line:   43,
+																		Column: 87,
+																		Line:   41,
 																	},
 																},
 															},
@@ -4204,14 +4184,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 78,
-																		Line:   43,
+																		Column: 102,
+																		Line:   41,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "total_count",
 																	Start: ast.Position{
-																		Column: 67,
-																		Line:   43,
+																		Column: 91,
+																		Line:   41,
 																	},
 																},
 															},
@@ -4225,14 +4205,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 6,
-																	Line:   43,
+																	Column: 30,
+																	Line:   41,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 5,
-																	Line:   43,
+																	Column: 29,
+																	Line:   41,
 																},
 															},
 														},
@@ -4249,14 +4229,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   42,
+															Column: 22,
+															Line:   41,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   42,
+															Column: 21,
+															Line:   41,
 														},
 													},
 												},
@@ -4267,14 +4247,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 15,
-																Line:   42,
+																Column: 22,
+																Line:   41,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 14,
-																Line:   42,
+																Column: 21,
+																Line:   41,
 															},
 														},
 													},
@@ -4294,14 +4274,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 81,
-											Line:   43,
+											Column: 105,
+											Line:   41,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "map(fn: (r) =>\n\t\t({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))",
+										Source: "map(fn: (r) => ({r with p_x: float(v: r.airborne) / float(v: total_count), tc: total_count}))",
 										Start: ast.Position{
-											Column: 5,
-											Line:   42,
+											Column: 12,
+											Line:   41,
 										},
 									},
 								},
@@ -4311,14 +4291,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 8,
-												Line:   42,
+												Column: 15,
+												Line:   41,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "map",
 											Start: ast.Position{
-												Column: 5,
-												Line:   42,
+												Column: 12,
+												Line:   41,
 											},
 										},
 									},
@@ -4334,14 +4314,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
+									Column: 19,
 									Line:   50,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "P_k_x = training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])\n\t|> reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})\n\t|> group()",
+								Source: "P_k_x = training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])\n        |> reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )\n        |> group()",
 								Start: ast.Position{
-									Column: 1,
-									Line:   46,
+									Column: 5,
+									Line:   44,
 								},
 							},
 						},
@@ -4351,14 +4331,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   46,
+										Column: 10,
+										Line:   44,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "P_k_x",
 									Start: ast.Position{
-										Column: 1,
-										Line:   46,
+										Column: 5,
+										Line:   44,
 									},
 								},
 							},
@@ -4373,14 +4353,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 22,
-													Line:   46,
+													Column: 26,
+													Line:   44,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "training_data",
 												Start: ast.Position{
-													Column: 9,
-													Line:   46,
+													Column: 13,
+													Line:   44,
 												},
 											},
 										},
@@ -4391,14 +4371,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 49,
-												Line:   47,
+												Column: 57,
+												Line:   45,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])",
+											Source: "training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])",
 											Start: ast.Position{
-												Column: 9,
-												Line:   46,
+												Column: 13,
+												Line:   44,
 											},
 										},
 									},
@@ -4409,14 +4389,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 48,
-														Line:   47,
+														Column: 56,
+														Line:   45,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "columns: [\"_field\",\"_value\", myClass]",
+													Source: "columns: [\"_field\", \"_value\", myClass]",
 													Start: ast.Position{
-														Column: 11,
-														Line:   47,
+														Column: 18,
+														Line:   45,
 													},
 												},
 											},
@@ -4427,14 +4407,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 48,
-															Line:   47,
+															Column: 56,
+															Line:   45,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "columns: [\"_field\",\"_value\", myClass]",
+														Source: "columns: [\"_field\", \"_value\", myClass]",
 														Start: ast.Position{
-															Column: 11,
-															Line:   47,
+															Column: 18,
+															Line:   45,
 														},
 													},
 												},
@@ -4445,14 +4425,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
-																Line:   47,
+																Column: 25,
+																Line:   45,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "columns",
 															Start: ast.Position{
-																Column: 11,
-																Line:   47,
+																Column: 18,
+																Line:   45,
 															},
 														},
 													},
@@ -4465,14 +4445,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 48,
-																Line:   47,
+																Column: 56,
+																Line:   45,
 															},
 															File:   "naiveBayesClassifier.flux",
-															Source: "[\"_field\",\"_value\", myClass]",
+															Source: "[\"_field\", \"_value\", myClass]",
 															Start: ast.Position{
-																Column: 20,
-																Line:   47,
+																Column: 27,
+																Line:   45,
 															},
 														},
 													},
@@ -4482,14 +4462,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 29,
-																	Line:   47,
+																	Column: 36,
+																	Line:   45,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"_field\"",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   47,
+																	Column: 28,
+																	Line:   45,
 																},
 															},
 														},
@@ -4500,14 +4480,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 38,
-																	Line:   47,
+																	Column: 46,
+																	Line:   45,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"_value\"",
 																Start: ast.Position{
-																	Column: 30,
-																	Line:   47,
+																	Column: 38,
+																	Line:   45,
 																},
 															},
 														},
@@ -4518,14 +4498,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
-																	Line:   47,
+																	Column: 55,
+																	Line:   45,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "myClass",
 																Start: ast.Position{
-																	Column: 40,
-																	Line:   47,
+																	Column: 48,
+																	Line:   45,
 																},
 															},
 														},
@@ -4543,14 +4523,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 49,
-													Line:   47,
+													Column: 57,
+													Line:   45,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "group(columns: [\"_field\",\"_value\", myClass])",
+												Source: "group(columns: [\"_field\", \"_value\", myClass])",
 												Start: ast.Position{
-													Column: 5,
-													Line:   47,
+													Column: 12,
+													Line:   45,
 												},
 											},
 										},
@@ -4560,14 +4540,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 10,
-														Line:   47,
+														Column: 17,
+														Line:   45,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "group",
 													Start: ast.Position{
-														Column: 5,
-														Line:   47,
+														Column: 12,
+														Line:   45,
 													},
 												},
 											},
@@ -4582,14 +4562,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 56,
+											Column: 10,
 											Line:   49,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])\n\t|> reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})",
+										Source: "training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])\n        |> reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )",
 										Start: ast.Position{
-											Column: 9,
-											Line:   46,
+											Column: 13,
+											Line:   44,
 										},
 									},
 								},
@@ -4600,14 +4580,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 55,
-													Line:   49,
+													Column: 33,
+													Line:   48,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0}",
+												Source: "fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0}",
 												Start: ast.Position{
-													Column: 12,
-													Line:   48,
+													Column: 13,
+													Line:   47,
 												},
 											},
 										},
@@ -4618,14 +4598,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 33,
-														Line:   49,
+														Column: 67,
+														Line:   47,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum})",
+													Source: "fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum})",
 													Start: ast.Position{
-														Column: 12,
-														Line:   48,
+														Column: 13,
+														Line:   47,
 													},
 												},
 											},
@@ -4636,14 +4616,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 14,
-															Line:   48,
+															Column: 15,
+															Line:   47,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "fn",
 														Start: ast.Position{
-															Column: 12,
-															Line:   48,
+															Column: 13,
+															Line:   47,
 														},
 													},
 												},
@@ -4657,14 +4637,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 33,
-															Line:   49,
+															Column: 67,
+															Line:   47,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "(r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum})",
+														Source: "(r, accumulator) => ({sum: 1.0 + accumulator.sum})",
 														Start: ast.Position{
-															Column: 16,
-															Line:   48,
+															Column: 17,
+															Line:   47,
 														},
 													},
 												},
@@ -4674,14 +4654,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 33,
-																Line:   49,
+																Column: 67,
+																Line:   47,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "({sum: 1.0 + accumulator.sum})",
 															Start: ast.Position{
-																Column: 3,
-																Line:   49,
+																Column: 37,
+																Line:   47,
 															},
 														},
 													},
@@ -4691,14 +4671,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 32,
-																	Line:   49,
+																	Column: 66,
+																	Line:   47,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "{sum: 1.0 + accumulator.sum}",
 																Start: ast.Position{
-																	Column: 4,
-																	Line:   49,
+																	Column: 38,
+																	Line:   47,
 																},
 															},
 														},
@@ -4709,14 +4689,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 31,
-																		Line:   49,
+																		Column: 65,
+																		Line:   47,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "sum: 1.0 + accumulator.sum",
 																	Start: ast.Position{
-																		Column: 5,
-																		Line:   49,
+																		Column: 39,
+																		Line:   47,
 																	},
 																},
 															},
@@ -4727,14 +4707,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 8,
-																			Line:   49,
+																			Column: 42,
+																			Line:   47,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "sum",
 																		Start: ast.Position{
-																			Column: 5,
-																			Line:   49,
+																			Column: 39,
+																			Line:   47,
 																		},
 																	},
 																},
@@ -4747,14 +4727,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 31,
-																			Line:   49,
+																			Column: 65,
+																			Line:   47,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "1.0 + accumulator.sum",
 																		Start: ast.Position{
-																			Column: 10,
-																			Line:   49,
+																			Column: 44,
+																			Line:   47,
 																		},
 																	},
 																},
@@ -4764,14 +4744,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 13,
-																				Line:   49,
+																				Column: 47,
+																				Line:   47,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "1.0",
 																			Start: ast.Position{
-																				Column: 10,
-																				Line:   49,
+																				Column: 44,
+																				Line:   47,
 																			},
 																		},
 																	},
@@ -4784,14 +4764,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 31,
-																				Line:   49,
+																				Column: 65,
+																				Line:   47,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "accumulator.sum",
 																			Start: ast.Position{
-																				Column: 16,
-																				Line:   49,
+																				Column: 50,
+																				Line:   47,
 																			},
 																		},
 																	},
@@ -4802,14 +4782,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 27,
-																					Line:   49,
+																					Column: 61,
+																					Line:   47,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "accumulator",
 																				Start: ast.Position{
-																					Column: 16,
-																					Line:   49,
+																					Column: 50,
+																					Line:   47,
 																				},
 																			},
 																		},
@@ -4821,14 +4801,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 31,
-																					Line:   49,
+																					Column: 65,
+																					Line:   47,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "sum",
 																				Start: ast.Position{
-																					Column: 28,
-																					Line:   49,
+																					Column: 62,
+																					Line:   47,
 																				},
 																			},
 																		},
@@ -4851,14 +4831,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 18,
-																Line:   48,
+																Column: 19,
+																Line:   47,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 17,
-																Line:   48,
+																Column: 18,
+																Line:   47,
 															},
 														},
 													},
@@ -4869,14 +4849,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   48,
+																	Column: 19,
+																	Line:   47,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 17,
-																	Line:   48,
+																	Column: 18,
+																	Line:   47,
 																},
 															},
 														},
@@ -4890,14 +4870,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 31,
-																Line:   48,
+																Column: 32,
+																Line:   47,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "accumulator",
 															Start: ast.Position{
-																Column: 20,
-																Line:   48,
+																Column: 21,
+																Line:   47,
 															},
 														},
 													},
@@ -4908,14 +4888,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 31,
-																	Line:   48,
+																	Column: 32,
+																	Line:   47,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "accumulator",
 																Start: ast.Position{
-																	Column: 20,
-																	Line:   48,
+																	Column: 21,
+																	Line:   47,
 																},
 															},
 														},
@@ -4932,14 +4912,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 55,
-														Line:   49,
+														Column: 33,
+														Line:   48,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "identity: {sum: 0.0}",
 													Start: ast.Position{
-														Column: 35,
-														Line:   49,
+														Column: 13,
+														Line:   48,
 													},
 												},
 											},
@@ -4950,14 +4930,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 43,
-															Line:   49,
+															Column: 21,
+															Line:   48,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "identity",
 														Start: ast.Position{
-															Column: 35,
-															Line:   49,
+															Column: 13,
+															Line:   48,
 														},
 													},
 												},
@@ -4970,14 +4950,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 55,
-															Line:   49,
+															Column: 33,
+															Line:   48,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "{sum: 0.0}",
 														Start: ast.Position{
-															Column: 45,
-															Line:   49,
+															Column: 23,
+															Line:   48,
 														},
 													},
 												},
@@ -4988,14 +4968,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 54,
-																Line:   49,
+																Column: 32,
+																Line:   48,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "sum: 0.0",
 															Start: ast.Position{
-																Column: 46,
-																Line:   49,
+																Column: 24,
+																Line:   48,
 															},
 														},
 													},
@@ -5006,14 +4986,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 49,
-																	Line:   49,
+																	Column: 27,
+																	Line:   48,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "sum",
 																Start: ast.Position{
-																	Column: 46,
-																	Line:   49,
+																	Column: 24,
+																	Line:   48,
 																},
 															},
 														},
@@ -5026,14 +5006,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 54,
-																	Line:   49,
+																	Column: 32,
+																	Line:   48,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "0.0",
 																Start: ast.Position{
-																	Column: 51,
-																	Line:   49,
+																	Column: 29,
+																	Line:   48,
 																},
 															},
 														},
@@ -5052,14 +5032,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 56,
+												Column: 10,
 												Line:   49,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})",
+											Source: "reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )",
 											Start: ast.Position{
-												Column: 5,
-												Line:   48,
+												Column: 12,
+												Line:   46,
 											},
 										},
 									},
@@ -5069,14 +5049,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   48,
+													Column: 18,
+													Line:   46,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "reduce",
 												Start: ast.Position{
-													Column: 5,
-													Line:   48,
+													Column: 12,
+													Line:   46,
 												},
 											},
 										},
@@ -5091,14 +5071,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 19,
 										Line:   50,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "training_data\n\t|> group(columns: [\"_field\",\"_value\", myClass])\n\t|> reduce(fn: (r, accumulator) =>\n\t\t({sum: 1.0 + accumulator.sum}), identity: {sum: 0.0})\n\t|> group()",
+									Source: "training_data\n        |> group(columns: [\"_field\", \"_value\", myClass])\n        |> reduce(\n            fn: (r, accumulator) => ({sum: 1.0 + accumulator.sum}),\n            identity: {sum: 0.0},\n        )\n        |> group()",
 									Start: ast.Position{
-										Column: 9,
-										Line:   46,
+										Column: 13,
+										Line:   44,
 									},
 								},
 							},
@@ -5109,13 +5089,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
+											Column: 19,
 											Line:   50,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "group()",
 										Start: ast.Position{
-											Column: 5,
+											Column: 12,
 											Line:   50,
 										},
 									},
@@ -5126,13 +5106,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 10,
+												Column: 17,
 												Line:   50,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "group",
 											Start: ast.Position{
-												Column: 5,
+												Column: 12,
 												Line:   50,
 											},
 										},
@@ -5149,13 +5129,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 73,
-									Line:   60,
+									Column: 77,
+									Line:   58,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "P_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n    |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})",
+								Source: "P_k_x_class = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n        |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})",
 								Start: ast.Position{
-									Column: 1,
+									Column: 5,
 									Line:   53,
 								},
 							},
@@ -5166,13 +5146,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
+										Column: 16,
 										Line:   53,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "P_k_x_class",
 									Start: ast.Position{
-										Column: 1,
+										Column: 5,
 										Line:   53,
 									},
 								},
@@ -5191,13 +5171,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 96,
+																Column: 100,
 																Line:   53,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\"",
 															Start: ast.Position{
-																Column: 20,
+																Column: 24,
 																Line:   53,
 															},
 														},
@@ -5209,13 +5189,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 64,
+																	Column: 68,
 																	Line:   53,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}",
 																Start: ast.Position{
-																	Column: 20,
+																	Column: 24,
 																	Line:   53,
 																},
 															},
@@ -5227,13 +5207,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 26,
+																		Column: 30,
 																		Line:   53,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "tables",
 																	Start: ast.Position{
-																		Column: 20,
+																		Column: 24,
 																		Line:   53,
 																	},
 																},
@@ -5247,13 +5227,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 64,
+																		Column: 68,
 																		Line:   53,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "{P_k_x: P_k_x, P_Class_k: P_Class_k}",
 																	Start: ast.Position{
-																		Column: 28,
+																		Column: 32,
 																		Line:   53,
 																	},
 																},
@@ -5265,13 +5245,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 41,
+																			Column: 45,
 																			Line:   53,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "P_k_x: P_k_x",
 																		Start: ast.Position{
-																			Column: 29,
+																			Column: 33,
 																			Line:   53,
 																		},
 																	},
@@ -5283,13 +5263,13 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 34,
+																				Column: 38,
 																				Line:   53,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "P_k_x",
 																			Start: ast.Position{
-																				Column: 29,
+																				Column: 33,
 																				Line:   53,
 																			},
 																		},
@@ -5303,13 +5283,13 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 41,
+																				Column: 45,
 																				Line:   53,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "P_k_x",
 																			Start: ast.Position{
-																				Column: 36,
+																				Column: 40,
 																				Line:   53,
 																			},
 																		},
@@ -5322,13 +5302,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 63,
+																			Column: 67,
 																			Line:   53,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "P_Class_k: P_Class_k",
 																		Start: ast.Position{
-																			Column: 43,
+																			Column: 47,
 																			Line:   53,
 																		},
 																	},
@@ -5340,13 +5320,13 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 52,
+																				Column: 56,
 																				Line:   53,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "P_Class_k",
 																			Start: ast.Position{
-																				Column: 43,
+																				Column: 47,
 																				Line:   53,
 																			},
 																		},
@@ -5360,13 +5340,13 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 63,
+																				Column: 67,
 																				Line:   53,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "P_Class_k",
 																			Start: ast.Position{
-																				Column: 54,
+																				Column: 58,
 																				Line:   53,
 																			},
 																		},
@@ -5383,13 +5363,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 79,
+																	Column: 83,
 																	Line:   53,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "on: [myClass]",
 																Start: ast.Position{
-																	Column: 66,
+																	Column: 70,
 																	Line:   53,
 																},
 															},
@@ -5401,13 +5381,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 68,
+																		Column: 72,
 																		Line:   53,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "on",
 																	Start: ast.Position{
-																		Column: 66,
+																		Column: 70,
 																		Line:   53,
 																	},
 																},
@@ -5421,13 +5401,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 79,
+																		Column: 83,
 																		Line:   53,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "[myClass]",
 																	Start: ast.Position{
-																		Column: 70,
+																		Column: 74,
 																		Line:   53,
 																	},
 																},
@@ -5438,13 +5418,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 78,
+																			Column: 82,
 																			Line:   53,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "myClass",
 																		Start: ast.Position{
-																			Column: 71,
+																			Column: 75,
 																			Line:   53,
 																		},
 																	},
@@ -5460,13 +5440,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 96,
+																	Column: 100,
 																	Line:   53,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "method: \"inner\"",
 																Start: ast.Position{
-																	Column: 81,
+																	Column: 85,
 																	Line:   53,
 																},
 															},
@@ -5478,13 +5458,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 87,
+																		Column: 91,
 																		Line:   53,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "method",
 																	Start: ast.Position{
-																		Column: 81,
+																		Column: 85,
 																		Line:   53,
 																	},
 																},
@@ -5498,13 +5478,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 96,
+																		Column: 100,
 																		Line:   53,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"inner\"",
 																	Start: ast.Position{
-																		Column: 89,
+																		Column: 93,
 																		Line:   53,
 																	},
 																},
@@ -5520,13 +5500,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 97,
+															Column: 101,
 															Line:   53,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")",
 														Start: ast.Position{
-															Column: 15,
+															Column: 19,
 															Line:   53,
 														},
 													},
@@ -5537,13 +5517,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 19,
+																Column: 23,
 																Line:   53,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "join",
 															Start: ast.Position{
-																Column: 15,
+																Column: 19,
 																Line:   53,
 															},
 														},
@@ -5558,13 +5538,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 49,
+														Column: 53,
 														Line:   54,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])",
+													Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])",
 													Start: ast.Position{
-														Column: 15,
+														Column: 19,
 														Line:   53,
 													},
 												},
@@ -5576,13 +5556,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 48,
+																Column: 52,
 																Line:   54,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "columns: [myClass, \"_value_P_k_x\"]",
 															Start: ast.Position{
-																Column: 14,
+																Column: 18,
 																Line:   54,
 															},
 														},
@@ -5594,13 +5574,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 48,
+																	Column: 52,
 																	Line:   54,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "columns: [myClass, \"_value_P_k_x\"]",
 																Start: ast.Position{
-																	Column: 14,
+																	Column: 18,
 																	Line:   54,
 																},
 															},
@@ -5612,13 +5592,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 21,
+																		Column: 25,
 																		Line:   54,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "columns",
 																	Start: ast.Position{
-																		Column: 14,
+																		Column: 18,
 																		Line:   54,
 																	},
 																},
@@ -5632,13 +5612,13 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 48,
+																		Column: 52,
 																		Line:   54,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "[myClass, \"_value_P_k_x\"]",
 																	Start: ast.Position{
-																		Column: 23,
+																		Column: 27,
 																		Line:   54,
 																	},
 																},
@@ -5649,13 +5629,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 31,
+																			Column: 35,
 																			Line:   54,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "myClass",
 																		Start: ast.Position{
-																			Column: 24,
+																			Column: 28,
 																			Line:   54,
 																		},
 																	},
@@ -5667,13 +5647,13 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 47,
+																			Column: 51,
 																			Line:   54,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "\"_value_P_k_x\"",
 																		Start: ast.Position{
-																			Column: 33,
+																			Column: 37,
 																			Line:   54,
 																		},
 																	},
@@ -5692,13 +5672,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 49,
+															Column: 53,
 															Line:   54,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "group(columns: [myClass, \"_value_P_k_x\"])",
 														Start: ast.Position{
-															Column: 8,
+															Column: 12,
 															Line:   54,
 														},
 													},
@@ -5709,13 +5689,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 13,
+																Column: 17,
 																Line:   54,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "group",
 															Start: ast.Position{
-																Column: 8,
+																Column: 12,
 																Line:   54,
 															},
 														},
@@ -5731,13 +5711,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 18,
+													Column: 23,
 													Line:   55,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)",
+												Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)",
 												Start: ast.Position{
-													Column: 15,
+													Column: 19,
 													Line:   53,
 												},
 											},
@@ -5749,13 +5729,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
+															Column: 22,
 															Line:   55,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "n: 1",
 														Start: ast.Position{
-															Column: 13,
+															Column: 18,
 															Line:   55,
 														},
 													},
@@ -5767,13 +5747,13 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 17,
+																Column: 22,
 																Line:   55,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "n: 1",
 															Start: ast.Position{
-																Column: 13,
+																Column: 18,
 																Line:   55,
 															},
 														},
@@ -5785,13 +5765,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 14,
+																	Column: 19,
 																	Line:   55,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "n",
 																Start: ast.Position{
-																	Column: 13,
+																	Column: 18,
 																	Line:   55,
 																},
 															},
@@ -5805,13 +5785,13 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 17,
+																	Column: 22,
 																	Line:   55,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "1",
 																Start: ast.Position{
-																	Column: 16,
+																	Column: 21,
 																	Line:   55,
 																},
 															},
@@ -5827,13 +5807,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 18,
+														Column: 23,
 														Line:   55,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "limit(n: 1)",
 													Start: ast.Position{
-														Column: 7,
+														Column: 12,
 														Line:   55,
 													},
 												},
@@ -5844,13 +5824,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 12,
+															Column: 17,
 															Line:   55,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "limit",
 														Start: ast.Position{
-															Column: 7,
+															Column: 12,
 															Line:   55,
 														},
 													},
@@ -5866,13 +5846,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 60,
-												Line:   58,
+												Column: 82,
+												Line:   56,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
+											Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
 											Start: ast.Position{
-												Column: 15,
+												Column: 19,
 												Line:   53,
 											},
 										},
@@ -5884,14 +5864,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 59,
-														Line:   58,
+														Column: 81,
+														Line:   56,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
+													Source: "fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 													Start: ast.Position{
-														Column: 11,
-														Line:   57,
+														Column: 16,
+														Line:   56,
 													},
 												},
 											},
@@ -5902,14 +5882,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 59,
-															Line:   58,
+															Column: 81,
+															Line:   56,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
+														Source: "fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 														Start: ast.Position{
-															Column: 11,
-															Line:   57,
+															Column: 16,
+															Line:   56,
 														},
 													},
 												},
@@ -5920,14 +5900,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 13,
-																Line:   57,
+																Column: 18,
+																Line:   56,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "fn",
 															Start: ast.Position{
-																Column: 11,
-																Line:   57,
+																Column: 16,
+																Line:   56,
 															},
 														},
 													},
@@ -5941,14 +5921,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 59,
-																Line:   58,
+																Column: 81,
+																Line:   56,
 															},
 															File:   "naiveBayesClassifier.flux",
-															Source: "(r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
+															Source: "(r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 															Start: ast.Position{
-																Column: 15,
-																Line:   57,
+																Column: 20,
+																Line:   56,
 															},
 														},
 													},
@@ -5958,14 +5938,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 59,
-																	Line:   58,
+																	Column: 81,
+																	Line:   56,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 																Start: ast.Position{
-																	Column: 5,
-																	Line:   58,
+																	Column: 27,
+																	Line:   56,
 																},
 															},
 														},
@@ -5975,14 +5955,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 58,
-																		Line:   58,
+																		Column: 80,
+																		Line:   56,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "{r with P_x_k: r.sum / float(v: r._value_P_Class_k)}",
 																	Start: ast.Position{
-																		Column: 6,
-																		Line:   58,
+																		Column: 28,
+																		Line:   56,
 																	},
 																},
 															},
@@ -5993,14 +5973,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 57,
-																			Line:   58,
+																			Column: 79,
+																			Line:   56,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "P_x_k: r.sum / float(v: r._value_P_Class_k)",
 																		Start: ast.Position{
-																			Column: 14,
-																			Line:   58,
+																			Column: 36,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -6011,14 +5991,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 19,
-																				Line:   58,
+																				Column: 41,
+																				Line:   56,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "P_x_k",
 																			Start: ast.Position{
-																				Column: 14,
-																				Line:   58,
+																				Column: 36,
+																				Line:   56,
 																			},
 																		},
 																	},
@@ -6031,14 +6011,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 57,
-																				Line:   58,
+																				Column: 79,
+																				Line:   56,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "r.sum / float(v: r._value_P_Class_k)",
 																			Start: ast.Position{
-																				Column: 21,
-																				Line:   58,
+																				Column: 43,
+																				Line:   56,
 																			},
 																		},
 																	},
@@ -6048,14 +6028,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 26,
-																					Line:   58,
+																					Column: 48,
+																					Line:   56,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "r.sum",
 																				Start: ast.Position{
-																					Column: 21,
-																					Line:   58,
+																					Column: 43,
+																					Line:   56,
 																				},
 																			},
 																		},
@@ -6066,14 +6046,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 22,
-																						Line:   58,
+																						Column: 44,
+																						Line:   56,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "r",
 																					Start: ast.Position{
-																						Column: 21,
-																						Line:   58,
+																						Column: 43,
+																						Line:   56,
 																					},
 																				},
 																			},
@@ -6085,14 +6065,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 26,
-																						Line:   58,
+																						Column: 48,
+																						Line:   56,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "sum",
 																					Start: ast.Position{
-																						Column: 23,
-																						Line:   58,
+																						Column: 45,
+																						Line:   56,
 																					},
 																				},
 																			},
@@ -6108,14 +6088,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 56,
-																						Line:   58,
+																						Column: 78,
+																						Line:   56,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "v: r._value_P_Class_k",
 																					Start: ast.Position{
-																						Column: 35,
-																						Line:   58,
+																						Column: 57,
+																						Line:   56,
 																					},
 																				},
 																			},
@@ -6126,14 +6106,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 56,
-																							Line:   58,
+																							Column: 78,
+																							Line:   56,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "v: r._value_P_Class_k",
 																						Start: ast.Position{
-																							Column: 35,
-																							Line:   58,
+																							Column: 57,
+																							Line:   56,
 																						},
 																					},
 																				},
@@ -6144,14 +6124,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 36,
-																								Line:   58,
+																								Column: 58,
+																								Line:   56,
 																							},
 																							File:   "naiveBayesClassifier.flux",
 																							Source: "v",
 																							Start: ast.Position{
-																								Column: 35,
-																								Line:   58,
+																								Column: 57,
+																								Line:   56,
 																							},
 																						},
 																					},
@@ -6164,14 +6144,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 56,
-																								Line:   58,
+																								Column: 78,
+																								Line:   56,
 																							},
 																							File:   "naiveBayesClassifier.flux",
 																							Source: "r._value_P_Class_k",
 																							Start: ast.Position{
-																								Column: 38,
-																								Line:   58,
+																								Column: 60,
+																								Line:   56,
 																							},
 																						},
 																					},
@@ -6182,14 +6162,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 39,
-																									Line:   58,
+																									Column: 61,
+																									Line:   56,
 																								},
 																								File:   "naiveBayesClassifier.flux",
 																								Source: "r",
 																								Start: ast.Position{
-																									Column: 38,
-																									Line:   58,
+																									Column: 60,
+																									Line:   56,
 																								},
 																							},
 																						},
@@ -6201,14 +6181,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 56,
-																									Line:   58,
+																									Column: 78,
+																									Line:   56,
 																								},
 																								File:   "naiveBayesClassifier.flux",
 																								Source: "_value_P_Class_k",
 																								Start: ast.Position{
-																									Column: 40,
-																									Line:   58,
+																									Column: 62,
+																									Line:   56,
 																								},
 																							},
 																						},
@@ -6225,14 +6205,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 57,
-																					Line:   58,
+																					Column: 79,
+																					Line:   56,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "float(v: r._value_P_Class_k)",
 																				Start: ast.Position{
-																					Column: 29,
-																					Line:   58,
+																					Column: 51,
+																					Line:   56,
 																				},
 																			},
 																		},
@@ -6242,14 +6222,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 34,
-																						Line:   58,
+																						Column: 56,
+																						Line:   56,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "float",
 																					Start: ast.Position{
-																						Column: 29,
-																						Line:   58,
+																						Column: 51,
+																						Line:   56,
 																					},
 																				},
 																			},
@@ -6267,14 +6247,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 8,
-																			Line:   58,
+																			Column: 30,
+																			Line:   56,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 7,
-																			Line:   58,
+																			Column: 29,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -6291,14 +6271,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 17,
-																	Line:   57,
+																	Column: 22,
+																	Line:   56,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 16,
-																	Line:   57,
+																	Column: 21,
+																	Line:   56,
 																},
 															},
 														},
@@ -6309,14 +6289,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 17,
-																		Line:   57,
+																		Column: 22,
+																		Line:   56,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 16,
-																		Line:   57,
+																		Column: 21,
+																		Line:   56,
 																	},
 																},
 															},
@@ -6336,14 +6316,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
-													Line:   58,
+													Column: 82,
+													Line:   56,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
+												Source: "map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
 												Start: ast.Position{
-													Column: 7,
-													Line:   57,
+													Column: 12,
+													Line:   56,
 												},
 											},
 										},
@@ -6353,14 +6333,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 10,
-														Line:   57,
+														Column: 15,
+														Line:   56,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "map",
 													Start: ast.Position{
-														Column: 7,
-														Line:   57,
+														Column: 12,
+														Line:   56,
 													},
 												},
 											},
@@ -6375,13 +6355,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 63,
-											Line:   59,
+											Column: 67,
+											Line:   57,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])",
+										Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])",
 										Start: ast.Position{
-											Column: 15,
+											Column: 19,
 											Line:   53,
 										},
 									},
@@ -6393,14 +6373,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 62,
-													Line:   59,
+													Column: 66,
+													Line:   57,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"]",
 												Start: ast.Position{
-													Column: 13,
-													Line:   59,
+													Column: 17,
+													Line:   57,
 												},
 											},
 										},
@@ -6411,14 +6391,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 62,
-														Line:   59,
+														Column: 66,
+														Line:   57,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"]",
 													Start: ast.Position{
-														Column: 13,
-														Line:   59,
+														Column: 17,
+														Line:   57,
 													},
 												},
 											},
@@ -6429,14 +6409,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 20,
-															Line:   59,
+															Column: 24,
+															Line:   57,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "columns",
 														Start: ast.Position{
-															Column: 13,
-															Line:   59,
+															Column: 17,
+															Line:   57,
 														},
 													},
 												},
@@ -6449,14 +6429,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 62,
-															Line:   59,
+															Column: 66,
+															Line:   57,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "[\"_field_P_Class_k\", \"_value_P_Class_k\"]",
 														Start: ast.Position{
-															Column: 22,
-															Line:   59,
+															Column: 26,
+															Line:   57,
 														},
 													},
 												},
@@ -6466,14 +6446,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 41,
-																Line:   59,
+																Column: 45,
+																Line:   57,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "\"_field_P_Class_k\"",
 															Start: ast.Position{
-																Column: 23,
-																Line:   59,
+																Column: 27,
+																Line:   57,
 															},
 														},
 													},
@@ -6484,14 +6464,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 61,
-																Line:   59,
+																Column: 65,
+																Line:   57,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "\"_value_P_Class_k\"",
 															Start: ast.Position{
-																Column: 43,
-																Line:   59,
+																Column: 47,
+																Line:   57,
 															},
 														},
 													},
@@ -6509,14 +6489,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 63,
-												Line:   59,
+												Column: 67,
+												Line:   57,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])",
 											Start: ast.Position{
-												Column: 8,
-												Line:   59,
+												Column: 12,
+												Line:   57,
 											},
 										},
 									},
@@ -6526,14 +6506,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 12,
-													Line:   59,
+													Column: 16,
+													Line:   57,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "drop",
 												Start: ast.Position{
-													Column: 8,
-													Line:   59,
+													Column: 12,
+													Line:   57,
 												},
 											},
 										},
@@ -6548,13 +6528,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 73,
-										Line:   60,
+										Column: 77,
+										Line:   58,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t  |> limit(n: 1)\n\n\t  |> map(fn: (r) =>\n\t\t  ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n    |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})",
+									Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\"])\n        |> rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})",
 									Start: ast.Position{
-										Column: 15,
+										Column: 19,
 										Line:   53,
 									},
 								},
@@ -6566,14 +6546,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 72,
-												Line:   60,
+												Column: 76,
+												Line:   58,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"}",
 											Start: ast.Position{
-												Column: 15,
-												Line:   60,
+												Column: 19,
+												Line:   58,
 											},
 										},
 									},
@@ -6584,14 +6564,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 72,
-													Line:   60,
+													Column: 76,
+													Line:   58,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"}",
 												Start: ast.Position{
-													Column: 15,
-													Line:   60,
+													Column: 19,
+													Line:   58,
 												},
 											},
 										},
@@ -6602,14 +6582,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   60,
+														Column: 26,
+														Line:   58,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "columns",
 													Start: ast.Position{
-														Column: 15,
-														Line:   60,
+														Column: 19,
+														Line:   58,
 													},
 												},
 											},
@@ -6622,14 +6602,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 72,
-														Line:   60,
+														Column: 76,
+														Line:   58,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "{_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"}",
 													Start: ast.Position{
-														Column: 24,
-														Line:   60,
+														Column: 28,
+														Line:   58,
 													},
 												},
 											},
@@ -6640,14 +6620,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 47,
-															Line:   60,
+															Column: 51,
+															Line:   58,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "_field_P_k_x: \"_field\"",
 														Start: ast.Position{
-															Column: 25,
-															Line:   60,
+															Column: 29,
+															Line:   58,
 														},
 													},
 												},
@@ -6658,14 +6638,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 37,
-																Line:   60,
+																Column: 41,
+																Line:   58,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "_field_P_k_x",
 															Start: ast.Position{
-																Column: 25,
-																Line:   60,
+																Column: 29,
+																Line:   58,
 															},
 														},
 													},
@@ -6678,14 +6658,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
-																Line:   60,
+																Column: 51,
+																Line:   58,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "\"_field\"",
 															Start: ast.Position{
-																Column: 39,
-																Line:   60,
+																Column: 43,
+																Line:   58,
 															},
 														},
 													},
@@ -6697,14 +6677,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 71,
-															Line:   60,
+															Column: 75,
+															Line:   58,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "_value_P_k_x: \"_value\"",
 														Start: ast.Position{
-															Column: 49,
-															Line:   60,
+															Column: 53,
+															Line:   58,
 														},
 													},
 												},
@@ -6715,14 +6695,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 61,
-																Line:   60,
+																Column: 65,
+																Line:   58,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "_value_P_k_x",
 															Start: ast.Position{
-																Column: 49,
-																Line:   60,
+																Column: 53,
+																Line:   58,
 															},
 														},
 													},
@@ -6735,14 +6715,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 71,
-																Line:   60,
+																Column: 75,
+																Line:   58,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "\"_value\"",
 															Start: ast.Position{
-																Column: 63,
-																Line:   60,
+																Column: 67,
+																Line:   58,
 															},
 														},
 													},
@@ -6761,14 +6741,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 73,
-											Line:   60,
+											Column: 77,
+											Line:   58,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "rename(columns: {_field_P_k_x: \"_field\", _value_P_k_x: \"_value\"})",
 										Start: ast.Position{
-											Column: 8,
-											Line:   60,
+											Column: 12,
+											Line:   58,
 										},
 									},
 								},
@@ -6778,14 +6758,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   60,
+												Column: 18,
+												Line:   58,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "rename",
 											Start: ast.Position{
-												Column: 8,
-												Line:   60,
+												Column: 12,
+												Line:   58,
 											},
 										},
 									},
@@ -6801,14 +6781,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 58,
-									Line:   68,
+									Column: 82,
+									Line:   63,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "P_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t|> limit(n: 1)\n\n\t|> map(fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
+								Source: "P_k_x_class_Drop = join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
 								Start: ast.Position{
-									Column: 1,
-									Line:   62,
+									Column: 5,
+									Line:   59,
 								},
 							},
 						},
@@ -6818,14 +6798,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 17,
-										Line:   62,
+										Column: 21,
+										Line:   59,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "P_k_x_class_Drop",
 									Start: ast.Position{
-										Column: 1,
-										Line:   62,
+										Column: 5,
+										Line:   59,
 									},
 								},
 							},
@@ -6842,14 +6822,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 101,
-															Line:   62,
+															Column: 105,
+															Line:   59,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\"",
 														Start: ast.Position{
-															Column: 25,
-															Line:   62,
+															Column: 29,
+															Line:   59,
 														},
 													},
 												},
@@ -6860,14 +6840,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 69,
-																Line:   62,
+																Column: 73,
+																Line:   59,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}",
 															Start: ast.Position{
-																Column: 25,
-																Line:   62,
+																Column: 29,
+																Line:   59,
 															},
 														},
 													},
@@ -6878,14 +6858,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 31,
-																	Line:   62,
+																	Column: 35,
+																	Line:   59,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "tables",
 																Start: ast.Position{
-																	Column: 25,
-																	Line:   62,
+																	Column: 29,
+																	Line:   59,
 																},
 															},
 														},
@@ -6898,14 +6878,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 69,
-																	Line:   62,
+																	Column: 73,
+																	Line:   59,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "{P_k_x: P_k_x, P_Class_k: P_Class_k}",
 																Start: ast.Position{
-																	Column: 33,
-																	Line:   62,
+																	Column: 37,
+																	Line:   59,
 																},
 															},
 														},
@@ -6916,14 +6896,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 46,
-																		Line:   62,
+																		Column: 50,
+																		Line:   59,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "P_k_x: P_k_x",
 																	Start: ast.Position{
-																		Column: 34,
-																		Line:   62,
+																		Column: 38,
+																		Line:   59,
 																	},
 																},
 															},
@@ -6934,14 +6914,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 39,
-																			Line:   62,
+																			Column: 43,
+																			Line:   59,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "P_k_x",
 																		Start: ast.Position{
-																			Column: 34,
-																			Line:   62,
+																			Column: 38,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -6954,14 +6934,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 46,
-																			Line:   62,
+																			Column: 50,
+																			Line:   59,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "P_k_x",
 																		Start: ast.Position{
-																			Column: 41,
-																			Line:   62,
+																			Column: 45,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -6973,14 +6953,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 68,
-																		Line:   62,
+																		Column: 72,
+																		Line:   59,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "P_Class_k: P_Class_k",
 																	Start: ast.Position{
-																		Column: 48,
-																		Line:   62,
+																		Column: 52,
+																		Line:   59,
 																	},
 																},
 															},
@@ -6991,14 +6971,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 57,
-																			Line:   62,
+																			Column: 61,
+																			Line:   59,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "P_Class_k",
 																		Start: ast.Position{
-																			Column: 48,
-																			Line:   62,
+																			Column: 52,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -7011,14 +6991,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 68,
-																			Line:   62,
+																			Column: 72,
+																			Line:   59,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "P_Class_k",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   62,
+																			Column: 63,
+																			Line:   59,
 																		},
 																	},
 																},
@@ -7034,14 +7014,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 84,
-																Line:   62,
+																Column: 88,
+																Line:   59,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "on: [myClass]",
 															Start: ast.Position{
-																Column: 71,
-																Line:   62,
+																Column: 75,
+																Line:   59,
 															},
 														},
 													},
@@ -7052,14 +7032,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 73,
-																	Line:   62,
+																	Column: 77,
+																	Line:   59,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "on",
 																Start: ast.Position{
-																	Column: 71,
-																	Line:   62,
+																	Column: 75,
+																	Line:   59,
 																},
 															},
 														},
@@ -7072,14 +7052,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 84,
-																	Line:   62,
+																	Column: 88,
+																	Line:   59,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "[myClass]",
 																Start: ast.Position{
-																	Column: 75,
-																	Line:   62,
+																	Column: 79,
+																	Line:   59,
 																},
 															},
 														},
@@ -7089,14 +7069,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 83,
-																		Line:   62,
+																		Column: 87,
+																		Line:   59,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "myClass",
 																	Start: ast.Position{
-																		Column: 76,
-																		Line:   62,
+																		Column: 80,
+																		Line:   59,
 																	},
 																},
 															},
@@ -7111,14 +7091,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 101,
-																Line:   62,
+																Column: 105,
+																Line:   59,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "method: \"inner\"",
 															Start: ast.Position{
-																Column: 86,
-																Line:   62,
+																Column: 90,
+																Line:   59,
 															},
 														},
 													},
@@ -7129,14 +7109,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 92,
-																	Line:   62,
+																	Column: 96,
+																	Line:   59,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "method",
 																Start: ast.Position{
-																	Column: 86,
-																	Line:   62,
+																	Column: 90,
+																	Line:   59,
 																},
 															},
 														},
@@ -7149,14 +7129,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 101,
-																	Line:   62,
+																	Column: 105,
+																	Line:   59,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"inner\"",
 																Start: ast.Position{
-																	Column: 94,
-																	Line:   62,
+																	Column: 98,
+																	Line:   59,
 																},
 															},
 														},
@@ -7171,14 +7151,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 102,
-														Line:   62,
+														Column: 106,
+														Line:   59,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")",
 													Start: ast.Position{
-														Column: 20,
-														Line:   62,
+														Column: 24,
+														Line:   59,
 													},
 												},
 											},
@@ -7188,14 +7168,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 24,
-															Line:   62,
+															Column: 28,
+															Line:   59,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "join",
 														Start: ast.Position{
-															Column: 20,
-															Line:   62,
+															Column: 24,
+															Line:   59,
 														},
 													},
 												},
@@ -7209,14 +7189,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 79,
-													Line:   63,
+													Column: 83,
+													Line:   60,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])",
+												Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])",
 												Start: ast.Position{
-													Column: 20,
-													Line:   62,
+													Column: 24,
+													Line:   59,
 												},
 											},
 										},
@@ -7227,14 +7207,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 78,
-															Line:   63,
+															Column: 82,
+															Line:   60,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"]",
 														Start: ast.Position{
-															Column: 13,
-															Line:   63,
+															Column: 17,
+															Line:   60,
 														},
 													},
 												},
@@ -7245,14 +7225,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 78,
-																Line:   63,
+																Column: 82,
+																Line:   60,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"]",
 															Start: ast.Position{
-																Column: 13,
-																Line:   63,
+																Column: 17,
+																Line:   60,
 															},
 														},
 													},
@@ -7263,14 +7243,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
-																	Line:   63,
+																	Column: 24,
+																	Line:   60,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "columns",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   63,
+																	Column: 17,
+																	Line:   60,
 																},
 															},
 														},
@@ -7283,14 +7263,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 78,
-																	Line:   63,
+																	Column: 82,
+																	Line:   60,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "[\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"]",
 																Start: ast.Position{
-																	Column: 22,
-																	Line:   63,
+																	Column: 26,
+																	Line:   60,
 																},
 															},
 														},
@@ -7300,14 +7280,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 41,
-																		Line:   63,
+																		Column: 45,
+																		Line:   60,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"_field_P_Class_k\"",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   63,
+																		Column: 27,
+																		Line:   60,
 																	},
 																},
 															},
@@ -7318,14 +7298,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 61,
-																		Line:   63,
+																		Column: 65,
+																		Line:   60,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"_value_P_Class_k\"",
 																	Start: ast.Position{
-																		Column: 43,
-																		Line:   63,
+																		Column: 47,
+																		Line:   60,
 																	},
 																},
 															},
@@ -7336,14 +7316,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 77,
-																		Line:   63,
+																		Column: 81,
+																		Line:   60,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"_field_P_k_x\"",
 																	Start: ast.Position{
-																		Column: 63,
-																		Line:   63,
+																		Column: 67,
+																		Line:   60,
 																	},
 																},
 															},
@@ -7361,14 +7341,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 79,
-														Line:   63,
+														Column: 83,
+														Line:   60,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])",
 													Start: ast.Position{
-														Column: 8,
-														Line:   63,
+														Column: 12,
+														Line:   60,
 													},
 												},
 											},
@@ -7378,14 +7358,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 12,
-															Line:   63,
+															Column: 16,
+															Line:   60,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "drop",
 														Start: ast.Position{
-															Column: 8,
-															Line:   63,
+															Column: 12,
+															Line:   60,
 														},
 													},
 												},
@@ -7400,14 +7380,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 49,
-												Line:   64,
+												Column: 53,
+												Line:   61,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])",
+											Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])",
 											Start: ast.Position{
-												Column: 20,
-												Line:   62,
+												Column: 24,
+												Line:   59,
 											},
 										},
 									},
@@ -7418,14 +7398,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 48,
-														Line:   64,
+														Column: 52,
+														Line:   61,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "columns: [myClass, \"_value_P_k_x\"]",
 													Start: ast.Position{
-														Column: 14,
-														Line:   64,
+														Column: 18,
+														Line:   61,
 													},
 												},
 											},
@@ -7436,14 +7416,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 48,
-															Line:   64,
+															Column: 52,
+															Line:   61,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "columns: [myClass, \"_value_P_k_x\"]",
 														Start: ast.Position{
-															Column: 14,
-															Line:   64,
+															Column: 18,
+															Line:   61,
 														},
 													},
 												},
@@ -7454,14 +7434,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 21,
-																Line:   64,
+																Column: 25,
+																Line:   61,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "columns",
 															Start: ast.Position{
-																Column: 14,
-																Line:   64,
+																Column: 18,
+																Line:   61,
 															},
 														},
 													},
@@ -7474,14 +7454,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 48,
-																Line:   64,
+																Column: 52,
+																Line:   61,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "[myClass, \"_value_P_k_x\"]",
 															Start: ast.Position{
-																Column: 23,
-																Line:   64,
+																Column: 27,
+																Line:   61,
 															},
 														},
 													},
@@ -7491,14 +7471,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 31,
-																	Line:   64,
+																	Column: 35,
+																	Line:   61,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "myClass",
 																Start: ast.Position{
-																	Column: 24,
-																	Line:   64,
+																	Column: 28,
+																	Line:   61,
 																},
 															},
 														},
@@ -7509,14 +7489,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
-																	Line:   64,
+																	Column: 51,
+																	Line:   61,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"_value_P_k_x\"",
 																Start: ast.Position{
-																	Column: 33,
-																	Line:   64,
+																	Column: 37,
+																	Line:   61,
 																},
 															},
 														},
@@ -7534,14 +7514,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 49,
-													Line:   64,
+													Column: 53,
+													Line:   61,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "group(columns: [myClass, \"_value_P_k_x\"])",
 												Start: ast.Position{
-													Column: 8,
-													Line:   64,
+													Column: 12,
+													Line:   61,
 												},
 											},
 										},
@@ -7551,14 +7531,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   64,
+														Column: 17,
+														Line:   61,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "group",
 													Start: ast.Position{
-														Column: 8,
-														Line:   64,
+														Column: 12,
+														Line:   61,
 													},
 												},
 											},
@@ -7573,14 +7553,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 16,
-											Line:   65,
+											Column: 23,
+											Line:   62,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t|> limit(n: 1)",
+										Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)",
 										Start: ast.Position{
-											Column: 20,
-											Line:   62,
+											Column: 24,
+											Line:   59,
 										},
 									},
 								},
@@ -7591,14 +7571,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 15,
-													Line:   65,
+													Column: 22,
+													Line:   62,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "n: 1",
 												Start: ast.Position{
-													Column: 11,
-													Line:   65,
+													Column: 18,
+													Line:   62,
 												},
 											},
 										},
@@ -7609,14 +7589,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   65,
+														Column: 22,
+														Line:   62,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "n: 1",
 													Start: ast.Position{
-														Column: 11,
-														Line:   65,
+														Column: 18,
+														Line:   62,
 													},
 												},
 											},
@@ -7627,14 +7607,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 12,
-															Line:   65,
+															Column: 19,
+															Line:   62,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "n",
 														Start: ast.Position{
-															Column: 11,
-															Line:   65,
+															Column: 18,
+															Line:   62,
 														},
 													},
 												},
@@ -7647,14 +7627,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   65,
+															Column: 22,
+															Line:   62,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "1",
 														Start: ast.Position{
-															Column: 14,
-															Line:   65,
+															Column: 21,
+															Line:   62,
 														},
 													},
 												},
@@ -7669,14 +7649,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 16,
-												Line:   65,
+												Column: 23,
+												Line:   62,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "limit(n: 1)",
 											Start: ast.Position{
-												Column: 5,
-												Line:   65,
+												Column: 12,
+												Line:   62,
 											},
 										},
 									},
@@ -7686,14 +7666,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 10,
-													Line:   65,
+													Column: 17,
+													Line:   62,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "limit",
 												Start: ast.Position{
-													Column: 5,
-													Line:   65,
+													Column: 12,
+													Line:   62,
 												},
 											},
 										},
@@ -7708,14 +7688,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 58,
-										Line:   68,
+										Column: 82,
+										Line:   63,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n    |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n    |> group(columns: [myClass, \"_value_P_k_x\"])\n\t|> limit(n: 1)\n\n\t|> map(fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
+									Source: "join(tables: {P_k_x: P_k_x, P_Class_k: P_Class_k}, on: [myClass], method: \"inner\")\n        |> drop(columns: [\"_field_P_Class_k\", \"_value_P_Class_k\", \"_field_P_k_x\"])\n        |> group(columns: [myClass, \"_value_P_k_x\"])\n        |> limit(n: 1)\n        |> map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
 									Start: ast.Position{
-										Column: 20,
-										Line:   62,
+										Column: 24,
+										Line:   59,
 									},
 								},
 							},
@@ -7726,14 +7706,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 57,
-												Line:   68,
+												Column: 81,
+												Line:   63,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
+											Source: "fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 											Start: ast.Position{
-												Column: 9,
-												Line:   67,
+												Column: 16,
+												Line:   63,
 											},
 										},
 									},
@@ -7744,14 +7724,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 57,
-													Line:   68,
+													Column: 81,
+													Line:   63,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
+												Source: "fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 												Start: ast.Position{
-													Column: 9,
-													Line:   67,
+													Column: 16,
+													Line:   63,
 												},
 											},
 										},
@@ -7762,14 +7742,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   67,
+														Column: 18,
+														Line:   63,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 9,
-														Line:   67,
+														Column: 16,
+														Line:   63,
 													},
 												},
 											},
@@ -7783,14 +7763,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 57,
-														Line:   68,
+														Column: 81,
+														Line:   63,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "(r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
+													Source: "(r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 													Start: ast.Position{
-														Column: 13,
-														Line:   67,
+														Column: 20,
+														Line:   63,
 													},
 												},
 											},
@@ -7800,14 +7780,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 57,
-															Line:   68,
+															Column: 81,
+															Line:   63,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "({r with P_x_k: r.sum / float(v: r._value_P_Class_k)})",
 														Start: ast.Position{
-															Column: 3,
-															Line:   68,
+															Column: 27,
+															Line:   63,
 														},
 													},
 												},
@@ -7817,14 +7797,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 56,
-																Line:   68,
+																Column: 80,
+																Line:   63,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "{r with P_x_k: r.sum / float(v: r._value_P_Class_k)}",
 															Start: ast.Position{
-																Column: 4,
-																Line:   68,
+																Column: 28,
+																Line:   63,
 															},
 														},
 													},
@@ -7835,14 +7815,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 55,
-																	Line:   68,
+																	Column: 79,
+																	Line:   63,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "P_x_k: r.sum / float(v: r._value_P_Class_k)",
 																Start: ast.Position{
-																	Column: 12,
-																	Line:   68,
+																	Column: 36,
+																	Line:   63,
 																},
 															},
 														},
@@ -7853,14 +7833,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 17,
-																		Line:   68,
+																		Column: 41,
+																		Line:   63,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "P_x_k",
 																	Start: ast.Position{
-																		Column: 12,
-																		Line:   68,
+																		Column: 36,
+																		Line:   63,
 																	},
 																},
 															},
@@ -7873,14 +7853,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 55,
-																		Line:   68,
+																		Column: 79,
+																		Line:   63,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r.sum / float(v: r._value_P_Class_k)",
 																	Start: ast.Position{
-																		Column: 19,
-																		Line:   68,
+																		Column: 43,
+																		Line:   63,
 																	},
 																},
 															},
@@ -7890,14 +7870,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 24,
-																			Line:   68,
+																			Column: 48,
+																			Line:   63,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r.sum",
 																		Start: ast.Position{
-																			Column: 19,
-																			Line:   68,
+																			Column: 43,
+																			Line:   63,
 																		},
 																	},
 																},
@@ -7908,14 +7888,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 20,
-																				Line:   68,
+																				Column: 44,
+																				Line:   63,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 19,
-																				Line:   68,
+																				Column: 43,
+																				Line:   63,
 																			},
 																		},
 																	},
@@ -7927,14 +7907,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 24,
-																				Line:   68,
+																				Column: 48,
+																				Line:   63,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "sum",
 																			Start: ast.Position{
-																				Column: 21,
-																				Line:   68,
+																				Column: 45,
+																				Line:   63,
 																			},
 																		},
 																	},
@@ -7950,14 +7930,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 54,
-																				Line:   68,
+																				Column: 78,
+																				Line:   63,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "v: r._value_P_Class_k",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   68,
+																				Column: 57,
+																				Line:   63,
 																			},
 																		},
 																	},
@@ -7968,14 +7948,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 54,
-																					Line:   68,
+																					Column: 78,
+																					Line:   63,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "v: r._value_P_Class_k",
 																				Start: ast.Position{
-																					Column: 33,
-																					Line:   68,
+																					Column: 57,
+																					Line:   63,
 																				},
 																			},
 																		},
@@ -7986,14 +7966,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 34,
-																						Line:   68,
+																						Column: 58,
+																						Line:   63,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 33,
-																						Line:   68,
+																						Column: 57,
+																						Line:   63,
 																					},
 																				},
 																			},
@@ -8006,14 +7986,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 54,
-																						Line:   68,
+																						Column: 78,
+																						Line:   63,
 																					},
 																					File:   "naiveBayesClassifier.flux",
 																					Source: "r._value_P_Class_k",
 																					Start: ast.Position{
-																						Column: 36,
-																						Line:   68,
+																						Column: 60,
+																						Line:   63,
 																					},
 																				},
 																			},
@@ -8024,14 +8004,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 37,
-																							Line:   68,
+																							Column: 61,
+																							Line:   63,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 36,
-																							Line:   68,
+																							Column: 60,
+																							Line:   63,
 																						},
 																					},
 																				},
@@ -8043,14 +8023,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 54,
-																							Line:   68,
+																							Column: 78,
+																							Line:   63,
 																						},
 																						File:   "naiveBayesClassifier.flux",
 																						Source: "_value_P_Class_k",
 																						Start: ast.Position{
-																							Column: 38,
-																							Line:   68,
+																							Column: 62,
+																							Line:   63,
 																						},
 																					},
 																				},
@@ -8067,14 +8047,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 55,
-																			Line:   68,
+																			Column: 79,
+																			Line:   63,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "float(v: r._value_P_Class_k)",
 																		Start: ast.Position{
-																			Column: 27,
-																			Line:   68,
+																			Column: 51,
+																			Line:   63,
 																		},
 																	},
 																},
@@ -8084,14 +8064,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 32,
-																				Line:   68,
+																				Column: 56,
+																				Line:   63,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "float",
 																			Start: ast.Position{
-																				Column: 27,
-																				Line:   68,
+																				Column: 51,
+																				Line:   63,
 																			},
 																		},
 																	},
@@ -8109,14 +8089,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 6,
-																	Line:   68,
+																	Column: 30,
+																	Line:   63,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 5,
-																	Line:   68,
+																	Column: 29,
+																	Line:   63,
 																},
 															},
 														},
@@ -8133,14 +8113,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   67,
+															Column: 22,
+															Line:   63,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   67,
+															Column: 21,
+															Line:   63,
 														},
 													},
 												},
@@ -8151,14 +8131,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 15,
-																Line:   67,
+																Column: 22,
+																Line:   63,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 14,
-																Line:   67,
+																Column: 21,
+																Line:   63,
 															},
 														},
 													},
@@ -8178,14 +8158,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 58,
-											Line:   68,
+											Column: 82,
+											Line:   63,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "map(fn: (r) =>\n\t\t({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
+										Source: "map(fn: (r) => ({r with P_x_k: r.sum / float(v: r._value_P_Class_k)}))",
 										Start: ast.Position{
-											Column: 5,
-											Line:   67,
+											Column: 12,
+											Line:   63,
 										},
 									},
 								},
@@ -8195,14 +8175,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 8,
-												Line:   67,
+												Column: 15,
+												Line:   63,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "map",
 											Start: ast.Position{
-												Column: 5,
-												Line:   67,
+												Column: 12,
+												Line:   63,
 											},
 										},
 									},
@@ -8218,14 +8198,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 51,
-									Line:   74,
+									Column: 75,
+									Line:   68,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "Probability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n\t|> map(fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x}))",
+								Source: "Probability_table = join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n        |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))",
 								Start: ast.Position{
-									Column: 1,
-									Line:   72,
+									Column: 5,
+									Line:   67,
 								},
 							},
 						},
@@ -8235,14 +8215,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 18,
-										Line:   72,
+										Column: 22,
+										Line:   67,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "Probability_table",
 									Start: ast.Position{
-										Column: 1,
-										Line:   72,
+										Column: 5,
+										Line:   67,
 									},
 								},
 							},
@@ -8256,14 +8236,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 125,
-												Line:   72,
+												Column: 129,
+												Line:   67,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\"",
 											Start: ast.Position{
-												Column: 26,
-												Line:   72,
+												Column: 30,
+												Line:   67,
 											},
 										},
 									},
@@ -8274,14 +8254,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 82,
-													Line:   72,
+													Column: 86,
+													Line:   67,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}",
 												Start: ast.Position{
-													Column: 26,
-													Line:   72,
+													Column: 30,
+													Line:   67,
 												},
 											},
 										},
@@ -8292,14 +8272,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 32,
-														Line:   72,
+														Column: 36,
+														Line:   67,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 26,
-														Line:   72,
+														Column: 30,
+														Line:   67,
 													},
 												},
 											},
@@ -8312,14 +8292,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 82,
-														Line:   72,
+														Column: 86,
+														Line:   67,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "{P_k_x_class: P_k_x_class, P_value_x: P_value_x}",
 													Start: ast.Position{
-														Column: 34,
-														Line:   72,
+														Column: 38,
+														Line:   67,
 													},
 												},
 											},
@@ -8330,14 +8310,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 59,
-															Line:   72,
+															Column: 63,
+															Line:   67,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "P_k_x_class: P_k_x_class",
 														Start: ast.Position{
-															Column: 35,
-															Line:   72,
+															Column: 39,
+															Line:   67,
 														},
 													},
 												},
@@ -8348,14 +8328,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 46,
-																Line:   72,
+																Column: 50,
+																Line:   67,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "P_k_x_class",
 															Start: ast.Position{
-																Column: 35,
-																Line:   72,
+																Column: 39,
+																Line:   67,
 															},
 														},
 													},
@@ -8368,14 +8348,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 59,
-																Line:   72,
+																Column: 63,
+																Line:   67,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "P_k_x_class",
 															Start: ast.Position{
-																Column: 48,
-																Line:   72,
+																Column: 52,
+																Line:   67,
 															},
 														},
 													},
@@ -8387,14 +8367,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 81,
-															Line:   72,
+															Column: 85,
+															Line:   67,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "P_value_x: P_value_x",
 														Start: ast.Position{
-															Column: 61,
-															Line:   72,
+															Column: 65,
+															Line:   67,
 														},
 													},
 												},
@@ -8405,14 +8385,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 70,
-																Line:   72,
+																Column: 74,
+																Line:   67,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "P_value_x",
 															Start: ast.Position{
-																Column: 61,
-																Line:   72,
+																Column: 65,
+																Line:   67,
 															},
 														},
 													},
@@ -8425,14 +8405,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 81,
-																Line:   72,
+																Column: 85,
+																Line:   67,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "P_value_x",
 															Start: ast.Position{
-																Column: 72,
-																Line:   72,
+																Column: 76,
+																Line:   67,
 															},
 														},
 													},
@@ -8448,14 +8428,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 108,
-													Line:   72,
+													Column: 112,
+													Line:   67,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "on: [\"_value\", \"_field\"]",
 												Start: ast.Position{
-													Column: 84,
-													Line:   72,
+													Column: 88,
+													Line:   67,
 												},
 											},
 										},
@@ -8466,14 +8446,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 86,
-														Line:   72,
+														Column: 90,
+														Line:   67,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "on",
 													Start: ast.Position{
-														Column: 84,
-														Line:   72,
+														Column: 88,
+														Line:   67,
 													},
 												},
 											},
@@ -8486,14 +8466,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 108,
-														Line:   72,
+														Column: 112,
+														Line:   67,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "[\"_value\", \"_field\"]",
 													Start: ast.Position{
-														Column: 88,
-														Line:   72,
+														Column: 92,
+														Line:   67,
 													},
 												},
 											},
@@ -8503,14 +8483,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 97,
-															Line:   72,
+															Column: 101,
+															Line:   67,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "\"_value\"",
 														Start: ast.Position{
-															Column: 89,
-															Line:   72,
+															Column: 93,
+															Line:   67,
 														},
 													},
 												},
@@ -8521,14 +8501,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 107,
-															Line:   72,
+															Column: 111,
+															Line:   67,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "\"_field\"",
 														Start: ast.Position{
-															Column: 99,
-															Line:   72,
+															Column: 103,
+															Line:   67,
 														},
 													},
 												},
@@ -8543,14 +8523,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 125,
-													Line:   72,
+													Column: 129,
+													Line:   67,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "method: \"inner\"",
 												Start: ast.Position{
-													Column: 110,
-													Line:   72,
+													Column: 114,
+													Line:   67,
 												},
 											},
 										},
@@ -8561,14 +8541,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 116,
-														Line:   72,
+														Column: 120,
+														Line:   67,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "method",
 													Start: ast.Position{
-														Column: 110,
-														Line:   72,
+														Column: 114,
+														Line:   67,
 													},
 												},
 											},
@@ -8581,14 +8561,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 125,
-														Line:   72,
+														Column: 129,
+														Line:   67,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "\"inner\"",
 													Start: ast.Position{
-														Column: 118,
-														Line:   72,
+														Column: 122,
+														Line:   67,
 													},
 												},
 											},
@@ -8603,14 +8583,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 126,
-											Line:   72,
+											Column: 130,
+											Line:   67,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")",
 										Start: ast.Position{
-											Column: 21,
-											Line:   72,
+											Column: 25,
+											Line:   67,
 										},
 									},
 								},
@@ -8620,14 +8600,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   72,
+												Column: 29,
+												Line:   67,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "join",
 											Start: ast.Position{
-												Column: 21,
-												Line:   72,
+												Column: 25,
+												Line:   67,
 											},
 										},
 									},
@@ -8641,14 +8621,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 51,
-										Line:   74,
+										Column: 75,
+										Line:   68,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n\t|> map(fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x}))",
+									Source: "join(tables: {P_k_x_class: P_k_x_class, P_value_x: P_value_x}, on: [\"_value\", \"_field\"], method: \"inner\")\n        |> map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))",
 									Start: ast.Position{
-										Column: 21,
-										Line:   72,
+										Column: 25,
+										Line:   67,
 									},
 								},
 							},
@@ -8659,14 +8639,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 50,
-												Line:   74,
+												Column: 74,
+												Line:   68,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x})",
+											Source: "fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x})",
 											Start: ast.Position{
-												Column: 9,
-												Line:   73,
+												Column: 16,
+												Line:   68,
 											},
 										},
 									},
@@ -8677,14 +8657,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 50,
-													Line:   74,
+													Column: 74,
+													Line:   68,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x})",
+												Source: "fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x})",
 												Start: ast.Position{
-													Column: 9,
-													Line:   73,
+													Column: 16,
+													Line:   68,
 												},
 											},
 										},
@@ -8695,14 +8675,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   73,
+														Column: 18,
+														Line:   68,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 9,
-														Line:   73,
+														Column: 16,
+														Line:   68,
 													},
 												},
 											},
@@ -8716,14 +8696,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 50,
-														Line:   74,
+														Column: 74,
+														Line:   68,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "(r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x})",
+													Source: "(r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x})",
 													Start: ast.Position{
-														Column: 13,
-														Line:   73,
+														Column: 20,
+														Line:   68,
 													},
 												},
 											},
@@ -8733,14 +8713,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 50,
-															Line:   74,
+															Column: 74,
+															Line:   68,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "({r with Probability: r.P_x_k * r.p_k / r.p_x})",
 														Start: ast.Position{
-															Column: 3,
-															Line:   74,
+															Column: 27,
+															Line:   68,
 														},
 													},
 												},
@@ -8750,14 +8730,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 49,
-																Line:   74,
+																Column: 73,
+																Line:   68,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "{r with Probability: r.P_x_k * r.p_k / r.p_x}",
 															Start: ast.Position{
-																Column: 4,
-																Line:   74,
+																Column: 28,
+																Line:   68,
 															},
 														},
 													},
@@ -8768,14 +8748,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 48,
-																	Line:   74,
+																	Column: 72,
+																	Line:   68,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "Probability: r.P_x_k * r.p_k / r.p_x",
 																Start: ast.Position{
-																	Column: 12,
-																	Line:   74,
+																	Column: 36,
+																	Line:   68,
 																},
 															},
 														},
@@ -8786,14 +8766,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 23,
-																		Line:   74,
+																		Column: 47,
+																		Line:   68,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "Probability",
 																	Start: ast.Position{
-																		Column: 12,
-																		Line:   74,
+																		Column: 36,
+																		Line:   68,
 																	},
 																},
 															},
@@ -8806,14 +8786,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 48,
-																		Line:   74,
+																		Column: 72,
+																		Line:   68,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r.P_x_k * r.p_k / r.p_x",
 																	Start: ast.Position{
-																		Column: 25,
-																		Line:   74,
+																		Column: 49,
+																		Line:   68,
 																	},
 																},
 															},
@@ -8823,14 +8803,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 40,
-																			Line:   74,
+																			Column: 64,
+																			Line:   68,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r.P_x_k * r.p_k",
 																		Start: ast.Position{
-																			Column: 25,
-																			Line:   74,
+																			Column: 49,
+																			Line:   68,
 																		},
 																	},
 																},
@@ -8840,14 +8820,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 32,
-																				Line:   74,
+																				Column: 56,
+																				Line:   68,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "r.P_x_k",
 																			Start: ast.Position{
-																				Column: 25,
-																				Line:   74,
+																				Column: 49,
+																				Line:   68,
 																			},
 																		},
 																	},
@@ -8858,14 +8838,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 26,
-																					Line:   74,
+																					Column: 50,
+																					Line:   68,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "r",
 																				Start: ast.Position{
-																					Column: 25,
-																					Line:   74,
+																					Column: 49,
+																					Line:   68,
 																				},
 																			},
 																		},
@@ -8877,14 +8857,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 32,
-																					Line:   74,
+																					Column: 56,
+																					Line:   68,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "P_x_k",
 																				Start: ast.Position{
-																					Column: 27,
-																					Line:   74,
+																					Column: 51,
+																					Line:   68,
 																				},
 																			},
 																		},
@@ -8899,14 +8879,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 40,
-																				Line:   74,
+																				Column: 64,
+																				Line:   68,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "r.p_k",
 																			Start: ast.Position{
-																				Column: 35,
-																				Line:   74,
+																				Column: 59,
+																				Line:   68,
 																			},
 																		},
 																	},
@@ -8917,14 +8897,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 36,
-																					Line:   74,
+																					Column: 60,
+																					Line:   68,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "r",
 																				Start: ast.Position{
-																					Column: 35,
-																					Line:   74,
+																					Column: 59,
+																					Line:   68,
 																				},
 																			},
 																		},
@@ -8936,14 +8916,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 40,
-																					Line:   74,
+																					Column: 64,
+																					Line:   68,
 																				},
 																				File:   "naiveBayesClassifier.flux",
 																				Source: "p_k",
 																				Start: ast.Position{
-																					Column: 37,
-																					Line:   74,
+																					Column: 61,
+																					Line:   68,
 																				},
 																			},
 																		},
@@ -8959,14 +8939,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 48,
-																			Line:   74,
+																			Column: 72,
+																			Line:   68,
 																		},
 																		File:   "naiveBayesClassifier.flux",
 																		Source: "r.p_x",
 																		Start: ast.Position{
-																			Column: 43,
-																			Line:   74,
+																			Column: 67,
+																			Line:   68,
 																		},
 																	},
 																},
@@ -8977,14 +8957,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 44,
-																				Line:   74,
+																				Column: 68,
+																				Line:   68,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 43,
-																				Line:   74,
+																				Column: 67,
+																				Line:   68,
 																			},
 																		},
 																	},
@@ -8996,14 +8976,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 48,
-																				Line:   74,
+																				Column: 72,
+																				Line:   68,
 																			},
 																			File:   "naiveBayesClassifier.flux",
 																			Source: "p_x",
 																			Start: ast.Position{
-																				Column: 45,
-																				Line:   74,
+																				Column: 69,
+																				Line:   68,
 																			},
 																		},
 																	},
@@ -9020,14 +9000,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 6,
-																	Line:   74,
+																	Column: 30,
+																	Line:   68,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 5,
-																	Line:   74,
+																	Column: 29,
+																	Line:   68,
 																},
 															},
 														},
@@ -9044,14 +9024,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   73,
+															Column: 22,
+															Line:   68,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   73,
+															Column: 21,
+															Line:   68,
 														},
 													},
 												},
@@ -9062,14 +9042,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 15,
-																Line:   73,
+																Column: 22,
+																Line:   68,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 14,
-																Line:   73,
+																Column: 21,
+																Line:   68,
 															},
 														},
 													},
@@ -9089,14 +9069,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 51,
-											Line:   74,
+											Column: 75,
+											Line:   68,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "map(fn: (r) =>\n\t\t({r with Probability: r.P_x_k * r.p_k / r.p_x}))",
+										Source: "map(fn: (r) => ({r with Probability: r.P_x_k * r.p_k / r.p_x}))",
 										Start: ast.Position{
-											Column: 5,
-											Line:   73,
+											Column: 12,
+											Line:   68,
 										},
 									},
 								},
@@ -9106,14 +9086,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 8,
-												Line:   73,
+												Column: 15,
+												Line:   68,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "map",
 											Start: ast.Position{
-												Column: 5,
-												Line:   73,
+												Column: 12,
+												Line:   68,
 											},
 										},
 									},
@@ -9129,14 +9109,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 2,
-									Line:   85,
+									Column: 6,
+									Line:   78,
 								},
 								File:   "naiveBayesClassifier.flux",
-								Source: "predictOverall = (tables=<-) => {\n  r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])\n\n  output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n  return output \n}",
+								Source: "predictOverall = (tables=<-) => {\n        r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])\n        output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n\n        return output\n    }",
 								Start: ast.Position{
-									Column: 1,
-									Line:   79,
+									Column: 5,
+									Line:   72,
 								},
 							},
 						},
@@ -9146,14 +9126,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
-										Line:   79,
+										Column: 19,
+										Line:   72,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "predictOverall",
 									Start: ast.Position{
-										Column: 1,
-										Line:   79,
+										Column: 5,
+										Line:   72,
 									},
 								},
 							},
@@ -9166,14 +9146,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 2,
-										Line:   85,
+										Column: 6,
+										Line:   78,
 									},
 									File:   "naiveBayesClassifier.flux",
-									Source: "(tables=<-) => {\n  r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])\n\n  output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n  return output \n}",
+									Source: "(tables=<-) => {\n        r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])\n        output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n\n        return output\n    }",
 									Start: ast.Position{
-										Column: 18,
-										Line:   79,
+										Column: 22,
+										Line:   72,
 									},
 								},
 							},
@@ -9183,14 +9163,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 2,
-											Line:   85,
+											Column: 6,
+											Line:   78,
 										},
 										File:   "naiveBayesClassifier.flux",
-										Source: "{\n  r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])\n\n  output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n  return output \n}",
+										Source: "{\n        r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])\n        output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")\n\n        return output\n    }",
 										Start: ast.Position{
-											Column: 33,
-											Line:   79,
+											Column: 37,
+											Line:   72,
 										},
 									},
 								},
@@ -9200,14 +9180,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 57,
-												Line:   81,
+												Column: 66,
+												Line:   74,
 											},
 											File:   "naiveBayesClassifier.flux",
-											Source: "r = tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])",
+											Source: "r = tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])",
 											Start: ast.Position{
-												Column: 3,
-												Line:   80,
+												Column: 9,
+												Line:   73,
 											},
 										},
 									},
@@ -9217,14 +9197,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 4,
-													Line:   80,
+													Column: 10,
+													Line:   73,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 3,
-													Line:   80,
+													Column: 9,
+													Line:   73,
 												},
 											},
 										},
@@ -9237,14 +9217,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   80,
+														Column: 19,
+														Line:   73,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 7,
-														Line:   80,
+														Column: 13,
+														Line:   73,
 													},
 												},
 											},
@@ -9255,14 +9235,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 57,
-													Line:   81,
+													Column: 66,
+													Line:   74,
 												},
 												File:   "naiveBayesClassifier.flux",
-												Source: "tables\n    |> keep(columns: [\"_value\", \"Animal_name\",\"_field\"])",
+												Source: "tables\n            |> keep(columns: [\"_value\", \"Animal_name\", \"_field\"])",
 												Start: ast.Position{
-													Column: 7,
-													Line:   80,
+													Column: 13,
+													Line:   73,
 												},
 											},
 										},
@@ -9273,14 +9253,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 56,
-															Line:   81,
+															Column: 65,
+															Line:   74,
 														},
 														File:   "naiveBayesClassifier.flux",
-														Source: "columns: [\"_value\", \"Animal_name\",\"_field\"]",
+														Source: "columns: [\"_value\", \"Animal_name\", \"_field\"]",
 														Start: ast.Position{
-															Column: 13,
-															Line:   81,
+															Column: 21,
+															Line:   74,
 														},
 													},
 												},
@@ -9291,14 +9271,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 56,
-																Line:   81,
+																Column: 65,
+																Line:   74,
 															},
 															File:   "naiveBayesClassifier.flux",
-															Source: "columns: [\"_value\", \"Animal_name\",\"_field\"]",
+															Source: "columns: [\"_value\", \"Animal_name\", \"_field\"]",
 															Start: ast.Position{
-																Column: 13,
-																Line:   81,
+																Column: 21,
+																Line:   74,
 															},
 														},
 													},
@@ -9309,14 +9289,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
-																	Line:   81,
+																	Column: 28,
+																	Line:   74,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "columns",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   81,
+																	Column: 21,
+																	Line:   74,
 																},
 															},
 														},
@@ -9329,14 +9309,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 56,
-																	Line:   81,
+																	Column: 65,
+																	Line:   74,
 																},
 																File:   "naiveBayesClassifier.flux",
-																Source: "[\"_value\", \"Animal_name\",\"_field\"]",
+																Source: "[\"_value\", \"Animal_name\", \"_field\"]",
 																Start: ast.Position{
-																	Column: 22,
-																	Line:   81,
+																	Column: 30,
+																	Line:   74,
 																},
 															},
 														},
@@ -9346,14 +9326,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 31,
-																		Line:   81,
+																		Column: 39,
+																		Line:   74,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"_value\"",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   81,
+																		Column: 31,
+																		Line:   74,
 																	},
 																},
 															},
@@ -9364,14 +9344,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 46,
-																		Line:   81,
+																		Column: 54,
+																		Line:   74,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"Animal_name\"",
 																	Start: ast.Position{
-																		Column: 33,
-																		Line:   81,
+																		Column: 41,
+																		Line:   74,
 																	},
 																},
 															},
@@ -9382,14 +9362,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 55,
-																		Line:   81,
+																		Column: 64,
+																		Line:   74,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "\"_field\"",
 																	Start: ast.Position{
-																		Column: 47,
-																		Line:   81,
+																		Column: 56,
+																		Line:   74,
 																	},
 																},
 															},
@@ -9407,14 +9387,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 57,
-														Line:   81,
+														Column: 66,
+														Line:   74,
 													},
 													File:   "naiveBayesClassifier.flux",
-													Source: "keep(columns: [\"_value\", \"Animal_name\",\"_field\"])",
+													Source: "keep(columns: [\"_value\", \"Animal_name\", \"_field\"])",
 													Start: ast.Position{
-														Column: 8,
-														Line:   81,
+														Column: 16,
+														Line:   74,
 													},
 												},
 											},
@@ -9424,14 +9404,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 12,
-															Line:   81,
+															Column: 20,
+															Line:   74,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "keep",
 														Start: ast.Position{
-															Column: 8,
-															Line:   81,
+															Column: 16,
+															Line:   74,
 														},
 													},
 												},
@@ -9447,14 +9427,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 103,
-												Line:   83,
+												Column: 109,
+												Line:   75,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "output = join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")",
 											Start: ast.Position{
-												Column: 3,
-												Line:   83,
+												Column: 9,
+												Line:   75,
 											},
 										},
 									},
@@ -9464,14 +9444,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 9,
-													Line:   83,
+													Column: 15,
+													Line:   75,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "output",
 												Start: ast.Position{
-													Column: 3,
-													Line:   83,
+													Column: 9,
+													Line:   75,
 												},
 											},
 										},
@@ -9484,14 +9464,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 102,
-														Line:   83,
+														Column: 108,
+														Line:   75,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\"",
 													Start: ast.Position{
-														Column: 17,
-														Line:   83,
+														Column: 23,
+														Line:   75,
 													},
 												},
 											},
@@ -9502,14 +9482,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 69,
-															Line:   83,
+															Column: 75,
+															Line:   75,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "tables: {Probability_table: Probability_table, r: r}",
 														Start: ast.Position{
-															Column: 17,
-															Line:   83,
+															Column: 23,
+															Line:   75,
 														},
 													},
 												},
@@ -9520,14 +9500,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 23,
-																Line:   83,
+																Column: 29,
+																Line:   75,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "tables",
 															Start: ast.Position{
-																Column: 17,
-																Line:   83,
+																Column: 23,
+																Line:   75,
 															},
 														},
 													},
@@ -9540,14 +9520,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 69,
-																Line:   83,
+																Column: 75,
+																Line:   75,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "{Probability_table: Probability_table, r: r}",
 															Start: ast.Position{
-																Column: 25,
-																Line:   83,
+																Column: 31,
+																Line:   75,
 															},
 														},
 													},
@@ -9558,14 +9538,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 62,
-																	Line:   83,
+																	Column: 68,
+																	Line:   75,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "Probability_table: Probability_table",
 																Start: ast.Position{
-																	Column: 26,
-																	Line:   83,
+																	Column: 32,
+																	Line:   75,
 																},
 															},
 														},
@@ -9576,14 +9556,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 43,
-																		Line:   83,
+																		Column: 49,
+																		Line:   75,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "Probability_table",
 																	Start: ast.Position{
-																		Column: 26,
-																		Line:   83,
+																		Column: 32,
+																		Line:   75,
 																	},
 																},
 															},
@@ -9596,14 +9576,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 62,
-																		Line:   83,
+																		Column: 68,
+																		Line:   75,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "Probability_table",
 																	Start: ast.Position{
-																		Column: 45,
-																		Line:   83,
+																		Column: 51,
+																		Line:   75,
 																	},
 																},
 															},
@@ -9615,14 +9595,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 68,
-																	Line:   83,
+																	Column: 74,
+																	Line:   75,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "r: r",
 																Start: ast.Position{
-																	Column: 64,
-																	Line:   83,
+																	Column: 70,
+																	Line:   75,
 																},
 															},
 														},
@@ -9633,14 +9613,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 65,
-																		Line:   83,
+																		Column: 71,
+																		Line:   75,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 64,
-																		Line:   83,
+																		Column: 70,
+																		Line:   75,
 																	},
 																},
 															},
@@ -9653,14 +9633,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 68,
-																		Line:   83,
+																		Column: 74,
+																		Line:   75,
 																	},
 																	File:   "naiveBayesClassifier.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 67,
-																		Line:   83,
+																		Column: 73,
+																		Line:   75,
 																	},
 																},
 															},
@@ -9676,14 +9656,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 85,
-															Line:   83,
+															Column: 91,
+															Line:   75,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "on: [\"_value\"]",
 														Start: ast.Position{
-															Column: 71,
-															Line:   83,
+															Column: 77,
+															Line:   75,
 														},
 													},
 												},
@@ -9694,14 +9674,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 73,
-																Line:   83,
+																Column: 79,
+																Line:   75,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "on",
 															Start: ast.Position{
-																Column: 71,
-																Line:   83,
+																Column: 77,
+																Line:   75,
 															},
 														},
 													},
@@ -9714,14 +9694,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 85,
-																Line:   83,
+																Column: 91,
+																Line:   75,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "[\"_value\"]",
 															Start: ast.Position{
-																Column: 75,
-																Line:   83,
+																Column: 81,
+																Line:   75,
 															},
 														},
 													},
@@ -9731,14 +9711,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 84,
-																	Line:   83,
+																	Column: 90,
+																	Line:   75,
 																},
 																File:   "naiveBayesClassifier.flux",
 																Source: "\"_value\"",
 																Start: ast.Position{
-																	Column: 76,
-																	Line:   83,
+																	Column: 82,
+																	Line:   75,
 																},
 															},
 														},
@@ -9753,14 +9733,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 102,
-															Line:   83,
+															Column: 108,
+															Line:   75,
 														},
 														File:   "naiveBayesClassifier.flux",
 														Source: "method: \"inner\"",
 														Start: ast.Position{
-															Column: 87,
-															Line:   83,
+															Column: 93,
+															Line:   75,
 														},
 													},
 												},
@@ -9771,14 +9751,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 93,
-																Line:   83,
+																Column: 99,
+																Line:   75,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "method",
 															Start: ast.Position{
-																Column: 87,
-																Line:   83,
+																Column: 93,
+																Line:   75,
 															},
 														},
 													},
@@ -9791,14 +9771,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 102,
-																Line:   83,
+																Column: 108,
+																Line:   75,
 															},
 															File:   "naiveBayesClassifier.flux",
 															Source: "\"inner\"",
 															Start: ast.Position{
-																Column: 95,
-																Line:   83,
+																Column: 101,
+																Line:   75,
 															},
 														},
 													},
@@ -9813,14 +9793,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 103,
-													Line:   83,
+													Column: 109,
+													Line:   75,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "join(tables: {Probability_table: Probability_table, r: r}, on: [\"_value\"], method: \"inner\")",
 												Start: ast.Position{
-													Column: 12,
-													Line:   83,
+													Column: 18,
+													Line:   75,
 												},
 											},
 										},
@@ -9830,14 +9810,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 16,
-														Line:   83,
+														Column: 22,
+														Line:   75,
 													},
 													File:   "naiveBayesClassifier.flux",
 													Source: "join",
 													Start: ast.Position{
-														Column: 12,
-														Line:   83,
+														Column: 18,
+														Line:   75,
 													},
 												},
 											},
@@ -9853,14 +9833,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   84,
+													Column: 22,
+													Line:   77,
 												},
 												File:   "naiveBayesClassifier.flux",
 												Source: "output",
 												Start: ast.Position{
-													Column: 10,
-													Line:   84,
+													Column: 16,
+													Line:   77,
 												},
 											},
 										},
@@ -9871,14 +9851,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 16,
-												Line:   84,
+												Column: 22,
+												Line:   77,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "return output",
 											Start: ast.Position{
-												Column: 3,
-												Line:   84,
+												Column: 9,
+												Line:   77,
 											},
 										},
 									},
@@ -9893,14 +9873,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
-											Line:   79,
+											Column: 32,
+											Line:   72,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "tables=<-",
 										Start: ast.Position{
-											Column: 19,
-											Line:   79,
+											Column: 23,
+											Line:   72,
 										},
 									},
 								},
@@ -9911,14 +9891,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   79,
+												Column: 29,
+												Line:   72,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "tables",
 											Start: ast.Position{
-												Column: 19,
-												Line:   79,
+												Column: 23,
+												Line:   72,
 											},
 										},
 									},
@@ -9930,14 +9910,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
-											Line:   79,
+											Column: 32,
+											Line:   72,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "<-",
 										Start: ast.Position{
-											Column: 26,
-											Line:   79,
+											Column: 30,
+											Line:   72,
 										},
 									},
 								}},
@@ -9952,14 +9932,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 17,
-											Line:   87,
+											Column: 21,
+											Line:   80,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "test_data",
 										Start: ast.Position{
-											Column: 8,
-											Line:   87,
+											Column: 12,
+											Line:   80,
 										},
 									},
 								},
@@ -9970,14 +9950,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 37,
-										Line:   87,
+										Column: 41,
+										Line:   80,
 									},
 									File:   "naiveBayesClassifier.flux",
 									Source: "test_data |> predictOverall()",
 									Start: ast.Position{
-										Column: 8,
-										Line:   87,
+										Column: 12,
+										Line:   80,
 									},
 								},
 							},
@@ -9988,14 +9968,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   87,
+											Column: 41,
+											Line:   80,
 										},
 										File:   "naiveBayesClassifier.flux",
 										Source: "predictOverall()",
 										Start: ast.Position{
-											Column: 21,
-											Line:   87,
+											Column: 25,
+											Line:   80,
 										},
 									},
 								},
@@ -10005,14 +9985,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
-												Line:   87,
+												Column: 39,
+												Line:   80,
 											},
 											File:   "naiveBayesClassifier.flux",
 											Source: "predictOverall",
 											Start: ast.Position{
-												Column: 21,
-												Line:   87,
+												Column: 25,
+												Line:   80,
 											},
 										},
 									},
@@ -10027,14 +10007,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 37,
-									Line:   87,
+									Column: 41,
+									Line:   80,
 								},
 								File:   "naiveBayesClassifier.flux",
 								Source: "return test_data |> predictOverall()",
 								Start: ast.Position{
-									Column: 1,
-									Line:   87,
+									Column: 5,
+									Line:   80,
 								},
 							},
 						},
@@ -10266,13 +10246,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 29,
-						Line:   5,
+						Line:   4,
 					},
 					File:   "naiveBayesClassifier.flux",
 					Source: "package naiveBayesClassifier",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   4,
 					},
 				},
 			},
@@ -10283,13 +10263,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 29,
-							Line:   5,
+							Line:   4,
 						},
 						File:   "naiveBayesClassifier.flux",
 						Source: "naiveBayesClassifier",
 						Start: ast.Position{
 							Column: 9,
-							Line:   5,
+							Line:   4,
 						},
 					},
 				},

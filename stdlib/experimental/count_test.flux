@@ -1,9 +1,10 @@
 package experimental_test
 
+
 import "testing"
 import "experimental"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,unsignedLong
@@ -61,7 +62,6 @@ inData = "
 ,,4,iZquGj,ucyoZ,2018-12-18T20:53:13Z,68
 ,,4,iZquGj,ucyoZ,2018-12-18T20:53:23Z,49
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,long
 #group,false,false,true,true,true,true,false
@@ -73,11 +73,8 @@ outData = "
 ,,3,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,iZquGj,ei77f8T,6
 ,,4,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,iZquGj,ucyoZ,6
 "
+t_count = (table=<-) => table
+    |> range(start: 2018-12-01T00:00:00Z)
+    |> experimental.count()
 
-t_count = (table=<-) =>
-	(table
-		|> range(start: 2018-12-01T00:00:00Z)
-		|> experimental.count())
-
-test _count = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_count})
+test _count = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_count})

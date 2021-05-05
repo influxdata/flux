@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 12,
-					Line:   15,
+					Line:   20,
 				},
 				File:   "math.flux",
-				Source: "package math\n\nbuiltin minIndex : (values: [A]) => int where A: Numeric\nmin = (values) => {\n    index = minIndex(values)\n    return values[index]\n}\n\nbuiltin maxIndex : (values: [A]) => int where A: Numeric\nmax = (values) => {\n\tindex = maxIndex(values)\n\treturn values[index]\n}\n\nbuiltin sum",
+				Source: "package math\n\n\nbuiltin minIndex : (values: [A]) => int where A: Numeric\n\nmin = (values) => {\n    index = minIndex(values)\n\n    return values[index]\n}\n\nbuiltin maxIndex : (values: [A]) => int where A: Numeric\n\nmax = (values) => {\n    index = maxIndex(values)\n\n    return values[index]\n}\n\nbuiltin sum",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "math.flux",
 					Source: "builtin minIndex",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "math.flux",
 						Source: "minIndex",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 57,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "math.flux",
 						Source: "(values: [A]) => int where A: Numeric",
 						Start: ast.Position{
 							Column: 20,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 57,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "math.flux",
 							Source: "A: Numeric",
 							Start: ast.Position{
 								Column: 47,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 57,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "math.flux",
 								Source: "Numeric",
 								Start: ast.Position{
 									Column: 50,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "math.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 47,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "math.flux",
 							Source: "(values: [A]) => int",
 							Start: ast.Position{
 								Column: 20,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "math.flux",
 								Source: "values: [A]",
 								Start: ast.Position{
 									Column: 21,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -186,13 +186,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "math.flux",
 									Source: "values",
 									Start: ast.Position{
 										Column: 21,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "math.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 29,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -222,13 +222,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "math.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 30,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -239,13 +239,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   3,
+												Line:   4,
 											},
 											File:   "math.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 30,
-												Line:   3,
+												Line:   4,
 											},
 										},
 									},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "math.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 37,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -278,13 +278,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "math.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 37,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -300,13 +300,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   7,
+						Line:   10,
 					},
 					File:   "math.flux",
-					Source: "min = (values) => {\n    index = minIndex(values)\n    return values[index]\n}",
+					Source: "min = (values) => {\n    index = minIndex(values)\n\n    return values[index]\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   6,
 					},
 				},
 			},
@@ -317,13 +317,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   4,
+							Line:   6,
 						},
 						File:   "math.flux",
 						Source: "min",
 						Start: ast.Position{
 							Column: 1,
-							Line:   4,
+							Line:   6,
 						},
 					},
 				},
@@ -337,13 +337,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   7,
+							Line:   10,
 						},
 						File:   "math.flux",
-						Source: "(values) => {\n    index = minIndex(values)\n    return values[index]\n}",
+						Source: "(values) => {\n    index = minIndex(values)\n\n    return values[index]\n}",
 						Start: ast.Position{
 							Column: 7,
-							Line:   4,
+							Line:   6,
 						},
 					},
 				},
@@ -354,13 +354,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   7,
+								Line:   10,
 							},
 							File:   "math.flux",
-							Source: "{\n    index = minIndex(values)\n    return values[index]\n}",
+							Source: "{\n    index = minIndex(values)\n\n    return values[index]\n}",
 							Start: ast.Position{
 								Column: 19,
-								Line:   4,
+								Line:   6,
 							},
 						},
 					},
@@ -371,13 +371,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   5,
+									Line:   7,
 								},
 								File:   "math.flux",
 								Source: "index = minIndex(values)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   5,
+									Line:   7,
 								},
 							},
 						},
@@ -388,13 +388,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   5,
+										Line:   7,
 									},
 									File:   "math.flux",
 									Source: "index",
 									Start: ast.Position{
 										Column: 5,
-										Line:   5,
+										Line:   7,
 									},
 								},
 							},
@@ -408,13 +408,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   5,
+											Line:   7,
 										},
 										File:   "math.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 22,
-											Line:   5,
+											Line:   7,
 										},
 									},
 								},
@@ -426,13 +426,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   5,
+												Line:   7,
 											},
 											File:   "math.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 22,
-												Line:   5,
+												Line:   7,
 											},
 										},
 									},
@@ -444,13 +444,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   5,
+													Line:   7,
 												},
 												File:   "math.flux",
 												Source: "values",
 												Start: ast.Position{
 													Column: 22,
-													Line:   5,
+													Line:   7,
 												},
 											},
 										},
@@ -468,13 +468,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   5,
+										Line:   7,
 									},
 									File:   "math.flux",
 									Source: "minIndex(values)",
 									Start: ast.Position{
 										Column: 13,
-										Line:   5,
+										Line:   7,
 									},
 								},
 							},
@@ -485,13 +485,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   5,
+											Line:   7,
 										},
 										File:   "math.flux",
 										Source: "minIndex",
 										Start: ast.Position{
 											Column: 13,
-											Line:   5,
+											Line:   7,
 										},
 									},
 								},
@@ -509,13 +509,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   6,
+											Line:   9,
 										},
 										File:   "math.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 12,
-											Line:   6,
+											Line:   9,
 										},
 									},
 								},
@@ -527,13 +527,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   6,
+										Line:   9,
 									},
 									File:   "math.flux",
 									Source: "values[index]",
 									Start: ast.Position{
 										Column: 12,
-										Line:   6,
+										Line:   9,
 									},
 								},
 							},
@@ -544,13 +544,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   6,
+											Line:   9,
 										},
 										File:   "math.flux",
 										Source: "index",
 										Start: ast.Position{
 											Column: 19,
-											Line:   6,
+											Line:   9,
 										},
 									},
 								},
@@ -565,13 +565,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 25,
-									Line:   6,
+									Line:   9,
 								},
 								File:   "math.flux",
 								Source: "return values[index]",
 								Start: ast.Position{
 									Column: 5,
-									Line:   6,
+									Line:   9,
 								},
 							},
 						},
@@ -587,13 +587,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   4,
+								Line:   6,
 							},
 							File:   "math.flux",
 							Source: "values",
 							Start: ast.Position{
 								Column: 8,
-								Line:   4,
+								Line:   6,
 							},
 						},
 					},
@@ -605,13 +605,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   4,
+									Line:   6,
 								},
 								File:   "math.flux",
 								Source: "values",
 								Start: ast.Position{
 									Column: 8,
-									Line:   4,
+									Line:   6,
 								},
 							},
 						},
@@ -629,13 +629,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   9,
+						Line:   12,
 					},
 					File:   "math.flux",
 					Source: "builtin maxIndex",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   12,
 					},
 				},
 			},
@@ -647,13 +647,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   9,
+							Line:   12,
 						},
 						File:   "math.flux",
 						Source: "maxIndex",
 						Start: ast.Position{
 							Column: 9,
-							Line:   9,
+							Line:   12,
 						},
 					},
 				},
@@ -666,13 +666,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 57,
-							Line:   9,
+							Line:   12,
 						},
 						File:   "math.flux",
 						Source: "(values: [A]) => int where A: Numeric",
 						Start: ast.Position{
 							Column: 20,
-							Line:   9,
+							Line:   12,
 						},
 					},
 				},
@@ -683,13 +683,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 57,
-								Line:   9,
+								Line:   12,
 							},
 							File:   "math.flux",
 							Source: "A: Numeric",
 							Start: ast.Position{
 								Column: 47,
-								Line:   9,
+								Line:   12,
 							},
 						},
 					},
@@ -700,13 +700,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 57,
-									Line:   9,
+									Line:   12,
 								},
 								File:   "math.flux",
 								Source: "Numeric",
 								Start: ast.Position{
 									Column: 50,
-									Line:   9,
+									Line:   12,
 								},
 							},
 						},
@@ -719,13 +719,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   9,
+									Line:   12,
 								},
 								File:   "math.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 47,
-									Line:   9,
+									Line:   12,
 								},
 							},
 						},
@@ -739,13 +739,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   9,
+								Line:   12,
 							},
 							File:   "math.flux",
 							Source: "(values: [A]) => int",
 							Start: ast.Position{
 								Column: 20,
-								Line:   9,
+								Line:   12,
 							},
 						},
 					},
@@ -756,13 +756,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   9,
+									Line:   12,
 								},
 								File:   "math.flux",
 								Source: "values: [A]",
 								Start: ast.Position{
 									Column: 21,
-									Line:   9,
+									Line:   12,
 								},
 							},
 						},
@@ -774,13 +774,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   9,
+										Line:   12,
 									},
 									File:   "math.flux",
 									Source: "values",
 									Start: ast.Position{
 										Column: 21,
-										Line:   9,
+										Line:   12,
 									},
 								},
 							},
@@ -793,13 +793,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 32,
-										Line:   9,
+										Line:   12,
 									},
 									File:   "math.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 29,
-										Line:   9,
+										Line:   12,
 									},
 								},
 							},
@@ -810,13 +810,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   9,
+											Line:   12,
 										},
 										File:   "math.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 30,
-											Line:   9,
+											Line:   12,
 										},
 									},
 								},
@@ -827,13 +827,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   9,
+												Line:   12,
 											},
 											File:   "math.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 30,
-												Line:   9,
+												Line:   12,
 											},
 										},
 									},
@@ -849,13 +849,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   9,
+									Line:   12,
 								},
 								File:   "math.flux",
 								Source: "int",
 								Start: ast.Position{
 									Column: 37,
-									Line:   9,
+									Line:   12,
 								},
 							},
 						},
@@ -866,13 +866,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   9,
+										Line:   12,
 									},
 									File:   "math.flux",
 									Source: "int",
 									Start: ast.Position{
 										Column: 37,
-										Line:   9,
+										Line:   12,
 									},
 								},
 							},
@@ -888,13 +888,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   13,
+						Line:   18,
 					},
 					File:   "math.flux",
-					Source: "max = (values) => {\n\tindex = maxIndex(values)\n\treturn values[index]\n}",
+					Source: "max = (values) => {\n    index = maxIndex(values)\n\n    return values[index]\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   10,
+						Line:   14,
 					},
 				},
 			},
@@ -905,13 +905,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   10,
+							Line:   14,
 						},
 						File:   "math.flux",
 						Source: "max",
 						Start: ast.Position{
 							Column: 1,
-							Line:   10,
+							Line:   14,
 						},
 					},
 				},
@@ -925,13 +925,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   13,
+							Line:   18,
 						},
 						File:   "math.flux",
-						Source: "(values) => {\n\tindex = maxIndex(values)\n\treturn values[index]\n}",
+						Source: "(values) => {\n    index = maxIndex(values)\n\n    return values[index]\n}",
 						Start: ast.Position{
 							Column: 7,
-							Line:   10,
+							Line:   14,
 						},
 					},
 				},
@@ -942,13 +942,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   13,
+								Line:   18,
 							},
 							File:   "math.flux",
-							Source: "{\n\tindex = maxIndex(values)\n\treturn values[index]\n}",
+							Source: "{\n    index = maxIndex(values)\n\n    return values[index]\n}",
 							Start: ast.Position{
 								Column: 19,
-								Line:   10,
+								Line:   14,
 							},
 						},
 					},
@@ -958,14 +958,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
-									Line:   11,
+									Column: 29,
+									Line:   15,
 								},
 								File:   "math.flux",
 								Source: "index = maxIndex(values)",
 								Start: ast.Position{
-									Column: 2,
-									Line:   11,
+									Column: 5,
+									Line:   15,
 								},
 							},
 						},
@@ -975,14 +975,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 7,
-										Line:   11,
+										Column: 10,
+										Line:   15,
 									},
 									File:   "math.flux",
 									Source: "index",
 									Start: ast.Position{
-										Column: 2,
-										Line:   11,
+										Column: 5,
+										Line:   15,
 									},
 								},
 							},
@@ -995,14 +995,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 25,
-											Line:   11,
+											Column: 28,
+											Line:   15,
 										},
 										File:   "math.flux",
 										Source: "values",
 										Start: ast.Position{
-											Column: 19,
-											Line:   11,
+											Column: 22,
+											Line:   15,
 										},
 									},
 								},
@@ -1013,14 +1013,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 25,
-												Line:   11,
+												Column: 28,
+												Line:   15,
 											},
 											File:   "math.flux",
 											Source: "values",
 											Start: ast.Position{
-												Column: 19,
-												Line:   11,
+												Column: 22,
+												Line:   15,
 											},
 										},
 									},
@@ -1031,14 +1031,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 25,
-													Line:   11,
+													Column: 28,
+													Line:   15,
 												},
 												File:   "math.flux",
 												Source: "values",
 												Start: ast.Position{
-													Column: 19,
-													Line:   11,
+													Column: 22,
+													Line:   15,
 												},
 											},
 										},
@@ -1055,14 +1055,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 26,
-										Line:   11,
+										Column: 29,
+										Line:   15,
 									},
 									File:   "math.flux",
 									Source: "maxIndex(values)",
 									Start: ast.Position{
-										Column: 10,
-										Line:   11,
+										Column: 13,
+										Line:   15,
 									},
 								},
 							},
@@ -1072,14 +1072,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 18,
-											Line:   11,
+											Column: 21,
+											Line:   15,
 										},
 										File:   "math.flux",
 										Source: "maxIndex",
 										Start: ast.Position{
-											Column: 10,
-											Line:   11,
+											Column: 13,
+											Line:   15,
 										},
 									},
 								},
@@ -1096,14 +1096,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   12,
+											Column: 18,
+											Line:   17,
 										},
 										File:   "math.flux",
 										Source: "values",
 										Start: ast.Position{
-											Column: 9,
-											Line:   12,
+											Column: 12,
+											Line:   17,
 										},
 									},
 								},
@@ -1114,14 +1114,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   12,
+										Column: 25,
+										Line:   17,
 									},
 									File:   "math.flux",
 									Source: "values[index]",
 									Start: ast.Position{
-										Column: 9,
-										Line:   12,
+										Column: 12,
+										Line:   17,
 									},
 								},
 							},
@@ -1131,14 +1131,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 21,
-											Line:   12,
+											Column: 24,
+											Line:   17,
 										},
 										File:   "math.flux",
 										Source: "index",
 										Start: ast.Position{
-											Column: 16,
-											Line:   12,
+											Column: 19,
+											Line:   17,
 										},
 									},
 								},
@@ -1152,14 +1152,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
-									Line:   12,
+									Column: 25,
+									Line:   17,
 								},
 								File:   "math.flux",
 								Source: "return values[index]",
 								Start: ast.Position{
-									Column: 2,
-									Line:   12,
+									Column: 5,
+									Line:   17,
 								},
 							},
 						},
@@ -1175,13 +1175,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   10,
+								Line:   14,
 							},
 							File:   "math.flux",
 							Source: "values",
 							Start: ast.Position{
 								Column: 8,
-								Line:   10,
+								Line:   14,
 							},
 						},
 					},
@@ -1193,13 +1193,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 14,
-									Line:   10,
+									Line:   14,
 								},
 								File:   "math.flux",
 								Source: "values",
 								Start: ast.Position{
 									Column: 8,
-									Line:   10,
+									Line:   14,
 								},
 							},
 						},
@@ -1217,13 +1217,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   15,
+						Line:   20,
 					},
 					File:   "math.flux",
 					Source: "builtin sum",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   20,
 					},
 				},
 			},
@@ -1235,13 +1235,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   15,
+							Line:   20,
 						},
 						File:   "math.flux",
 						Source: "sum",
 						Start: ast.Position{
 							Column: 9,
-							Line:   15,
+							Line:   20,
 						},
 					},
 				},
@@ -1254,13 +1254,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 50,
-							Line:   15,
+							Line:   20,
 						},
 						File:   "math.flux",
 						Source: "(values: [A]) => A where A: Numeric",
 						Start: ast.Position{
 							Column: 15,
-							Line:   15,
+							Line:   20,
 						},
 					},
 				},
@@ -1271,13 +1271,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 50,
-								Line:   15,
+								Line:   20,
 							},
 							File:   "math.flux",
 							Source: "A: Numeric",
 							Start: ast.Position{
 								Column: 40,
-								Line:   15,
+								Line:   20,
 							},
 						},
 					},
@@ -1288,13 +1288,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 50,
-									Line:   15,
+									Line:   20,
 								},
 								File:   "math.flux",
 								Source: "Numeric",
 								Start: ast.Position{
 									Column: 43,
-									Line:   15,
+									Line:   20,
 								},
 							},
 						},
@@ -1307,13 +1307,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 41,
-									Line:   15,
+									Line:   20,
 								},
 								File:   "math.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 40,
-									Line:   15,
+									Line:   20,
 								},
 							},
 						},
@@ -1327,13 +1327,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 33,
-								Line:   15,
+								Line:   20,
 							},
 							File:   "math.flux",
 							Source: "(values: [A]) => A",
 							Start: ast.Position{
 								Column: 15,
-								Line:   15,
+								Line:   20,
 							},
 						},
 					},
@@ -1344,13 +1344,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   15,
+									Line:   20,
 								},
 								File:   "math.flux",
 								Source: "values: [A]",
 								Start: ast.Position{
 									Column: 16,
-									Line:   15,
+									Line:   20,
 								},
 							},
 						},
@@ -1362,13 +1362,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   15,
+										Line:   20,
 									},
 									File:   "math.flux",
 									Source: "values",
 									Start: ast.Position{
 										Column: 16,
-										Line:   15,
+										Line:   20,
 									},
 								},
 							},
@@ -1381,13 +1381,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   15,
+										Line:   20,
 									},
 									File:   "math.flux",
 									Source: "[A]",
 									Start: ast.Position{
 										Column: 24,
-										Line:   15,
+										Line:   20,
 									},
 								},
 							},
@@ -1398,13 +1398,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   15,
+											Line:   20,
 										},
 										File:   "math.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 25,
-											Line:   15,
+											Line:   20,
 										},
 									},
 								},
@@ -1415,13 +1415,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   15,
+												Line:   20,
 											},
 											File:   "math.flux",
 											Source: "A",
 											Start: ast.Position{
 												Column: 25,
-												Line:   15,
+												Line:   20,
 											},
 										},
 									},
@@ -1437,13 +1437,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 33,
-									Line:   15,
+									Line:   20,
 								},
 								File:   "math.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 32,
-									Line:   15,
+									Line:   20,
 								},
 							},
 						},
@@ -1454,13 +1454,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   15,
+										Line:   20,
 									},
 									File:   "math.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 32,
-										Line:   15,
+										Line:   20,
 									},
 								},
 							},

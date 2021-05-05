@@ -1,5 +1,6 @@
 package aggregate_test
 
+
 import "experimental"
 import "experimental/aggregate"
 import "testing"
@@ -22,7 +23,6 @@ inData = "
 ,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:40Z,50,bytes_recv,net,host.local,utun2
 ,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,2020-02-20T23:00:50Z,60,bytes_recv,net,host.local,utun2
 "
-
 outData = "
 #group,false,false,true,true,true,true,false,false
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double,dateTime:RFC3339
@@ -35,16 +35,13 @@ outData = "
 ,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:00:40Z
 ,,1,2020-02-20T23:00:00Z,2020-02-20T23:01:00Z,host.local,utun2,1,2020-02-20T23:01:00Z
 "
-
-t_rate = (table=<-) =>
-    table
-        |> range(start: 2020-02-20T23:00:00Z, stop: 2020-02-20T23:01:00Z)
-        |> filter(fn: (r) => r._measurement == "net" and r._field == "bytes_recv")
-        |> aggregate.rate(every: 20s, groupColumns: ["host", "interface"], unit: 1s)
-
+t_rate = (table=<-) => table
+    |> range(start: 2020-02-20T23:00:00Z, stop: 2020-02-20T23:01:00Z)
+    |> filter(fn: (r) => r._measurement == "net" and r._field == "bytes_recv")
+    |> aggregate.rate(every: 20s, groupColumns: ["host", "interface"], unit: 1s)
 
 test rate = () => ({
-        input: testing.loadStorage(csv: inData),
-        want: testing.loadMem(csv: outData),
-        fn: t_rate
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: t_rate,
 })

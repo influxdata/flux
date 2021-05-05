@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 18,
-					Line:   4,
+					Line:   6,
 				},
 				File:   "array.flux",
-				Source: "package array\n\nimport \"array\"\nfrom = array.from",
+				Source: "package array\n\n\nimport \"array\"\n\nfrom = array.from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   4,
+						Line:   6,
 					},
 					File:   "array.flux",
 					Source: "from = array.from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   6,
 					},
 				},
 			},
@@ -58,13 +58,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   4,
+							Line:   6,
 						},
 						File:   "array.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 1,
-							Line:   4,
+							Line:   6,
 						},
 					},
 				},
@@ -77,13 +77,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   4,
+							Line:   6,
 						},
 						File:   "array.flux",
 						Source: "array.from",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   6,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
-								Line:   4,
+								Line:   6,
 							},
 							File:   "array.flux",
 							Source: "array",
 							Start: ast.Position{
 								Column: 8,
-								Line:   4,
+								Line:   6,
 							},
 						},
 					},
@@ -114,13 +114,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   4,
+								Line:   6,
 							},
 							File:   "array.flux",
 							Source: "from",
 							Start: ast.Position{
 								Column: 14,
-								Line:   4,
+								Line:   6,
 							},
 						},
 					},
@@ -138,13 +138,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 15,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "array.flux",
 					Source: "import \"array\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -155,13 +155,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "array.flux",
 						Source: "\"array\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},

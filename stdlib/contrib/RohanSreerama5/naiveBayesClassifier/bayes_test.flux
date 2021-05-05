@@ -1,5 +1,6 @@
 package naiveBayesClassifier_test
 
+
 import "testing"
 import "contrib/RohanSreerama5/naiveBayesClassifier"
 
@@ -1531,7 +1532,6 @@ inData = "#group,false,false,true,true,false,false,true,true,true,true
 ,,1503,2020-01-01T08:00:00Z,2020-08-21T15:44:03.401997Z,2020-01-07T15:49:25.987892129Z,0,wren,fins,zoo-data,1
 
 "
-
 outData = "#group,false,false,false,false,false,true,false,true,true,false,false,false,false,false,false
 #datatype,string,long,string,double,double,string,string,long,string,long,double,double,double,long,long
 #default,MAIN,,,,,,,,,,,,,,
@@ -1556,13 +1556,11 @@ outData = "#group,false,false,false,false,false,true,false,true,true,false,false
 ,,3,crab,0.2631578947368421,0.17241379310344826,aquatic,aquatic,1,1,29,0.25675675675675674,0.3918918918918919,5,74,74
 
 "
-
-t_naive_bayes = (table=<-) =>
-	(table
-		|> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data"))
+t_naive_bayes = (table=<-) => table
+    |> naiveBayesClassifier.naiveBayes(myClass: "airborne", myField: "aquatic", myMeasurement: "zoo-data")
 
 test _naive_bayes = () => ({
-  input: testing.loadStorage(csv: inData),
-  want: testing.loadMem(csv: outData),
-  fn: t_naive_bayes,
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: t_naive_bayes,
 })

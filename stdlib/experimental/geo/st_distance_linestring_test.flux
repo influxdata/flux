@@ -1,10 +1,11 @@
 package geo_test
 
+
 import "experimental/geo"
 import "influxdata/influxdb/v1"
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 // train closing to Manhattan
 inData = "
@@ -165,7 +166,6 @@ inData = "
 ,,145,2020-04-08T15:56:53Z,1586304000,tid,mta,via,LLIR,GO506_20_6431,89c28a024,6,STOPPED_AT,42,GO506_20_6431
 ,,146,2020-04-08T15:57:52Z,1586304000,tid,mta,via,LLIR,GO506_20_6431,89c28a03c,6,STOPPED_AT,42,GO506_20_6431
 "
-
 outData = "
 #group,false,false,false,true,false,true
 #datatype,string,long,double,string,string,string
@@ -178,18 +178,18 @@ outData = "
 refPoint = {lat: 40.6892, lon: -74.0445}
 
 // limit float to 3 decimal places
-limitFloat = (value) =>
-  (float(v: int(v: value * 1000.0)) / 1000.0)
-
-t_stDistanceLinestring = (table=<-) =>
-  table
+limitFloat = (value) => float(v: int(v: value * 1000.0)) / 1000.0
+t_stDistanceLinestring = (table=<-) => table
     |> range(start: 2020-04-01T00:00:00Z)
     |> v1.fieldsAsCols()
-    |> geo.asTracks(groupBy: ["id","trip_id"]) // optional but it helps to see the train closing in
+    // optional but it helps to see the train closing in
+    |> geo.asTracks(groupBy: ["id", "trip_id"])
     |> geo.ST_LineString()
-    |> map(fn: (r) => ({
-        r with _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {linestring: r.st_linestring}))
-    }))
+    |> map(
+        fn: (r) => ({r with
+            _st_distance: limitFloat(value: geo.ST_Distance(region: refPoint, geometry: {linestring: r.st_linestring})),
+        }),
+    )
     |> drop(columns: ["_start", "_stop"])
-test _stDistanceLinestring = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDistanceLinestring})
+
+test _stDistanceLinestring = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_stDistanceLinestring})

@@ -44,8 +44,8 @@ t_check = (table=<-) => table
     |> filter(fn: (r) => r._measurement == "cpu")
     |> filter(fn: (r) => r._field == "usage_idle")
     |> filter(fn: (r) => r.cpu == "cpu-total")
-    |> v1.fieldsAsCols()
     // pivot data so there is a "usage_idle" column
+    |> v1.fieldsAsCols()
     |> aggregateWindow(every: 20s, fn: mean, column: "usage_idle")
     |> monitor.check(
         data: data,

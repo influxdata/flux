@@ -20,10 +20,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   74,
+					Line:   72,
 				},
 				File:   "alert_test.flux",
-				Source: "package tickscript_test\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => (2020-11-25T14:05:30Z)\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n\"\n\ncheck = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"custom\", // tickscript?\n  tags: {},\n}\n\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\nh_threshold = 10\nw_threshold = 5\nl_threshold = .002\n\ntickscript_alert = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold\n    )\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_alert = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData = \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\nh_threshold = 10\nw_threshold = 5\nl_threshold = 0.002\ntickscript_alert = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n    )\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_alert = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37,14 +37,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 42,
-							Line:   9,
+							Column: 40,
+							Line:   10,
 						},
 						File:   "alert_test.flux",
-						Source: "now = () => (2020-11-25T14:05:30Z)",
+						Source: "now = () => 2020-11-25T14:05:30Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -55,13 +55,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   9,
+								Line:   10,
 							},
 							File:   "alert_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
@@ -74,55 +74,35 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 42,
-								Line:   9,
+								Column: 40,
+								Line:   10,
 							},
 							File:   "alert_test.flux",
-							Source: "() => (2020-11-25T14:05:30Z)",
+							Source: "() => 2020-11-25T14:05:30Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
-					Body: &ast.ParenExpression{
+					Body: &ast.DateTimeLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
-									Line:   9,
+									Column: 40,
+									Line:   10,
 								},
 								File:   "alert_test.flux",
-								Source: "(2020-11-25T14:05:30Z)",
+								Source: "2020-11-25T14:05:30Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   9,
+									Line:   10,
 								},
 							},
 						},
-						Expression: &ast.DateTimeLiteral{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 41,
-										Line:   9,
-									},
-									File:   "alert_test.flux",
-									Source: "2020-11-25T14:05:30Z",
-									Start: ast.Position{
-										Column: 21,
-										Line:   9,
-									},
-								},
-							},
-							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
-						},
-						Lparen: nil,
-						Rparen: nil,
+						Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 					},
 					Lparen: nil,
 					Params: []*ast.Property{},
@@ -134,14 +114,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 42,
-						Line:   9,
+						Column: 40,
+						Line:   10,
 					},
 					File:   "alert_test.flux",
-					Source: "option now = () => (2020-11-25T14:05:30Z)",
+					Source: "option now = () => 2020-11-25T14:05:30Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -153,13 +133,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 45,
-							Line:   12,
+							Line:   13,
 						},
 						File:   "alert_test.flux",
 						Source: "monitor.write = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   12,
+							Line:   13,
 						},
 					},
 				},
@@ -171,13 +151,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 45,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "alert_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 24,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -188,13 +168,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 39,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -208,13 +188,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 25,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -226,13 +206,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   12,
+										Line:   13,
 									},
 									File:   "alert_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 25,
-										Line:   12,
+										Line:   13,
 									},
 								},
 							},
@@ -245,13 +225,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 32,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						}},
@@ -265,13 +245,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "alert_test.flux",
 							Source: "monitor.write",
 							Start: ast.Position{
 								Column: 8,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -283,13 +263,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -302,13 +282,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_test.flux",
 								Source: "write",
 								Start: ast.Position{
 									Column: 16,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -323,13 +303,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 45,
-						Line:   12,
+						Line:   13,
 					},
 					File:   "alert_test.flux",
 					Source: "option monitor.write = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   13,
 					},
 				},
 			},
@@ -341,13 +321,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 43,
-							Line:   13,
+							Line:   14,
 						},
 						File:   "alert_test.flux",
 						Source: "monitor.log = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   13,
+							Line:   14,
 						},
 					},
 				},
@@ -359,13 +339,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "alert_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 22,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -376,13 +356,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 37,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -396,13 +376,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 23,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -414,13 +394,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "alert_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 23,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -433,13 +413,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 30,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						}},
@@ -453,13 +433,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "alert_test.flux",
 							Source: "monitor.log",
 							Start: ast.Position{
 								Column: 8,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -471,13 +451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -490,13 +470,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_test.flux",
 								Source: "log",
 								Start: ast.Position{
 									Column: 16,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -511,13 +491,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 43,
-						Line:   13,
+						Line:   14,
 					},
 					File:   "alert_test.flux",
 					Source: "option monitor.log = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   13,
+						Line:   14,
 					},
 				},
 			},
@@ -528,13 +508,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "alert_test.flux",
 					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -545,13 +525,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "alert_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -564,13 +544,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "alert_test.flux",
 						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -641,10 +621,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   46,
 					},
 					File:   "alert_test.flux",
-					Source: "check = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"custom\", // tickscript?\n  tags: {},\n}",
+					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   41,
+						Line:   40,
 					},
 				},
 			},
@@ -655,13 +635,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   41,
+							Line:   40,
 						},
 						File:   "alert_test.flux",
 						Source: "check",
 						Start: ast.Position{
 							Column: 1,
-							Line:   41,
+							Line:   40,
 						},
 					},
 				},
@@ -677,10 +657,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   46,
 						},
 						File:   "alert_test.flux",
-						Source: "{\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"custom\", // tickscript?\n  tags: {},\n}",
+						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
 						Start: ast.Position{
 							Column: 9,
-							Line:   41,
+							Line:   40,
 						},
 					},
 				},
@@ -691,14 +671,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
-								Line:   42,
+								Column: 28,
+								Line:   41,
 							},
 							File:   "alert_test.flux",
 							Source: "_check_id: \"rate-check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   42,
+								Column: 5,
+								Line:   41,
 							},
 						},
 					},
@@ -709,14 +689,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   42,
+									Column: 14,
+									Line:   41,
 								},
 								File:   "alert_test.flux",
 								Source: "_check_id",
 								Start: ast.Position{
-									Column: 3,
-									Line:   42,
+									Column: 5,
+									Line:   41,
 								},
 							},
 						},
@@ -729,14 +709,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
-									Line:   42,
+									Column: 28,
+									Line:   41,
 								},
 								File:   "alert_test.flux",
 								Source: "\"rate-check\"",
 								Start: ast.Position{
-									Column: 14,
-									Line:   42,
+									Column: 16,
+									Line:   41,
 								},
 							},
 						},
@@ -748,14 +728,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 28,
-								Line:   43,
+								Column: 30,
+								Line:   42,
 							},
 							File:   "alert_test.flux",
 							Source: "_check_name: \"Rate Check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   43,
+								Column: 5,
+								Line:   42,
 							},
 						},
 					},
@@ -766,14 +746,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 14,
-									Line:   43,
+									Column: 16,
+									Line:   42,
 								},
 								File:   "alert_test.flux",
 								Source: "_check_name",
 								Start: ast.Position{
-									Column: 3,
-									Line:   43,
+									Column: 5,
+									Line:   42,
 								},
 							},
 						},
@@ -786,14 +766,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   43,
+									Column: 30,
+									Line:   42,
 								},
 								File:   "alert_test.flux",
 								Source: "\"Rate Check\"",
 								Start: ast.Position{
-									Column: 16,
-									Line:   43,
+									Column: 18,
+									Line:   42,
 								},
 							},
 						},
@@ -805,13 +785,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 20,
 								Line:   44,
 							},
 							File:   "alert_test.flux",
 							Source: "_type: \"custom\"",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   44,
 							},
 						},
@@ -819,17 +799,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: nil,
+							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   44,
 								},
 								File:   "alert_test.flux",
 								Source: "_type",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   44,
 								},
 							},
@@ -843,13 +823,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 18,
+									Column: 20,
 									Line:   44,
 								},
 								File:   "alert_test.flux",
 								Source: "\"custom\"",
 								Start: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   44,
 								},
 							},
@@ -862,13 +842,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 11,
+								Column: 13,
 								Line:   45,
 							},
 							File:   "alert_test.flux",
 							Source: "tags: {}",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   45,
 							},
 						},
@@ -876,17 +856,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
+							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   45,
 								},
 								File:   "alert_test.flux",
 								Source: "tags",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   45,
 								},
 							},
@@ -900,13 +880,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
+									Column: 13,
 									Line:   45,
 								},
 								File:   "alert_test.flux",
 								Source: "{}",
 								Start: ast.Position{
-									Column: 9,
+									Column: 11,
 									Line:   45,
 								},
 							},
@@ -927,13 +907,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 38,
-						Line:   48,
+						Line:   47,
 					},
 					File:   "alert_test.flux",
 					Source: "metric_type = \"kafka_message_in_rate\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   48,
+						Line:   47,
 					},
 				},
 			},
@@ -944,13 +924,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   48,
+							Line:   47,
 						},
 						File:   "alert_test.flux",
 						Source: "metric_type",
 						Start: ast.Position{
 							Column: 1,
-							Line:   48,
+							Line:   47,
 						},
 					},
 				},
@@ -963,13 +943,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   48,
+							Line:   47,
 						},
 						File:   "alert_test.flux",
 						Source: "\"kafka_message_in_rate\"",
 						Start: ast.Position{
 							Column: 15,
-							Line:   48,
+							Line:   47,
 						},
 					},
 				},
@@ -982,13 +962,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   49,
+						Line:   48,
 					},
 					File:   "alert_test.flux",
 					Source: "tier = \"ft\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   49,
+						Line:   48,
 					},
 				},
 			},
@@ -999,13 +979,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   49,
+							Line:   48,
 						},
 						File:   "alert_test.flux",
 						Source: "tier",
 						Start: ast.Position{
 							Column: 1,
-							Line:   49,
+							Line:   48,
 						},
 					},
 				},
@@ -1018,13 +998,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   49,
+							Line:   48,
 						},
 						File:   "alert_test.flux",
 						Source: "\"ft\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   49,
+							Line:   48,
 						},
 					},
 				},
@@ -1037,13 +1017,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   50,
+						Line:   49,
 					},
 					File:   "alert_test.flux",
 					Source: "h_threshold = 10",
 					Start: ast.Position{
 						Column: 1,
-						Line:   50,
+						Line:   49,
 					},
 				},
 			},
@@ -1054,13 +1034,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   50,
+							Line:   49,
 						},
 						File:   "alert_test.flux",
 						Source: "h_threshold",
 						Start: ast.Position{
 							Column: 1,
-							Line:   50,
+							Line:   49,
 						},
 					},
 				},
@@ -1073,13 +1053,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   50,
+							Line:   49,
 						},
 						File:   "alert_test.flux",
 						Source: "10",
 						Start: ast.Position{
 							Column: 15,
-							Line:   50,
+							Line:   49,
 						},
 					},
 				},
@@ -1092,13 +1072,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   51,
+						Line:   50,
 					},
 					File:   "alert_test.flux",
 					Source: "w_threshold = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   51,
+						Line:   50,
 					},
 				},
 			},
@@ -1109,13 +1089,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   51,
+							Line:   50,
 						},
 						File:   "alert_test.flux",
 						Source: "w_threshold",
 						Start: ast.Position{
 							Column: 1,
-							Line:   51,
+							Line:   50,
 						},
 					},
 				},
@@ -1128,13 +1108,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   51,
+							Line:   50,
 						},
 						File:   "alert_test.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 15,
-							Line:   51,
+							Line:   50,
 						},
 					},
 				},
@@ -1146,14 +1126,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 19,
-						Line:   52,
+						Column: 20,
+						Line:   51,
 					},
 					File:   "alert_test.flux",
-					Source: "l_threshold = .002",
+					Source: "l_threshold = 0.002",
 					Start: ast.Position{
 						Column: 1,
-						Line:   52,
+						Line:   51,
 					},
 				},
 			},
@@ -1164,13 +1144,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   52,
+							Line:   51,
 						},
 						File:   "alert_test.flux",
 						Source: "l_threshold",
 						Start: ast.Position{
 							Column: 1,
-							Line:   52,
+							Line:   51,
 						},
 					},
 				},
@@ -1182,14 +1162,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 19,
-							Line:   52,
+							Column: 20,
+							Line:   51,
 						},
 						File:   "alert_test.flux",
-						Source: ".002",
+						Source: "0.002",
 						Start: ast.Position{
 							Column: 15,
-							Line:   52,
+							Line:   51,
 						},
 					},
 				},
@@ -1202,13 +1182,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 32,
-						Line:   68,
+						Line:   66,
 					},
 					File:   "alert_test.flux",
-					Source: "tickscript_alert = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold\n    )\n    |> drop(columns: [\"_time\"])",
+					Source: "tickscript_alert = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n    )\n    |> drop(columns: [\"_time\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   52,
 					},
 				},
 			},
@@ -1219,13 +1199,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   54,
+							Line:   52,
 						},
 						File:   "alert_test.flux",
 						Source: "tickscript_alert",
 						Start: ast.Position{
 							Column: 1,
-							Line:   54,
+							Line:   52,
 						},
 					},
 				},
@@ -1239,13 +1219,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 32,
-							Line:   68,
+							Line:   66,
 						},
 						File:   "alert_test.flux",
-						Source: "(table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold\n    )\n    |> drop(columns: [\"_time\"])",
+						Source: "(table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n    )\n    |> drop(columns: [\"_time\"])",
 						Start: ast.Position{
 							Column: 20,
-							Line:   54,
+							Line:   52,
 						},
 					},
 				},
@@ -1263,13 +1243,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
-															Line:   54,
+															Line:   52,
 														},
 														File:   "alert_test.flux",
 														Source: "table",
 														Start: ast.Position{
 															Column: 34,
-															Line:   54,
+															Line:   52,
 														},
 													},
 												},
@@ -1280,14 +1260,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 39,
-														Line:   55,
+														Column: 42,
+														Line:   53,
 													},
 													File:   "alert_test.flux",
-													Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)",
+													Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)",
 													Start: ast.Position{
 														Column: 34,
-														Line:   54,
+														Line:   52,
 													},
 												},
 											},
@@ -1298,14 +1278,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
-																Line:   55,
+																Column: 41,
+																Line:   53,
 															},
 															File:   "alert_test.flux",
 															Source: "start: 2020-11-25T14:05:00Z",
 															Start: ast.Position{
-																Column: 11,
-																Line:   55,
+																Column: 14,
+																Line:   53,
 															},
 														},
 													},
@@ -1316,14 +1296,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 38,
-																	Line:   55,
+																	Column: 41,
+																	Line:   53,
 																},
 																File:   "alert_test.flux",
 																Source: "start: 2020-11-25T14:05:00Z",
 																Start: ast.Position{
-																	Column: 11,
-																	Line:   55,
+																	Column: 14,
+																	Line:   53,
 																},
 															},
 														},
@@ -1334,14 +1314,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 16,
-																		Line:   55,
+																		Column: 19,
+																		Line:   53,
 																	},
 																	File:   "alert_test.flux",
 																	Source: "start",
 																	Start: ast.Position{
-																		Column: 11,
-																		Line:   55,
+																		Column: 14,
+																		Line:   53,
 																	},
 																},
 															},
@@ -1354,14 +1334,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
-																		Line:   55,
+																		Column: 41,
+																		Line:   53,
 																	},
 																	File:   "alert_test.flux",
 																	Source: "2020-11-25T14:05:00Z",
 																	Start: ast.Position{
-																		Column: 18,
-																		Line:   55,
+																		Column: 21,
+																		Line:   53,
 																	},
 																},
 															},
@@ -1376,14 +1356,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
-															Line:   55,
+															Column: 42,
+															Line:   53,
 														},
 														File:   "alert_test.flux",
 														Source: "range(start: 2020-11-25T14:05:00Z)",
 														Start: ast.Position{
-															Column: 5,
-															Line:   55,
+															Column: 8,
+															Line:   53,
 														},
 													},
 												},
@@ -1393,14 +1373,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 10,
-																Line:   55,
+																Column: 13,
+																Line:   53,
 															},
 															File:   "alert_test.flux",
 															Source: "range",
 															Start: ast.Position{
-																Column: 5,
-																Line:   55,
+																Column: 8,
+																Line:   53,
 															},
 														},
 													},
@@ -1416,13 +1396,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
-													Line:   56,
+													Line:   54,
 												},
 												File:   "alert_test.flux",
-												Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)",
+												Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)",
 												Start: ast.Position{
 													Column: 34,
-													Line:   54,
+													Line:   52,
 												},
 											},
 										},
@@ -1434,13 +1414,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 69,
-															Line:   56,
+															Line:   54,
 														},
 														File:   "alert_test.flux",
 														Source: "fn: (r) => r._field == metric_type and r.realm == tier",
 														Start: ast.Position{
 															Column: 15,
-															Line:   56,
+															Line:   54,
 														},
 													},
 												},
@@ -1452,13 +1432,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
-																Line:   56,
+																Line:   54,
 															},
 															File:   "alert_test.flux",
 															Source: "fn: (r) => r._field == metric_type and r.realm == tier",
 															Start: ast.Position{
 																Column: 15,
-																Line:   56,
+																Line:   54,
 															},
 														},
 													},
@@ -1470,13 +1450,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 17,
-																	Line:   56,
+																	Line:   54,
 																},
 																File:   "alert_test.flux",
 																Source: "fn",
 																Start: ast.Position{
 																	Column: 15,
-																	Line:   56,
+																	Line:   54,
 																},
 															},
 														},
@@ -1491,13 +1471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 69,
-																	Line:   56,
+																	Line:   54,
 																},
 																File:   "alert_test.flux",
 																Source: "(r) => r._field == metric_type and r.realm == tier",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   56,
+																	Line:   54,
 																},
 															},
 														},
@@ -1508,13 +1488,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 69,
-																		Line:   56,
+																		Line:   54,
 																	},
 																	File:   "alert_test.flux",
 																	Source: "r._field == metric_type and r.realm == tier",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   56,
+																		Line:   54,
 																	},
 																},
 															},
@@ -1525,13 +1505,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 49,
-																			Line:   56,
+																			Line:   54,
 																		},
 																		File:   "alert_test.flux",
 																		Source: "r._field == metric_type",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   56,
+																			Line:   54,
 																		},
 																	},
 																},
@@ -1542,13 +1522,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_test.flux",
 																			Source: "r._field",
 																			Start: ast.Position{
 																				Column: 26,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -1560,13 +1540,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 27,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 26,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -1579,13 +1559,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 34,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_test.flux",
 																				Source: "_field",
 																				Start: ast.Position{
 																					Column: 28,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -1601,13 +1581,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 49,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_test.flux",
 																			Source: "metric_type",
 																			Start: ast.Position{
 																				Column: 38,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -1622,13 +1602,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 69,
-																			Line:   56,
+																			Line:   54,
 																		},
 																		File:   "alert_test.flux",
 																		Source: "r.realm == tier",
 																		Start: ast.Position{
 																			Column: 54,
-																			Line:   56,
+																			Line:   54,
 																		},
 																	},
 																},
@@ -1639,13 +1619,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 61,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_test.flux",
 																			Source: "r.realm",
 																			Start: ast.Position{
 																				Column: 54,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -1657,13 +1637,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 55,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 54,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -1676,13 +1656,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 61,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_test.flux",
 																				Source: "realm",
 																				Start: ast.Position{
 																					Column: 56,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -1698,13 +1678,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 69,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_test.flux",
 																			Source: "tier",
 																			Start: ast.Position{
 																				Column: 65,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -1720,13 +1700,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   56,
+																		Line:   54,
 																	},
 																	File:   "alert_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
-																		Line:   56,
+																		Line:   54,
 																	},
 																},
 															},
@@ -1738,13 +1718,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 21,
-																			Line:   56,
+																			Line:   54,
 																		},
 																		File:   "alert_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   56,
+																			Line:   54,
 																		},
 																	},
 																},
@@ -1765,13 +1745,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 70,
-														Line:   56,
+														Line:   54,
 													},
 													File:   "alert_test.flux",
 													Source: "filter(fn: (r) => r._field == metric_type and r.realm == tier)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   56,
+														Line:   54,
 													},
 												},
 											},
@@ -1782,13 +1762,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   56,
+															Line:   54,
 														},
 														File:   "alert_test.flux",
 														Source: "filter",
 														Start: ast.Position{
 															Column: 8,
-															Line:   56,
+															Line:   54,
 														},
 													},
 												},
@@ -1804,13 +1784,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   57,
+												Line:   55,
 											},
 											File:   "alert_test.flux",
-											Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
+											Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
 											Start: ast.Position{
 												Column: 34,
-												Line:   54,
+												Line:   52,
 											},
 										},
 									},
@@ -1822,13 +1802,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   57,
+													Line:   55,
 												},
 												File:   "alert_test.flux",
 												Source: "schema.fieldsAsCols()",
 												Start: ast.Position{
 													Column: 8,
-													Line:   57,
+													Line:   55,
 												},
 											},
 										},
@@ -1839,13 +1819,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 27,
-														Line:   57,
+														Line:   55,
 													},
 													File:   "alert_test.flux",
 													Source: "schema.fieldsAsCols",
 													Start: ast.Position{
 														Column: 8,
-														Line:   57,
+														Line:   55,
 													},
 												},
 											},
@@ -1857,13 +1837,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   57,
+															Line:   55,
 														},
 														File:   "alert_test.flux",
 														Source: "schema",
 														Start: ast.Position{
 															Column: 8,
-															Line:   57,
+															Line:   55,
 														},
 													},
 												},
@@ -1876,13 +1856,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
-															Line:   57,
+															Line:   55,
 														},
 														File:   "alert_test.flux",
 														Source: "fieldsAsCols",
 														Start: ast.Position{
 															Column: 15,
-															Line:   57,
+															Line:   55,
 														},
 													},
 												},
@@ -1900,13 +1880,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 66,
-											Line:   58,
+											Line:   56,
 										},
 										File:   "alert_test.flux",
-										Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
+										Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
 										Start: ast.Position{
 											Column: 34,
-											Line:   54,
+											Line:   52,
 										},
 									},
 								},
@@ -1918,13 +1898,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   58,
+													Line:   56,
 												},
 												File:   "alert_test.flux",
 												Source: "column: metric_type, as: \"KafkaMsgRate\"",
 												Start: ast.Position{
 													Column: 26,
-													Line:   58,
+													Line:   56,
 												},
 											},
 										},
@@ -1936,13 +1916,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_test.flux",
 													Source: "column: metric_type",
 													Start: ast.Position{
 														Column: 26,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -1954,13 +1934,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_test.flux",
 														Source: "column",
 														Start: ast.Position{
 															Column: 26,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -1974,13 +1954,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_test.flux",
 														Source: "metric_type",
 														Start: ast.Position{
 															Column: 34,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -1993,13 +1973,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_test.flux",
 													Source: "as: \"KafkaMsgRate\"",
 													Start: ast.Position{
 														Column: 47,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -2011,13 +1991,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_test.flux",
 														Source: "as",
 														Start: ast.Position{
 															Column: 47,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -2031,13 +2011,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_test.flux",
 														Source: "\"KafkaMsgRate\"",
 														Start: ast.Position{
 															Column: 51,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -2053,13 +2033,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   58,
+												Line:   56,
 											},
 											File:   "alert_test.flux",
 											Source: "tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
 											Start: ast.Position{
 												Column: 8,
-												Line:   58,
+												Line:   56,
 											},
 										},
 									},
@@ -2070,13 +2050,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   58,
+													Line:   56,
 												},
 												File:   "alert_test.flux",
 												Source: "tickscript.select",
 												Start: ast.Position{
 													Column: 8,
-													Line:   58,
+													Line:   56,
 												},
 											},
 										},
@@ -2088,13 +2068,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_test.flux",
 													Source: "tickscript",
 													Start: ast.Position{
 														Column: 8,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -2107,13 +2087,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_test.flux",
 													Source: "select",
 													Start: ast.Position{
 														Column: 19,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -2131,13 +2111,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   59,
+										Line:   57,
 									},
 									File:   "alert_test.flux",
-									Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+									Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
 									Start: ast.Position{
 										Column: 34,
-										Line:   54,
+										Line:   52,
 									},
 								},
 							},
@@ -2149,13 +2129,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 53,
-												Line:   59,
+												Line:   57,
 											},
 											File:   "alert_test.flux",
 											Source: "columns: [\"host\", \"realm\"]",
 											Start: ast.Position{
 												Column: 27,
-												Line:   59,
+												Line:   57,
 											},
 										},
 									},
@@ -2167,13 +2147,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
-													Line:   59,
+													Line:   57,
 												},
 												File:   "alert_test.flux",
 												Source: "columns: [\"host\", \"realm\"]",
 												Start: ast.Position{
 													Column: 27,
-													Line:   59,
+													Line:   57,
 												},
 											},
 										},
@@ -2185,13 +2165,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   59,
+														Line:   57,
 													},
 													File:   "alert_test.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 27,
-														Line:   59,
+														Line:   57,
 													},
 												},
 											},
@@ -2205,13 +2185,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 53,
-														Line:   59,
+														Line:   57,
 													},
 													File:   "alert_test.flux",
 													Source: "[\"host\", \"realm\"]",
 													Start: ast.Position{
 														Column: 36,
-														Line:   59,
+														Line:   57,
 													},
 												},
 											},
@@ -2222,13 +2202,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 43,
-															Line:   59,
+															Line:   57,
 														},
 														File:   "alert_test.flux",
 														Source: "\"host\"",
 														Start: ast.Position{
 															Column: 37,
-															Line:   59,
+															Line:   57,
 														},
 													},
 												},
@@ -2240,13 +2220,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 52,
-															Line:   59,
+															Line:   57,
 														},
 														File:   "alert_test.flux",
 														Source: "\"realm\"",
 														Start: ast.Position{
 															Column: 45,
-															Line:   59,
+															Line:   57,
 														},
 													},
 												},
@@ -2265,13 +2245,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   59,
+											Line:   57,
 										},
 										File:   "alert_test.flux",
 										Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
 										Start: ast.Position{
 											Column: 8,
-											Line:   59,
+											Line:   57,
 										},
 									},
 								},
@@ -2282,13 +2262,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   59,
+												Line:   57,
 											},
 											File:   "alert_test.flux",
 											Source: "tickscript.groupBy",
 											Start: ast.Position{
 												Column: 8,
-												Line:   59,
+												Line:   57,
 											},
 										},
 									},
@@ -2300,13 +2280,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   59,
+													Line:   57,
 												},
 												File:   "alert_test.flux",
 												Source: "tickscript",
 												Start: ast.Position{
 													Column: 8,
-													Line:   59,
+													Line:   57,
 												},
 											},
 										},
@@ -2319,13 +2299,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   59,
+													Line:   57,
 												},
 												File:   "alert_test.flux",
 												Source: "groupBy",
 												Start: ast.Position{
 													Column: 19,
-													Line:   59,
+													Line:   57,
 												},
 											},
 										},
@@ -2343,13 +2323,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   67,
+									Line:   65,
 								},
 								File:   "alert_test.flux",
-								Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold\n    )",
+								Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n    )",
 								Start: ast.Position{
 									Column: 34,
-									Line:   54,
+									Line:   52,
 								},
 							},
 						},
@@ -2361,13 +2341,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 82,
-											Line:   66,
+											Line:   64,
 										},
 										File:   "alert_test.flux",
-										Source: "check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
+										Source: "check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
 										Start: ast.Position{
 											Column: 9,
-											Line:   61,
+											Line:   59,
 										},
 									},
 								},
@@ -2379,13 +2359,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   61,
+												Line:   59,
 											},
 											File:   "alert_test.flux",
 											Source: "check: check",
 											Start: ast.Position{
 												Column: 9,
-												Line:   61,
+												Line:   59,
 											},
 										},
 									},
@@ -2397,13 +2377,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   61,
+													Line:   59,
 												},
 												File:   "alert_test.flux",
 												Source: "check",
 												Start: ast.Position{
 													Column: 9,
-													Line:   61,
+													Line:   59,
 												},
 											},
 										},
@@ -2417,13 +2397,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   61,
+													Line:   59,
 												},
 												File:   "alert_test.flux",
 												Source: "check",
 												Start: ast.Position{
 													Column: 16,
-													Line:   61,
+													Line:   59,
 												},
 											},
 										},
@@ -2436,13 +2416,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 102,
-												Line:   62,
+												Line:   60,
 											},
 											File:   "alert_test.flux",
 											Source: "id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   62,
+												Line:   60,
 											},
 										},
 									},
@@ -2454,13 +2434,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   62,
+													Line:   60,
 												},
 												File:   "alert_test.flux",
 												Source: "id",
 												Start: ast.Position{
 													Column: 9,
-													Line:   62,
+													Line:   60,
 												},
 											},
 										},
@@ -2475,13 +2455,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 102,
-													Line:   62,
+													Line:   60,
 												},
 												File:   "alert_test.flux",
 												Source: "(r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
 												Start: ast.Position{
 													Column: 13,
-													Line:   62,
+													Line:   60,
 												},
 											},
 										},
@@ -2492,13 +2472,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 102,
-														Line:   62,
+														Line:   60,
 													},
 													File:   "alert_test.flux",
 													Source: "\"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
 													Start: ast.Position{
 														Column: 20,
-														Line:   62,
+														Line:   60,
 													},
 												},
 											},
@@ -2509,13 +2489,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 28,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: "Realm: ",
 														Start: ast.Position{
 															Column: 21,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2527,13 +2507,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: "${r.realm}",
 														Start: ast.Position{
 															Column: 28,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2544,13 +2524,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   62,
+																Line:   60,
 															},
 															File:   "alert_test.flux",
 															Source: "r.realm",
 															Start: ast.Position{
 																Column: 30,
-																Line:   62,
+																Line:   60,
 															},
 														},
 													},
@@ -2562,13 +2542,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 31,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -2581,13 +2561,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_test.flux",
 																Source: "realm",
 																Start: ast.Position{
 																	Column: 32,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -2602,13 +2582,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 51,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: " - Hostname: ",
 														Start: ast.Position{
 															Column: 38,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2620,13 +2600,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: "${r.host}",
 														Start: ast.Position{
 															Column: 51,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2637,13 +2617,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 59,
-																Line:   62,
+																Line:   60,
 															},
 															File:   "alert_test.flux",
 															Source: "r.host",
 															Start: ast.Position{
 																Column: 53,
-																Line:   62,
+																Line:   60,
 															},
 														},
 													},
@@ -2655,13 +2635,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 54,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 53,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -2674,13 +2654,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 59,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_test.flux",
 																Source: "host",
 																Start: ast.Position{
 																	Column: 55,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -2695,13 +2675,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 71,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: " / Metric: ",
 														Start: ast.Position{
 															Column: 60,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2713,13 +2693,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 85,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: "${metric_type}",
 														Start: ast.Position{
 															Column: 71,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2730,13 +2710,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 84,
-																Line:   62,
+																Line:   60,
 															},
 															File:   "alert_test.flux",
 															Source: "metric_type",
 															Start: ast.Position{
 																Column: 73,
-																Line:   62,
+																Line:   60,
 															},
 														},
 													},
@@ -2749,13 +2729,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 101,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: " threshold alert",
 														Start: ast.Position{
 															Column: 85,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2770,13 +2750,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
-														Line:   62,
+														Line:   60,
 													},
 													File:   "alert_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 14,
-														Line:   62,
+														Line:   60,
 													},
 												},
 											},
@@ -2788,13 +2768,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -2811,14 +2791,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 77,
-												Line:   63,
+												Column: 78,
+												Line:   61,
 											},
 											File:   "alert_test.flux",
-											Source: "message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\"",
+											Source: "message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   63,
+												Line:   61,
 											},
 										},
 									},
@@ -2830,13 +2810,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   63,
+													Line:   61,
 												},
 												File:   "alert_test.flux",
 												Source: "message",
 												Start: ast.Position{
 													Column: 9,
-													Line:   63,
+													Line:   61,
 												},
 											},
 										},
@@ -2850,14 +2830,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 77,
-													Line:   63,
+													Column: 78,
+													Line:   61,
 												},
 												File:   "alert_test.flux",
-												Source: "(r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\"",
+												Source: "(r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   63,
+													Line:   61,
 												},
 											},
 										},
@@ -2867,14 +2847,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 77,
-														Line:   63,
+														Column: 78,
+														Line:   61,
 													},
 													File:   "alert_test.flux",
-													Source: "\"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\"",
+													Source: "\"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
 													Start: ast.Position{
 														Column: 25,
-														Line:   63,
+														Line:   61,
 													},
 												},
 											},
@@ -2885,13 +2865,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_test.flux",
 														Source: "${r.id}",
 														Start: ast.Position{
 															Column: 26,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -2902,13 +2882,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 32,
-																Line:   63,
+																Line:   61,
 															},
 															File:   "alert_test.flux",
 															Source: "r.id",
 															Start: ast.Position{
 																Column: 28,
-																Line:   63,
+																Line:   61,
 															},
 														},
 													},
@@ -2920,13 +2900,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 29,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -2939,13 +2919,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 32,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_test.flux",
 																Source: "id",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -2960,13 +2940,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 35,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_test.flux",
 														Source: ": ",
 														Start: ast.Position{
 															Column: 33,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -2978,13 +2958,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 46,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_test.flux",
 														Source: "${r._level}",
 														Start: ast.Position{
 															Column: 35,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -2995,13 +2975,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   63,
+																Line:   61,
 															},
 															File:   "alert_test.flux",
 															Source: "r._level",
 															Start: ast.Position{
 																Column: 37,
-																Line:   63,
+																Line:   61,
 															},
 														},
 													},
@@ -3013,13 +2993,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 38,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 37,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -3032,13 +3012,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 45,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_test.flux",
 																Source: "_level",
 																Start: ast.Position{
 																	Column: 39,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -3053,13 +3033,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_test.flux",
 														Source: " - ",
 														Start: ast.Position{
 															Column: 46,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -3070,14 +3050,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 76,
-															Line:   63,
+															Column: 77,
+															Line:   61,
 														},
 														File:   "alert_test.flux",
-														Source: "${string(v:r.KafkaMsgRate)}",
+														Source: "${string(v: r.KafkaMsgRate)}",
 														Start: ast.Position{
 															Column: 49,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -3088,14 +3068,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 74,
-																	Line:   63,
+																	Column: 75,
+																	Line:   61,
 																},
 																File:   "alert_test.flux",
-																Source: "v:r.KafkaMsgRate",
+																Source: "v: r.KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 58,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -3106,14 +3086,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 74,
-																		Line:   63,
+																		Column: 75,
+																		Line:   61,
 																	},
 																	File:   "alert_test.flux",
-																	Source: "v:r.KafkaMsgRate",
+																	Source: "v: r.KafkaMsgRate",
 																	Start: ast.Position{
 																		Column: 58,
-																		Line:   63,
+																		Line:   61,
 																	},
 																},
 															},
@@ -3125,13 +3105,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 59,
-																			Line:   63,
+																			Line:   61,
 																		},
 																		File:   "alert_test.flux",
 																		Source: "v",
 																		Start: ast.Position{
 																			Column: 58,
-																			Line:   63,
+																			Line:   61,
 																		},
 																	},
 																},
@@ -3144,14 +3124,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 74,
-																			Line:   63,
+																			Column: 75,
+																			Line:   61,
 																		},
 																		File:   "alert_test.flux",
 																		Source: "r.KafkaMsgRate",
 																		Start: ast.Position{
-																			Column: 60,
-																			Line:   63,
+																			Column: 61,
+																			Line:   61,
 																		},
 																	},
 																},
@@ -3162,14 +3142,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 61,
-																				Line:   63,
+																				Column: 62,
+																				Line:   61,
 																			},
 																			File:   "alert_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 60,
-																				Line:   63,
+																				Column: 61,
+																				Line:   61,
 																			},
 																		},
 																	},
@@ -3181,14 +3161,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 74,
-																				Line:   63,
+																				Column: 75,
+																				Line:   61,
 																			},
 																			File:   "alert_test.flux",
 																			Source: "KafkaMsgRate",
 																			Start: ast.Position{
-																				Column: 62,
-																				Line:   63,
+																				Column: 63,
+																				Line:   61,
 																			},
 																		},
 																	},
@@ -3205,14 +3185,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 75,
-																Line:   63,
+																Column: 76,
+																Line:   61,
 															},
 															File:   "alert_test.flux",
-															Source: "string(v:r.KafkaMsgRate)",
+															Source: "string(v: r.KafkaMsgRate)",
 															Start: ast.Position{
 																Column: 51,
-																Line:   63,
+																Line:   61,
 															},
 														},
 													},
@@ -3223,13 +3203,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 57,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_test.flux",
 																Source: "string",
 																Start: ast.Position{
 																	Column: 51,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -3248,13 +3228,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   63,
+														Line:   61,
 													},
 													File:   "alert_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 19,
-														Line:   63,
+														Line:   61,
 													},
 												},
 											},
@@ -3266,13 +3246,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 19,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -3290,13 +3270,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   64,
+												Line:   62,
 											},
 											File:   "alert_test.flux",
 											Source: "details: (r) => \"some detail: myrealm=${r.realm}\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   64,
+												Line:   62,
 											},
 										},
 									},
@@ -3308,13 +3288,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   64,
+													Line:   62,
 												},
 												File:   "alert_test.flux",
 												Source: "details",
 												Start: ast.Position{
 													Column: 9,
-													Line:   64,
+													Line:   62,
 												},
 											},
 										},
@@ -3329,13 +3309,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 58,
-													Line:   64,
+													Line:   62,
 												},
 												File:   "alert_test.flux",
 												Source: "(r) => \"some detail: myrealm=${r.realm}\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   64,
+													Line:   62,
 												},
 											},
 										},
@@ -3346,13 +3326,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
-														Line:   64,
+														Line:   62,
 													},
 													File:   "alert_test.flux",
 													Source: "\"some detail: myrealm=${r.realm}\"",
 													Start: ast.Position{
 														Column: 25,
-														Line:   64,
+														Line:   62,
 													},
 												},
 											},
@@ -3363,13 +3343,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 47,
-															Line:   64,
+															Line:   62,
 														},
 														File:   "alert_test.flux",
 														Source: "some detail: myrealm=",
 														Start: ast.Position{
 															Column: 26,
-															Line:   64,
+															Line:   62,
 														},
 													},
 												},
@@ -3381,13 +3361,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 57,
-															Line:   64,
+															Line:   62,
 														},
 														File:   "alert_test.flux",
 														Source: "${r.realm}",
 														Start: ast.Position{
 															Column: 47,
-															Line:   64,
+															Line:   62,
 														},
 													},
 												},
@@ -3398,13 +3378,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 56,
-																Line:   64,
+																Line:   62,
 															},
 															File:   "alert_test.flux",
 															Source: "r.realm",
 															Start: ast.Position{
 																Column: 49,
-																Line:   64,
+																Line:   62,
 															},
 														},
 													},
@@ -3416,13 +3396,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 50,
-																	Line:   64,
+																	Line:   62,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 49,
-																	Line:   64,
+																	Line:   62,
 																},
 															},
 														},
@@ -3435,13 +3415,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 56,
-																	Line:   64,
+																	Line:   62,
 																},
 																File:   "alert_test.flux",
 																Source: "realm",
 																Start: ast.Position{
 																	Column: 51,
-																	Line:   64,
+																	Line:   62,
 																},
 															},
 														},
@@ -3459,13 +3439,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   64,
+														Line:   62,
 													},
 													File:   "alert_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 19,
-														Line:   64,
+														Line:   62,
 													},
 												},
 											},
@@ -3477,13 +3457,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   64,
+															Line:   62,
 														},
 														File:   "alert_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 19,
-															Line:   64,
+															Line:   62,
 														},
 													},
 												},
@@ -3501,13 +3481,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 82,
-												Line:   65,
+												Line:   63,
 											},
 											File:   "alert_test.flux",
 											Source: "crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
 											Start: ast.Position{
 												Column: 9,
-												Line:   65,
+												Line:   63,
 											},
 										},
 									},
@@ -3519,13 +3499,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 13,
-													Line:   65,
+													Line:   63,
 												},
 												File:   "alert_test.flux",
 												Source: "crit",
 												Start: ast.Position{
 													Column: 9,
-													Line:   65,
+													Line:   63,
 												},
 											},
 										},
@@ -3540,13 +3520,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 82,
-													Line:   65,
+													Line:   63,
 												},
 												File:   "alert_test.flux",
 												Source: "(r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
 												Start: ast.Position{
 													Column: 15,
-													Line:   65,
+													Line:   63,
 												},
 											},
 										},
@@ -3557,13 +3537,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 82,
-														Line:   65,
+														Line:   63,
 													},
 													File:   "alert_test.flux",
 													Source: "r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
 													Start: ast.Position{
 														Column: 22,
-														Line:   65,
+														Line:   63,
 													},
 												},
 											},
@@ -3574,13 +3554,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
-															Line:   65,
+															Line:   63,
 														},
 														File:   "alert_test.flux",
 														Source: "r.KafkaMsgRate > h_threshold",
 														Start: ast.Position{
 															Column: 22,
-															Line:   65,
+															Line:   63,
 														},
 													},
 												},
@@ -3591,13 +3571,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 22,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -3609,13 +3589,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -3628,13 +3608,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 36,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -3650,13 +3630,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_test.flux",
 															Source: "h_threshold",
 															Start: ast.Position{
 																Column: 39,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -3671,13 +3651,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 82,
-															Line:   65,
+															Line:   63,
 														},
 														File:   "alert_test.flux",
 														Source: "r.KafkaMsgRate < l_threshold",
 														Start: ast.Position{
 															Column: 54,
-															Line:   65,
+															Line:   63,
 														},
 													},
 												},
@@ -3688,13 +3668,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 68,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 54,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -3706,13 +3686,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 55,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 54,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -3725,13 +3705,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 68,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 56,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -3747,13 +3727,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 82,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_test.flux",
 															Source: "l_threshold",
 															Start: ast.Position{
 																Column: 71,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -3769,13 +3749,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 17,
-														Line:   65,
+														Line:   63,
 													},
 													File:   "alert_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 16,
-														Line:   65,
+														Line:   63,
 													},
 												},
 											},
@@ -3787,13 +3767,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
-															Line:   65,
+															Line:   63,
 														},
 														File:   "alert_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 16,
-															Line:   65,
+															Line:   63,
 														},
 													},
 												},
@@ -3811,13 +3791,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 82,
-												Line:   66,
+												Line:   64,
 											},
 											File:   "alert_test.flux",
 											Source: "warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
 											Start: ast.Position{
 												Column: 9,
-												Line:   66,
+												Line:   64,
 											},
 										},
 									},
@@ -3829,13 +3809,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 13,
-													Line:   66,
+													Line:   64,
 												},
 												File:   "alert_test.flux",
 												Source: "warn",
 												Start: ast.Position{
 													Column: 9,
-													Line:   66,
+													Line:   64,
 												},
 											},
 										},
@@ -3850,13 +3830,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 82,
-													Line:   66,
+													Line:   64,
 												},
 												File:   "alert_test.flux",
 												Source: "(r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
 												Start: ast.Position{
 													Column: 15,
-													Line:   66,
+													Line:   64,
 												},
 											},
 										},
@@ -3867,13 +3847,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 82,
-														Line:   66,
+														Line:   64,
 													},
 													File:   "alert_test.flux",
 													Source: "r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
 													Start: ast.Position{
 														Column: 22,
-														Line:   66,
+														Line:   64,
 													},
 												},
 											},
@@ -3884,13 +3864,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
-															Line:   66,
+															Line:   64,
 														},
 														File:   "alert_test.flux",
 														Source: "r.KafkaMsgRate > w_threshold",
 														Start: ast.Position{
 															Column: 22,
-															Line:   66,
+															Line:   64,
 														},
 													},
 												},
@@ -3901,13 +3881,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 22,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -3919,13 +3899,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -3938,13 +3918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 36,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -3960,13 +3940,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_test.flux",
 															Source: "w_threshold",
 															Start: ast.Position{
 																Column: 39,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -3981,13 +3961,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 82,
-															Line:   66,
+															Line:   64,
 														},
 														File:   "alert_test.flux",
 														Source: "r.KafkaMsgRate < l_threshold",
 														Start: ast.Position{
 															Column: 54,
-															Line:   66,
+															Line:   64,
 														},
 													},
 												},
@@ -3998,13 +3978,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 68,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 54,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -4016,13 +3996,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 55,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 54,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -4035,13 +4015,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 68,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 56,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -4057,13 +4037,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 82,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_test.flux",
 															Source: "l_threshold",
 															Start: ast.Position{
 																Column: 71,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -4079,13 +4059,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 17,
-														Line:   66,
+														Line:   64,
 													},
 													File:   "alert_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 16,
-														Line:   66,
+														Line:   64,
 													},
 												},
 											},
@@ -4097,13 +4077,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
-															Line:   66,
+															Line:   64,
 														},
 														File:   "alert_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 16,
-															Line:   66,
+															Line:   64,
 														},
 													},
 												},
@@ -4124,13 +4104,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   67,
+										Line:   65,
 									},
 									File:   "alert_test.flux",
-									Source: "tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold\n    )",
+									Source: "tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   60,
+										Line:   58,
 									},
 								},
 							},
@@ -4141,13 +4121,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   60,
+											Line:   58,
 										},
 										File:   "alert_test.flux",
 										Source: "tickscript.alert",
 										Start: ast.Position{
 											Column: 8,
-											Line:   60,
+											Line:   58,
 										},
 									},
 								},
@@ -4159,13 +4139,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   60,
+												Line:   58,
 											},
 											File:   "alert_test.flux",
 											Source: "tickscript",
 											Start: ast.Position{
 												Column: 8,
-												Line:   60,
+												Line:   58,
 											},
 										},
 									},
@@ -4178,13 +4158,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   60,
+												Line:   58,
 											},
 											File:   "alert_test.flux",
 											Source: "alert",
 											Start: ast.Position{
 												Column: 19,
-												Line:   60,
+												Line:   58,
 											},
 										},
 									},
@@ -4202,13 +4182,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   68,
+								Line:   66,
 							},
 							File:   "alert_test.flux",
-							Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold\n    )\n    |> drop(columns: [\"_time\"])",
+							Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n    )\n    |> drop(columns: [\"_time\"])",
 							Start: ast.Position{
 								Column: 34,
-								Line:   54,
+								Line:   52,
 							},
 						},
 					},
@@ -4220,13 +4200,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   68,
+										Line:   66,
 									},
 									File:   "alert_test.flux",
 									Source: "columns: [\"_time\"]",
 									Start: ast.Position{
 										Column: 13,
-										Line:   68,
+										Line:   66,
 									},
 								},
 							},
@@ -4238,13 +4218,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   68,
+											Line:   66,
 										},
 										File:   "alert_test.flux",
 										Source: "columns: [\"_time\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   68,
+											Line:   66,
 										},
 									},
 								},
@@ -4256,13 +4236,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   68,
+												Line:   66,
 											},
 											File:   "alert_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   68,
+												Line:   66,
 											},
 										},
 									},
@@ -4276,13 +4256,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   68,
+												Line:   66,
 											},
 											File:   "alert_test.flux",
 											Source: "[\"_time\"]",
 											Start: ast.Position{
 												Column: 22,
-												Line:   68,
+												Line:   66,
 											},
 										},
 									},
@@ -4293,13 +4273,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   68,
+													Line:   66,
 												},
 												File:   "alert_test.flux",
 												Source: "\"_time\"",
 												Start: ast.Position{
 													Column: 23,
-													Line:   68,
+													Line:   66,
 												},
 											},
 										},
@@ -4318,13 +4298,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   68,
+									Line:   66,
 								},
 								File:   "alert_test.flux",
 								Source: "drop(columns: [\"_time\"])",
 								Start: ast.Position{
 									Column: 8,
-									Line:   68,
+									Line:   66,
 								},
 							},
 						},
@@ -4335,13 +4315,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   68,
+										Line:   66,
 									},
 									File:   "alert_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
-										Line:   68,
+										Line:   66,
 									},
 								},
 							},
@@ -4359,13 +4339,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   54,
+								Line:   52,
 							},
 							File:   "alert_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 21,
-								Line:   54,
+								Line:   52,
 							},
 						},
 					},
@@ -4377,13 +4357,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   54,
+									Line:   52,
 								},
 								File:   "alert_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 21,
-									Line:   54,
+									Line:   52,
 								},
 							},
 						},
@@ -4396,13 +4376,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   54,
+								Line:   52,
 							},
 							File:   "alert_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 27,
-								Line:   54,
+								Line:   52,
 							},
 						},
 					}},
@@ -4417,13 +4397,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   74,
+							Line:   72,
 						},
 						File:   "alert_test.flux",
-						Source: "_tickscript_alert = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+						Source: "_tickscript_alert = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   70,
+							Line:   68,
 						},
 					},
 				},
@@ -4434,13 +4414,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   70,
+								Line:   68,
 							},
 							File:   "alert_test.flux",
 							Source: "_tickscript_alert",
 							Start: ast.Position{
 								Column: 6,
-								Line:   70,
+								Line:   68,
 							},
 						},
 					},
@@ -4454,13 +4434,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   74,
+								Line:   72,
 							},
 							File:   "alert_test.flux",
-							Source: "() => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   70,
+								Line:   68,
 							},
 						},
 					},
@@ -4471,13 +4451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   74,
+									Line:   72,
 								},
 								File:   "alert_test.flux",
-								Source: "({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+								Source: "({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 								Start: ast.Position{
 									Column: 32,
-									Line:   70,
+									Line:   68,
 								},
 							},
 						},
@@ -4488,13 +4468,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   74,
+										Line:   72,
 									},
 									File:   "alert_test.flux",
-									Source: "{\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n}",
+									Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n}",
 									Start: ast.Position{
 										Column: 33,
-										Line:   70,
+										Line:   68,
 									},
 								},
 							},
@@ -4505,14 +4485,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
-											Line:   71,
+											Column: 44,
+											Line:   69,
 										},
 										File:   "alert_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   71,
+											Column: 5,
+											Line:   69,
 										},
 									},
 								},
@@ -4523,14 +4503,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   71,
+												Column: 10,
+												Line:   69,
 											},
 											File:   "alert_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   71,
+												Column: 5,
+												Line:   69,
 											},
 										},
 									},
@@ -4544,14 +4524,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
-													Line:   71,
+													Column: 43,
+													Line:   69,
 												},
 												File:   "alert_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 29,
-													Line:   71,
+													Column: 32,
+													Line:   69,
 												},
 											},
 										},
@@ -4562,14 +4542,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 40,
-														Line:   71,
+														Column: 43,
+														Line:   69,
 													},
 													File:   "alert_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 29,
-														Line:   71,
+														Column: 32,
+														Line:   69,
 													},
 												},
 											},
@@ -4580,14 +4560,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
-															Line:   71,
+															Column: 35,
+															Line:   69,
 														},
 														File:   "alert_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 29,
-															Line:   71,
+															Column: 32,
+															Line:   69,
 														},
 													},
 												},
@@ -4600,14 +4580,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
-															Line:   71,
+															Column: 43,
+															Line:   69,
 														},
 														File:   "alert_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 34,
-															Line:   71,
+															Column: 37,
+															Line:   69,
 														},
 													},
 												},
@@ -4622,14 +4602,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   71,
+												Column: 44,
+												Line:   69,
 											},
 											File:   "alert_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 9,
-												Line:   71,
+												Column: 12,
+												Line:   69,
 											},
 										},
 									},
@@ -4639,14 +4619,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 28,
-													Line:   71,
+													Column: 31,
+													Line:   69,
 												},
 												File:   "alert_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 9,
-													Line:   71,
+													Column: 12,
+													Line:   69,
 												},
 											},
 										},
@@ -4657,14 +4637,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 16,
-														Line:   71,
+														Column: 19,
+														Line:   69,
 													},
 													File:   "alert_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 9,
-														Line:   71,
+														Column: 12,
+														Line:   69,
 													},
 												},
 											},
@@ -4676,14 +4656,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 28,
-														Line:   71,
+														Column: 31,
+														Line:   69,
 													},
 													File:   "alert_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 17,
-														Line:   71,
+														Column: 20,
+														Line:   69,
 													},
 												},
 											},
@@ -4700,14 +4680,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   72,
+											Column: 40,
+											Line:   70,
 										},
 										File:   "alert_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   72,
+											Column: 5,
+											Line:   70,
 										},
 									},
 								},
@@ -4718,14 +4698,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   72,
+												Column: 9,
+												Line:   70,
 											},
 											File:   "alert_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   72,
+												Column: 5,
+												Line:   70,
 											},
 										},
 									},
@@ -4739,14 +4719,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   72,
+													Column: 39,
+													Line:   70,
 												},
 												File:   "alert_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   72,
+													Column: 27,
+													Line:   70,
 												},
 											},
 										},
@@ -4757,14 +4737,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   72,
+														Column: 39,
+														Line:   70,
 													},
 													File:   "alert_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   72,
+														Column: 27,
+														Line:   70,
 													},
 												},
 											},
@@ -4775,14 +4755,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   72,
+															Column: 30,
+															Line:   70,
 														},
 														File:   "alert_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   72,
+															Column: 27,
+															Line:   70,
 														},
 													},
 												},
@@ -4795,14 +4775,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   72,
+															Column: 39,
+															Line:   70,
 														},
 														File:   "alert_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   72,
+															Column: 32,
+															Line:   70,
 														},
 													},
 												},
@@ -4817,14 +4797,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   72,
+												Column: 40,
+												Line:   70,
 											},
 											File:   "alert_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   72,
+												Column: 11,
+												Line:   70,
 											},
 										},
 									},
@@ -4834,14 +4814,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   72,
+													Column: 26,
+													Line:   70,
 												},
 												File:   "alert_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   72,
+													Column: 11,
+													Line:   70,
 												},
 											},
 										},
@@ -4852,14 +4832,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   72,
+														Column: 18,
+														Line:   70,
 													},
 													File:   "alert_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   72,
+														Column: 11,
+														Line:   70,
 													},
 												},
 											},
@@ -4871,14 +4851,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   72,
+														Column: 26,
+														Line:   70,
 													},
 													File:   "alert_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   72,
+														Column: 19,
+														Line:   70,
 													},
 												},
 											},
@@ -4895,14 +4875,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   73,
+											Column: 25,
+											Line:   71,
 										},
 										File:   "alert_test.flux",
 										Source: "fn: tickscript_alert",
 										Start: ast.Position{
-											Column: 2,
-											Line:   73,
+											Column: 5,
+											Line:   71,
 										},
 									},
 								},
@@ -4913,14 +4893,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   73,
+												Column: 7,
+												Line:   71,
 											},
 											File:   "alert_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   73,
+												Column: 5,
+												Line:   71,
 											},
 										},
 									},
@@ -4933,14 +4913,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   73,
+												Column: 25,
+												Line:   71,
 											},
 											File:   "alert_test.flux",
 											Source: "tickscript_alert",
 											Start: ast.Position{
-												Column: 6,
-												Line:   73,
+												Column: 9,
+												Line:   71,
 											},
 										},
 									},
@@ -4964,13 +4944,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   74,
+						Line:   72,
 					},
 					File:   "alert_test.flux",
-					Source: "test _tickscript_alert = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+					Source: "test _tickscript_alert = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   70,
+						Line:   68,
 					},
 				},
 			},
@@ -4984,13 +4964,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "alert_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -5001,13 +4981,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "alert_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -5021,13 +5001,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "alert_test.flux",
 					Source: "import \"csv\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -5038,13 +5018,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "alert_test.flux",
 						Source: "\"csv\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -5058,13 +5038,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 39,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "alert_test.flux",
 					Source: "import \"contrib/bonitoo-io/tickscript\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -5075,13 +5055,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 39,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "alert_test.flux",
 						Source: "\"contrib/bonitoo-io/tickscript\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -5095,13 +5075,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 37,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "alert_test.flux",
 					Source: "import \"influxdata/influxdb/monitor\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -5112,13 +5092,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 37,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "alert_test.flux",
 						Source: "\"influxdata/influxdb/monitor\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -5132,13 +5112,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 36,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "alert_test.flux",
 					Source: "import \"influxdata/influxdb/schema\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -5149,13 +5129,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 36,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "alert_test.flux",
 						Source: "\"influxdata/influxdb/schema\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -5208,10 +5188,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   75,
+					Line:   73,
 				},
 				File:   "alert_with_topic_test.flux",
-				Source: "package tickscript_test\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => (2020-11-25T14:05:30Z)\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\n\noutData = \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm,_topic\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n\"\n\ncheck = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"custom\", // tickscript?\n  tags: {},\n}\n\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\nh_threshold = 10\nw_threshold = 5\nl_threshold = .002\n\ntickscript_alert = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"\n    )\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_alert = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData = \"\n#group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true,true\n#datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string,string\n#default,_result,,,,,,,,,,,,,,,\n,result,table,KafkaMsgRate,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,details,host,id,realm,_topic\n,,0,1.819231109049999,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.819231109049999,testm,1606313103477635916,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.635878190200181,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.635878190200181,testm,1606313104541635074,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,0,1.33716449678206,rate-check,Rate Check,ok,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: ok - 1.33716449678206,testm,1606313108868317091,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,39.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 39.33716449678206,testm,1606313105623191313,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft,TESTING\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\nh_threshold = 10\nw_threshold = 5\nl_threshold = 0.002\ntickscript_alert = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\",\n    )\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_alert = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -5225,14 +5205,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 42,
-							Line:   9,
+							Column: 40,
+							Line:   10,
 						},
 						File:   "alert_with_topic_test.flux",
-						Source: "now = () => (2020-11-25T14:05:30Z)",
+						Source: "now = () => 2020-11-25T14:05:30Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -5243,13 +5223,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   9,
+								Line:   10,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
@@ -5262,55 +5242,35 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 42,
-								Line:   9,
+								Column: 40,
+								Line:   10,
 							},
 							File:   "alert_with_topic_test.flux",
-							Source: "() => (2020-11-25T14:05:30Z)",
+							Source: "() => 2020-11-25T14:05:30Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
-					Body: &ast.ParenExpression{
+					Body: &ast.DateTimeLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
-									Line:   9,
+									Column: 40,
+									Line:   10,
 								},
 								File:   "alert_with_topic_test.flux",
-								Source: "(2020-11-25T14:05:30Z)",
+								Source: "2020-11-25T14:05:30Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   9,
+									Line:   10,
 								},
 							},
 						},
-						Expression: &ast.DateTimeLiteral{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 41,
-										Line:   9,
-									},
-									File:   "alert_with_topic_test.flux",
-									Source: "2020-11-25T14:05:30Z",
-									Start: ast.Position{
-										Column: 21,
-										Line:   9,
-									},
-								},
-							},
-							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
-						},
-						Lparen: nil,
-						Rparen: nil,
+						Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 					},
 					Lparen: nil,
 					Params: []*ast.Property{},
@@ -5322,14 +5282,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 42,
-						Line:   9,
+						Column: 40,
+						Line:   10,
 					},
 					File:   "alert_with_topic_test.flux",
-					Source: "option now = () => (2020-11-25T14:05:30Z)",
+					Source: "option now = () => 2020-11-25T14:05:30Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -5341,13 +5301,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 45,
-							Line:   12,
+							Line:   13,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "monitor.write = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   12,
+							Line:   13,
 						},
 					},
 				},
@@ -5359,13 +5319,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 45,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 24,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -5376,13 +5336,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 39,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -5396,13 +5356,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 25,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -5414,13 +5374,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   12,
+										Line:   13,
 									},
 									File:   "alert_with_topic_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 25,
-										Line:   12,
+										Line:   13,
 									},
 								},
 							},
@@ -5433,13 +5393,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 32,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						}},
@@ -5453,13 +5413,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "monitor.write",
 							Start: ast.Position{
 								Column: 8,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -5471,13 +5431,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -5490,13 +5450,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "write",
 								Start: ast.Position{
 									Column: 16,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -5511,13 +5471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 45,
-						Line:   12,
+						Line:   13,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "option monitor.write = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   13,
 					},
 				},
 			},
@@ -5529,13 +5489,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 43,
-							Line:   13,
+							Line:   14,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "monitor.log = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   13,
+							Line:   14,
 						},
 					},
 				},
@@ -5547,13 +5507,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 22,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -5564,13 +5524,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 37,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -5584,13 +5544,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 23,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -5602,13 +5562,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "alert_with_topic_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 23,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -5621,13 +5581,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 30,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						}},
@@ -5641,13 +5601,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "monitor.log",
 							Start: ast.Position{
 								Column: 8,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -5659,13 +5619,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -5678,13 +5638,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "log",
 								Start: ast.Position{
 									Column: 16,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -5699,13 +5659,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 43,
-						Line:   13,
+						Line:   14,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "option monitor.log = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   13,
+						Line:   14,
 					},
 				},
 			},
@@ -5716,13 +5676,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -5733,13 +5693,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -5752,13 +5712,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -5829,10 +5789,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   46,
 					},
 					File:   "alert_with_topic_test.flux",
-					Source: "check = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"custom\", // tickscript?\n  tags: {},\n}",
+					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   41,
+						Line:   40,
 					},
 				},
 			},
@@ -5843,13 +5803,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   41,
+							Line:   40,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "check",
 						Start: ast.Position{
 							Column: 1,
-							Line:   41,
+							Line:   40,
 						},
 					},
 				},
@@ -5865,10 +5825,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   46,
 						},
 						File:   "alert_with_topic_test.flux",
-						Source: "{\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"custom\", // tickscript?\n  tags: {},\n}",
+						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"custom\",\n    tags: {},\n}",
 						Start: ast.Position{
 							Column: 9,
-							Line:   41,
+							Line:   40,
 						},
 					},
 				},
@@ -5879,14 +5839,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
-								Line:   42,
+								Column: 28,
+								Line:   41,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "_check_id: \"rate-check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   42,
+								Column: 5,
+								Line:   41,
 							},
 						},
 					},
@@ -5897,14 +5857,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   42,
+									Column: 14,
+									Line:   41,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "_check_id",
 								Start: ast.Position{
-									Column: 3,
-									Line:   42,
+									Column: 5,
+									Line:   41,
 								},
 							},
 						},
@@ -5917,14 +5877,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
-									Line:   42,
+									Column: 28,
+									Line:   41,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "\"rate-check\"",
 								Start: ast.Position{
-									Column: 14,
-									Line:   42,
+									Column: 16,
+									Line:   41,
 								},
 							},
 						},
@@ -5936,14 +5896,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 28,
-								Line:   43,
+								Column: 30,
+								Line:   42,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "_check_name: \"Rate Check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   43,
+								Column: 5,
+								Line:   42,
 							},
 						},
 					},
@@ -5954,14 +5914,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 14,
-									Line:   43,
+									Column: 16,
+									Line:   42,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "_check_name",
 								Start: ast.Position{
-									Column: 3,
-									Line:   43,
+									Column: 5,
+									Line:   42,
 								},
 							},
 						},
@@ -5974,14 +5934,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   43,
+									Column: 30,
+									Line:   42,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "\"Rate Check\"",
 								Start: ast.Position{
-									Column: 16,
-									Line:   43,
+									Column: 18,
+									Line:   42,
 								},
 							},
 						},
@@ -5993,13 +5953,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 18,
+								Column: 20,
 								Line:   44,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "_type: \"custom\"",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   44,
 							},
 						},
@@ -6007,17 +5967,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: nil,
+							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   44,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "_type",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   44,
 								},
 							},
@@ -6031,13 +5991,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 18,
+									Column: 20,
 									Line:   44,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "\"custom\"",
 								Start: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   44,
 								},
 							},
@@ -6050,13 +6010,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 11,
+								Column: 13,
 								Line:   45,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "tags: {}",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   45,
 							},
 						},
@@ -6064,17 +6024,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
+							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   45,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "tags",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   45,
 								},
 							},
@@ -6088,13 +6048,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
+									Column: 13,
 									Line:   45,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "{}",
 								Start: ast.Position{
-									Column: 9,
+									Column: 11,
 									Line:   45,
 								},
 							},
@@ -6115,13 +6075,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 38,
-						Line:   48,
+						Line:   47,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "metric_type = \"kafka_message_in_rate\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   48,
+						Line:   47,
 					},
 				},
 			},
@@ -6132,13 +6092,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   48,
+							Line:   47,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "metric_type",
 						Start: ast.Position{
 							Column: 1,
-							Line:   48,
+							Line:   47,
 						},
 					},
 				},
@@ -6151,13 +6111,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   48,
+							Line:   47,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"kafka_message_in_rate\"",
 						Start: ast.Position{
 							Column: 15,
-							Line:   48,
+							Line:   47,
 						},
 					},
 				},
@@ -6170,13 +6130,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   49,
+						Line:   48,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "tier = \"ft\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   49,
+						Line:   48,
 					},
 				},
 			},
@@ -6187,13 +6147,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   49,
+							Line:   48,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "tier",
 						Start: ast.Position{
 							Column: 1,
-							Line:   49,
+							Line:   48,
 						},
 					},
 				},
@@ -6206,13 +6166,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   49,
+							Line:   48,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"ft\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   49,
+							Line:   48,
 						},
 					},
 				},
@@ -6225,13 +6185,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   50,
+						Line:   49,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "h_threshold = 10",
 					Start: ast.Position{
 						Column: 1,
-						Line:   50,
+						Line:   49,
 					},
 				},
 			},
@@ -6242,13 +6202,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   50,
+							Line:   49,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "h_threshold",
 						Start: ast.Position{
 							Column: 1,
-							Line:   50,
+							Line:   49,
 						},
 					},
 				},
@@ -6261,13 +6221,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   50,
+							Line:   49,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "10",
 						Start: ast.Position{
 							Column: 15,
-							Line:   50,
+							Line:   49,
 						},
 					},
 				},
@@ -6280,13 +6240,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   51,
+						Line:   50,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "w_threshold = 5",
 					Start: ast.Position{
 						Column: 1,
-						Line:   51,
+						Line:   50,
 					},
 				},
 			},
@@ -6297,13 +6257,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   51,
+							Line:   50,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "w_threshold",
 						Start: ast.Position{
 							Column: 1,
-							Line:   51,
+							Line:   50,
 						},
 					},
 				},
@@ -6316,13 +6276,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   51,
+							Line:   50,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "5",
 						Start: ast.Position{
 							Column: 15,
-							Line:   51,
+							Line:   50,
 						},
 					},
 				},
@@ -6334,14 +6294,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 19,
-						Line:   52,
+						Column: 20,
+						Line:   51,
 					},
 					File:   "alert_with_topic_test.flux",
-					Source: "l_threshold = .002",
+					Source: "l_threshold = 0.002",
 					Start: ast.Position{
 						Column: 1,
-						Line:   52,
+						Line:   51,
 					},
 				},
 			},
@@ -6352,13 +6312,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   52,
+							Line:   51,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "l_threshold",
 						Start: ast.Position{
 							Column: 1,
-							Line:   52,
+							Line:   51,
 						},
 					},
 				},
@@ -6370,14 +6330,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 19,
-							Line:   52,
+							Column: 20,
+							Line:   51,
 						},
 						File:   "alert_with_topic_test.flux",
-						Source: ".002",
+						Source: "0.002",
 						Start: ast.Position{
 							Column: 15,
-							Line:   52,
+							Line:   51,
 						},
 					},
 				},
@@ -6390,13 +6350,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 32,
-						Line:   69,
+						Line:   67,
 					},
 					File:   "alert_with_topic_test.flux",
-					Source: "tickscript_alert = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"\n    )\n    |> drop(columns: [\"_time\"])",
+					Source: "tickscript_alert = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\",\n    )\n    |> drop(columns: [\"_time\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   54,
+						Line:   52,
 					},
 				},
 			},
@@ -6407,13 +6367,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   54,
+							Line:   52,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "tickscript_alert",
 						Start: ast.Position{
 							Column: 1,
-							Line:   54,
+							Line:   52,
 						},
 					},
 				},
@@ -6427,13 +6387,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 32,
-							Line:   69,
+							Line:   67,
 						},
 						File:   "alert_with_topic_test.flux",
-						Source: "(table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"\n    )\n    |> drop(columns: [\"_time\"])",
+						Source: "(table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\",\n    )\n    |> drop(columns: [\"_time\"])",
 						Start: ast.Position{
 							Column: 20,
-							Line:   54,
+							Line:   52,
 						},
 					},
 				},
@@ -6451,13 +6411,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
-															Line:   54,
+															Line:   52,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "table",
 														Start: ast.Position{
 															Column: 34,
-															Line:   54,
+															Line:   52,
 														},
 													},
 												},
@@ -6468,14 +6428,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 39,
-														Line:   55,
+														Column: 42,
+														Line:   53,
 													},
 													File:   "alert_with_topic_test.flux",
-													Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)",
+													Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)",
 													Start: ast.Position{
 														Column: 34,
-														Line:   54,
+														Line:   52,
 													},
 												},
 											},
@@ -6486,14 +6446,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
-																Line:   55,
+																Column: 41,
+																Line:   53,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "start: 2020-11-25T14:05:00Z",
 															Start: ast.Position{
-																Column: 11,
-																Line:   55,
+																Column: 14,
+																Line:   53,
 															},
 														},
 													},
@@ -6504,14 +6464,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 38,
-																	Line:   55,
+																	Column: 41,
+																	Line:   53,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "start: 2020-11-25T14:05:00Z",
 																Start: ast.Position{
-																	Column: 11,
-																	Line:   55,
+																	Column: 14,
+																	Line:   53,
 																},
 															},
 														},
@@ -6522,14 +6482,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 16,
-																		Line:   55,
+																		Column: 19,
+																		Line:   53,
 																	},
 																	File:   "alert_with_topic_test.flux",
 																	Source: "start",
 																	Start: ast.Position{
-																		Column: 11,
-																		Line:   55,
+																		Column: 14,
+																		Line:   53,
 																	},
 																},
 															},
@@ -6542,14 +6502,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
-																		Line:   55,
+																		Column: 41,
+																		Line:   53,
 																	},
 																	File:   "alert_with_topic_test.flux",
 																	Source: "2020-11-25T14:05:00Z",
 																	Start: ast.Position{
-																		Column: 18,
-																		Line:   55,
+																		Column: 21,
+																		Line:   53,
 																	},
 																},
 															},
@@ -6564,14 +6524,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
-															Line:   55,
+															Column: 42,
+															Line:   53,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "range(start: 2020-11-25T14:05:00Z)",
 														Start: ast.Position{
-															Column: 5,
-															Line:   55,
+															Column: 8,
+															Line:   53,
 														},
 													},
 												},
@@ -6581,14 +6541,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 10,
-																Line:   55,
+																Column: 13,
+																Line:   53,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "range",
 															Start: ast.Position{
-																Column: 5,
-																Line:   55,
+																Column: 8,
+																Line:   53,
 															},
 														},
 													},
@@ -6604,13 +6564,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
-													Line:   56,
+													Line:   54,
 												},
 												File:   "alert_with_topic_test.flux",
-												Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)",
+												Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)",
 												Start: ast.Position{
 													Column: 34,
-													Line:   54,
+													Line:   52,
 												},
 											},
 										},
@@ -6622,13 +6582,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 69,
-															Line:   56,
+															Line:   54,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "fn: (r) => r._field == metric_type and r.realm == tier",
 														Start: ast.Position{
 															Column: 15,
-															Line:   56,
+															Line:   54,
 														},
 													},
 												},
@@ -6640,13 +6600,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
-																Line:   56,
+																Line:   54,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "fn: (r) => r._field == metric_type and r.realm == tier",
 															Start: ast.Position{
 																Column: 15,
-																Line:   56,
+																Line:   54,
 															},
 														},
 													},
@@ -6658,13 +6618,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 17,
-																	Line:   56,
+																	Line:   54,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "fn",
 																Start: ast.Position{
 																	Column: 15,
-																	Line:   56,
+																	Line:   54,
 																},
 															},
 														},
@@ -6679,13 +6639,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 69,
-																	Line:   56,
+																	Line:   54,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "(r) => r._field == metric_type and r.realm == tier",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   56,
+																	Line:   54,
 																},
 															},
 														},
@@ -6696,13 +6656,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 69,
-																		Line:   56,
+																		Line:   54,
 																	},
 																	File:   "alert_with_topic_test.flux",
 																	Source: "r._field == metric_type and r.realm == tier",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   56,
+																		Line:   54,
 																	},
 																},
 															},
@@ -6713,13 +6673,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 49,
-																			Line:   56,
+																			Line:   54,
 																		},
 																		File:   "alert_with_topic_test.flux",
 																		Source: "r._field == metric_type",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   56,
+																			Line:   54,
 																		},
 																	},
 																},
@@ -6730,13 +6690,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 34,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_with_topic_test.flux",
 																			Source: "r._field",
 																			Start: ast.Position{
 																				Column: 26,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -6748,13 +6708,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 27,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_with_topic_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 26,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -6767,13 +6727,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 34,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_with_topic_test.flux",
 																				Source: "_field",
 																				Start: ast.Position{
 																					Column: 28,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -6789,13 +6749,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 49,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_with_topic_test.flux",
 																			Source: "metric_type",
 																			Start: ast.Position{
 																				Column: 38,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -6810,13 +6770,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 69,
-																			Line:   56,
+																			Line:   54,
 																		},
 																		File:   "alert_with_topic_test.flux",
 																		Source: "r.realm == tier",
 																		Start: ast.Position{
 																			Column: 54,
-																			Line:   56,
+																			Line:   54,
 																		},
 																	},
 																},
@@ -6827,13 +6787,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 61,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_with_topic_test.flux",
 																			Source: "r.realm",
 																			Start: ast.Position{
 																				Column: 54,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -6845,13 +6805,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 55,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_with_topic_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 54,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -6864,13 +6824,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 61,
-																					Line:   56,
+																					Line:   54,
 																				},
 																				File:   "alert_with_topic_test.flux",
 																				Source: "realm",
 																				Start: ast.Position{
 																					Column: 56,
-																					Line:   56,
+																					Line:   54,
 																				},
 																			},
 																		},
@@ -6886,13 +6846,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 69,
-																				Line:   56,
+																				Line:   54,
 																			},
 																			File:   "alert_with_topic_test.flux",
 																			Source: "tier",
 																			Start: ast.Position{
 																				Column: 65,
-																				Line:   56,
+																				Line:   54,
 																			},
 																		},
 																	},
@@ -6908,13 +6868,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   56,
+																		Line:   54,
 																	},
 																	File:   "alert_with_topic_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
-																		Line:   56,
+																		Line:   54,
 																	},
 																},
 															},
@@ -6926,13 +6886,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 21,
-																			Line:   56,
+																			Line:   54,
 																		},
 																		File:   "alert_with_topic_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   56,
+																			Line:   54,
 																		},
 																	},
 																},
@@ -6953,13 +6913,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 70,
-														Line:   56,
+														Line:   54,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "filter(fn: (r) => r._field == metric_type and r.realm == tier)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   56,
+														Line:   54,
 													},
 												},
 											},
@@ -6970,13 +6930,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   56,
+															Line:   54,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "filter",
 														Start: ast.Position{
 															Column: 8,
-															Line:   56,
+															Line:   54,
 														},
 													},
 												},
@@ -6992,13 +6952,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   57,
+												Line:   55,
 											},
 											File:   "alert_with_topic_test.flux",
-											Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
+											Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
 											Start: ast.Position{
 												Column: 34,
-												Line:   54,
+												Line:   52,
 											},
 										},
 									},
@@ -7010,13 +6970,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   57,
+													Line:   55,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "schema.fieldsAsCols()",
 												Start: ast.Position{
 													Column: 8,
-													Line:   57,
+													Line:   55,
 												},
 											},
 										},
@@ -7027,13 +6987,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 27,
-														Line:   57,
+														Line:   55,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "schema.fieldsAsCols",
 													Start: ast.Position{
 														Column: 8,
-														Line:   57,
+														Line:   55,
 													},
 												},
 											},
@@ -7045,13 +7005,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   57,
+															Line:   55,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "schema",
 														Start: ast.Position{
 															Column: 8,
-															Line:   57,
+															Line:   55,
 														},
 													},
 												},
@@ -7064,13 +7024,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
-															Line:   57,
+															Line:   55,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "fieldsAsCols",
 														Start: ast.Position{
 															Column: 15,
-															Line:   57,
+															Line:   55,
 														},
 													},
 												},
@@ -7088,13 +7048,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 66,
-											Line:   58,
+											Line:   56,
 										},
 										File:   "alert_with_topic_test.flux",
-										Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
+										Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
 										Start: ast.Position{
 											Column: 34,
-											Line:   54,
+											Line:   52,
 										},
 									},
 								},
@@ -7106,13 +7066,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   58,
+													Line:   56,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "column: metric_type, as: \"KafkaMsgRate\"",
 												Start: ast.Position{
 													Column: 26,
-													Line:   58,
+													Line:   56,
 												},
 											},
 										},
@@ -7124,13 +7084,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "column: metric_type",
 													Start: ast.Position{
 														Column: 26,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -7142,13 +7102,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "column",
 														Start: ast.Position{
 															Column: 26,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -7162,13 +7122,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "metric_type",
 														Start: ast.Position{
 															Column: 34,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -7181,13 +7141,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "as: \"KafkaMsgRate\"",
 													Start: ast.Position{
 														Column: 47,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -7199,13 +7159,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "as",
 														Start: ast.Position{
 															Column: 47,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -7219,13 +7179,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
-															Line:   58,
+															Line:   56,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "\"KafkaMsgRate\"",
 														Start: ast.Position{
 															Column: 51,
-															Line:   58,
+															Line:   56,
 														},
 													},
 												},
@@ -7241,13 +7201,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   58,
+												Line:   56,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "tickscript.select(column: metric_type, as: \"KafkaMsgRate\")",
 											Start: ast.Position{
 												Column: 8,
-												Line:   58,
+												Line:   56,
 											},
 										},
 									},
@@ -7258,13 +7218,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   58,
+													Line:   56,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "tickscript.select",
 												Start: ast.Position{
 													Column: 8,
-													Line:   58,
+													Line:   56,
 												},
 											},
 										},
@@ -7276,13 +7236,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "tickscript",
 													Start: ast.Position{
 														Column: 8,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -7295,13 +7255,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 25,
-														Line:   58,
+														Line:   56,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "select",
 													Start: ast.Position{
 														Column: 19,
-														Line:   58,
+														Line:   56,
 													},
 												},
 											},
@@ -7319,13 +7279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 54,
-										Line:   59,
+										Line:   57,
 									},
 									File:   "alert_with_topic_test.flux",
-									Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+									Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
 									Start: ast.Position{
 										Column: 34,
-										Line:   54,
+										Line:   52,
 									},
 								},
 							},
@@ -7337,13 +7297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 53,
-												Line:   59,
+												Line:   57,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "columns: [\"host\", \"realm\"]",
 											Start: ast.Position{
 												Column: 27,
-												Line:   59,
+												Line:   57,
 											},
 										},
 									},
@@ -7355,13 +7315,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
-													Line:   59,
+													Line:   57,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "columns: [\"host\", \"realm\"]",
 												Start: ast.Position{
 													Column: 27,
-													Line:   59,
+													Line:   57,
 												},
 											},
 										},
@@ -7373,13 +7333,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   59,
+														Line:   57,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 27,
-														Line:   59,
+														Line:   57,
 													},
 												},
 											},
@@ -7393,13 +7353,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 53,
-														Line:   59,
+														Line:   57,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "[\"host\", \"realm\"]",
 													Start: ast.Position{
 														Column: 36,
-														Line:   59,
+														Line:   57,
 													},
 												},
 											},
@@ -7410,13 +7370,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 43,
-															Line:   59,
+															Line:   57,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "\"host\"",
 														Start: ast.Position{
 															Column: 37,
-															Line:   59,
+															Line:   57,
 														},
 													},
 												},
@@ -7428,13 +7388,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 52,
-															Line:   59,
+															Line:   57,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "\"realm\"",
 														Start: ast.Position{
 															Column: 45,
-															Line:   59,
+															Line:   57,
 														},
 													},
 												},
@@ -7453,13 +7413,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   59,
+											Line:   57,
 										},
 										File:   "alert_with_topic_test.flux",
 										Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
 										Start: ast.Position{
 											Column: 8,
-											Line:   59,
+											Line:   57,
 										},
 									},
 								},
@@ -7470,13 +7430,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   59,
+												Line:   57,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "tickscript.groupBy",
 											Start: ast.Position{
 												Column: 8,
-												Line:   59,
+												Line:   57,
 											},
 										},
 									},
@@ -7488,13 +7448,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   59,
+													Line:   57,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "tickscript",
 												Start: ast.Position{
 													Column: 8,
-													Line:   59,
+													Line:   57,
 												},
 											},
 										},
@@ -7507,13 +7467,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   59,
+													Line:   57,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "groupBy",
 												Start: ast.Position{
 													Column: 19,
-													Line:   59,
+													Line:   57,
 												},
 											},
 										},
@@ -7531,13 +7491,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   68,
+									Line:   66,
 								},
 								File:   "alert_with_topic_test.flux",
-								Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"\n    )",
+								Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\",\n    )",
 								Start: ast.Position{
 									Column: 34,
-									Line:   54,
+									Line:   52,
 								},
 							},
 						},
@@ -7549,13 +7509,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   67,
+											Line:   65,
 										},
 										File:   "alert_with_topic_test.flux",
-										Source: "check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"",
+										Source: "check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   61,
+											Line:   59,
 										},
 									},
 								},
@@ -7567,13 +7527,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   61,
+												Line:   59,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "check: check",
 											Start: ast.Position{
 												Column: 9,
-												Line:   61,
+												Line:   59,
 											},
 										},
 									},
@@ -7585,13 +7545,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   61,
+													Line:   59,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "check",
 												Start: ast.Position{
 													Column: 9,
-													Line:   61,
+													Line:   59,
 												},
 											},
 										},
@@ -7605,13 +7565,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   61,
+													Line:   59,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "check",
 												Start: ast.Position{
 													Column: 16,
-													Line:   61,
+													Line:   59,
 												},
 											},
 										},
@@ -7624,13 +7584,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 102,
-												Line:   62,
+												Line:   60,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   62,
+												Line:   60,
 											},
 										},
 									},
@@ -7642,13 +7602,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   62,
+													Line:   60,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "id",
 												Start: ast.Position{
 													Column: 9,
-													Line:   62,
+													Line:   60,
 												},
 											},
 										},
@@ -7663,13 +7623,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 102,
-													Line:   62,
+													Line:   60,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "(r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
 												Start: ast.Position{
 													Column: 13,
-													Line:   62,
+													Line:   60,
 												},
 											},
 										},
@@ -7680,13 +7640,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 102,
-														Line:   62,
+														Line:   60,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "\"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\"",
 													Start: ast.Position{
 														Column: 20,
-														Line:   62,
+														Line:   60,
 													},
 												},
 											},
@@ -7697,13 +7657,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 28,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "Realm: ",
 														Start: ast.Position{
 															Column: 21,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7715,13 +7675,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 38,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "${r.realm}",
 														Start: ast.Position{
 															Column: 28,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7732,13 +7692,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   62,
+																Line:   60,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.realm",
 															Start: ast.Position{
 																Column: 30,
-																Line:   62,
+																Line:   60,
 															},
 														},
 													},
@@ -7750,13 +7710,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 31,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -7769,13 +7729,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "realm",
 																Start: ast.Position{
 																	Column: 32,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -7790,13 +7750,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 51,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: " - Hostname: ",
 														Start: ast.Position{
 															Column: 38,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7808,13 +7768,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "${r.host}",
 														Start: ast.Position{
 															Column: 51,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7825,13 +7785,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 59,
-																Line:   62,
+																Line:   60,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.host",
 															Start: ast.Position{
 																Column: 53,
-																Line:   62,
+																Line:   60,
 															},
 														},
 													},
@@ -7843,13 +7803,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 54,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 53,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -7862,13 +7822,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 59,
-																	Line:   62,
+																	Line:   60,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "host",
 																Start: ast.Position{
 																	Column: 55,
-																	Line:   62,
+																	Line:   60,
 																},
 															},
 														},
@@ -7883,13 +7843,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 71,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: " / Metric: ",
 														Start: ast.Position{
 															Column: 60,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7901,13 +7861,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 85,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "${metric_type}",
 														Start: ast.Position{
 															Column: 71,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7918,13 +7878,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 84,
-																Line:   62,
+																Line:   60,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "metric_type",
 															Start: ast.Position{
 																Column: 73,
-																Line:   62,
+																Line:   60,
 															},
 														},
 													},
@@ -7937,13 +7897,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 101,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: " threshold alert",
 														Start: ast.Position{
 															Column: 85,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7958,13 +7918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 15,
-														Line:   62,
+														Line:   60,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 14,
-														Line:   62,
+														Line:   60,
 													},
 												},
 											},
@@ -7976,13 +7936,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   62,
+															Line:   60,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   62,
+															Line:   60,
 														},
 													},
 												},
@@ -7999,14 +7959,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 77,
-												Line:   63,
+												Column: 78,
+												Line:   61,
 											},
 											File:   "alert_with_topic_test.flux",
-											Source: "message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\"",
+											Source: "message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   63,
+												Line:   61,
 											},
 										},
 									},
@@ -8018,13 +7978,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   63,
+													Line:   61,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "message",
 												Start: ast.Position{
 													Column: 9,
-													Line:   63,
+													Line:   61,
 												},
 											},
 										},
@@ -8038,14 +7998,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 77,
-													Line:   63,
+													Column: 78,
+													Line:   61,
 												},
 												File:   "alert_with_topic_test.flux",
-												Source: "(r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\"",
+												Source: "(r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   63,
+													Line:   61,
 												},
 											},
 										},
@@ -8055,14 +8015,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 77,
-														Line:   63,
+														Column: 78,
+														Line:   61,
 													},
 													File:   "alert_with_topic_test.flux",
-													Source: "\"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\"",
+													Source: "\"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\"",
 													Start: ast.Position{
 														Column: 25,
-														Line:   63,
+														Line:   61,
 													},
 												},
 											},
@@ -8073,13 +8033,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "${r.id}",
 														Start: ast.Position{
 															Column: 26,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -8090,13 +8050,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 32,
-																Line:   63,
+																Line:   61,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.id",
 															Start: ast.Position{
 																Column: 28,
-																Line:   63,
+																Line:   61,
 															},
 														},
 													},
@@ -8108,13 +8068,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 29,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -8127,13 +8087,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 32,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "id",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -8148,13 +8108,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 35,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: ": ",
 														Start: ast.Position{
 															Column: 33,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -8166,13 +8126,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 46,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "${r._level}",
 														Start: ast.Position{
 															Column: 35,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -8183,13 +8143,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   63,
+																Line:   61,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r._level",
 															Start: ast.Position{
 																Column: 37,
-																Line:   63,
+																Line:   61,
 															},
 														},
 													},
@@ -8201,13 +8161,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 38,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 37,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -8220,13 +8180,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 45,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "_level",
 																Start: ast.Position{
 																	Column: 39,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -8241,13 +8201,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: " - ",
 														Start: ast.Position{
 															Column: 46,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -8258,14 +8218,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 76,
-															Line:   63,
+															Column: 77,
+															Line:   61,
 														},
 														File:   "alert_with_topic_test.flux",
-														Source: "${string(v:r.KafkaMsgRate)}",
+														Source: "${string(v: r.KafkaMsgRate)}",
 														Start: ast.Position{
 															Column: 49,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -8276,14 +8236,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 74,
-																	Line:   63,
+																	Column: 75,
+																	Line:   61,
 																},
 																File:   "alert_with_topic_test.flux",
-																Source: "v:r.KafkaMsgRate",
+																Source: "v: r.KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 58,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -8294,14 +8254,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 74,
-																		Line:   63,
+																		Column: 75,
+																		Line:   61,
 																	},
 																	File:   "alert_with_topic_test.flux",
-																	Source: "v:r.KafkaMsgRate",
+																	Source: "v: r.KafkaMsgRate",
 																	Start: ast.Position{
 																		Column: 58,
-																		Line:   63,
+																		Line:   61,
 																	},
 																},
 															},
@@ -8313,13 +8273,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 59,
-																			Line:   63,
+																			Line:   61,
 																		},
 																		File:   "alert_with_topic_test.flux",
 																		Source: "v",
 																		Start: ast.Position{
 																			Column: 58,
-																			Line:   63,
+																			Line:   61,
 																		},
 																	},
 																},
@@ -8332,14 +8292,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 74,
-																			Line:   63,
+																			Column: 75,
+																			Line:   61,
 																		},
 																		File:   "alert_with_topic_test.flux",
 																		Source: "r.KafkaMsgRate",
 																		Start: ast.Position{
-																			Column: 60,
-																			Line:   63,
+																			Column: 61,
+																			Line:   61,
 																		},
 																	},
 																},
@@ -8350,14 +8310,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 61,
-																				Line:   63,
+																				Column: 62,
+																				Line:   61,
 																			},
 																			File:   "alert_with_topic_test.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 60,
-																				Line:   63,
+																				Column: 61,
+																				Line:   61,
 																			},
 																		},
 																	},
@@ -8369,14 +8329,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 74,
-																				Line:   63,
+																				Column: 75,
+																				Line:   61,
 																			},
 																			File:   "alert_with_topic_test.flux",
 																			Source: "KafkaMsgRate",
 																			Start: ast.Position{
-																				Column: 62,
-																				Line:   63,
+																				Column: 63,
+																				Line:   61,
 																			},
 																		},
 																	},
@@ -8393,14 +8353,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 75,
-																Line:   63,
+																Column: 76,
+																Line:   61,
 															},
 															File:   "alert_with_topic_test.flux",
-															Source: "string(v:r.KafkaMsgRate)",
+															Source: "string(v: r.KafkaMsgRate)",
 															Start: ast.Position{
 																Column: 51,
-																Line:   63,
+																Line:   61,
 															},
 														},
 													},
@@ -8411,13 +8371,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 57,
-																	Line:   63,
+																	Line:   61,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "string",
 																Start: ast.Position{
 																	Column: 51,
-																	Line:   63,
+																	Line:   61,
 																},
 															},
 														},
@@ -8436,13 +8396,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   63,
+														Line:   61,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 19,
-														Line:   63,
+														Line:   61,
 													},
 												},
 											},
@@ -8454,13 +8414,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   63,
+															Line:   61,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 19,
-															Line:   63,
+															Line:   61,
 														},
 													},
 												},
@@ -8478,13 +8438,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   64,
+												Line:   62,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "details: (r) => \"some detail: myrealm=${r.realm}\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   64,
+												Line:   62,
 											},
 										},
 									},
@@ -8496,13 +8456,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   64,
+													Line:   62,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "details",
 												Start: ast.Position{
 													Column: 9,
-													Line:   64,
+													Line:   62,
 												},
 											},
 										},
@@ -8517,13 +8477,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 58,
-													Line:   64,
+													Line:   62,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "(r) => \"some detail: myrealm=${r.realm}\"",
 												Start: ast.Position{
 													Column: 18,
-													Line:   64,
+													Line:   62,
 												},
 											},
 										},
@@ -8534,13 +8494,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 58,
-														Line:   64,
+														Line:   62,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "\"some detail: myrealm=${r.realm}\"",
 													Start: ast.Position{
 														Column: 25,
-														Line:   64,
+														Line:   62,
 													},
 												},
 											},
@@ -8551,13 +8511,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 47,
-															Line:   64,
+															Line:   62,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "some detail: myrealm=",
 														Start: ast.Position{
 															Column: 26,
-															Line:   64,
+															Line:   62,
 														},
 													},
 												},
@@ -8569,13 +8529,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 57,
-															Line:   64,
+															Line:   62,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "${r.realm}",
 														Start: ast.Position{
 															Column: 47,
-															Line:   64,
+															Line:   62,
 														},
 													},
 												},
@@ -8586,13 +8546,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 56,
-																Line:   64,
+																Line:   62,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.realm",
 															Start: ast.Position{
 																Column: 49,
-																Line:   64,
+																Line:   62,
 															},
 														},
 													},
@@ -8604,13 +8564,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 50,
-																	Line:   64,
+																	Line:   62,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 49,
-																	Line:   64,
+																	Line:   62,
 																},
 															},
 														},
@@ -8623,13 +8583,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 56,
-																	Line:   64,
+																	Line:   62,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "realm",
 																Start: ast.Position{
 																	Column: 51,
-																	Line:   64,
+																	Line:   62,
 																},
 															},
 														},
@@ -8647,13 +8607,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   64,
+														Line:   62,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 19,
-														Line:   64,
+														Line:   62,
 													},
 												},
 											},
@@ -8665,13 +8625,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 20,
-															Line:   64,
+															Line:   62,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 19,
-															Line:   64,
+															Line:   62,
 														},
 													},
 												},
@@ -8689,13 +8649,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 82,
-												Line:   65,
+												Line:   63,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
 											Start: ast.Position{
 												Column: 9,
-												Line:   65,
+												Line:   63,
 											},
 										},
 									},
@@ -8707,13 +8667,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 13,
-													Line:   65,
+													Line:   63,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "crit",
 												Start: ast.Position{
 													Column: 9,
-													Line:   65,
+													Line:   63,
 												},
 											},
 										},
@@ -8728,13 +8688,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 82,
-													Line:   65,
+													Line:   63,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "(r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
 												Start: ast.Position{
 													Column: 15,
-													Line:   65,
+													Line:   63,
 												},
 											},
 										},
@@ -8745,13 +8705,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 82,
-														Line:   65,
+														Line:   63,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold",
 													Start: ast.Position{
 														Column: 22,
-														Line:   65,
+														Line:   63,
 													},
 												},
 											},
@@ -8762,13 +8722,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
-															Line:   65,
+															Line:   63,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r.KafkaMsgRate > h_threshold",
 														Start: ast.Position{
 															Column: 22,
-															Line:   65,
+															Line:   63,
 														},
 													},
 												},
@@ -8779,13 +8739,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 22,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -8797,13 +8757,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -8816,13 +8776,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 36,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -8838,13 +8798,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "h_threshold",
 															Start: ast.Position{
 																Column: 39,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -8859,13 +8819,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 82,
-															Line:   65,
+															Line:   63,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r.KafkaMsgRate < l_threshold",
 														Start: ast.Position{
 															Column: 54,
-															Line:   65,
+															Line:   63,
 														},
 													},
 												},
@@ -8876,13 +8836,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 68,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 54,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -8894,13 +8854,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 55,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 54,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -8913,13 +8873,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 68,
-																	Line:   65,
+																	Line:   63,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 56,
-																	Line:   65,
+																	Line:   63,
 																},
 															},
 														},
@@ -8935,13 +8895,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 82,
-																Line:   65,
+																Line:   63,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "l_threshold",
 															Start: ast.Position{
 																Column: 71,
-																Line:   65,
+																Line:   63,
 															},
 														},
 													},
@@ -8957,13 +8917,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 17,
-														Line:   65,
+														Line:   63,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 16,
-														Line:   65,
+														Line:   63,
 													},
 												},
 											},
@@ -8975,13 +8935,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
-															Line:   65,
+															Line:   63,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 16,
-															Line:   65,
+															Line:   63,
 														},
 													},
 												},
@@ -8999,13 +8959,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 82,
-												Line:   66,
+												Line:   64,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
 											Start: ast.Position{
 												Column: 9,
-												Line:   66,
+												Line:   64,
 											},
 										},
 									},
@@ -9017,13 +8977,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 13,
-													Line:   66,
+													Line:   64,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "warn",
 												Start: ast.Position{
 													Column: 9,
-													Line:   66,
+													Line:   64,
 												},
 											},
 										},
@@ -9038,13 +8998,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 82,
-													Line:   66,
+													Line:   64,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "(r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
 												Start: ast.Position{
 													Column: 15,
-													Line:   66,
+													Line:   64,
 												},
 											},
 										},
@@ -9055,13 +9015,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 82,
-														Line:   66,
+														Line:   64,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold",
 													Start: ast.Position{
 														Column: 22,
-														Line:   66,
+														Line:   64,
 													},
 												},
 											},
@@ -9072,13 +9032,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 50,
-															Line:   66,
+															Line:   64,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r.KafkaMsgRate > w_threshold",
 														Start: ast.Position{
 															Column: 22,
-															Line:   66,
+															Line:   64,
 														},
 													},
 												},
@@ -9089,13 +9049,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 22,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -9107,13 +9067,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -9126,13 +9086,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 36,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -9148,13 +9108,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 50,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "w_threshold",
 															Start: ast.Position{
 																Column: 39,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -9169,13 +9129,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 82,
-															Line:   66,
+															Line:   64,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r.KafkaMsgRate < l_threshold",
 														Start: ast.Position{
 															Column: 54,
-															Line:   66,
+															Line:   64,
 														},
 													},
 												},
@@ -9186,13 +9146,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 68,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "r.KafkaMsgRate",
 															Start: ast.Position{
 																Column: 54,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -9204,13 +9164,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 55,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 54,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -9223,13 +9183,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 68,
-																	Line:   66,
+																	Line:   64,
 																},
 																File:   "alert_with_topic_test.flux",
 																Source: "KafkaMsgRate",
 																Start: ast.Position{
 																	Column: 56,
-																	Line:   66,
+																	Line:   64,
 																},
 															},
 														},
@@ -9245,13 +9205,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 82,
-																Line:   66,
+																Line:   64,
 															},
 															File:   "alert_with_topic_test.flux",
 															Source: "l_threshold",
 															Start: ast.Position{
 																Column: 71,
-																Line:   66,
+																Line:   64,
 															},
 														},
 													},
@@ -9267,13 +9227,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 17,
-														Line:   66,
+														Line:   64,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "r",
 													Start: ast.Position{
 														Column: 16,
-														Line:   66,
+														Line:   64,
 													},
 												},
 											},
@@ -9285,13 +9245,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
-															Line:   66,
+															Line:   64,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 16,
-															Line:   66,
+															Line:   64,
 														},
 													},
 												},
@@ -9309,13 +9269,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   67,
+												Line:   65,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "topic: \"TESTING\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   67,
+												Line:   65,
 											},
 										},
 									},
@@ -9327,13 +9287,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 14,
-													Line:   67,
+													Line:   65,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "topic",
 												Start: ast.Position{
 													Column: 9,
-													Line:   67,
+													Line:   65,
 												},
 											},
 										},
@@ -9347,13 +9307,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   67,
+													Line:   65,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "\"TESTING\"",
 												Start: ast.Position{
 													Column: 16,
-													Line:   67,
+													Line:   65,
 												},
 											},
 										},
@@ -9369,13 +9329,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   68,
+										Line:   66,
 									},
 									File:   "alert_with_topic_test.flux",
-									Source: "tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"\n    )",
+									Source: "tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\",\n    )",
 									Start: ast.Position{
 										Column: 8,
-										Line:   60,
+										Line:   58,
 									},
 								},
 							},
@@ -9386,13 +9346,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   60,
+											Line:   58,
 										},
 										File:   "alert_with_topic_test.flux",
 										Source: "tickscript.alert",
 										Start: ast.Position{
 											Column: 8,
-											Line:   60,
+											Line:   58,
 										},
 									},
 								},
@@ -9404,13 +9364,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   60,
+												Line:   58,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "tickscript",
 											Start: ast.Position{
 												Column: 8,
-												Line:   60,
+												Line:   58,
 											},
 										},
 									},
@@ -9423,13 +9383,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   60,
+												Line:   58,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "alert",
 											Start: ast.Position{
 												Column: 19,
-												Line:   60,
+												Line:   58,
 											},
 										},
 									},
@@ -9447,13 +9407,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   69,
+								Line:   67,
 							},
 							File:   "alert_with_topic_test.flux",
-							Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\"\n    )\n    |> drop(columns: [\"_time\"])",
+							Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.select(column: metric_type, as: \"KafkaMsgRate\")\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.alert(\n        check: check,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert\",\n        message: (r) => \"${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}\",\n        details: (r) => \"some detail: myrealm=${r.realm}\",\n        crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,\n        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,\n        topic: \"TESTING\",\n    )\n    |> drop(columns: [\"_time\"])",
 							Start: ast.Position{
 								Column: 34,
-								Line:   54,
+								Line:   52,
 							},
 						},
 					},
@@ -9465,13 +9425,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   69,
+										Line:   67,
 									},
 									File:   "alert_with_topic_test.flux",
 									Source: "columns: [\"_time\"]",
 									Start: ast.Position{
 										Column: 13,
-										Line:   69,
+										Line:   67,
 									},
 								},
 							},
@@ -9483,13 +9443,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   69,
+											Line:   67,
 										},
 										File:   "alert_with_topic_test.flux",
 										Source: "columns: [\"_time\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   69,
+											Line:   67,
 										},
 									},
 								},
@@ -9501,13 +9461,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   69,
+												Line:   67,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   69,
+												Line:   67,
 											},
 										},
 									},
@@ -9521,13 +9481,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   69,
+												Line:   67,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "[\"_time\"]",
 											Start: ast.Position{
 												Column: 22,
-												Line:   69,
+												Line:   67,
 											},
 										},
 									},
@@ -9538,13 +9498,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   69,
+													Line:   67,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "\"_time\"",
 												Start: ast.Position{
 													Column: 23,
-													Line:   69,
+													Line:   67,
 												},
 											},
 										},
@@ -9563,13 +9523,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   69,
+									Line:   67,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "drop(columns: [\"_time\"])",
 								Start: ast.Position{
 									Column: 8,
-									Line:   69,
+									Line:   67,
 								},
 							},
 						},
@@ -9580,13 +9540,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   69,
+										Line:   67,
 									},
 									File:   "alert_with_topic_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
-										Line:   69,
+										Line:   67,
 									},
 								},
 							},
@@ -9604,13 +9564,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   54,
+								Line:   52,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 21,
-								Line:   54,
+								Line:   52,
 							},
 						},
 					},
@@ -9622,13 +9582,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   54,
+									Line:   52,
 								},
 								File:   "alert_with_topic_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 21,
-									Line:   54,
+									Line:   52,
 								},
 							},
 						},
@@ -9641,13 +9601,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   54,
+								Line:   52,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 27,
-								Line:   54,
+								Line:   52,
 							},
 						},
 					}},
@@ -9662,13 +9622,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   75,
+							Line:   73,
 						},
 						File:   "alert_with_topic_test.flux",
-						Source: "_tickscript_alert = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+						Source: "_tickscript_alert = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   71,
+							Line:   69,
 						},
 					},
 				},
@@ -9679,13 +9639,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   71,
+								Line:   69,
 							},
 							File:   "alert_with_topic_test.flux",
 							Source: "_tickscript_alert",
 							Start: ast.Position{
 								Column: 6,
-								Line:   71,
+								Line:   69,
 							},
 						},
 					},
@@ -9699,13 +9659,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   75,
+								Line:   73,
 							},
 							File:   "alert_with_topic_test.flux",
-							Source: "() => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 							Start: ast.Position{
 								Column: 26,
-								Line:   71,
+								Line:   69,
 							},
 						},
 					},
@@ -9716,13 +9676,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   75,
+									Line:   73,
 								},
 								File:   "alert_with_topic_test.flux",
-								Source: "({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+								Source: "({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 								Start: ast.Position{
 									Column: 32,
-									Line:   71,
+									Line:   69,
 								},
 							},
 						},
@@ -9733,13 +9693,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   75,
+										Line:   73,
 									},
 									File:   "alert_with_topic_test.flux",
-									Source: "{\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n}",
+									Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n}",
 									Start: ast.Position{
 										Column: 33,
-										Line:   71,
+										Line:   69,
 									},
 								},
 							},
@@ -9750,14 +9710,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
-											Line:   72,
+											Column: 44,
+											Line:   70,
 										},
 										File:   "alert_with_topic_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   72,
+											Column: 5,
+											Line:   70,
 										},
 									},
 								},
@@ -9768,14 +9728,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   72,
+												Column: 10,
+												Line:   70,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   72,
+												Column: 5,
+												Line:   70,
 											},
 										},
 									},
@@ -9789,14 +9749,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
-													Line:   72,
+													Column: 43,
+													Line:   70,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 29,
-													Line:   72,
+													Column: 32,
+													Line:   70,
 												},
 											},
 										},
@@ -9807,14 +9767,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 40,
-														Line:   72,
+														Column: 43,
+														Line:   70,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 29,
-														Line:   72,
+														Column: 32,
+														Line:   70,
 													},
 												},
 											},
@@ -9825,14 +9785,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
-															Line:   72,
+															Column: 35,
+															Line:   70,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 29,
-															Line:   72,
+															Column: 32,
+															Line:   70,
 														},
 													},
 												},
@@ -9845,14 +9805,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
-															Line:   72,
+															Column: 43,
+															Line:   70,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 34,
-															Line:   72,
+															Column: 37,
+															Line:   70,
 														},
 													},
 												},
@@ -9867,14 +9827,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   72,
+												Column: 44,
+												Line:   70,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 9,
-												Line:   72,
+												Column: 12,
+												Line:   70,
 											},
 										},
 									},
@@ -9884,14 +9844,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 28,
-													Line:   72,
+													Column: 31,
+													Line:   70,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 9,
-													Line:   72,
+													Column: 12,
+													Line:   70,
 												},
 											},
 										},
@@ -9902,14 +9862,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 16,
-														Line:   72,
+														Column: 19,
+														Line:   70,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 9,
-														Line:   72,
+														Column: 12,
+														Line:   70,
 													},
 												},
 											},
@@ -9921,14 +9881,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 28,
-														Line:   72,
+														Column: 31,
+														Line:   70,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 17,
-														Line:   72,
+														Column: 20,
+														Line:   70,
 													},
 												},
 											},
@@ -9945,14 +9905,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   73,
+											Column: 40,
+											Line:   71,
 										},
 										File:   "alert_with_topic_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   73,
+											Column: 5,
+											Line:   71,
 										},
 									},
 								},
@@ -9963,14 +9923,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   73,
+												Column: 9,
+												Line:   71,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   73,
+												Column: 5,
+												Line:   71,
 											},
 										},
 									},
@@ -9984,14 +9944,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   73,
+													Column: 39,
+													Line:   71,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   73,
+													Column: 27,
+													Line:   71,
 												},
 											},
 										},
@@ -10002,14 +9962,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   73,
+														Column: 39,
+														Line:   71,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   73,
+														Column: 27,
+														Line:   71,
 													},
 												},
 											},
@@ -10020,14 +9980,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   73,
+															Column: 30,
+															Line:   71,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   73,
+															Column: 27,
+															Line:   71,
 														},
 													},
 												},
@@ -10040,14 +10000,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   73,
+															Column: 39,
+															Line:   71,
 														},
 														File:   "alert_with_topic_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   73,
+															Column: 32,
+															Line:   71,
 														},
 													},
 												},
@@ -10062,14 +10022,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   73,
+												Column: 40,
+												Line:   71,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   73,
+												Column: 11,
+												Line:   71,
 											},
 										},
 									},
@@ -10079,14 +10039,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   73,
+													Column: 26,
+													Line:   71,
 												},
 												File:   "alert_with_topic_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   73,
+													Column: 11,
+													Line:   71,
 												},
 											},
 										},
@@ -10097,14 +10057,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   73,
+														Column: 18,
+														Line:   71,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   73,
+														Column: 11,
+														Line:   71,
 													},
 												},
 											},
@@ -10116,14 +10076,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   73,
+														Column: 26,
+														Line:   71,
 													},
 													File:   "alert_with_topic_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   73,
+														Column: 19,
+														Line:   71,
 													},
 												},
 											},
@@ -10140,14 +10100,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   74,
+											Column: 25,
+											Line:   72,
 										},
 										File:   "alert_with_topic_test.flux",
 										Source: "fn: tickscript_alert",
 										Start: ast.Position{
-											Column: 2,
-											Line:   74,
+											Column: 5,
+											Line:   72,
 										},
 									},
 								},
@@ -10158,14 +10118,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   74,
+												Column: 7,
+												Line:   72,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   74,
+												Column: 5,
+												Line:   72,
 											},
 										},
 									},
@@ -10178,14 +10138,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
-												Line:   74,
+												Column: 25,
+												Line:   72,
 											},
 											File:   "alert_with_topic_test.flux",
 											Source: "tickscript_alert",
 											Start: ast.Position{
-												Column: 6,
-												Line:   74,
+												Column: 9,
+												Line:   72,
 											},
 										},
 									},
@@ -10209,13 +10169,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   75,
+						Line:   73,
 					},
 					File:   "alert_with_topic_test.flux",
-					Source: "test _tickscript_alert = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_alert,\n})",
+					Source: "test _tickscript_alert = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_alert,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   71,
+						Line:   69,
 					},
 				},
 			},
@@ -10229,13 +10189,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -10246,13 +10206,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -10266,13 +10226,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "import \"csv\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -10283,13 +10243,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"csv\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -10303,13 +10263,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 39,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "import \"contrib/bonitoo-io/tickscript\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -10320,13 +10280,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 39,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"contrib/bonitoo-io/tickscript\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -10340,13 +10300,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 37,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "import \"influxdata/influxdb/monitor\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -10357,13 +10317,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 37,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"influxdata/influxdb/monitor\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -10377,13 +10337,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 36,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "alert_with_topic_test.flux",
 					Source: "import \"influxdata/influxdb/schema\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -10394,13 +10354,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 36,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "alert_with_topic_test.flux",
 						Source: "\"influxdata/influxdb/schema\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -10453,10 +10413,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   64,
+					Line:   63,
 				},
 				File:   "deadman_empty_test.flux",
-				Source: "package tickscript_test\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => (2020-11-25T14:05:30Z)\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,true,false,true,false,false\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string\n#default,_result,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,id\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,Realm: ft - Hostname: unknown / Metric: kafka_message_in_rate deadman alert\n\"\n\ncheck = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"deadman\", // tickscript?\n  tags: {},\n}\n\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\n\ntickscript_deadman = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_deadman = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData = \"\n#group,false,false,true,true,true,true,false,true,false,true,false,false\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string\n#default,_result,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,id\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,Realm: ft - Hostname: unknown / Metric: kafka_message_in_rate deadman alert\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\ntickscript_deadman = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_deadman = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -10470,14 +10430,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 42,
-							Line:   9,
+							Column: 40,
+							Line:   10,
 						},
 						File:   "deadman_empty_test.flux",
-						Source: "now = () => (2020-11-25T14:05:30Z)",
+						Source: "now = () => 2020-11-25T14:05:30Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -10488,13 +10448,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   9,
+								Line:   10,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
@@ -10507,55 +10467,35 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 42,
-								Line:   9,
+								Column: 40,
+								Line:   10,
 							},
 							File:   "deadman_empty_test.flux",
-							Source: "() => (2020-11-25T14:05:30Z)",
+							Source: "() => 2020-11-25T14:05:30Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
-					Body: &ast.ParenExpression{
+					Body: &ast.DateTimeLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
-									Line:   9,
+									Column: 40,
+									Line:   10,
 								},
 								File:   "deadman_empty_test.flux",
-								Source: "(2020-11-25T14:05:30Z)",
+								Source: "2020-11-25T14:05:30Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   9,
+									Line:   10,
 								},
 							},
 						},
-						Expression: &ast.DateTimeLiteral{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 41,
-										Line:   9,
-									},
-									File:   "deadman_empty_test.flux",
-									Source: "2020-11-25T14:05:30Z",
-									Start: ast.Position{
-										Column: 21,
-										Line:   9,
-									},
-								},
-							},
-							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
-						},
-						Lparen: nil,
-						Rparen: nil,
+						Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 					},
 					Lparen: nil,
 					Params: []*ast.Property{},
@@ -10567,14 +10507,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 42,
-						Line:   9,
+						Column: 40,
+						Line:   10,
 					},
 					File:   "deadman_empty_test.flux",
-					Source: "option now = () => (2020-11-25T14:05:30Z)",
+					Source: "option now = () => 2020-11-25T14:05:30Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -10586,13 +10526,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 45,
-							Line:   12,
+							Line:   13,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "monitor.write = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   12,
+							Line:   13,
 						},
 					},
 				},
@@ -10604,13 +10544,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 45,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 24,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -10621,13 +10561,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 39,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -10641,13 +10581,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 25,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -10659,13 +10599,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   12,
+										Line:   13,
 									},
 									File:   "deadman_empty_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 25,
-										Line:   12,
+										Line:   13,
 									},
 								},
 							},
@@ -10678,13 +10618,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 32,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						}},
@@ -10698,13 +10638,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "monitor.write",
 							Start: ast.Position{
 								Column: 8,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -10716,13 +10656,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -10735,13 +10675,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "write",
 								Start: ast.Position{
 									Column: 16,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -10756,13 +10696,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 45,
-						Line:   12,
+						Line:   13,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "option monitor.write = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   13,
 					},
 				},
 			},
@@ -10774,13 +10714,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 43,
-							Line:   13,
+							Line:   14,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "monitor.log = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   13,
+							Line:   14,
 						},
 					},
 				},
@@ -10792,13 +10732,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 22,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -10809,13 +10749,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 37,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -10829,13 +10769,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 23,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -10847,13 +10787,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "deadman_empty_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 23,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -10866,13 +10806,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 30,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						}},
@@ -10886,13 +10826,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "monitor.log",
 							Start: ast.Position{
 								Column: 8,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -10904,13 +10844,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -10923,13 +10863,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "log",
 								Start: ast.Position{
 									Column: 16,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -10944,13 +10884,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 43,
-						Line:   13,
+						Line:   14,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "option monitor.log = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   13,
+						Line:   14,
 					},
 				},
 			},
@@ -10961,13 +10901,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -10978,13 +10918,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -10997,13 +10937,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -11074,10 +11014,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   41,
 					},
 					File:   "deadman_empty_test.flux",
-					Source: "check = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"deadman\", // tickscript?\n  tags: {},\n}",
+					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   36,
+						Line:   35,
 					},
 				},
 			},
@@ -11088,13 +11028,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   36,
+							Line:   35,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "check",
 						Start: ast.Position{
 							Column: 1,
-							Line:   36,
+							Line:   35,
 						},
 					},
 				},
@@ -11110,10 +11050,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   41,
 						},
 						File:   "deadman_empty_test.flux",
-						Source: "{\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"deadman\", // tickscript?\n  tags: {},\n}",
+						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
 						Start: ast.Position{
 							Column: 9,
-							Line:   36,
+							Line:   35,
 						},
 					},
 				},
@@ -11124,14 +11064,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
-								Line:   37,
+								Column: 28,
+								Line:   36,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "_check_id: \"rate-check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   37,
+								Column: 5,
+								Line:   36,
 							},
 						},
 					},
@@ -11142,14 +11082,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   37,
+									Column: 14,
+									Line:   36,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "_check_id",
 								Start: ast.Position{
-									Column: 3,
-									Line:   37,
+									Column: 5,
+									Line:   36,
 								},
 							},
 						},
@@ -11162,14 +11102,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
-									Line:   37,
+									Column: 28,
+									Line:   36,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "\"rate-check\"",
 								Start: ast.Position{
-									Column: 14,
-									Line:   37,
+									Column: 16,
+									Line:   36,
 								},
 							},
 						},
@@ -11181,14 +11121,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 28,
-								Line:   38,
+								Column: 30,
+								Line:   37,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "_check_name: \"Rate Check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   38,
+								Column: 5,
+								Line:   37,
 							},
 						},
 					},
@@ -11199,14 +11139,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 14,
-									Line:   38,
+									Column: 16,
+									Line:   37,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "_check_name",
 								Start: ast.Position{
-									Column: 3,
-									Line:   38,
+									Column: 5,
+									Line:   37,
 								},
 							},
 						},
@@ -11219,14 +11159,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   38,
+									Column: 30,
+									Line:   37,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "\"Rate Check\"",
 								Start: ast.Position{
-									Column: 16,
-									Line:   38,
+									Column: 18,
+									Line:   37,
 								},
 							},
 						},
@@ -11238,13 +11178,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 19,
+								Column: 21,
 								Line:   39,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "_type: \"deadman\"",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   39,
 							},
 						},
@@ -11252,17 +11192,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: nil,
+							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   39,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "_type",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   39,
 								},
 							},
@@ -11276,13 +11216,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
+									Column: 21,
 									Line:   39,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "\"deadman\"",
 								Start: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   39,
 								},
 							},
@@ -11295,13 +11235,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 11,
+								Column: 13,
 								Line:   40,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "tags: {}",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   40,
 							},
 						},
@@ -11309,17 +11249,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
+							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   40,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "tags",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   40,
 								},
 							},
@@ -11333,13 +11273,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
+									Column: 13,
 									Line:   40,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "{}",
 								Start: ast.Position{
-									Column: 9,
+									Column: 11,
 									Line:   40,
 								},
 							},
@@ -11360,13 +11300,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 38,
-						Line:   43,
+						Line:   42,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "metric_type = \"kafka_message_in_rate\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   43,
+						Line:   42,
 					},
 				},
 			},
@@ -11377,13 +11317,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   43,
+							Line:   42,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "metric_type",
 						Start: ast.Position{
 							Column: 1,
-							Line:   43,
+							Line:   42,
 						},
 					},
 				},
@@ -11396,13 +11336,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   43,
+							Line:   42,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"kafka_message_in_rate\"",
 						Start: ast.Position{
 							Column: 15,
-							Line:   43,
+							Line:   42,
 						},
 					},
 				},
@@ -11415,13 +11355,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   44,
+						Line:   43,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "tier = \"ft\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   44,
+						Line:   43,
 					},
 				},
 			},
@@ -11432,13 +11372,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   44,
+							Line:   43,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "tier",
 						Start: ast.Position{
 							Column: 1,
-							Line:   44,
+							Line:   43,
 						},
 					},
 				},
@@ -11451,13 +11391,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   44,
+							Line:   43,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"ft\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   44,
+							Line:   43,
 						},
 					},
 				},
@@ -11470,13 +11410,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 32,
-						Line:   58,
+						Line:   57,
 					},
 					File:   "deadman_empty_test.flux",
-					Source: "tickscript_deadman = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])",
+					Source: "tickscript_deadman = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   46,
+						Line:   44,
 					},
 				},
 			},
@@ -11487,13 +11427,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   46,
+							Line:   44,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "tickscript_deadman",
 						Start: ast.Position{
 							Column: 1,
-							Line:   46,
+							Line:   44,
 						},
 					},
 				},
@@ -11507,13 +11447,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 32,
-							Line:   58,
+							Line:   57,
 						},
 						File:   "deadman_empty_test.flux",
-						Source: "(table=<-) => table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])",
+						Source: "(table=<-) => table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])",
 						Start: ast.Position{
 							Column: 22,
-							Line:   46,
+							Line:   44,
 						},
 					},
 				},
@@ -11531,13 +11471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
-															Line:   46,
+															Line:   44,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "table",
 														Start: ast.Position{
 															Column: 36,
-															Line:   46,
+															Line:   44,
 														},
 													},
 												},
@@ -11548,14 +11488,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 39,
-														Line:   47,
+														Column: 42,
+														Line:   45,
 													},
 													File:   "deadman_empty_test.flux",
-													Source: "table\n\t|> range(start: 2020-11-25T14:05:15Z)",
+													Source: "table\n    |> range(start: 2020-11-25T14:05:15Z)",
 													Start: ast.Position{
 														Column: 36,
-														Line:   46,
+														Line:   44,
 													},
 												},
 											},
@@ -11566,14 +11506,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
-																Line:   47,
+																Column: 41,
+																Line:   45,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "start: 2020-11-25T14:05:15Z",
 															Start: ast.Position{
-																Column: 11,
-																Line:   47,
+																Column: 14,
+																Line:   45,
 															},
 														},
 													},
@@ -11584,14 +11524,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 38,
-																	Line:   47,
+																	Column: 41,
+																	Line:   45,
 																},
 																File:   "deadman_empty_test.flux",
 																Source: "start: 2020-11-25T14:05:15Z",
 																Start: ast.Position{
-																	Column: 11,
-																	Line:   47,
+																	Column: 14,
+																	Line:   45,
 																},
 															},
 														},
@@ -11602,14 +11542,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 16,
-																		Line:   47,
+																		Column: 19,
+																		Line:   45,
 																	},
 																	File:   "deadman_empty_test.flux",
 																	Source: "start",
 																	Start: ast.Position{
-																		Column: 11,
-																		Line:   47,
+																		Column: 14,
+																		Line:   45,
 																	},
 																},
 															},
@@ -11622,14 +11562,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
-																		Line:   47,
+																		Column: 41,
+																		Line:   45,
 																	},
 																	File:   "deadman_empty_test.flux",
 																	Source: "2020-11-25T14:05:15Z",
 																	Start: ast.Position{
-																		Column: 18,
-																		Line:   47,
+																		Column: 21,
+																		Line:   45,
 																	},
 																},
 															},
@@ -11644,14 +11584,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
-															Line:   47,
+															Column: 42,
+															Line:   45,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "range(start: 2020-11-25T14:05:15Z)",
 														Start: ast.Position{
-															Column: 5,
-															Line:   47,
+															Column: 8,
+															Line:   45,
 														},
 													},
 												},
@@ -11661,14 +11601,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 10,
-																Line:   47,
+																Column: 13,
+																Line:   45,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "range",
 															Start: ast.Position{
-																Column: 5,
-																Line:   47,
+																Column: 8,
+																Line:   45,
 															},
 														},
 													},
@@ -11684,13 +11624,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 100,
-													Line:   48,
+													Line:   46,
 												},
 												File:   "deadman_empty_test.flux",
-												Source: "table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
+												Source: "table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
 												Start: ast.Position{
 													Column: 36,
-													Line:   46,
+													Line:   44,
 												},
 											},
 										},
@@ -11702,13 +11642,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 99,
-															Line:   48,
+															Line:   46,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 														Start: ast.Position{
 															Column: 15,
-															Line:   48,
+															Line:   46,
 														},
 													},
 												},
@@ -11720,13 +11660,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 99,
-																Line:   48,
+																Line:   46,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 															Start: ast.Position{
 																Column: 15,
-																Line:   48,
+																Line:   46,
 															},
 														},
 													},
@@ -11738,13 +11678,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 17,
-																	Line:   48,
+																	Line:   46,
 																},
 																File:   "deadman_empty_test.flux",
 																Source: "fn",
 																Start: ast.Position{
 																	Column: 15,
-																	Line:   48,
+																	Line:   46,
 																},
 															},
 														},
@@ -11759,13 +11699,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 99,
-																	Line:   48,
+																	Line:   46,
 																},
 																File:   "deadman_empty_test.flux",
 																Source: "(r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   48,
+																	Line:   46,
 																},
 															},
 														},
@@ -11776,13 +11716,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 99,
-																		Line:   48,
+																		Line:   46,
 																	},
 																	File:   "deadman_empty_test.flux",
 																	Source: "r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   48,
+																		Line:   46,
 																	},
 																},
 															},
@@ -11793,13 +11733,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 79,
-																			Line:   48,
+																			Line:   46,
 																		},
 																		File:   "deadman_empty_test.flux",
 																		Source: "r._measurement == \"testm\" and r._field == metric_type",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   48,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -11810,13 +11750,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 51,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_empty_test.flux",
 																			Source: "r._measurement == \"testm\"",
 																			Start: ast.Position{
 																				Column: 26,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -11827,13 +11767,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 40,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_empty_test.flux",
 																				Source: "r._measurement",
 																				Start: ast.Position{
 																					Column: 26,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -11845,13 +11785,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 27,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_empty_test.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 26,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -11864,13 +11804,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 40,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_empty_test.flux",
 																					Source: "_measurement",
 																					Start: ast.Position{
 																						Column: 28,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -11886,13 +11826,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 51,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_empty_test.flux",
 																				Source: "\"testm\"",
 																				Start: ast.Position{
 																					Column: 44,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -11907,13 +11847,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 79,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_empty_test.flux",
 																			Source: "r._field == metric_type",
 																			Start: ast.Position{
 																				Column: 56,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -11924,13 +11864,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 64,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_empty_test.flux",
 																				Source: "r._field",
 																				Start: ast.Position{
 																					Column: 56,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -11942,13 +11882,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 57,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_empty_test.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 56,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -11961,13 +11901,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 64,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_empty_test.flux",
 																					Source: "_field",
 																					Start: ast.Position{
 																						Column: 58,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -11983,13 +11923,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 79,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_empty_test.flux",
 																				Source: "metric_type",
 																				Start: ast.Position{
 																					Column: 68,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -12005,13 +11945,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 99,
-																			Line:   48,
+																			Line:   46,
 																		},
 																		File:   "deadman_empty_test.flux",
 																		Source: "r.realm == tier",
 																		Start: ast.Position{
 																			Column: 84,
-																			Line:   48,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -12022,13 +11962,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 91,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_empty_test.flux",
 																			Source: "r.realm",
 																			Start: ast.Position{
 																				Column: 84,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -12040,13 +11980,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 85,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_empty_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 84,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -12059,13 +11999,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 91,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_empty_test.flux",
 																				Source: "realm",
 																				Start: ast.Position{
 																					Column: 86,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -12081,13 +12021,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 99,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_empty_test.flux",
 																			Source: "tier",
 																			Start: ast.Position{
 																				Column: 95,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -12103,13 +12043,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   48,
+																		Line:   46,
 																	},
 																	File:   "deadman_empty_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
-																		Line:   48,
+																		Line:   46,
 																	},
 																},
 															},
@@ -12121,13 +12061,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 21,
-																			Line:   48,
+																			Line:   46,
 																		},
 																		File:   "deadman_empty_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   48,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -12148,13 +12088,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 100,
-														Line:   48,
+														Line:   46,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   48,
+														Line:   46,
 													},
 												},
 											},
@@ -12165,13 +12105,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   48,
+															Line:   46,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "filter",
 														Start: ast.Position{
 															Column: 8,
-															Line:   48,
+															Line:   46,
 														},
 													},
 												},
@@ -12187,13 +12127,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   49,
+												Line:   47,
 											},
 											File:   "deadman_empty_test.flux",
-											Source: "table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
+											Source: "table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
 											Start: ast.Position{
 												Column: 36,
-												Line:   46,
+												Line:   44,
 											},
 										},
 									},
@@ -12205,13 +12145,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   49,
+													Line:   47,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "schema.fieldsAsCols()",
 												Start: ast.Position{
 													Column: 8,
-													Line:   49,
+													Line:   47,
 												},
 											},
 										},
@@ -12222,13 +12162,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 27,
-														Line:   49,
+														Line:   47,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "schema.fieldsAsCols",
 													Start: ast.Position{
 														Column: 8,
-														Line:   49,
+														Line:   47,
 													},
 												},
 											},
@@ -12240,13 +12180,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   49,
+															Line:   47,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "schema",
 														Start: ast.Position{
 															Column: 8,
-															Line:   49,
+															Line:   47,
 														},
 													},
 												},
@@ -12259,13 +12199,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
-															Line:   49,
+															Line:   47,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "fieldsAsCols",
 														Start: ast.Position{
 															Column: 15,
-															Line:   49,
+															Line:   47,
 														},
 													},
 												},
@@ -12283,13 +12223,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   50,
+											Line:   48,
 										},
 										File:   "deadman_empty_test.flux",
-										Source: "table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+										Source: "table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
 										Start: ast.Position{
 											Column: 36,
-											Line:   46,
+											Line:   44,
 										},
 									},
 								},
@@ -12301,13 +12241,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
-													Line:   50,
+													Line:   48,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "columns: [\"host\", \"realm\"]",
 												Start: ast.Position{
 													Column: 27,
-													Line:   50,
+													Line:   48,
 												},
 											},
 										},
@@ -12319,13 +12259,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 53,
-														Line:   50,
+														Line:   48,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "columns: [\"host\", \"realm\"]",
 													Start: ast.Position{
 														Column: 27,
-														Line:   50,
+														Line:   48,
 													},
 												},
 											},
@@ -12337,13 +12277,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   50,
+															Line:   48,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 27,
-															Line:   50,
+															Line:   48,
 														},
 													},
 												},
@@ -12357,13 +12297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 53,
-															Line:   50,
+															Line:   48,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "[\"host\", \"realm\"]",
 														Start: ast.Position{
 															Column: 36,
-															Line:   50,
+															Line:   48,
 														},
 													},
 												},
@@ -12374,13 +12314,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 43,
-																Line:   50,
+																Line:   48,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "\"host\"",
 															Start: ast.Position{
 																Column: 37,
-																Line:   50,
+																Line:   48,
 															},
 														},
 													},
@@ -12392,13 +12332,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 52,
-																Line:   50,
+																Line:   48,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "\"realm\"",
 															Start: ast.Position{
 																Column: 45,
-																Line:   50,
+																Line:   48,
 															},
 														},
 													},
@@ -12417,13 +12357,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   50,
+												Line:   48,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
 											Start: ast.Position{
 												Column: 8,
-												Line:   50,
+												Line:   48,
 											},
 										},
 									},
@@ -12434,13 +12374,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   50,
+													Line:   48,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "tickscript.groupBy",
 												Start: ast.Position{
 													Column: 8,
-													Line:   50,
+													Line:   48,
 												},
 											},
 										},
@@ -12452,13 +12392,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   50,
+														Line:   48,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "tickscript",
 													Start: ast.Position{
 														Column: 8,
-														Line:   50,
+														Line:   48,
 													},
 												},
 											},
@@ -12471,13 +12411,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   50,
+														Line:   48,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "groupBy",
 													Start: ast.Position{
 														Column: 19,
-														Line:   50,
+														Line:   48,
 													},
 												},
 											},
@@ -12495,13 +12435,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   56,
+										Line:   54,
 									},
 									File:   "deadman_empty_test.flux",
-									Source: "table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )",
+									Source: "table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )",
 									Start: ast.Position{
 										Column: 36,
-										Line:   46,
+										Line:   44,
 									},
 								},
 							},
@@ -12513,13 +12453,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 95,
-												Line:   55,
+												Line:   53,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   52,
+												Line:   50,
 											},
 										},
 									},
@@ -12531,13 +12471,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   52,
+													Line:   50,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "check: check",
 												Start: ast.Position{
 													Column: 9,
-													Line:   52,
+													Line:   50,
 												},
 											},
 										},
@@ -12549,13 +12489,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   52,
+														Line:   50,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "check",
 													Start: ast.Position{
 														Column: 9,
-														Line:   52,
+														Line:   50,
 													},
 												},
 											},
@@ -12569,13 +12509,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   52,
+														Line:   50,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "check",
 													Start: ast.Position{
 														Column: 16,
-														Line:   52,
+														Line:   50,
 													},
 												},
 											},
@@ -12588,13 +12528,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   53,
+													Line:   51,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "measurement: \"testm\"",
 												Start: ast.Position{
 													Column: 9,
-													Line:   53,
+													Line:   51,
 												},
 											},
 										},
@@ -12606,13 +12546,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   53,
+														Line:   51,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "measurement",
 													Start: ast.Position{
 														Column: 9,
-														Line:   53,
+														Line:   51,
 													},
 												},
 											},
@@ -12626,13 +12566,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 29,
-														Line:   53,
+														Line:   51,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "\"testm\"",
 													Start: ast.Position{
 														Column: 22,
-														Line:   53,
+														Line:   51,
 													},
 												},
 											},
@@ -12645,13 +12585,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   54,
+													Line:   52,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "threshold: 10",
 												Start: ast.Position{
 													Column: 9,
-													Line:   54,
+													Line:   52,
 												},
 											},
 										},
@@ -12663,13 +12603,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   54,
+														Line:   52,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "threshold",
 													Start: ast.Position{
 														Column: 9,
-														Line:   54,
+														Line:   52,
 													},
 												},
 											},
@@ -12683,13 +12623,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   54,
+														Line:   52,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "10",
 													Start: ast.Position{
 														Column: 20,
-														Line:   54,
+														Line:   52,
 													},
 												},
 											},
@@ -12702,13 +12642,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 95,
-													Line:   55,
+													Line:   53,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
 												Start: ast.Position{
 													Column: 9,
-													Line:   55,
+													Line:   53,
 												},
 											},
 										},
@@ -12720,13 +12660,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   55,
+														Line:   53,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "id",
 													Start: ast.Position{
 														Column: 9,
-														Line:   55,
+														Line:   53,
 													},
 												},
 											},
@@ -12741,13 +12681,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 95,
-														Line:   55,
+														Line:   53,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "(r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   55,
+														Line:   53,
 													},
 												},
 											},
@@ -12758,13 +12698,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 95,
-															Line:   55,
+															Line:   53,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "\"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\"",
 														Start: ast.Position{
 															Column: 20,
-															Line:   55,
+															Line:   53,
 														},
 													},
 												},
@@ -12775,13 +12715,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 28,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "Realm: ",
 															Start: ast.Position{
 																Column: 21,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -12793,13 +12733,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "${tier}",
 															Start: ast.Position{
 																Column: 28,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -12810,13 +12750,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   55,
+																	Line:   53,
 																},
 																File:   "deadman_empty_test.flux",
 																Source: "tier",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   55,
+																	Line:   53,
 																},
 															},
 														},
@@ -12829,13 +12769,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 66,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: " - Hostname: unknown / Metric: ",
 															Start: ast.Position{
 																Column: 35,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -12847,13 +12787,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 80,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "${metric_type}",
 															Start: ast.Position{
 																Column: 66,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -12864,13 +12804,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 79,
-																	Line:   55,
+																	Line:   53,
 																},
 																File:   "deadman_empty_test.flux",
 																Source: "metric_type",
 																Start: ast.Position{
 																	Column: 68,
-																	Line:   55,
+																	Line:   53,
 																},
 															},
 														},
@@ -12883,13 +12823,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 94,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: " deadman alert",
 															Start: ast.Position{
 																Column: 80,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -12904,13 +12844,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   55,
+															Line:   53,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   55,
+															Line:   53,
 														},
 													},
 												},
@@ -12922,13 +12862,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_empty_test.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -12949,13 +12889,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   56,
+											Line:   54,
 										},
 										File:   "deadman_empty_test.flux",
 										Source: "tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   51,
+											Line:   49,
 										},
 									},
 								},
@@ -12966,13 +12906,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   51,
+												Line:   49,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "tickscript.deadman",
 											Start: ast.Position{
 												Column: 8,
-												Line:   51,
+												Line:   49,
 											},
 										},
 									},
@@ -12984,13 +12924,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   51,
+													Line:   49,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "tickscript",
 												Start: ast.Position{
 													Column: 8,
-													Line:   51,
+													Line:   49,
 												},
 											},
 										},
@@ -13003,13 +12943,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   51,
+													Line:   49,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "deadman",
 												Start: ast.Position{
 													Column: 19,
-													Line:   51,
+													Line:   49,
 												},
 											},
 										},
@@ -13022,18 +12962,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Comments: nil,
+							Comments: []ast.Comment{ast.Comment{Text: "// to avoid issue with validation\n"}},
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   57,
+									Line:   56,
 								},
 								File:   "deadman_empty_test.flux",
-								Source: "table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"])",
+								Source: "table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])",
 								Start: ast.Position{
 									Column: 36,
-									Line:   46,
+									Line:   44,
 								},
 							},
 						},
@@ -13045,13 +12985,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   57,
+											Line:   56,
 										},
 										File:   "deadman_empty_test.flux",
 										Source: "columns: [\"details\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   57,
+											Line:   56,
 										},
 									},
 								},
@@ -13063,13 +13003,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   57,
+												Line:   56,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "columns: [\"details\"]",
 											Start: ast.Position{
 												Column: 13,
-												Line:   57,
+												Line:   56,
 											},
 										},
 									},
@@ -13081,13 +13021,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   57,
+													Line:   56,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 13,
-													Line:   57,
+													Line:   56,
 												},
 											},
 										},
@@ -13101,13 +13041,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   57,
+													Line:   56,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "[\"details\"]",
 												Start: ast.Position{
 													Column: 22,
-													Line:   57,
+													Line:   56,
 												},
 											},
 										},
@@ -13118,13 +13058,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
-														Line:   57,
+														Line:   56,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "\"details\"",
 													Start: ast.Position{
 														Column: 23,
-														Line:   57,
+														Line:   56,
 													},
 												},
 											},
@@ -13143,13 +13083,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   57,
+										Line:   56,
 									},
 									File:   "deadman_empty_test.flux",
 									Source: "drop(columns: [\"details\"])",
 									Start: ast.Position{
 										Column: 8,
-										Line:   57,
+										Line:   56,
 									},
 								},
 							},
@@ -13160,13 +13100,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   57,
+											Line:   56,
 										},
 										File:   "deadman_empty_test.flux",
 										Source: "drop",
 										Start: ast.Position{
 											Column: 8,
-											Line:   57,
+											Line:   56,
 										},
 									},
 								},
@@ -13177,18 +13117,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Comments: []ast.Comment{ast.Comment{Text: "// to avoid issue with validation\n"}},
+						Comments: nil,
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   58,
+								Line:   57,
 							},
 							File:   "deadman_empty_test.flux",
-							Source: "table\n\t|> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])",
+							Source: "table\n    |> range(start: 2020-11-25T14:05:15Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${tier} - Hostname: unknown / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])",
 							Start: ast.Position{
 								Column: 36,
-								Line:   46,
+								Line:   44,
 							},
 						},
 					},
@@ -13200,13 +13140,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   58,
+										Line:   57,
 									},
 									File:   "deadman_empty_test.flux",
 									Source: "columns: [\"_time\"]",
 									Start: ast.Position{
 										Column: 13,
-										Line:   58,
+										Line:   57,
 									},
 								},
 							},
@@ -13218,13 +13158,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   58,
+											Line:   57,
 										},
 										File:   "deadman_empty_test.flux",
 										Source: "columns: [\"_time\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   58,
+											Line:   57,
 										},
 									},
 								},
@@ -13236,13 +13176,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   58,
+												Line:   57,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   58,
+												Line:   57,
 											},
 										},
 									},
@@ -13256,13 +13196,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   58,
+												Line:   57,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "[\"_time\"]",
 											Start: ast.Position{
 												Column: 22,
-												Line:   58,
+												Line:   57,
 											},
 										},
 									},
@@ -13273,13 +13213,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   58,
+													Line:   57,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "\"_time\"",
 												Start: ast.Position{
 													Column: 23,
-													Line:   58,
+													Line:   57,
 												},
 											},
 										},
@@ -13298,13 +13238,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   58,
+									Line:   57,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "drop(columns: [\"_time\"])",
 								Start: ast.Position{
 									Column: 8,
-									Line:   58,
+									Line:   57,
 								},
 							},
 						},
@@ -13315,13 +13255,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   58,
+										Line:   57,
 									},
 									File:   "deadman_empty_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
-										Line:   58,
+										Line:   57,
 									},
 								},
 							},
@@ -13339,13 +13279,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   46,
+								Line:   44,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   46,
+								Line:   44,
 							},
 						},
 					},
@@ -13357,13 +13297,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   46,
+									Line:   44,
 								},
 								File:   "deadman_empty_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
-									Line:   46,
+									Line:   44,
 								},
 							},
 						},
@@ -13376,13 +13316,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   46,
+								Line:   44,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
-								Line:   46,
+								Line:   44,
 							},
 						},
 					}},
@@ -13397,13 +13337,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   64,
+							Line:   63,
 						},
 						File:   "deadman_empty_test.flux",
-						Source: "_tickscript_deadman = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+						Source: "_tickscript_deadman = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   60,
+							Line:   59,
 						},
 					},
 				},
@@ -13414,13 +13354,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   60,
+								Line:   59,
 							},
 							File:   "deadman_empty_test.flux",
 							Source: "_tickscript_deadman",
 							Start: ast.Position{
 								Column: 6,
-								Line:   60,
+								Line:   59,
 							},
 						},
 					},
@@ -13434,13 +13374,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   64,
+								Line:   63,
 							},
 							File:   "deadman_empty_test.flux",
-							Source: "() => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 							Start: ast.Position{
 								Column: 28,
-								Line:   60,
+								Line:   59,
 							},
 						},
 					},
@@ -13451,13 +13391,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   64,
+									Line:   63,
 								},
 								File:   "deadman_empty_test.flux",
-								Source: "({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+								Source: "({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 								Start: ast.Position{
 									Column: 34,
-									Line:   60,
+									Line:   59,
 								},
 							},
 						},
@@ -13468,13 +13408,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   64,
+										Line:   63,
 									},
 									File:   "deadman_empty_test.flux",
-									Source: "{\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n}",
+									Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n}",
 									Start: ast.Position{
 										Column: 35,
-										Line:   60,
+										Line:   59,
 									},
 								},
 							},
@@ -13485,14 +13425,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
-											Line:   61,
+											Column: 44,
+											Line:   60,
 										},
 										File:   "deadman_empty_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   61,
+											Column: 5,
+											Line:   60,
 										},
 									},
 								},
@@ -13503,14 +13443,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   61,
+												Column: 10,
+												Line:   60,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   61,
+												Column: 5,
+												Line:   60,
 											},
 										},
 									},
@@ -13524,14 +13464,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
-													Line:   61,
+													Column: 43,
+													Line:   60,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 29,
-													Line:   61,
+													Column: 32,
+													Line:   60,
 												},
 											},
 										},
@@ -13542,14 +13482,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 40,
-														Line:   61,
+														Column: 43,
+														Line:   60,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 29,
-														Line:   61,
+														Column: 32,
+														Line:   60,
 													},
 												},
 											},
@@ -13560,14 +13500,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
-															Line:   61,
+															Column: 35,
+															Line:   60,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 29,
-															Line:   61,
+															Column: 32,
+															Line:   60,
 														},
 													},
 												},
@@ -13580,14 +13520,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
-															Line:   61,
+															Column: 43,
+															Line:   60,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 34,
-															Line:   61,
+															Column: 37,
+															Line:   60,
 														},
 													},
 												},
@@ -13602,14 +13542,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   61,
+												Column: 44,
+												Line:   60,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 9,
-												Line:   61,
+												Column: 12,
+												Line:   60,
 											},
 										},
 									},
@@ -13619,14 +13559,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 28,
-													Line:   61,
+													Column: 31,
+													Line:   60,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 9,
-													Line:   61,
+													Column: 12,
+													Line:   60,
 												},
 											},
 										},
@@ -13637,14 +13577,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 16,
-														Line:   61,
+														Column: 19,
+														Line:   60,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 9,
-														Line:   61,
+														Column: 12,
+														Line:   60,
 													},
 												},
 											},
@@ -13656,14 +13596,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 28,
-														Line:   61,
+														Column: 31,
+														Line:   60,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 17,
-														Line:   61,
+														Column: 20,
+														Line:   60,
 													},
 												},
 											},
@@ -13680,14 +13620,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   62,
+											Column: 40,
+											Line:   61,
 										},
 										File:   "deadman_empty_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   62,
+											Column: 5,
+											Line:   61,
 										},
 									},
 								},
@@ -13698,14 +13638,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   62,
+												Column: 9,
+												Line:   61,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   62,
+												Column: 5,
+												Line:   61,
 											},
 										},
 									},
@@ -13719,14 +13659,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   62,
+													Column: 39,
+													Line:   61,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   62,
+													Column: 27,
+													Line:   61,
 												},
 											},
 										},
@@ -13737,14 +13677,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   62,
+														Column: 39,
+														Line:   61,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   62,
+														Column: 27,
+														Line:   61,
 													},
 												},
 											},
@@ -13755,14 +13695,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   62,
+															Column: 30,
+															Line:   61,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   62,
+															Column: 27,
+															Line:   61,
 														},
 													},
 												},
@@ -13775,14 +13715,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   62,
+															Column: 39,
+															Line:   61,
 														},
 														File:   "deadman_empty_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   62,
+															Column: 32,
+															Line:   61,
 														},
 													},
 												},
@@ -13797,14 +13737,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   62,
+												Column: 40,
+												Line:   61,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   62,
+												Column: 11,
+												Line:   61,
 											},
 										},
 									},
@@ -13814,14 +13754,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   62,
+													Column: 26,
+													Line:   61,
 												},
 												File:   "deadman_empty_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   62,
+													Column: 11,
+													Line:   61,
 												},
 											},
 										},
@@ -13832,14 +13772,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   62,
+														Column: 18,
+														Line:   61,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   62,
+														Column: 11,
+														Line:   61,
 													},
 												},
 											},
@@ -13851,14 +13791,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   62,
+														Column: 26,
+														Line:   61,
 													},
 													File:   "deadman_empty_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   62,
+														Column: 19,
+														Line:   61,
 													},
 												},
 											},
@@ -13875,14 +13815,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
-											Line:   63,
+											Column: 27,
+											Line:   62,
 										},
 										File:   "deadman_empty_test.flux",
 										Source: "fn: tickscript_deadman",
 										Start: ast.Position{
-											Column: 2,
-											Line:   63,
+											Column: 5,
+											Line:   62,
 										},
 									},
 								},
@@ -13893,14 +13833,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   63,
+												Column: 7,
+												Line:   62,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   63,
+												Column: 5,
+												Line:   62,
 											},
 										},
 									},
@@ -13913,14 +13853,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   63,
+												Column: 27,
+												Line:   62,
 											},
 											File:   "deadman_empty_test.flux",
 											Source: "tickscript_deadman",
 											Start: ast.Position{
-												Column: 6,
-												Line:   63,
+												Column: 9,
+												Line:   62,
 											},
 										},
 									},
@@ -13944,13 +13884,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   64,
+						Line:   63,
 					},
 					File:   "deadman_empty_test.flux",
-					Source: "test _tickscript_deadman = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+					Source: "test _tickscript_deadman = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   60,
+						Line:   59,
 					},
 				},
 			},
@@ -13964,13 +13904,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -13981,13 +13921,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -14001,13 +13941,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "import \"csv\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -14018,13 +13958,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"csv\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -14038,13 +13978,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 39,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "import \"contrib/bonitoo-io/tickscript\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -14055,13 +13995,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 39,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"contrib/bonitoo-io/tickscript\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -14075,13 +14015,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 37,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "import \"influxdata/influxdb/monitor\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -14092,13 +14032,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 37,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"influxdata/influxdb/monitor\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -14112,13 +14052,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 36,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "deadman_empty_test.flux",
 					Source: "import \"influxdata/influxdb/schema\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -14129,13 +14069,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 36,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "deadman_empty_test.flux",
 						Source: "\"influxdata/influxdb/schema\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -14188,10 +14128,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 3,
-					Line:   64,
+					Line:   63,
 				},
 				File:   "deadman_threshold_test.flux",
-				Source: "package tickscript_test\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => (2020-11-25T14:05:30Z)\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\n\noutData = \"\n#group,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string,string,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,host,id,realm\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate deadman alert,ft\n\"\n\ncheck = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"deadman\", // tickscript?\n  tags: {},\n}\n\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\n\ntickscript_deadman = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_deadman = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+				Source: "package tickscript_test\n\n\nimport \"testing\"\nimport \"csv\"\nimport \"contrib/bonitoo-io/tickscript\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\n\noption now = () => 2020-11-25T14:05:30Z\n\n// overwrite as buckets are not avail in Flux tests\noption monitor.write = (tables=<-) => tables\noption monitor.log = (tables=<-) => tables\n\ninData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"\noutData = \"\n#group,false,false,true,true,true,true,false,true,false,true,false,true,false,true\n#datatype,string,long,string,string,string,string,string,string,long,string,boolean,string,string,string\n#default,_result,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_type,dead,host,id,realm\n,,0,rate-check,Rate Check,crit,statuses,Deadman Check: Rate Check is: dead,testm,1606313130000000000,deadman,true,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate deadman alert,ft\n\"\ncheck = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}\nmetric_type = \"kafka_message_in_rate\"\ntier = \"ft\"\ntickscript_deadman = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])\n\ntest _tickscript_deadman = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -14205,14 +14145,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 42,
-							Line:   9,
+							Column: 40,
+							Line:   10,
 						},
 						File:   "deadman_threshold_test.flux",
-						Source: "now = () => (2020-11-25T14:05:30Z)",
+						Source: "now = () => 2020-11-25T14:05:30Z",
 						Start: ast.Position{
 							Column: 8,
-							Line:   9,
+							Line:   10,
 						},
 					},
 				},
@@ -14223,13 +14163,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 11,
-								Line:   9,
+								Line:   10,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "now",
 							Start: ast.Position{
 								Column: 8,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
@@ -14242,55 +14182,35 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 42,
-								Line:   9,
+								Column: 40,
+								Line:   10,
 							},
 							File:   "deadman_threshold_test.flux",
-							Source: "() => (2020-11-25T14:05:30Z)",
+							Source: "() => 2020-11-25T14:05:30Z",
 							Start: ast.Position{
 								Column: 14,
-								Line:   9,
+								Line:   10,
 							},
 						},
 					},
-					Body: &ast.ParenExpression{
+					Body: &ast.DateTimeLiteral{
 						BaseNode: ast.BaseNode{
 							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 42,
-									Line:   9,
+									Column: 40,
+									Line:   10,
 								},
 								File:   "deadman_threshold_test.flux",
-								Source: "(2020-11-25T14:05:30Z)",
+								Source: "2020-11-25T14:05:30Z",
 								Start: ast.Position{
 									Column: 20,
-									Line:   9,
+									Line:   10,
 								},
 							},
 						},
-						Expression: &ast.DateTimeLiteral{
-							BaseNode: ast.BaseNode{
-								Comments: nil,
-								Errors:   nil,
-								Loc: &ast.SourceLocation{
-									End: ast.Position{
-										Column: 41,
-										Line:   9,
-									},
-									File:   "deadman_threshold_test.flux",
-									Source: "2020-11-25T14:05:30Z",
-									Start: ast.Position{
-										Column: 21,
-										Line:   9,
-									},
-								},
-							},
-							Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
-						},
-						Lparen: nil,
-						Rparen: nil,
+						Value: parser.MustParseTime("2020-11-25T14:05:30Z"),
 					},
 					Lparen: nil,
 					Params: []*ast.Property{},
@@ -14302,14 +14222,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 42,
-						Line:   9,
+						Column: 40,
+						Line:   10,
 					},
 					File:   "deadman_threshold_test.flux",
-					Source: "option now = () => (2020-11-25T14:05:30Z)",
+					Source: "option now = () => 2020-11-25T14:05:30Z",
 					Start: ast.Position{
 						Column: 1,
-						Line:   9,
+						Line:   10,
 					},
 				},
 			},
@@ -14321,13 +14241,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 45,
-							Line:   12,
+							Line:   13,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "monitor.write = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   12,
+							Line:   13,
 						},
 					},
 				},
@@ -14339,13 +14259,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 45,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 24,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -14356,13 +14276,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 45,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 39,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -14376,13 +14296,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 25,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -14394,13 +14314,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   12,
+										Line:   13,
 									},
 									File:   "deadman_threshold_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 25,
-										Line:   12,
+										Line:   13,
 									},
 								},
 							},
@@ -14413,13 +14333,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 32,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						}},
@@ -14433,13 +14353,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   12,
+								Line:   13,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "monitor.write",
 							Start: ast.Position{
 								Column: 8,
-								Line:   12,
+								Line:   13,
 							},
 						},
 					},
@@ -14451,13 +14371,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -14470,13 +14390,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   12,
+									Line:   13,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "write",
 								Start: ast.Position{
 									Column: 16,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -14491,13 +14411,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 45,
-						Line:   12,
+						Line:   13,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "option monitor.write = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   12,
+						Line:   13,
 					},
 				},
 			},
@@ -14509,13 +14429,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 43,
-							Line:   13,
+							Line:   14,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "monitor.log = (tables=<-) => tables",
 						Start: ast.Position{
 							Column: 8,
-							Line:   13,
+							Line:   14,
 						},
 					},
 				},
@@ -14527,13 +14447,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "(tables=<-) => tables",
 							Start: ast.Position{
 								Column: 22,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -14544,13 +14464,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 37,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -14564,13 +14484,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "tables=<-",
 								Start: ast.Position{
 									Column: 23,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -14582,13 +14502,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 29,
-										Line:   13,
+										Line:   14,
 									},
 									File:   "deadman_threshold_test.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 23,
-										Line:   13,
+										Line:   14,
 									},
 								},
 							},
@@ -14601,13 +14521,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "<-",
 								Start: ast.Position{
 									Column: 30,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						}},
@@ -14621,13 +14541,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   13,
+								Line:   14,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "monitor.log",
 							Start: ast.Position{
 								Column: 8,
-								Line:   13,
+								Line:   14,
 							},
 						},
 					},
@@ -14639,13 +14559,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "monitor",
 								Start: ast.Position{
 									Column: 8,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -14658,13 +14578,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   13,
+									Line:   14,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "log",
 								Start: ast.Position{
 									Column: 16,
-									Line:   13,
+									Line:   14,
 								},
 							},
 						},
@@ -14679,13 +14599,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 43,
-						Line:   13,
+						Line:   14,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "option monitor.log = (tables=<-) => tables",
 					Start: ast.Position{
 						Column: 1,
-						Line:   13,
+						Line:   14,
 					},
 				},
 			},
@@ -14696,13 +14616,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   26,
+						Line:   27,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "inData = \"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -14713,13 +14633,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -14732,13 +14652,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   26,
+							Line:   27,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"\n#group,false,false,false,false,true,true,true,true\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,host,realm\n,,0,2020-11-25T14:05:03.477635916Z,1.819231109049999,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:04.541635074Z,1.635878190200181,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:05.623191313Z,39.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:06.696061106Z,26.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -14809,10 +14729,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   41,
 					},
 					File:   "deadman_threshold_test.flux",
-					Source: "check = {\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"deadman\", // tickscript?\n  tags: {},\n}",
+					Source: "check = {\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   36,
+						Line:   35,
 					},
 				},
 			},
@@ -14823,13 +14743,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   36,
+							Line:   35,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "check",
 						Start: ast.Position{
 							Column: 1,
-							Line:   36,
+							Line:   35,
 						},
 					},
 				},
@@ -14845,10 +14765,10 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   41,
 						},
 						File:   "deadman_threshold_test.flux",
-						Source: "{\n  _check_id: \"rate-check\",\n  _check_name: \"Rate Check\",\n  _type: \"deadman\", // tickscript?\n  tags: {},\n}",
+						Source: "{\n    _check_id: \"rate-check\",\n    _check_name: \"Rate Check\",\n    // tickscript?\n    _type: \"deadman\",\n    tags: {},\n}",
 						Start: ast.Position{
 							Column: 9,
-							Line:   36,
+							Line:   35,
 						},
 					},
 				},
@@ -14859,14 +14779,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 26,
-								Line:   37,
+								Column: 28,
+								Line:   36,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "_check_id: \"rate-check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   37,
+								Column: 5,
+								Line:   36,
 							},
 						},
 					},
@@ -14877,14 +14797,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   37,
+									Column: 14,
+									Line:   36,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "_check_id",
 								Start: ast.Position{
-									Column: 3,
-									Line:   37,
+									Column: 5,
+									Line:   36,
 								},
 							},
 						},
@@ -14897,14 +14817,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 26,
-									Line:   37,
+									Column: 28,
+									Line:   36,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "\"rate-check\"",
 								Start: ast.Position{
-									Column: 14,
-									Line:   37,
+									Column: 16,
+									Line:   36,
 								},
 							},
 						},
@@ -14916,14 +14836,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 28,
-								Line:   38,
+								Column: 30,
+								Line:   37,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "_check_name: \"Rate Check\"",
 							Start: ast.Position{
-								Column: 3,
-								Line:   38,
+								Column: 5,
+								Line:   37,
 							},
 						},
 					},
@@ -14934,14 +14854,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 14,
-									Line:   38,
+									Column: 16,
+									Line:   37,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "_check_name",
 								Start: ast.Position{
-									Column: 3,
-									Line:   38,
+									Column: 5,
+									Line:   37,
 								},
 							},
 						},
@@ -14954,14 +14874,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   38,
+									Column: 30,
+									Line:   37,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "\"Rate Check\"",
 								Start: ast.Position{
-									Column: 16,
-									Line:   38,
+									Column: 18,
+									Line:   37,
 								},
 							},
 						},
@@ -14973,13 +14893,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 19,
+								Column: 21,
 								Line:   39,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "_type: \"deadman\"",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   39,
 							},
 						},
@@ -14987,17 +14907,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: nil,
+							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
+									Column: 10,
 									Line:   39,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "_type",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   39,
 								},
 							},
@@ -15011,13 +14931,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
+									Column: 21,
 									Line:   39,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "\"deadman\"",
 								Start: ast.Position{
-									Column: 10,
+									Column: 12,
 									Line:   39,
 								},
 							},
@@ -15030,13 +14950,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 11,
+								Column: 13,
 								Line:   40,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "tags: {}",
 							Start: ast.Position{
-								Column: 3,
+								Column: 5,
 								Line:   40,
 							},
 						},
@@ -15044,17 +14964,17 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Comma: nil,
 					Key: &ast.Identifier{
 						BaseNode: ast.BaseNode{
-							Comments: []ast.Comment{ast.Comment{Text: "// tickscript?\n"}},
+							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
+									Column: 9,
 									Line:   40,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "tags",
 								Start: ast.Position{
-									Column: 3,
+									Column: 5,
 									Line:   40,
 								},
 							},
@@ -15068,13 +14988,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
+									Column: 13,
 									Line:   40,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "{}",
 								Start: ast.Position{
-									Column: 9,
+									Column: 11,
 									Line:   40,
 								},
 							},
@@ -15095,13 +15015,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 38,
-						Line:   43,
+						Line:   42,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "metric_type = \"kafka_message_in_rate\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   43,
+						Line:   42,
 					},
 				},
 			},
@@ -15112,13 +15032,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   43,
+							Line:   42,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "metric_type",
 						Start: ast.Position{
 							Column: 1,
-							Line:   43,
+							Line:   42,
 						},
 					},
 				},
@@ -15131,13 +15051,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 38,
-							Line:   43,
+							Line:   42,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"kafka_message_in_rate\"",
 						Start: ast.Position{
 							Column: 15,
-							Line:   43,
+							Line:   42,
 						},
 					},
 				},
@@ -15150,13 +15070,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 12,
-						Line:   44,
+						Line:   43,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "tier = \"ft\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   44,
+						Line:   43,
 					},
 				},
 			},
@@ -15167,13 +15087,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   44,
+							Line:   43,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "tier",
 						Start: ast.Position{
 							Column: 1,
-							Line:   44,
+							Line:   43,
 						},
 					},
 				},
@@ -15186,13 +15106,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   44,
+							Line:   43,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"ft\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   44,
+							Line:   43,
 						},
 					},
 				},
@@ -15205,13 +15125,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 32,
-						Line:   58,
+						Line:   57,
 					},
 					File:   "deadman_threshold_test.flux",
-					Source: "tickscript_deadman = (table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])",
+					Source: "tickscript_deadman = (table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])",
 					Start: ast.Position{
 						Column: 1,
-						Line:   46,
+						Line:   44,
 					},
 				},
 			},
@@ -15222,13 +15142,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 19,
-							Line:   46,
+							Line:   44,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "tickscript_deadman",
 						Start: ast.Position{
 							Column: 1,
-							Line:   46,
+							Line:   44,
 						},
 					},
 				},
@@ -15242,13 +15162,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 32,
-							Line:   58,
+							Line:   57,
 						},
 						File:   "deadman_threshold_test.flux",
-						Source: "(table=<-) => table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])",
+						Source: "(table=<-) => table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])",
 						Start: ast.Position{
 							Column: 22,
-							Line:   46,
+							Line:   44,
 						},
 					},
 				},
@@ -15266,13 +15186,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 41,
-															Line:   46,
+															Line:   44,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "table",
 														Start: ast.Position{
 															Column: 36,
-															Line:   46,
+															Line:   44,
 														},
 													},
 												},
@@ -15283,14 +15203,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 39,
-														Line:   47,
+														Column: 42,
+														Line:   45,
 													},
 													File:   "deadman_threshold_test.flux",
-													Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)",
+													Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)",
 													Start: ast.Position{
 														Column: 36,
-														Line:   46,
+														Line:   44,
 													},
 												},
 											},
@@ -15301,14 +15221,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
-																Line:   47,
+																Column: 41,
+																Line:   45,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "start: 2020-11-25T14:05:00Z",
 															Start: ast.Position{
-																Column: 11,
-																Line:   47,
+																Column: 14,
+																Line:   45,
 															},
 														},
 													},
@@ -15319,14 +15239,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 38,
-																	Line:   47,
+																	Column: 41,
+																	Line:   45,
 																},
 																File:   "deadman_threshold_test.flux",
 																Source: "start: 2020-11-25T14:05:00Z",
 																Start: ast.Position{
-																	Column: 11,
-																	Line:   47,
+																	Column: 14,
+																	Line:   45,
 																},
 															},
 														},
@@ -15337,14 +15257,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 16,
-																		Line:   47,
+																		Column: 19,
+																		Line:   45,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "start",
 																	Start: ast.Position{
-																		Column: 11,
-																		Line:   47,
+																		Column: 14,
+																		Line:   45,
 																	},
 																},
 															},
@@ -15357,14 +15277,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
-																		Line:   47,
+																		Column: 41,
+																		Line:   45,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "2020-11-25T14:05:00Z",
 																	Start: ast.Position{
-																		Column: 18,
-																		Line:   47,
+																		Column: 21,
+																		Line:   45,
 																	},
 																},
 															},
@@ -15379,14 +15299,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
-															Line:   47,
+															Column: 42,
+															Line:   45,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "range(start: 2020-11-25T14:05:00Z)",
 														Start: ast.Position{
-															Column: 5,
-															Line:   47,
+															Column: 8,
+															Line:   45,
 														},
 													},
 												},
@@ -15396,14 +15316,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 10,
-																Line:   47,
+																Column: 13,
+																Line:   45,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "range",
 															Start: ast.Position{
-																Column: 5,
-																Line:   47,
+																Column: 8,
+																Line:   45,
 															},
 														},
 													},
@@ -15419,13 +15339,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 100,
-													Line:   48,
+													Line:   46,
 												},
 												File:   "deadman_threshold_test.flux",
-												Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
+												Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
 												Start: ast.Position{
 													Column: 36,
-													Line:   46,
+													Line:   44,
 												},
 											},
 										},
@@ -15437,13 +15357,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 99,
-															Line:   48,
+															Line:   46,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 														Start: ast.Position{
 															Column: 15,
-															Line:   48,
+															Line:   46,
 														},
 													},
 												},
@@ -15455,13 +15375,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 99,
-																Line:   48,
+																Line:   46,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 															Start: ast.Position{
 																Column: 15,
-																Line:   48,
+																Line:   46,
 															},
 														},
 													},
@@ -15473,13 +15393,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 17,
-																	Line:   48,
+																	Line:   46,
 																},
 																File:   "deadman_threshold_test.flux",
 																Source: "fn",
 																Start: ast.Position{
 																	Column: 15,
-																	Line:   48,
+																	Line:   46,
 																},
 															},
 														},
@@ -15494,13 +15414,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 99,
-																	Line:   48,
+																	Line:   46,
 																},
 																File:   "deadman_threshold_test.flux",
 																Source: "(r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   48,
+																	Line:   46,
 																},
 															},
 														},
@@ -15511,13 +15431,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 99,
-																		Line:   48,
+																		Line:   46,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "r._measurement == \"testm\" and r._field == metric_type and r.realm == tier",
 																	Start: ast.Position{
 																		Column: 26,
-																		Line:   48,
+																		Line:   46,
 																	},
 																},
 															},
@@ -15528,13 +15448,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 79,
-																			Line:   48,
+																			Line:   46,
 																		},
 																		File:   "deadman_threshold_test.flux",
 																		Source: "r._measurement == \"testm\" and r._field == metric_type",
 																		Start: ast.Position{
 																			Column: 26,
-																			Line:   48,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -15545,13 +15465,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 51,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_threshold_test.flux",
 																			Source: "r._measurement == \"testm\"",
 																			Start: ast.Position{
 																				Column: 26,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -15562,13 +15482,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 40,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_threshold_test.flux",
 																				Source: "r._measurement",
 																				Start: ast.Position{
 																					Column: 26,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -15580,13 +15500,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 27,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_threshold_test.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 26,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -15599,13 +15519,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 40,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_threshold_test.flux",
 																					Source: "_measurement",
 																					Start: ast.Position{
 																						Column: 28,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -15621,13 +15541,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 51,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_threshold_test.flux",
 																				Source: "\"testm\"",
 																				Start: ast.Position{
 																					Column: 44,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -15642,13 +15562,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 79,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_threshold_test.flux",
 																			Source: "r._field == metric_type",
 																			Start: ast.Position{
 																				Column: 56,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -15659,13 +15579,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 64,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_threshold_test.flux",
 																				Source: "r._field",
 																				Start: ast.Position{
 																					Column: 56,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -15677,13 +15597,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 57,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_threshold_test.flux",
 																					Source: "r",
 																					Start: ast.Position{
 																						Column: 56,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -15696,13 +15616,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 64,
-																						Line:   48,
+																						Line:   46,
 																					},
 																					File:   "deadman_threshold_test.flux",
 																					Source: "_field",
 																					Start: ast.Position{
 																						Column: 58,
-																						Line:   48,
+																						Line:   46,
 																					},
 																				},
 																			},
@@ -15718,13 +15638,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 79,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_threshold_test.flux",
 																				Source: "metric_type",
 																				Start: ast.Position{
 																					Column: 68,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -15740,13 +15660,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 99,
-																			Line:   48,
+																			Line:   46,
 																		},
 																		File:   "deadman_threshold_test.flux",
 																		Source: "r.realm == tier",
 																		Start: ast.Position{
 																			Column: 84,
-																			Line:   48,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -15757,13 +15677,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 91,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_threshold_test.flux",
 																			Source: "r.realm",
 																			Start: ast.Position{
 																				Column: 84,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -15775,13 +15695,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 85,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_threshold_test.flux",
 																				Source: "r",
 																				Start: ast.Position{
 																					Column: 84,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -15794,13 +15714,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 91,
-																					Line:   48,
+																					Line:   46,
 																				},
 																				File:   "deadman_threshold_test.flux",
 																				Source: "realm",
 																				Start: ast.Position{
 																					Column: 86,
-																					Line:   48,
+																					Line:   46,
 																				},
 																			},
 																		},
@@ -15816,13 +15736,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 99,
-																				Line:   48,
+																				Line:   46,
 																			},
 																			File:   "deadman_threshold_test.flux",
 																			Source: "tier",
 																			Start: ast.Position{
 																				Column: 95,
-																				Line:   48,
+																				Line:   46,
 																			},
 																		},
 																	},
@@ -15838,13 +15758,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 21,
-																		Line:   48,
+																		Line:   46,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 20,
-																		Line:   48,
+																		Line:   46,
 																	},
 																},
 															},
@@ -15856,13 +15776,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 21,
-																			Line:   48,
+																			Line:   46,
 																		},
 																		File:   "deadman_threshold_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 20,
-																			Line:   48,
+																			Line:   46,
 																		},
 																	},
 																},
@@ -15883,13 +15803,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 100,
-														Line:   48,
+														Line:   46,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)",
 													Start: ast.Position{
 														Column: 8,
-														Line:   48,
+														Line:   46,
 													},
 												},
 											},
@@ -15900,13 +15820,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   48,
+															Line:   46,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "filter",
 														Start: ast.Position{
 															Column: 8,
-															Line:   48,
+															Line:   46,
 														},
 													},
 												},
@@ -15922,13 +15842,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   49,
+												Line:   47,
 											},
 											File:   "deadman_threshold_test.flux",
-											Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
+											Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()",
 											Start: ast.Position{
 												Column: 36,
-												Line:   46,
+												Line:   44,
 											},
 										},
 									},
@@ -15940,13 +15860,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   49,
+													Line:   47,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "schema.fieldsAsCols()",
 												Start: ast.Position{
 													Column: 8,
-													Line:   49,
+													Line:   47,
 												},
 											},
 										},
@@ -15957,13 +15877,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 27,
-														Line:   49,
+														Line:   47,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "schema.fieldsAsCols",
 													Start: ast.Position{
 														Column: 8,
-														Line:   49,
+														Line:   47,
 													},
 												},
 											},
@@ -15975,13 +15895,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 14,
-															Line:   49,
+															Line:   47,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "schema",
 														Start: ast.Position{
 															Column: 8,
-															Line:   49,
+															Line:   47,
 														},
 													},
 												},
@@ -15994,13 +15914,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
-															Line:   49,
+															Line:   47,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "fieldsAsCols",
 														Start: ast.Position{
 															Column: 15,
-															Line:   49,
+															Line:   47,
 														},
 													},
 												},
@@ -16018,13 +15938,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 54,
-											Line:   50,
+											Line:   48,
 										},
 										File:   "deadman_threshold_test.flux",
-										Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
+										Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])",
 										Start: ast.Position{
 											Column: 36,
-											Line:   46,
+											Line:   44,
 										},
 									},
 								},
@@ -16036,13 +15956,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 53,
-													Line:   50,
+													Line:   48,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "columns: [\"host\", \"realm\"]",
 												Start: ast.Position{
 													Column: 27,
-													Line:   50,
+													Line:   48,
 												},
 											},
 										},
@@ -16054,13 +15974,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 53,
-														Line:   50,
+														Line:   48,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "columns: [\"host\", \"realm\"]",
 													Start: ast.Position{
 														Column: 27,
-														Line:   50,
+														Line:   48,
 													},
 												},
 											},
@@ -16072,13 +15992,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   50,
+															Line:   48,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 27,
-															Line:   50,
+															Line:   48,
 														},
 													},
 												},
@@ -16092,13 +16012,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 53,
-															Line:   50,
+															Line:   48,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "[\"host\", \"realm\"]",
 														Start: ast.Position{
 															Column: 36,
-															Line:   50,
+															Line:   48,
 														},
 													},
 												},
@@ -16109,13 +16029,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 43,
-																Line:   50,
+																Line:   48,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "\"host\"",
 															Start: ast.Position{
 																Column: 37,
-																Line:   50,
+																Line:   48,
 															},
 														},
 													},
@@ -16127,13 +16047,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 52,
-																Line:   50,
+																Line:   48,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "\"realm\"",
 															Start: ast.Position{
 																Column: 45,
-																Line:   50,
+																Line:   48,
 															},
 														},
 													},
@@ -16152,13 +16072,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   50,
+												Line:   48,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "tickscript.groupBy(columns: [\"host\", \"realm\"])",
 											Start: ast.Position{
 												Column: 8,
-												Line:   50,
+												Line:   48,
 											},
 										},
 									},
@@ -16169,13 +16089,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   50,
+													Line:   48,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "tickscript.groupBy",
 												Start: ast.Position{
 													Column: 8,
-													Line:   50,
+													Line:   48,
 												},
 											},
 										},
@@ -16187,13 +16107,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   50,
+														Line:   48,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "tickscript",
 													Start: ast.Position{
 														Column: 8,
-														Line:   50,
+														Line:   48,
 													},
 												},
 											},
@@ -16206,13 +16126,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   50,
+														Line:   48,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "groupBy",
 													Start: ast.Position{
 														Column: 19,
-														Line:   50,
+														Line:   48,
 													},
 												},
 											},
@@ -16230,13 +16150,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   56,
+										Line:   54,
 									},
 									File:   "deadman_threshold_test.flux",
-									Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )",
+									Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )",
 									Start: ast.Position{
 										Column: 36,
-										Line:   46,
+										Line:   44,
 									},
 								},
 							},
@@ -16248,13 +16168,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 100,
-												Line:   55,
+												Line:   53,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   52,
+												Line:   50,
 											},
 										},
 									},
@@ -16266,13 +16186,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   52,
+													Line:   50,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "check: check",
 												Start: ast.Position{
 													Column: 9,
-													Line:   52,
+													Line:   50,
 												},
 											},
 										},
@@ -16284,13 +16204,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   52,
+														Line:   50,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "check",
 													Start: ast.Position{
 														Column: 9,
-														Line:   52,
+														Line:   50,
 													},
 												},
 											},
@@ -16304,13 +16224,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   52,
+														Line:   50,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "check",
 													Start: ast.Position{
 														Column: 16,
-														Line:   52,
+														Line:   50,
 													},
 												},
 											},
@@ -16323,13 +16243,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   53,
+													Line:   51,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "measurement: \"testm\"",
 												Start: ast.Position{
 													Column: 9,
-													Line:   53,
+													Line:   51,
 												},
 											},
 										},
@@ -16341,13 +16261,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 20,
-														Line:   53,
+														Line:   51,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "measurement",
 													Start: ast.Position{
 														Column: 9,
-														Line:   53,
+														Line:   51,
 													},
 												},
 											},
@@ -16361,13 +16281,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 29,
-														Line:   53,
+														Line:   51,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "\"testm\"",
 													Start: ast.Position{
 														Column: 22,
-														Line:   53,
+														Line:   51,
 													},
 												},
 											},
@@ -16380,13 +16300,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   54,
+													Line:   52,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "threshold: 10",
 												Start: ast.Position{
 													Column: 9,
-													Line:   54,
+													Line:   52,
 												},
 											},
 										},
@@ -16398,13 +16318,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   54,
+														Line:   52,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "threshold",
 													Start: ast.Position{
 														Column: 9,
-														Line:   54,
+														Line:   52,
 													},
 												},
 											},
@@ -16418,13 +16338,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   54,
+														Line:   52,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "10",
 													Start: ast.Position{
 														Column: 20,
-														Line:   54,
+														Line:   52,
 													},
 												},
 											},
@@ -16437,13 +16357,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 100,
-													Line:   55,
+													Line:   53,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
 												Start: ast.Position{
 													Column: 9,
-													Line:   55,
+													Line:   53,
 												},
 											},
 										},
@@ -16455,13 +16375,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 11,
-														Line:   55,
+														Line:   53,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "id",
 													Start: ast.Position{
 														Column: 9,
-														Line:   55,
+														Line:   53,
 													},
 												},
 											},
@@ -16476,13 +16396,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 100,
-														Line:   55,
+														Line:   53,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "(r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
 													Start: ast.Position{
 														Column: 13,
-														Line:   55,
+														Line:   53,
 													},
 												},
 											},
@@ -16493,13 +16413,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 100,
-															Line:   55,
+															Line:   53,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "\"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\"",
 														Start: ast.Position{
 															Column: 20,
-															Line:   55,
+															Line:   53,
 														},
 													},
 												},
@@ -16510,13 +16430,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 28,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "Realm: ",
 															Start: ast.Position{
 																Column: 21,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16528,13 +16448,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 38,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "${r.realm}",
 															Start: ast.Position{
 																Column: 28,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16545,13 +16465,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
-																	Line:   55,
+																	Line:   53,
 																},
 																File:   "deadman_threshold_test.flux",
 																Source: "r.realm",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   55,
+																	Line:   53,
 																},
 															},
 														},
@@ -16563,13 +16483,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 31,
-																		Line:   55,
+																		Line:   53,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 30,
-																		Line:   55,
+																		Line:   53,
 																	},
 																},
 															},
@@ -16582,13 +16502,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 37,
-																		Line:   55,
+																		Line:   53,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "realm",
 																	Start: ast.Position{
 																		Column: 32,
-																		Line:   55,
+																		Line:   53,
 																	},
 																},
 															},
@@ -16603,13 +16523,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 51,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: " - Hostname: ",
 															Start: ast.Position{
 																Column: 38,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16621,13 +16541,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 60,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "${r.host}",
 															Start: ast.Position{
 																Column: 51,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16638,13 +16558,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 59,
-																	Line:   55,
+																	Line:   53,
 																},
 																File:   "deadman_threshold_test.flux",
 																Source: "r.host",
 																Start: ast.Position{
 																	Column: 53,
-																	Line:   55,
+																	Line:   53,
 																},
 															},
 														},
@@ -16656,13 +16576,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 54,
-																		Line:   55,
+																		Line:   53,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 53,
-																		Line:   55,
+																		Line:   53,
 																	},
 																},
 															},
@@ -16675,13 +16595,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 59,
-																		Line:   55,
+																		Line:   53,
 																	},
 																	File:   "deadman_threshold_test.flux",
 																	Source: "host",
 																	Start: ast.Position{
 																		Column: 55,
-																		Line:   55,
+																		Line:   53,
 																	},
 																},
 															},
@@ -16696,13 +16616,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 71,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: " / Metric: ",
 															Start: ast.Position{
 																Column: 60,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16714,13 +16634,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 85,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "${metric_type}",
 															Start: ast.Position{
 																Column: 71,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16731,13 +16651,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 84,
-																	Line:   55,
+																	Line:   53,
 																},
 																File:   "deadman_threshold_test.flux",
 																Source: "metric_type",
 																Start: ast.Position{
 																	Column: 73,
-																	Line:   55,
+																	Line:   53,
 																},
 															},
 														},
@@ -16750,13 +16670,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 99,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: " deadman alert",
 															Start: ast.Position{
 																Column: 85,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16771,13 +16691,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   55,
+															Line:   53,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 14,
-															Line:   55,
+															Line:   53,
 														},
 													},
 												},
@@ -16789,13 +16709,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 15,
-																Line:   55,
+																Line:   53,
 															},
 															File:   "deadman_threshold_test.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 14,
-																Line:   55,
+																Line:   53,
 															},
 														},
 													},
@@ -16816,13 +16736,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   56,
+											Line:   54,
 										},
 										File:   "deadman_threshold_test.flux",
 										Source: "tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )",
 										Start: ast.Position{
 											Column: 8,
-											Line:   51,
+											Line:   49,
 										},
 									},
 								},
@@ -16833,13 +16753,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   51,
+												Line:   49,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "tickscript.deadman",
 											Start: ast.Position{
 												Column: 8,
-												Line:   51,
+												Line:   49,
 											},
 										},
 									},
@@ -16851,13 +16771,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   51,
+													Line:   49,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "tickscript",
 												Start: ast.Position{
 													Column: 8,
-													Line:   51,
+													Line:   49,
 												},
 											},
 										},
@@ -16870,13 +16790,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   51,
+													Line:   49,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "deadman",
 												Start: ast.Position{
 													Column: 19,
-													Line:   51,
+													Line:   49,
 												},
 											},
 										},
@@ -16889,18 +16809,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Comments: nil,
+							Comments: []ast.Comment{ast.Comment{Text: "// to avoid issue with validation\n"}},
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   57,
+									Line:   56,
 								},
 								File:   "deadman_threshold_test.flux",
-								Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"])",
+								Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])",
 								Start: ast.Position{
 									Column: 36,
-									Line:   46,
+									Line:   44,
 								},
 							},
 						},
@@ -16912,13 +16832,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   57,
+											Line:   56,
 										},
 										File:   "deadman_threshold_test.flux",
 										Source: "columns: [\"details\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   57,
+											Line:   56,
 										},
 									},
 								},
@@ -16930,13 +16850,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   57,
+												Line:   56,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "columns: [\"details\"]",
 											Start: ast.Position{
 												Column: 13,
-												Line:   57,
+												Line:   56,
 											},
 										},
 									},
@@ -16948,13 +16868,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   57,
+													Line:   56,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 13,
-													Line:   57,
+													Line:   56,
 												},
 											},
 										},
@@ -16968,13 +16888,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   57,
+													Line:   56,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "[\"details\"]",
 												Start: ast.Position{
 													Column: 22,
-													Line:   57,
+													Line:   56,
 												},
 											},
 										},
@@ -16985,13 +16905,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
-														Line:   57,
+														Line:   56,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "\"details\"",
 													Start: ast.Position{
 														Column: 23,
-														Line:   57,
+														Line:   56,
 													},
 												},
 											},
@@ -17010,13 +16930,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   57,
+										Line:   56,
 									},
 									File:   "deadman_threshold_test.flux",
 									Source: "drop(columns: [\"details\"])",
 									Start: ast.Position{
 										Column: 8,
-										Line:   57,
+										Line:   56,
 									},
 								},
 							},
@@ -17027,13 +16947,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   57,
+											Line:   56,
 										},
 										File:   "deadman_threshold_test.flux",
 										Source: "drop",
 										Start: ast.Position{
 											Column: 8,
-											Line:   57,
+											Line:   56,
 										},
 									},
 								},
@@ -17044,18 +16964,18 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Comments: []ast.Comment{ast.Comment{Text: "// to avoid issue with validation\n"}},
+						Comments: nil,
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   58,
+								Line:   57,
 							},
 							File:   "deadman_threshold_test.flux",
-							Source: "table\n\t|> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    |> drop(columns: [\"details\"]) // to avoid issue with validation\n    |> drop(columns: [\"_time\"])",
+							Source: "table\n    |> range(start: 2020-11-25T14:05:00Z)\n    |> filter(fn: (r) => r._measurement == \"testm\" and r._field == metric_type and r.realm == tier)\n    |> schema.fieldsAsCols()\n    |> tickscript.groupBy(columns: [\"host\", \"realm\"])\n    |> tickscript.deadman(\n        check: check,\n        measurement: \"testm\",\n        threshold: 10,\n        id: (r) => \"Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} deadman alert\",\n    )\n    // to avoid issue with validation\n    |> drop(columns: [\"details\"])\n    |> drop(columns: [\"_time\"])",
 							Start: ast.Position{
 								Column: 36,
-								Line:   46,
+								Line:   44,
 							},
 						},
 					},
@@ -17067,13 +16987,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   58,
+										Line:   57,
 									},
 									File:   "deadman_threshold_test.flux",
 									Source: "columns: [\"_time\"]",
 									Start: ast.Position{
 										Column: 13,
-										Line:   58,
+										Line:   57,
 									},
 								},
 							},
@@ -17085,13 +17005,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 31,
-											Line:   58,
+											Line:   57,
 										},
 										File:   "deadman_threshold_test.flux",
 										Source: "columns: [\"_time\"]",
 										Start: ast.Position{
 											Column: 13,
-											Line:   58,
+											Line:   57,
 										},
 									},
 								},
@@ -17103,13 +17023,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   58,
+												Line:   57,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 13,
-												Line:   58,
+												Line:   57,
 											},
 										},
 									},
@@ -17123,13 +17043,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   58,
+												Line:   57,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "[\"_time\"]",
 											Start: ast.Position{
 												Column: 22,
-												Line:   58,
+												Line:   57,
 											},
 										},
 									},
@@ -17140,13 +17060,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   58,
+													Line:   57,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "\"_time\"",
 												Start: ast.Position{
 													Column: 23,
-													Line:   58,
+													Line:   57,
 												},
 											},
 										},
@@ -17165,13 +17085,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   58,
+									Line:   57,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "drop(columns: [\"_time\"])",
 								Start: ast.Position{
 									Column: 8,
-									Line:   58,
+									Line:   57,
 								},
 							},
 						},
@@ -17182,13 +17102,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   58,
+										Line:   57,
 									},
 									File:   "deadman_threshold_test.flux",
 									Source: "drop",
 									Start: ast.Position{
 										Column: 8,
-										Line:   58,
+										Line:   57,
 									},
 								},
 							},
@@ -17206,13 +17126,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   46,
+								Line:   44,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   46,
+								Line:   44,
 							},
 						},
 					},
@@ -17224,13 +17144,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   46,
+									Line:   44,
 								},
 								File:   "deadman_threshold_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 23,
-									Line:   46,
+									Line:   44,
 								},
 							},
 						},
@@ -17243,13 +17163,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 31,
-								Line:   46,
+								Line:   44,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 29,
-								Line:   46,
+								Line:   44,
 							},
 						},
 					}},
@@ -17264,13 +17184,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   64,
+							Line:   63,
 						},
 						File:   "deadman_threshold_test.flux",
-						Source: "_tickscript_deadman = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+						Source: "_tickscript_deadman = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   60,
+							Line:   59,
 						},
 					},
 				},
@@ -17281,13 +17201,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   60,
+								Line:   59,
 							},
 							File:   "deadman_threshold_test.flux",
 							Source: "_tickscript_deadman",
 							Start: ast.Position{
 								Column: 6,
-								Line:   60,
+								Line:   59,
 							},
 						},
 					},
@@ -17301,13 +17221,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   64,
+								Line:   63,
 							},
 							File:   "deadman_threshold_test.flux",
-							Source: "() => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+							Source: "() => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 							Start: ast.Position{
 								Column: 28,
-								Line:   60,
+								Line:   59,
 							},
 						},
 					},
@@ -17318,13 +17238,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   64,
+									Line:   63,
 								},
 								File:   "deadman_threshold_test.flux",
-								Source: "({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+								Source: "({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 								Start: ast.Position{
 									Column: 34,
-									Line:   60,
+									Line:   59,
 								},
 							},
 						},
@@ -17335,13 +17255,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   64,
+										Line:   63,
 									},
 									File:   "deadman_threshold_test.flux",
-									Source: "{\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n}",
+									Source: "{\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n}",
 									Start: ast.Position{
 										Column: 35,
-										Line:   60,
+										Line:   59,
 									},
 								},
 							},
@@ -17352,14 +17272,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
-											Line:   61,
+											Column: 44,
+											Line:   60,
 										},
 										File:   "deadman_threshold_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   61,
+											Column: 5,
+											Line:   60,
 										},
 									},
 								},
@@ -17370,14 +17290,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   61,
+												Column: 10,
+												Line:   60,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 2,
-												Line:   61,
+												Column: 5,
+												Line:   60,
 											},
 										},
 									},
@@ -17391,14 +17311,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 40,
-													Line:   61,
+													Column: 43,
+													Line:   60,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 29,
-													Line:   61,
+													Column: 32,
+													Line:   60,
 												},
 											},
 										},
@@ -17409,14 +17329,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 40,
-														Line:   61,
+														Column: 43,
+														Line:   60,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 29,
-														Line:   61,
+														Column: 32,
+														Line:   60,
 													},
 												},
 											},
@@ -17427,14 +17347,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 32,
-															Line:   61,
+															Column: 35,
+															Line:   60,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 29,
-															Line:   61,
+															Column: 32,
+															Line:   60,
 														},
 													},
 												},
@@ -17447,14 +17367,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
-															Line:   61,
+															Column: 43,
+															Line:   60,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 34,
-															Line:   61,
+															Column: 37,
+															Line:   60,
 														},
 													},
 												},
@@ -17469,14 +17389,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   61,
+												Column: 44,
+												Line:   60,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 9,
-												Line:   61,
+												Column: 12,
+												Line:   60,
 											},
 										},
 									},
@@ -17486,14 +17406,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 28,
-													Line:   61,
+													Column: 31,
+													Line:   60,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 9,
-													Line:   61,
+													Column: 12,
+													Line:   60,
 												},
 											},
 										},
@@ -17504,14 +17424,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 16,
-														Line:   61,
+														Column: 19,
+														Line:   60,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 9,
-														Line:   61,
+														Column: 12,
+														Line:   60,
 													},
 												},
 											},
@@ -17523,14 +17443,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 28,
-														Line:   61,
+														Column: 31,
+														Line:   60,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 17,
-														Line:   61,
+														Column: 20,
+														Line:   60,
 													},
 												},
 											},
@@ -17547,14 +17467,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 37,
-											Line:   62,
+											Column: 40,
+											Line:   61,
 										},
 										File:   "deadman_threshold_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 2,
-											Line:   62,
+											Column: 5,
+											Line:   61,
 										},
 									},
 								},
@@ -17565,14 +17485,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 6,
-												Line:   62,
+												Column: 9,
+												Line:   61,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 2,
-												Line:   62,
+												Column: 5,
+												Line:   61,
 											},
 										},
 									},
@@ -17586,14 +17506,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 36,
-													Line:   62,
+													Column: 39,
+													Line:   61,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 24,
-													Line:   62,
+													Column: 27,
+													Line:   61,
 												},
 											},
 										},
@@ -17604,14 +17524,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 36,
-														Line:   62,
+														Column: 39,
+														Line:   61,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 24,
-														Line:   62,
+														Column: 27,
+														Line:   61,
 													},
 												},
 											},
@@ -17622,14 +17542,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   62,
+															Column: 30,
+															Line:   61,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 24,
-															Line:   62,
+															Column: 27,
+															Line:   61,
 														},
 													},
 												},
@@ -17642,14 +17562,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 36,
-															Line:   62,
+															Column: 39,
+															Line:   61,
 														},
 														File:   "deadman_threshold_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 29,
-															Line:   62,
+															Column: 32,
+															Line:   61,
 														},
 													},
 												},
@@ -17664,14 +17584,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 37,
-												Line:   62,
+												Column: 40,
+												Line:   61,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 8,
-												Line:   62,
+												Column: 11,
+												Line:   61,
 											},
 										},
 									},
@@ -17681,14 +17601,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   62,
+													Column: 26,
+													Line:   61,
 												},
 												File:   "deadman_threshold_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 8,
-													Line:   62,
+													Column: 11,
+													Line:   61,
 												},
 											},
 										},
@@ -17699,14 +17619,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 15,
-														Line:   62,
+														Column: 18,
+														Line:   61,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 8,
-														Line:   62,
+														Column: 11,
+														Line:   61,
 													},
 												},
 											},
@@ -17718,14 +17638,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   62,
+														Column: 26,
+														Line:   61,
 													},
 													File:   "deadman_threshold_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 16,
-														Line:   62,
+														Column: 19,
+														Line:   61,
 													},
 												},
 											},
@@ -17742,14 +17662,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
-											Line:   63,
+											Column: 27,
+											Line:   62,
 										},
 										File:   "deadman_threshold_test.flux",
 										Source: "fn: tickscript_deadman",
 										Start: ast.Position{
-											Column: 2,
-											Line:   63,
+											Column: 5,
+											Line:   62,
 										},
 									},
 								},
@@ -17760,14 +17680,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 4,
-												Line:   63,
+												Column: 7,
+												Line:   62,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 2,
-												Line:   63,
+												Column: 5,
+												Line:   62,
 											},
 										},
 									},
@@ -17780,14 +17700,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   63,
+												Column: 27,
+												Line:   62,
 											},
 											File:   "deadman_threshold_test.flux",
 											Source: "tickscript_deadman",
 											Start: ast.Position{
-												Column: 6,
-												Line:   63,
+												Column: 9,
+												Line:   62,
 											},
 										},
 									},
@@ -17811,13 +17731,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   64,
+						Line:   63,
 					},
 					File:   "deadman_threshold_test.flux",
-					Source: "test _tickscript_deadman = () => ({\n\tinput: testing.loadStorage(csv: inData),\n\twant: testing.loadMem(csv: outData),\n\tfn: tickscript_deadman,\n})",
+					Source: "test _tickscript_deadman = () => ({\n    input: testing.loadStorage(csv: inData),\n    want: testing.loadMem(csv: outData),\n    fn: tickscript_deadman,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   60,
+						Line:   59,
 					},
 				},
 			},
@@ -17831,13 +17751,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -17848,13 +17768,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -17868,13 +17788,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "import \"csv\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -17885,13 +17805,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"csv\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -17905,13 +17825,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 39,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "import \"contrib/bonitoo-io/tickscript\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -17922,13 +17842,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 39,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"contrib/bonitoo-io/tickscript\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -17942,13 +17862,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 37,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "import \"influxdata/influxdb/monitor\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -17959,13 +17879,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 37,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"influxdata/influxdb/monitor\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -17979,13 +17899,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 36,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "deadman_threshold_test.flux",
 					Source: "import \"influxdata/influxdb/schema\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -17996,13 +17916,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 36,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "deadman_threshold_test.flux",
 						Source: "\"influxdata/influxdb/schema\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
