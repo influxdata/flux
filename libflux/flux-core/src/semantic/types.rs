@@ -1,4 +1,4 @@
-//! Types.
+//! Semantic representations of types.
 
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
