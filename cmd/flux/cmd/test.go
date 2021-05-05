@@ -618,6 +618,7 @@ func (testExecutor) Run(pkg *ast.Package) error {
 	}
 	defer query.Done()
 
+	var output strings.Builder
 	results := flux.NewResultIteratorFromQuery(query)
 	for results.More() {
 		result := results.Next()
@@ -626,14 +627,20 @@ func (testExecutor) Run(pkg *ast.Package) error {
 			// a comparison of two tables showed inequality. Capture that inequality as part of the error.
 			// XXX: rockstar (08 Dec 2020) - This could use some ergonomic work, as the diff output
 			// is not exactly "human readable."
-			return fmt.Errorf("%s", table.Stringify(tbl))
+			_, _ = fmt.Fprint(&output, table.Stringify(tbl))
+			return nil
 		})
 		if err != nil {
 			return err
 		}
 	}
 	results.Release()
-	return results.Err()
+
+	err = results.Err()
+	if err == nil && output.Len() > 0 {
+		err = errors.New(codes.FailedPrecondition, output.String())
+	}
+	return err
 }
 
 func (testExecutor) Close() error { return nil }

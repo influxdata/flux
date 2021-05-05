@@ -37,6 +37,7 @@ import (
 	_ "github.com/influxdata/flux/stdlib/experimental/oee"
 	_ "github.com/influxdata/flux/stdlib/experimental/prometheus"
 	_ "github.com/influxdata/flux/stdlib/experimental/query"
+	_ "github.com/influxdata/flux/stdlib/experimental/table"
 	_ "github.com/influxdata/flux/stdlib/experimental/usage"
 	_ "github.com/influxdata/flux/stdlib/generate"
 	_ "github.com/influxdata/flux/stdlib/http"
