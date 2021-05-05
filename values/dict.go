@@ -1,9 +1,7 @@
 package values
 
 import (
-	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/benbjohnson/immutable"
 	"github.com/influxdata/flux/codes"
@@ -125,10 +123,6 @@ func (d emptyDict) Equal(v Value) bool {
 	return d.t.Equal(v.Type()) && v.Dict().Len() == 0
 }
 
-func (d emptyDict) String() string {
-	return "[:]"
-}
-
 type dict struct {
 	t    semantic.MonoType
 	data *immutable.SortedMap
@@ -241,28 +235,6 @@ func (d dict) Equal(v Value) bool {
 		equal = value.Equal(v.(Value))
 	})
 	return equal
-}
-func (d dict) String() string {
-	b := strings.Builder{}
-	multiline := d.Len() > 3
-	b.WriteString("[")
-	sep := " "
-	if multiline {
-		sep = "\n"
-	}
-	b.WriteString(sep)
-	d.Range(func(k, v Value) {
-		if multiline {
-			b.WriteString("    ")
-		}
-		fmt.Fprint(&b, k)
-		b.WriteString(": ")
-		fmt.Fprint(&b, v)
-		b.WriteString(",")
-		b.WriteString(sep)
-	})
-	b.WriteString("]")
-	return b.String()
 }
 
 type (

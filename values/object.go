@@ -1,7 +1,6 @@
 package values
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -158,22 +157,6 @@ func NewObjectWithValues(vals map[string]Value) Object {
 
 func (o *object) IsNull() bool {
 	return false
-}
-func (o *object) String() string {
-	b := new(strings.Builder)
-	b.WriteString("{")
-	i := 0
-	o.Range(func(k string, v Value) {
-		if i != 0 {
-			b.WriteString(", ")
-		}
-		i++
-		b.WriteString(k)
-		b.WriteString(": ")
-		fmt.Fprint(b, v)
-	})
-	b.WriteString("}")
-	return b.String()
 }
 
 func (o *object) Type() semantic.MonoType {

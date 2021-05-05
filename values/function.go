@@ -2,7 +2,6 @@ package values
 
 import (
 	"context"
-	"fmt"
 	"regexp"
 
 	"github.com/influxdata/flux/semantic"
@@ -39,9 +38,6 @@ type function struct {
 
 func (f *function) IsNull() bool {
 	return false
-}
-func (f *function) String() string {
-	return fmt.Sprintf("%s()", f.name)
 }
 
 func (f *function) Type() semantic.MonoType {

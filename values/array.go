@@ -1,10 +1,8 @@
 package values
 
 import (
-	"fmt"
 	"regexp"
 	"sort"
-	"strings"
 
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
@@ -43,18 +41,6 @@ func NewArrayWithBacking(arrType semantic.MonoType, elements []Value) Array {
 
 func (a *array) IsNull() bool {
 	return false
-}
-func (a *array) String() string {
-	b := new(strings.Builder)
-	b.WriteString("[")
-	a.Range(func(i int, v Value) {
-		if i != 0 {
-			b.WriteString(", ")
-		}
-		fmt.Fprint(b, v)
-	})
-	b.WriteString("]")
-	return b.String()
 }
 
 func (a *array) Type() semantic.MonoType {
