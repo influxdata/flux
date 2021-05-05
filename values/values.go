@@ -35,10 +35,6 @@ type Value interface {
 	Equal(Value) bool
 }
 
-type ValueStringer interface {
-	String() string
-}
-
 type value struct {
 	t semantic.MonoType
 	v interface{}

@@ -175,7 +175,7 @@ func TestNulls(t *testing.T) {
 					t.Fatal(err)
 				}
 				if !v.IsNull() {
-					t.Errorf("expected null value; got %s instead", v.(values.ValueStringer).String())
+					t.Errorf("expected null value; got %s instead", values.DisplayString(v))
 				}
 			})
 		}
@@ -210,7 +210,7 @@ func TestNulls(t *testing.T) {
 					t.Fatal(err)
 				}
 				if !v.IsNull() {
-					t.Errorf("expected null value; got %s instead", v.(values.ValueStringer).String())
+					t.Errorf("expected null value; got %s instead", values.DisplayString(v))
 				}
 			})
 		}
