@@ -1,5 +1,6 @@
 package opsgenie
 
+
 import "http"
 import "json"
 import "strings"
@@ -23,26 +24,29 @@ builtin respondersToJSON : (v: [string]) => string
 sendAlert = (url="https://api.opsgenie.com/v2/alerts", apiKey, message, alias="", description="", priority="P3", responders=[], tags=[], entity="", actions=[], visibleTo=[], details="{}") => {
     headers = {
         "Content-Type": "application/json; charset=utf-8",
-        "Authorization": "GenieKey " + apiKey
+        "Authorization": "GenieKey " + apiKey,
     }
-    cutEncode = (v, max, defV = "") => {
+    cutEncode = (v, max, defV="") => {
         v2 = if strings.strlen(v: v) != 0 then v else defV
-        return if strings.strlen(v: v2) > max 
-                then string(v: json.encode(v: "${strings.substring(v: v2, start: 0, end: max)}"))
-                else string(v: json.encode(v:v2))
+
+        return if strings.strlen(v: v2) > max then
+            string(v: json.encode(v: "${strings.substring(v: v2, start: 0, end: max)}"))
+else
+            string(v: json.encode(v: v2))
     }
     body = "{
-\"message\": ${cutEncode(v:message,max:130)},
-\"alias\": ${cutEncode(v:alias,max:512,defV: message)},
-\"description\": ${cutEncode(v:description,max:15000)},
-\"responders\": ${respondersToJSON(v:responders)},
-\"visibleTo\": ${respondersToJSON(v:visibleTo)},
-\"actions\": ${string(v: json.encode(v:actions))},
-\"tags\": ${string(v: json.encode(v:tags))},
+\"message\": ${cutEncode(v: message, max: 130)},
+\"alias\": ${cutEncode(v: alias, max: 512, defV: message)},
+\"description\": ${cutEncode(v: description, max: 15000)},
+\"responders\": ${respondersToJSON(v: responders)},
+\"visibleTo\": ${respondersToJSON(v: visibleTo)},
+\"actions\": ${string(v: json.encode(v: actions))},
+\"tags\": ${string(v: json.encode(v: tags))},
 \"details\": ${details},
-\"entity\": ${cutEncode(v:entity, max: 512)},
-\"priority\": ${cutEncode(v:priority, max: 2)}
+\"entity\": ${cutEncode(v: entity, max: 512)},
+\"priority\": ${cutEncode(v: priority, max: 2)}
 }"
+
     return http.post(headers: headers, url: url, data: bytes(v: body))
 }
 
@@ -52,24 +56,28 @@ sendAlert = (url="https://api.opsgenie.com/v2/alerts", apiKey, message, alias=""
 // `entity`      - string - Entity of the alert, used to specify domain of the alert. Optional. 
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and entity).
-endpoint = (url="https://api.opsgenie.com/v2/alerts", apiKey, entity = "") =>
-    (mapFn) =>
-        (tables=<-) => tables
-            |> map(fn: (r) => {
-                obj = mapFn(r: r)
-                return {r with _sent: string(v: 2 == sendAlert(
-                    url: url,
-                    apiKey: apiKey,
-                    entity: entity,
-                    message: obj.message,
-                    alias: obj.alias,
-                    description: obj.description,
-                    priority: obj.priority,
-                    responders: obj.responders,
-                    tags: obj.tags,
-                    actions: obj.actions,
-                    visibleTo: obj.visibleTo,
-                    details: obj.details,
-                ) / 100)}
-            })
+endpoint = (url="https://api.opsgenie.com/v2/alerts", apiKey, entity="") => (mapFn) => (tables=<-) => tables
+    |> map(
+        fn: (r) => {
+            obj = mapFn(r: r)
 
+            return {r with
+                _sent: string(
+                    v: 2 == sendAlert(
+                        url: url,
+                        apiKey: apiKey,
+                        entity: entity,
+                        message: obj.message,
+                        alias: obj.alias,
+                        description: obj.description,
+                        priority: obj.priority,
+                        responders: obj.responders,
+                        tags: obj.tags,
+                        actions: obj.actions,
+                        visibleTo: obj.visibleTo,
+                        details: obj.details,
+                    ) / 100,
+                ),
+            }
+        },
+    )

@@ -23,11 +23,11 @@ var pkgAST = &ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 15,
-					Line:   52,
+					Column: 6,
+					Line:   62,
 				},
 				File:   "teams.flux",
-				Source: "package teams\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `summaryCutoff` is used \noption summaryCutoff = 70\n\n// `message` sends a single message to Microsoft Teams via incoming web hook.\n// `url` - string - incoming web hook URL\n// `title` - string - Message card title.\n// `text` - string - Message card text.\n// `summary` - string - Message card summary, it can be an empty string to generate summary from text.\nmessage = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" \n        then text \n        else summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff \n        then \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n        else summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v:title))},\n\\\"text\\\": ${string(v: json.encode(v:text))},\n\\\"summary\\\": ${string(v:json.encode(v:shortSummary))}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}\n\n// `endpoint` creates the endpoint for the Microsoft Teams external service.\n// `url` - string - URL of the incoming web hook.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `title`, `text`, and `summary`, as defined in the `message` function arguments.\nendpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            })",
+				Source: "package teams\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// `summaryCutoff` is used \noption summaryCutoff = 70\n\n// `message` sends a single message to Microsoft Teams via incoming web hook.\n// `url` - string - incoming web hook URL\n// `title` - string - Message card title.\n// `text` - string - Message card text.\n// `summary` - string - Message card summary, it can be an empty string to generate summary from text.\nmessage = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}\n\n// `endpoint` creates the endpoint for the Microsoft Teams external service.\n// `url` - string - URL of the incoming web hook.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with `title`, `text`, and `summary`, as defined in the `message` function arguments.\nendpoint = (url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -42,13 +42,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 26,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "teams.flux",
 						Source: "summaryCutoff = 70",
 						Start: ast.Position{
 							Column: 8,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   8,
+								Line:   9,
 							},
 							File:   "teams.flux",
 							Source: "summaryCutoff",
 							Start: ast.Position{
 								Column: 8,
-								Line:   8,
+								Line:   9,
 							},
 						},
 					},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   8,
+								Line:   9,
 							},
 							File:   "teams.flux",
 							Source: "70",
 							Start: ast.Position{
 								Column: 24,
-								Line:   8,
+								Line:   9,
 							},
 						},
 					},
@@ -97,13 +97,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 26,
-						Line:   8,
+						Line:   9,
 					},
 					File:   "teams.flux",
 					Source: "option summaryCutoff = 70",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   9,
 					},
 				},
 			},
@@ -114,13 +114,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   35,
+						Line:   40,
 					},
 					File:   "teams.flux",
-					Source: "message = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" \n        then text \n        else summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff \n        then \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n        else summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v:title))},\n\\\"text\\\": ${string(v: json.encode(v:text))},\n\\\"summary\\\": ${string(v:json.encode(v:shortSummary))}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+					Source: "message = (url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   15,
+						Line:   16,
 					},
 				},
 			},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   15,
+							Line:   16,
 						},
 						File:   "teams.flux",
 						Source: "message",
 						Start: ast.Position{
 							Column: 1,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   35,
+							Line:   40,
 						},
 						File:   "teams.flux",
-						Source: "(url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" \n        then text \n        else summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff \n        then \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n        else summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v:title))},\n\\\"text\\\": ${string(v: json.encode(v:text))},\n\\\"summary\\\": ${string(v:json.encode(v:shortSummary))}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+						Source: "(url, title, text, summary=\"\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 						Start: ast.Position{
 							Column: 11,
-							Line:   15,
+							Line:   16,
 						},
 					},
 				},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   35,
+								Line:   40,
 							},
 							File:   "teams.flux",
-							Source: "{\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" \n        then text \n        else summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff \n        then \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n        else summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v:title))},\n\\\"text\\\": ${string(v: json.encode(v:text))},\n\\\"summary\\\": ${string(v:json.encode(v:shortSummary))}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+							Source: "{\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }\n\n    // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields\n    // using string body, object cannot be used because '@' is an illegal character in the object property key\n    summary2 = if summary == \"\" then\n        text\nelse\n        summary\n    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2\n    body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 							Start: ast.Position{
 								Column: 45,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -185,13 +185,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   18,
+									Line:   19,
 								},
 								File:   "teams.flux",
 								Source: "headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   16,
+									Line:   17,
 								},
 							},
 						},
@@ -202,13 +202,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   16,
+										Line:   17,
 									},
 									File:   "teams.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   16,
+										Line:   17,
 									},
 								},
 							},
@@ -221,13 +221,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   18,
+										Line:   19,
 									},
 									File:   "teams.flux",
 									Source: "{\n        \"Content-Type\": \"application/json; charset=utf-8\",\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   16,
+										Line:   17,
 									},
 								},
 							},
@@ -239,13 +239,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   17,
+											Line:   18,
 										},
 										File:   "teams.flux",
 										Source: "\"Content-Type\": \"application/json; charset=utf-8\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   17,
+											Line:   18,
 										},
 									},
 								},
@@ -257,13 +257,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   17,
+												Line:   18,
 											},
 											File:   "teams.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   17,
+												Line:   18,
 											},
 										},
 									},
@@ -277,13 +277,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   17,
+												Line:   18,
 											},
 											File:   "teams.flux",
 											Source: "\"application/json; charset=utf-8\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   17,
+												Line:   18,
 											},
 										},
 									},
@@ -299,14 +299,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 21,
-									Line:   23,
+									Column: 16,
+									Line:   26,
 								},
 								File:   "teams.flux",
-								Source: "summary2 = if summary == \"\" \n        then text \n        else summary",
+								Source: "summary2 = if summary == \"\" then\n        text\nelse\n        summary",
 								Start: ast.Position{
 									Column: 5,
-									Line:   21,
+									Line:   23,
 								},
 							},
 						},
@@ -317,13 +317,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   21,
+										Line:   23,
 									},
 									File:   "teams.flux",
 									Source: "summary2",
 									Start: ast.Position{
 										Column: 5,
-										Line:   21,
+										Line:   23,
 									},
 								},
 							},
@@ -336,14 +336,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 21,
-											Line:   23,
+											Column: 16,
+											Line:   26,
 										},
 										File:   "teams.flux",
 										Source: "summary",
 										Start: ast.Position{
-											Column: 14,
-											Line:   23,
+											Column: 9,
+											Line:   26,
 										},
 									},
 								},
@@ -354,14 +354,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 21,
-										Line:   23,
+										Column: 16,
+										Line:   26,
 									},
 									File:   "teams.flux",
-									Source: "if summary == \"\" \n        then text \n        else summary",
+									Source: "if summary == \"\" then\n        text\nelse\n        summary",
 									Start: ast.Position{
 										Column: 16,
-										Line:   21,
+										Line:   23,
 									},
 								},
 							},
@@ -371,14 +371,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 18,
-											Line:   22,
+											Column: 13,
+											Line:   24,
 										},
 										File:   "teams.flux",
 										Source: "text",
 										Start: ast.Position{
-											Column: 14,
-											Line:   22,
+											Column: 9,
+											Line:   24,
 										},
 									},
 								},
@@ -391,13 +391,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   21,
+											Line:   23,
 										},
 										File:   "teams.flux",
 										Source: "summary == \"\"",
 										Start: ast.Position{
 											Column: 19,
-											Line:   21,
+											Line:   23,
 										},
 									},
 								},
@@ -408,13 +408,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   21,
+												Line:   23,
 											},
 											File:   "teams.flux",
 											Source: "summary",
 											Start: ast.Position{
 												Column: 19,
-												Line:   21,
+												Line:   23,
 											},
 										},
 									},
@@ -428,13 +428,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   21,
+												Line:   23,
 											},
 											File:   "teams.flux",
 											Source: "\"\"",
 											Start: ast.Position{
 												Column: 30,
-												Line:   21,
+												Line:   23,
 											},
 										},
 									},
@@ -451,14 +451,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
-									Line:   26,
+									Column: 17,
+									Line:   30,
 								},
 								File:   "teams.flux",
-								Source: "shortSummary = if strings.strlen(v: summary2) > summaryCutoff \n        then \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n        else summary2",
+								Source: "shortSummary = if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2",
 								Start: ast.Position{
 									Column: 5,
-									Line:   24,
+									Line:   27,
 								},
 							},
 						},
@@ -469,13 +469,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
-										Line:   24,
+										Line:   27,
 									},
 									File:   "teams.flux",
 									Source: "shortSummary",
 									Start: ast.Position{
 										Column: 5,
-										Line:   24,
+										Line:   27,
 									},
 								},
 							},
@@ -488,14 +488,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   26,
+											Column: 17,
+											Line:   30,
 										},
 										File:   "teams.flux",
 										Source: "summary2",
 										Start: ast.Position{
-											Column: 14,
-											Line:   26,
+											Column: 9,
+											Line:   30,
 										},
 									},
 								},
@@ -506,14 +506,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   26,
+										Column: 17,
+										Line:   30,
 									},
 									File:   "teams.flux",
-									Source: "if strings.strlen(v: summary2) > summaryCutoff \n        then \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\n        else summary2",
+									Source: "if strings.strlen(v: summary2) > summaryCutoff then\n        \"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"\nelse\n        summary2",
 									Start: ast.Position{
 										Column: 20,
-										Line:   24,
+										Line:   27,
 									},
 								},
 							},
@@ -523,14 +523,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 82,
-											Line:   25,
+											Column: 77,
+											Line:   28,
 										},
 										File:   "teams.flux",
 										Source: "\"${strings.substring(v: summary2, start: 0, end: summaryCutoff)}...\"",
 										Start: ast.Position{
-											Column: 14,
-											Line:   25,
+											Column: 9,
+											Line:   28,
 										},
 									},
 								},
@@ -540,14 +540,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 78,
-												Line:   25,
+												Column: 73,
+												Line:   28,
 											},
 											File:   "teams.flux",
 											Source: "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}",
 											Start: ast.Position{
-												Column: 15,
-												Line:   25,
+												Column: 10,
+												Line:   28,
 											},
 										},
 									},
@@ -558,14 +558,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 76,
-														Line:   25,
+														Column: 71,
+														Line:   28,
 													},
 													File:   "teams.flux",
 													Source: "v: summary2, start: 0, end: summaryCutoff",
 													Start: ast.Position{
-														Column: 35,
-														Line:   25,
+														Column: 30,
+														Line:   28,
 													},
 												},
 											},
@@ -576,14 +576,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 46,
-															Line:   25,
+															Column: 41,
+															Line:   28,
 														},
 														File:   "teams.flux",
 														Source: "v: summary2",
 														Start: ast.Position{
-															Column: 35,
-															Line:   25,
+															Column: 30,
+															Line:   28,
 														},
 													},
 												},
@@ -594,14 +594,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 36,
-																Line:   25,
+																Column: 31,
+																Line:   28,
 															},
 															File:   "teams.flux",
 															Source: "v",
 															Start: ast.Position{
-																Column: 35,
-																Line:   25,
+																Column: 30,
+																Line:   28,
 															},
 														},
 													},
@@ -614,14 +614,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 46,
-																Line:   25,
+																Column: 41,
+																Line:   28,
 															},
 															File:   "teams.flux",
 															Source: "summary2",
 															Start: ast.Position{
-																Column: 38,
-																Line:   25,
+																Column: 33,
+																Line:   28,
 															},
 														},
 													},
@@ -633,14 +633,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 56,
-															Line:   25,
+															Column: 51,
+															Line:   28,
 														},
 														File:   "teams.flux",
 														Source: "start: 0",
 														Start: ast.Position{
-															Column: 48,
-															Line:   25,
+															Column: 43,
+															Line:   28,
 														},
 													},
 												},
@@ -651,14 +651,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 53,
-																Line:   25,
+																Column: 48,
+																Line:   28,
 															},
 															File:   "teams.flux",
 															Source: "start",
 															Start: ast.Position{
-																Column: 48,
-																Line:   25,
+																Column: 43,
+																Line:   28,
 															},
 														},
 													},
@@ -671,14 +671,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 56,
-																Line:   25,
+																Column: 51,
+																Line:   28,
 															},
 															File:   "teams.flux",
 															Source: "0",
 															Start: ast.Position{
-																Column: 55,
-																Line:   25,
+																Column: 50,
+																Line:   28,
 															},
 														},
 													},
@@ -690,14 +690,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 76,
-															Line:   25,
+															Column: 71,
+															Line:   28,
 														},
 														File:   "teams.flux",
 														Source: "end: summaryCutoff",
 														Start: ast.Position{
-															Column: 58,
-															Line:   25,
+															Column: 53,
+															Line:   28,
 														},
 													},
 												},
@@ -708,14 +708,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 61,
-																Line:   25,
+																Column: 56,
+																Line:   28,
 															},
 															File:   "teams.flux",
 															Source: "end",
 															Start: ast.Position{
-																Column: 58,
-																Line:   25,
+																Column: 53,
+																Line:   28,
 															},
 														},
 													},
@@ -728,14 +728,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 76,
-																Line:   25,
+																Column: 71,
+																Line:   28,
 															},
 															File:   "teams.flux",
 															Source: "summaryCutoff",
 															Start: ast.Position{
-																Column: 63,
-																Line:   25,
+																Column: 58,
+																Line:   28,
 															},
 														},
 													},
@@ -750,14 +750,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 77,
-													Line:   25,
+													Column: 72,
+													Line:   28,
 												},
 												File:   "teams.flux",
 												Source: "strings.substring(v: summary2, start: 0, end: summaryCutoff)",
 												Start: ast.Position{
-													Column: 17,
-													Line:   25,
+													Column: 12,
+													Line:   28,
 												},
 											},
 										},
@@ -767,14 +767,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 34,
-														Line:   25,
+														Column: 29,
+														Line:   28,
 													},
 													File:   "teams.flux",
 													Source: "strings.substring",
 													Start: ast.Position{
-														Column: 17,
-														Line:   25,
+														Column: 12,
+														Line:   28,
 													},
 												},
 											},
@@ -785,14 +785,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 24,
-															Line:   25,
+															Column: 19,
+															Line:   28,
 														},
 														File:   "teams.flux",
 														Source: "strings",
 														Start: ast.Position{
-															Column: 17,
-															Line:   25,
+															Column: 12,
+															Line:   28,
 														},
 													},
 												},
@@ -804,14 +804,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 34,
-															Line:   25,
+															Column: 29,
+															Line:   28,
 														},
 														File:   "teams.flux",
 														Source: "substring",
 														Start: ast.Position{
-															Column: 25,
-															Line:   25,
+															Column: 20,
+															Line:   28,
 														},
 													},
 												},
@@ -828,14 +828,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 81,
-												Line:   25,
+												Column: 76,
+												Line:   28,
 											},
 											File:   "teams.flux",
 											Source: "...",
 											Start: ast.Position{
-												Column: 78,
-												Line:   25,
+												Column: 73,
+												Line:   28,
 											},
 										},
 									},
@@ -849,13 +849,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 66,
-											Line:   24,
+											Line:   27,
 										},
 										File:   "teams.flux",
 										Source: "strings.strlen(v: summary2) > summaryCutoff",
 										Start: ast.Position{
 											Column: 23,
-											Line:   24,
+											Line:   27,
 										},
 									},
 								},
@@ -867,13 +867,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   24,
+													Line:   27,
 												},
 												File:   "teams.flux",
 												Source: "v: summary2",
 												Start: ast.Position{
 													Column: 38,
-													Line:   24,
+													Line:   27,
 												},
 											},
 										},
@@ -885,13 +885,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   24,
+														Line:   27,
 													},
 													File:   "teams.flux",
 													Source: "v: summary2",
 													Start: ast.Position{
 														Column: 38,
-														Line:   24,
+														Line:   27,
 													},
 												},
 											},
@@ -903,13 +903,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
-															Line:   24,
+															Line:   27,
 														},
 														File:   "teams.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 38,
-															Line:   24,
+															Line:   27,
 														},
 													},
 												},
@@ -923,13 +923,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   24,
+															Line:   27,
 														},
 														File:   "teams.flux",
 														Source: "summary2",
 														Start: ast.Position{
 															Column: 41,
-															Line:   24,
+															Line:   27,
 														},
 													},
 												},
@@ -945,13 +945,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 50,
-												Line:   24,
+												Line:   27,
 											},
 											File:   "teams.flux",
 											Source: "strings.strlen(v: summary2)",
 											Start: ast.Position{
 												Column: 23,
-												Line:   24,
+												Line:   27,
 											},
 										},
 									},
@@ -962,13 +962,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
-													Line:   24,
+													Line:   27,
 												},
 												File:   "teams.flux",
 												Source: "strings.strlen",
 												Start: ast.Position{
 													Column: 23,
-													Line:   24,
+													Line:   27,
 												},
 											},
 										},
@@ -980,13 +980,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   24,
+														Line:   27,
 													},
 													File:   "teams.flux",
 													Source: "strings",
 													Start: ast.Position{
 														Column: 23,
-														Line:   24,
+														Line:   27,
 													},
 												},
 											},
@@ -999,13 +999,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 37,
-														Line:   24,
+														Line:   27,
 													},
 													File:   "teams.flux",
 													Source: "strlen",
 													Start: ast.Position{
 														Column: 31,
-														Line:   24,
+														Line:   27,
 													},
 												},
 											},
@@ -1024,13 +1024,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 66,
-												Line:   24,
+												Line:   27,
 											},
 											File:   "teams.flux",
 											Source: "summaryCutoff",
 											Start: ast.Position{
 												Column: 53,
-												Line:   24,
+												Line:   27,
 											},
 										},
 									},
@@ -1048,13 +1048,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   33,
+									Line:   37,
 								},
 								File:   "teams.flux",
-								Source: "body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v:title))},\n\\\"text\\\": ${string(v: json.encode(v:text))},\n\\\"summary\\\": ${string(v:json.encode(v:shortSummary))}\n}\"",
+								Source: "body = \"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"",
 								Start: ast.Position{
 									Column: 5,
-									Line:   27,
+									Line:   31,
 								},
 							},
 						},
@@ -1065,13 +1065,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   27,
+										Line:   31,
 									},
 									File:   "teams.flux",
 									Source: "body",
 									Start: ast.Position{
 										Column: 5,
-										Line:   27,
+										Line:   31,
 									},
 								},
 							},
@@ -1084,13 +1084,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 3,
-										Line:   33,
+										Line:   37,
 									},
 									File:   "teams.flux",
-									Source: "\"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v:title))},\n\\\"text\\\": ${string(v: json.encode(v:text))},\n\\\"summary\\\": ${string(v:json.encode(v:shortSummary))}\n}\"",
+									Source: "\"{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ${string(v: json.encode(v: title))},\n\\\"text\\\": ${string(v: json.encode(v: text))},\n\\\"summary\\\": ${string(v: json.encode(v: shortSummary))}\n}\"",
 									Start: ast.Position{
 										Column: 12,
-										Line:   27,
+										Line:   31,
 									},
 								},
 							},
@@ -1101,13 +1101,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   30,
+											Line:   34,
 										},
 										File:   "teams.flux",
 										Source: "{\n\\\"@type\\\": \\\"MessageCard\\\",\n\\\"@context\\\": \\\"http://schema.org/extensions\\\",\n\\\"title\\\": ",
 										Start: ast.Position{
 											Column: 13,
-											Line:   27,
+											Line:   31,
 										},
 									},
 								},
@@ -1118,14 +1118,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 46,
-											Line:   30,
+											Column: 47,
+											Line:   34,
 										},
 										File:   "teams.flux",
-										Source: "${string(v: json.encode(v:title))}",
+										Source: "${string(v: json.encode(v: title))}",
 										Start: ast.Position{
 											Column: 12,
-											Line:   30,
+											Line:   34,
 										},
 									},
 								},
@@ -1136,14 +1136,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 44,
-													Line:   30,
+													Column: 45,
+													Line:   34,
 												},
 												File:   "teams.flux",
-												Source: "v: json.encode(v:title)",
+												Source: "v: json.encode(v: title)",
 												Start: ast.Position{
 													Column: 21,
-													Line:   30,
+													Line:   34,
 												},
 											},
 										},
@@ -1154,14 +1154,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 44,
-														Line:   30,
+														Column: 45,
+														Line:   34,
 													},
 													File:   "teams.flux",
-													Source: "v: json.encode(v:title)",
+													Source: "v: json.encode(v: title)",
 													Start: ast.Position{
 														Column: 21,
-														Line:   30,
+														Line:   34,
 													},
 												},
 											},
@@ -1173,13 +1173,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   30,
+															Line:   34,
 														},
 														File:   "teams.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 21,
-															Line:   30,
+															Line:   34,
 														},
 													},
 												},
@@ -1193,14 +1193,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 43,
-																Line:   30,
+																Column: 44,
+																Line:   34,
 															},
 															File:   "teams.flux",
-															Source: "v:title",
+															Source: "v: title",
 															Start: ast.Position{
 																Column: 36,
-																Line:   30,
+																Line:   34,
 															},
 														},
 													},
@@ -1211,14 +1211,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 43,
-																	Line:   30,
+																	Column: 44,
+																	Line:   34,
 																},
 																File:   "teams.flux",
-																Source: "v:title",
+																Source: "v: title",
 																Start: ast.Position{
 																	Column: 36,
-																	Line:   30,
+																	Line:   34,
 																},
 															},
 														},
@@ -1230,13 +1230,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 37,
-																		Line:   30,
+																		Line:   34,
 																	},
 																	File:   "teams.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 36,
-																		Line:   30,
+																		Line:   34,
 																	},
 																},
 															},
@@ -1249,14 +1249,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 43,
-																		Line:   30,
+																		Column: 44,
+																		Line:   34,
 																	},
 																	File:   "teams.flux",
 																	Source: "title",
 																	Start: ast.Position{
-																		Column: 38,
-																		Line:   30,
+																		Column: 39,
+																		Line:   34,
 																	},
 																},
 															},
@@ -1271,14 +1271,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 44,
-															Line:   30,
+															Column: 45,
+															Line:   34,
 														},
 														File:   "teams.flux",
-														Source: "json.encode(v:title)",
+														Source: "json.encode(v: title)",
 														Start: ast.Position{
 															Column: 24,
-															Line:   30,
+															Line:   34,
 														},
 													},
 												},
@@ -1289,13 +1289,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   30,
+																Line:   34,
 															},
 															File:   "teams.flux",
 															Source: "json.encode",
 															Start: ast.Position{
 																Column: 24,
-																Line:   30,
+																Line:   34,
 															},
 														},
 													},
@@ -1307,13 +1307,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 28,
-																	Line:   30,
+																	Line:   34,
 																},
 																File:   "teams.flux",
 																Source: "json",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   30,
+																	Line:   34,
 																},
 															},
 														},
@@ -1326,13 +1326,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 35,
-																	Line:   30,
+																	Line:   34,
 																},
 																File:   "teams.flux",
 																Source: "encode",
 																Start: ast.Position{
 																	Column: 29,
-																	Line:   30,
+																	Line:   34,
 																},
 															},
 														},
@@ -1352,14 +1352,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 45,
-												Line:   30,
+												Column: 46,
+												Line:   34,
 											},
 											File:   "teams.flux",
-											Source: "string(v: json.encode(v:title))",
+											Source: "string(v: json.encode(v: title))",
 											Start: ast.Position{
 												Column: 14,
-												Line:   30,
+												Line:   34,
 											},
 										},
 									},
@@ -1370,13 +1370,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   30,
+													Line:   34,
 												},
 												File:   "teams.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 14,
-													Line:   30,
+													Line:   34,
 												},
 											},
 										},
@@ -1392,13 +1392,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   31,
+											Line:   35,
 										},
 										File:   "teams.flux",
 										Source: ",\n\\\"text\\\": ",
 										Start: ast.Position{
-											Column: 46,
-											Line:   30,
+											Column: 47,
+											Line:   34,
 										},
 									},
 								},
@@ -1409,14 +1409,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 44,
-											Line:   31,
+											Column: 45,
+											Line:   35,
 										},
 										File:   "teams.flux",
-										Source: "${string(v: json.encode(v:text))}",
+										Source: "${string(v: json.encode(v: text))}",
 										Start: ast.Position{
 											Column: 11,
-											Line:   31,
+											Line:   35,
 										},
 									},
 								},
@@ -1427,14 +1427,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 42,
-													Line:   31,
+													Column: 43,
+													Line:   35,
 												},
 												File:   "teams.flux",
-												Source: "v: json.encode(v:text)",
+												Source: "v: json.encode(v: text)",
 												Start: ast.Position{
 													Column: 20,
-													Line:   31,
+													Line:   35,
 												},
 											},
 										},
@@ -1445,14 +1445,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 42,
-														Line:   31,
+														Column: 43,
+														Line:   35,
 													},
 													File:   "teams.flux",
-													Source: "v: json.encode(v:text)",
+													Source: "v: json.encode(v: text)",
 													Start: ast.Position{
 														Column: 20,
-														Line:   31,
+														Line:   35,
 													},
 												},
 											},
@@ -1464,13 +1464,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 21,
-															Line:   31,
+															Line:   35,
 														},
 														File:   "teams.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 20,
-															Line:   31,
+															Line:   35,
 														},
 													},
 												},
@@ -1484,14 +1484,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 41,
-																Line:   31,
+																Column: 42,
+																Line:   35,
 															},
 															File:   "teams.flux",
-															Source: "v:text",
+															Source: "v: text",
 															Start: ast.Position{
 																Column: 35,
-																Line:   31,
+																Line:   35,
 															},
 														},
 													},
@@ -1502,14 +1502,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 41,
-																	Line:   31,
+																	Column: 42,
+																	Line:   35,
 																},
 																File:   "teams.flux",
-																Source: "v:text",
+																Source: "v: text",
 																Start: ast.Position{
 																	Column: 35,
-																	Line:   31,
+																	Line:   35,
 																},
 															},
 														},
@@ -1521,13 +1521,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 36,
-																		Line:   31,
+																		Line:   35,
 																	},
 																	File:   "teams.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 35,
-																		Line:   31,
+																		Line:   35,
 																	},
 																},
 															},
@@ -1540,14 +1540,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 41,
-																		Line:   31,
+																		Column: 42,
+																		Line:   35,
 																	},
 																	File:   "teams.flux",
 																	Source: "text",
 																	Start: ast.Position{
-																		Column: 37,
-																		Line:   31,
+																		Column: 38,
+																		Line:   35,
 																	},
 																},
 															},
@@ -1562,14 +1562,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 42,
-															Line:   31,
+															Column: 43,
+															Line:   35,
 														},
 														File:   "teams.flux",
-														Source: "json.encode(v:text)",
+														Source: "json.encode(v: text)",
 														Start: ast.Position{
 															Column: 23,
-															Line:   31,
+															Line:   35,
 														},
 													},
 												},
@@ -1580,13 +1580,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   31,
+																Line:   35,
 															},
 															File:   "teams.flux",
 															Source: "json.encode",
 															Start: ast.Position{
 																Column: 23,
-																Line:   31,
+																Line:   35,
 															},
 														},
 													},
@@ -1598,13 +1598,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 27,
-																	Line:   31,
+																	Line:   35,
 																},
 																File:   "teams.flux",
 																Source: "json",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   31,
+																	Line:   35,
 																},
 															},
 														},
@@ -1617,13 +1617,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   31,
+																	Line:   35,
 																},
 																File:   "teams.flux",
 																Source: "encode",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   31,
+																	Line:   35,
 																},
 															},
 														},
@@ -1643,14 +1643,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 43,
-												Line:   31,
+												Column: 44,
+												Line:   35,
 											},
 											File:   "teams.flux",
-											Source: "string(v: json.encode(v:text))",
+											Source: "string(v: json.encode(v: text))",
 											Start: ast.Position{
 												Column: 13,
-												Line:   31,
+												Line:   35,
 											},
 										},
 									},
@@ -1661,13 +1661,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   31,
+													Line:   35,
 												},
 												File:   "teams.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 13,
-													Line:   31,
+													Line:   35,
 												},
 											},
 										},
@@ -1683,13 +1683,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   32,
+											Line:   36,
 										},
 										File:   "teams.flux",
 										Source: ",\n\\\"summary\\\": ",
 										Start: ast.Position{
-											Column: 44,
-											Line:   31,
+											Column: 45,
+											Line:   35,
 										},
 									},
 								},
@@ -1700,14 +1700,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 54,
-											Line:   32,
+											Column: 56,
+											Line:   36,
 										},
 										File:   "teams.flux",
-										Source: "${string(v:json.encode(v:shortSummary))}",
+										Source: "${string(v: json.encode(v: shortSummary))}",
 										Start: ast.Position{
 											Column: 14,
-											Line:   32,
+											Line:   36,
 										},
 									},
 								},
@@ -1718,14 +1718,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 52,
-													Line:   32,
+													Column: 54,
+													Line:   36,
 												},
 												File:   "teams.flux",
-												Source: "v:json.encode(v:shortSummary)",
+												Source: "v: json.encode(v: shortSummary)",
 												Start: ast.Position{
 													Column: 23,
-													Line:   32,
+													Line:   36,
 												},
 											},
 										},
@@ -1736,14 +1736,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 52,
-														Line:   32,
+														Column: 54,
+														Line:   36,
 													},
 													File:   "teams.flux",
-													Source: "v:json.encode(v:shortSummary)",
+													Source: "v: json.encode(v: shortSummary)",
 													Start: ast.Position{
 														Column: 23,
-														Line:   32,
+														Line:   36,
 													},
 												},
 											},
@@ -1755,13 +1755,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   32,
+															Line:   36,
 														},
 														File:   "teams.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 23,
-															Line:   32,
+															Line:   36,
 														},
 													},
 												},
@@ -1775,14 +1775,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 51,
-																Line:   32,
+																Column: 53,
+																Line:   36,
 															},
 															File:   "teams.flux",
-															Source: "v:shortSummary",
+															Source: "v: shortSummary",
 															Start: ast.Position{
-																Column: 37,
-																Line:   32,
+																Column: 38,
+																Line:   36,
 															},
 														},
 													},
@@ -1793,14 +1793,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 51,
-																	Line:   32,
+																	Column: 53,
+																	Line:   36,
 																},
 																File:   "teams.flux",
-																Source: "v:shortSummary",
+																Source: "v: shortSummary",
 																Start: ast.Position{
-																	Column: 37,
-																	Line:   32,
+																	Column: 38,
+																	Line:   36,
 																},
 															},
 														},
@@ -1811,14 +1811,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 38,
-																		Line:   32,
+																		Column: 39,
+																		Line:   36,
 																	},
 																	File:   "teams.flux",
 																	Source: "v",
 																	Start: ast.Position{
-																		Column: 37,
-																		Line:   32,
+																		Column: 38,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1831,14 +1831,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 51,
-																		Line:   32,
+																		Column: 53,
+																		Line:   36,
 																	},
 																	File:   "teams.flux",
 																	Source: "shortSummary",
 																	Start: ast.Position{
-																		Column: 39,
-																		Line:   32,
+																		Column: 41,
+																		Line:   36,
 																	},
 																},
 															},
@@ -1853,14 +1853,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 52,
-															Line:   32,
+															Column: 54,
+															Line:   36,
 														},
 														File:   "teams.flux",
-														Source: "json.encode(v:shortSummary)",
+														Source: "json.encode(v: shortSummary)",
 														Start: ast.Position{
-															Column: 25,
-															Line:   32,
+															Column: 26,
+															Line:   36,
 														},
 													},
 												},
@@ -1870,14 +1870,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 36,
-																Line:   32,
+																Column: 37,
+																Line:   36,
 															},
 															File:   "teams.flux",
 															Source: "json.encode",
 															Start: ast.Position{
-																Column: 25,
-																Line:   32,
+																Column: 26,
+																Line:   36,
 															},
 														},
 													},
@@ -1888,14 +1888,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 29,
-																	Line:   32,
+																	Column: 30,
+																	Line:   36,
 																},
 																File:   "teams.flux",
 																Source: "json",
 																Start: ast.Position{
-																	Column: 25,
-																	Line:   32,
+																	Column: 26,
+																	Line:   36,
 																},
 															},
 														},
@@ -1907,14 +1907,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 36,
-																	Line:   32,
+																	Column: 37,
+																	Line:   36,
 																},
 																File:   "teams.flux",
 																Source: "encode",
 																Start: ast.Position{
-																	Column: 30,
-																	Line:   32,
+																	Column: 31,
+																	Line:   36,
 																},
 															},
 														},
@@ -1934,14 +1934,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 53,
-												Line:   32,
+												Column: 55,
+												Line:   36,
 											},
 											File:   "teams.flux",
-											Source: "string(v:json.encode(v:shortSummary))",
+											Source: "string(v: json.encode(v: shortSummary))",
 											Start: ast.Position{
 												Column: 16,
-												Line:   32,
+												Line:   36,
 											},
 										},
 									},
@@ -1952,13 +1952,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   32,
+													Line:   36,
 												},
 												File:   "teams.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 16,
-													Line:   32,
+													Line:   36,
 												},
 											},
 										},
@@ -1974,13 +1974,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 2,
-											Line:   33,
+											Line:   37,
 										},
 										File:   "teams.flux",
 										Source: "\n}",
 										Start: ast.Position{
-											Column: 54,
-											Line:   32,
+											Column: 56,
+											Line:   36,
 										},
 									},
 								},
@@ -1996,13 +1996,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 70,
-											Line:   34,
+											Line:   39,
 										},
 										File:   "teams.flux",
 										Source: "headers: headers, url: url, data: bytes(v: body)",
 										Start: ast.Position{
 											Column: 22,
-											Line:   34,
+											Line:   39,
 										},
 									},
 								},
@@ -2014,13 +2014,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   34,
+												Line:   39,
 											},
 											File:   "teams.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   34,
+												Line:   39,
 											},
 										},
 									},
@@ -2032,13 +2032,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   34,
+													Line:   39,
 												},
 												File:   "teams.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   34,
+													Line:   39,
 												},
 											},
 										},
@@ -2052,13 +2052,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   34,
+													Line:   39,
 												},
 												File:   "teams.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   34,
+													Line:   39,
 												},
 											},
 										},
@@ -2071,13 +2071,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   34,
+												Line:   39,
 											},
 											File:   "teams.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   34,
+												Line:   39,
 											},
 										},
 									},
@@ -2089,13 +2089,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   34,
+													Line:   39,
 												},
 												File:   "teams.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   34,
+													Line:   39,
 												},
 											},
 										},
@@ -2109,13 +2109,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   34,
+													Line:   39,
 												},
 												File:   "teams.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   34,
+													Line:   39,
 												},
 											},
 										},
@@ -2128,13 +2128,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 70,
-												Line:   34,
+												Line:   39,
 											},
 											File:   "teams.flux",
 											Source: "data: bytes(v: body)",
 											Start: ast.Position{
 												Column: 50,
-												Line:   34,
+												Line:   39,
 											},
 										},
 									},
@@ -2146,13 +2146,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   34,
+													Line:   39,
 												},
 												File:   "teams.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   34,
+													Line:   39,
 												},
 											},
 										},
@@ -2167,13 +2167,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 69,
-														Line:   34,
+														Line:   39,
 													},
 													File:   "teams.flux",
 													Source: "v: body",
 													Start: ast.Position{
 														Column: 62,
-														Line:   34,
+														Line:   39,
 													},
 												},
 											},
@@ -2185,13 +2185,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 69,
-															Line:   34,
+															Line:   39,
 														},
 														File:   "teams.flux",
 														Source: "v: body",
 														Start: ast.Position{
 															Column: 62,
-															Line:   34,
+															Line:   39,
 														},
 													},
 												},
@@ -2203,13 +2203,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 63,
-																Line:   34,
+																Line:   39,
 															},
 															File:   "teams.flux",
 															Source: "v",
 															Start: ast.Position{
 																Column: 62,
-																Line:   34,
+																Line:   39,
 															},
 														},
 													},
@@ -2223,13 +2223,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
-																Line:   34,
+																Line:   39,
 															},
 															File:   "teams.flux",
 															Source: "body",
 															Start: ast.Position{
 																Column: 65,
-																Line:   34,
+																Line:   39,
 															},
 														},
 													},
@@ -2245,13 +2245,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
-													Line:   34,
+													Line:   39,
 												},
 												File:   "teams.flux",
 												Source: "bytes(v: body)",
 												Start: ast.Position{
 													Column: 56,
-													Line:   34,
+													Line:   39,
 												},
 											},
 										},
@@ -2262,13 +2262,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
-														Line:   34,
+														Line:   39,
 													},
 													File:   "teams.flux",
 													Source: "bytes",
 													Start: ast.Position{
 														Column: 56,
-														Line:   34,
+														Line:   39,
 													},
 												},
 											},
@@ -2287,13 +2287,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 71,
-										Line:   34,
+										Line:   39,
 									},
 									File:   "teams.flux",
 									Source: "http.post(headers: headers, url: url, data: bytes(v: body))",
 									Start: ast.Position{
 										Column: 12,
-										Line:   34,
+										Line:   39,
 									},
 								},
 							},
@@ -2304,13 +2304,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   34,
+											Line:   39,
 										},
 										File:   "teams.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   34,
+											Line:   39,
 										},
 									},
 								},
@@ -2322,13 +2322,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   34,
+												Line:   39,
 											},
 											File:   "teams.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   34,
+												Line:   39,
 											},
 										},
 									},
@@ -2341,13 +2341,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   34,
+												Line:   39,
 											},
 											File:   "teams.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   34,
+												Line:   39,
 											},
 										},
 									},
@@ -2364,13 +2364,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   34,
+									Line:   39,
 								},
 								File:   "teams.flux",
 								Source: "return http.post(headers: headers, url: url, data: bytes(v: body))",
 								Start: ast.Position{
 									Column: 5,
-									Line:   34,
+									Line:   39,
 								},
 							},
 						},
@@ -2386,13 +2386,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   15,
+								Line:   16,
 							},
 							File:   "teams.flux",
 							Source: "url",
 							Start: ast.Position{
 								Column: 12,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -2404,13 +2404,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "teams.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 12,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -2425,13 +2425,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 22,
-								Line:   15,
+								Line:   16,
 							},
 							File:   "teams.flux",
 							Source: "title",
 							Start: ast.Position{
 								Column: 17,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -2443,13 +2443,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "teams.flux",
 								Source: "title",
 								Start: ast.Position{
 									Column: 17,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -2464,13 +2464,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 28,
-								Line:   15,
+								Line:   16,
 							},
 							File:   "teams.flux",
 							Source: "text",
 							Start: ast.Position{
 								Column: 24,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -2482,13 +2482,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "teams.flux",
 								Source: "text",
 								Start: ast.Position{
 									Column: 24,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -2503,13 +2503,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   15,
+								Line:   16,
 							},
 							File:   "teams.flux",
 							Source: "summary=\"\"",
 							Start: ast.Position{
 								Column: 30,
-								Line:   15,
+								Line:   16,
 							},
 						},
 					},
@@ -2521,13 +2521,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 37,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "teams.flux",
 								Source: "summary",
 								Start: ast.Position{
 									Column: 30,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -2541,13 +2541,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   15,
+									Line:   16,
 								},
 								File:   "teams.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 38,
-									Line:   15,
+									Line:   16,
 								},
 							},
 						},
@@ -2562,14 +2562,14 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 15,
-						Line:   52,
+						Column: 6,
+						Line:   62,
 					},
 					File:   "teams.flux",
-					Source: "endpoint = (url) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            })",
+					Source: "endpoint = (url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   41,
+						Line:   46,
 					},
 				},
 			},
@@ -2580,13 +2580,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   41,
+							Line:   46,
 						},
 						File:   "teams.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   41,
+							Line:   46,
 						},
 					},
 				},
@@ -2599,14 +2599,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 15,
-							Line:   52,
+							Column: 6,
+							Line:   62,
 						},
 						File:   "teams.flux",
-						Source: "(url) =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            })",
+						Source: "(url) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   41,
+							Line:   46,
 						},
 					},
 				},
@@ -2617,14 +2617,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 15,
-								Line:   52,
+								Column: 6,
+								Line:   62,
 							},
 							File:   "teams.flux",
-							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            })",
+							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
-								Column: 5,
-								Line:   42,
+								Column: 21,
+								Line:   46,
 							},
 						},
 					},
@@ -2635,14 +2635,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
-									Line:   52,
+									Column: 6,
+									Line:   62,
 								},
 								File:   "teams.flux",
-								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            })",
+								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
-									Column: 9,
-									Line:   43,
+									Column: 32,
+									Line:   46,
 								},
 							},
 						},
@@ -2653,14 +2653,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 30,
-											Line:   43,
+											Column: 53,
+											Line:   46,
 										},
 										File:   "teams.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 24,
-											Line:   43,
+											Column: 47,
+											Line:   46,
 										},
 									},
 								},
@@ -2671,14 +2671,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
-										Line:   52,
+										Column: 6,
+										Line:   62,
 									},
 									File:   "teams.flux",
-									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            })",
+									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
-										Column: 24,
-										Line:   43,
+										Column: 47,
+										Line:   46,
 									},
 								},
 							},
@@ -2689,14 +2689,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   52,
+												Column: 10,
+												Line:   61,
 											},
 											File:   "teams.flux",
-											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            }",
+											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
-												Column: 20,
-												Line:   44,
+												Column: 9,
+												Line:   48,
 											},
 										},
 									},
@@ -2707,14 +2707,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 14,
-													Line:   52,
+													Column: 10,
+													Line:   61,
 												},
 												File:   "teams.flux",
-												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            }",
+												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
-													Column: 20,
-													Line:   44,
+													Column: 9,
+													Line:   48,
 												},
 											},
 										},
@@ -2725,14 +2725,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   44,
+														Column: 11,
+														Line:   48,
 													},
 													File:   "teams.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 20,
-														Line:   44,
+														Column: 9,
+														Line:   48,
 													},
 												},
 											},
@@ -2746,14 +2746,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   52,
+														Column: 10,
+														Line:   61,
 													},
 													File:   "teams.flux",
-													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            }",
+													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
-														Column: 24,
-														Line:   44,
+														Column: 13,
+														Line:   48,
 													},
 												},
 											},
@@ -2763,14 +2763,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 14,
-															Line:   52,
+															Column: 10,
+															Line:   61,
 														},
 														File:   "teams.flux",
-														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            }",
+														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
-															Column: 31,
-															Line:   44,
+															Column: 20,
+															Line:   48,
 														},
 													},
 												},
@@ -2780,14 +2780,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 34,
-																Line:   45,
+																Column: 30,
+																Line:   49,
 															},
 															File:   "teams.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
-																Column: 17,
-																Line:   45,
+																Column: 13,
+																Line:   49,
 															},
 														},
 													},
@@ -2797,14 +2797,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
-																	Line:   45,
+																	Column: 16,
+																	Line:   49,
 																},
 																File:   "teams.flux",
 																Source: "obj",
 																Start: ast.Position{
-																	Column: 17,
-																	Line:   45,
+																	Column: 13,
+																	Line:   49,
 																},
 															},
 														},
@@ -2817,14 +2817,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 33,
-																		Line:   45,
+																		Column: 29,
+																		Line:   49,
 																	},
 																	File:   "teams.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
-																		Column: 29,
-																		Line:   45,
+																		Column: 25,
+																		Line:   49,
 																	},
 																},
 															},
@@ -2835,14 +2835,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 33,
-																			Line:   45,
+																			Column: 29,
+																			Line:   49,
 																		},
 																		File:   "teams.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
-																			Column: 29,
-																			Line:   45,
+																			Column: 25,
+																			Line:   49,
 																		},
 																	},
 																},
@@ -2853,14 +2853,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 30,
-																				Line:   45,
+																				Column: 26,
+																				Line:   49,
 																			},
 																			File:   "teams.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 29,
-																				Line:   45,
+																				Column: 25,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -2873,14 +2873,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 33,
-																				Line:   45,
+																				Column: 29,
+																				Line:   49,
 																			},
 																			File:   "teams.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   45,
+																				Column: 28,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -2895,14 +2895,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 34,
-																	Line:   45,
+																	Column: 30,
+																	Line:   49,
 																},
 																File:   "teams.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
-																	Column: 23,
-																	Line:   45,
+																	Column: 19,
+																	Line:   49,
 																},
 															},
 														},
@@ -2912,14 +2912,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 28,
-																		Line:   45,
+																		Column: 24,
+																		Line:   49,
 																	},
 																	File:   "teams.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   45,
+																		Column: 19,
+																		Line:   49,
 																	},
 																},
 															},
@@ -2935,14 +2935,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 26,
-																	Line:   51,
+																	Column: 14,
+																	Line:   60,
 																},
 																File:   "teams.flux",
-																Source: "{r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}",
+																Source: "{r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
-																	Column: 24,
-																	Line:   46,
+																	Column: 20,
+																	Line:   51,
 																},
 															},
 														},
@@ -2953,14 +2953,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 25,
-																		Line:   51,
+																		Column: 18,
+																		Line:   59,
 																	},
 																	File:   "teams.flux",
-																	Source: "_sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)",
+																	Source: "_sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                )",
 																	Start: ast.Position{
-																		Column: 32,
-																		Line:   46,
+																		Column: 17,
+																		Line:   52,
 																	},
 																},
 															},
@@ -2971,14 +2971,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   46,
+																			Column: 22,
+																			Line:   52,
 																		},
 																		File:   "teams.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
-																			Column: 32,
-																			Line:   46,
+																			Column: 17,
+																			Line:   52,
 																		},
 																	},
 																},
@@ -2992,14 +2992,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 24,
-																				Line:   51,
+																				Column: 28,
+																				Line:   58,
 																			},
 																			File:   "teams.flux",
-																			Source: "v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100",
+																			Source: "v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100",
 																			Start: ast.Position{
-																				Column: 46,
-																				Line:   46,
+																				Column: 21,
+																				Line:   53,
 																			},
 																		},
 																	},
@@ -3010,14 +3010,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 24,
-																					Line:   51,
+																					Column: 28,
+																					Line:   58,
 																				},
 																				File:   "teams.flux",
-																				Source: "v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100",
+																				Source: "v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100",
 																				Start: ast.Position{
-																					Column: 46,
-																					Line:   46,
+																					Column: 21,
+																					Line:   53,
 																				},
 																			},
 																		},
@@ -3028,14 +3028,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 47,
-																						Line:   46,
+																						Column: 22,
+																						Line:   53,
 																					},
 																					File:   "teams.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 46,
-																						Line:   46,
+																						Column: 21,
+																						Line:   53,
 																					},
 																				},
 																			},
@@ -3048,14 +3048,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 24,
-																						Line:   51,
+																						Column: 28,
+																						Line:   58,
 																					},
 																					File:   "teams.flux",
-																					Source: "2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100",
+																					Source: "2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100",
 																					Start: ast.Position{
-																						Column: 49,
-																						Line:   46,
+																						Column: 24,
+																						Line:   53,
 																					},
 																				},
 																			},
@@ -3065,14 +3065,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 50,
-																							Line:   46,
+																							Column: 25,
+																							Line:   53,
 																						},
 																						File:   "teams.flux",
 																						Source: "2",
 																						Start: ast.Position{
-																							Column: 49,
-																							Line:   46,
+																							Column: 24,
+																							Line:   53,
 																						},
 																					},
 																				},
@@ -3085,14 +3085,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 24,
-																							Line:   51,
+																							Column: 28,
+																							Line:   58,
 																						},
 																						File:   "teams.flux",
-																						Source: "message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100",
+																						Source: "message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100",
 																						Start: ast.Position{
-																							Column: 54,
-																							Line:   46,
+																							Column: 29,
+																							Line:   53,
 																						},
 																					},
 																				},
@@ -3103,14 +3103,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 76,
-																									Line:   50,
+																									Column: 80,
+																									Line:   57,
 																								},
 																								File:   "teams.flux",
-																								Source: "url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"",
+																								Source: "url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\"",
 																								Start: ast.Position{
-																									Column: 21,
-																									Line:   47,
+																									Column: 25,
+																									Line:   54,
 																								},
 																							},
 																						},
@@ -3121,14 +3121,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 29,
-																										Line:   47,
+																										Column: 33,
+																										Line:   54,
 																									},
 																									File:   "teams.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   47,
+																										Column: 25,
+																										Line:   54,
 																									},
 																								},
 																							},
@@ -3139,14 +3139,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 24,
-																											Line:   47,
+																											Column: 28,
+																											Line:   54,
 																										},
 																										File:   "teams.flux",
 																										Source: "url",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   47,
+																											Column: 25,
+																											Line:   54,
 																										},
 																									},
 																								},
@@ -3159,14 +3159,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 29,
-																											Line:   47,
+																											Column: 33,
+																											Line:   54,
 																										},
 																										File:   "teams.flux",
 																										Source: "url",
 																										Start: ast.Position{
-																											Column: 26,
-																											Line:   47,
+																											Column: 30,
+																											Line:   54,
 																										},
 																									},
 																								},
@@ -3178,14 +3178,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 37,
-																										Line:   48,
+																										Column: 41,
+																										Line:   55,
 																									},
 																									File:   "teams.flux",
 																									Source: "title: obj.title",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   48,
+																										Column: 25,
+																										Line:   55,
 																									},
 																								},
 																							},
@@ -3196,14 +3196,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 26,
-																											Line:   48,
+																											Column: 30,
+																											Line:   55,
 																										},
 																										File:   "teams.flux",
 																										Source: "title",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   48,
+																											Column: 25,
+																											Line:   55,
 																										},
 																									},
 																								},
@@ -3216,14 +3216,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 37,
-																											Line:   48,
+																											Column: 41,
+																											Line:   55,
 																										},
 																										File:   "teams.flux",
 																										Source: "obj.title",
 																										Start: ast.Position{
-																											Column: 28,
-																											Line:   48,
+																											Column: 32,
+																											Line:   55,
 																										},
 																									},
 																								},
@@ -3234,14 +3234,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 31,
-																												Line:   48,
+																												Column: 35,
+																												Line:   55,
 																											},
 																											File:   "teams.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 28,
-																												Line:   48,
+																												Column: 32,
+																												Line:   55,
 																											},
 																										},
 																									},
@@ -3253,14 +3253,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 37,
-																												Line:   48,
+																												Column: 41,
+																												Line:   55,
 																											},
 																											File:   "teams.flux",
 																											Source: "title",
 																											Start: ast.Position{
-																												Column: 32,
-																												Line:   48,
+																												Column: 36,
+																												Line:   55,
 																											},
 																										},
 																									},
@@ -3274,14 +3274,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 35,
-																										Line:   49,
+																										Column: 39,
+																										Line:   56,
 																									},
 																									File:   "teams.flux",
 																									Source: "text: obj.text",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   49,
+																										Column: 25,
+																										Line:   56,
 																									},
 																								},
 																							},
@@ -3292,14 +3292,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 25,
-																											Line:   49,
+																											Column: 29,
+																											Line:   56,
 																										},
 																										File:   "teams.flux",
 																										Source: "text",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   49,
+																											Column: 25,
+																											Line:   56,
 																										},
 																									},
 																								},
@@ -3312,14 +3312,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 35,
-																											Line:   49,
+																											Column: 39,
+																											Line:   56,
 																										},
 																										File:   "teams.flux",
 																										Source: "obj.text",
 																										Start: ast.Position{
-																											Column: 27,
-																											Line:   49,
+																											Column: 31,
+																											Line:   56,
 																										},
 																									},
 																								},
@@ -3330,14 +3330,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 30,
-																												Line:   49,
+																												Column: 34,
+																												Line:   56,
 																											},
 																											File:   "teams.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 27,
-																												Line:   49,
+																												Column: 31,
+																												Line:   56,
 																											},
 																										},
 																									},
@@ -3349,14 +3349,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 35,
-																												Line:   49,
+																												Column: 39,
+																												Line:   56,
 																											},
 																											File:   "teams.flux",
 																											Source: "text",
 																											Start: ast.Position{
-																												Column: 31,
-																												Line:   49,
+																												Column: 35,
+																												Line:   56,
 																											},
 																										},
 																									},
@@ -3370,14 +3370,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 76,
-																										Line:   50,
+																										Column: 80,
+																										Line:   57,
 																									},
 																									File:   "teams.flux",
 																									Source: "summary: if exists obj.summary then obj.summary else \"\"",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   50,
+																										Column: 25,
+																										Line:   57,
 																									},
 																								},
 																							},
@@ -3388,14 +3388,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 28,
-																											Line:   50,
+																											Column: 32,
+																											Line:   57,
 																										},
 																										File:   "teams.flux",
 																										Source: "summary",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   50,
+																											Column: 25,
+																											Line:   57,
 																										},
 																									},
 																								},
@@ -3409,14 +3409,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 76,
-																												Line:   50,
+																												Column: 80,
+																												Line:   57,
 																											},
 																											File:   "teams.flux",
 																											Source: "\"\"",
 																											Start: ast.Position{
-																												Column: 74,
-																												Line:   50,
+																												Column: 78,
+																												Line:   57,
 																											},
 																										},
 																									},
@@ -3427,14 +3427,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 76,
-																											Line:   50,
+																											Column: 80,
+																											Line:   57,
 																										},
 																										File:   "teams.flux",
 																										Source: "if exists obj.summary then obj.summary else \"\"",
 																										Start: ast.Position{
-																											Column: 30,
-																											Line:   50,
+																											Column: 34,
+																											Line:   57,
 																										},
 																									},
 																								},
@@ -3444,14 +3444,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 68,
-																												Line:   50,
+																												Column: 72,
+																												Line:   57,
 																											},
 																											File:   "teams.flux",
 																											Source: "obj.summary",
 																											Start: ast.Position{
-																												Column: 57,
-																												Line:   50,
+																												Column: 61,
+																												Line:   57,
 																											},
 																										},
 																									},
@@ -3462,14 +3462,14 @@ var pkgAST = &ast.Package{
 																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
-																													Column: 60,
-																													Line:   50,
+																													Column: 64,
+																													Line:   57,
 																												},
 																												File:   "teams.flux",
 																												Source: "obj",
 																												Start: ast.Position{
-																													Column: 57,
-																													Line:   50,
+																													Column: 61,
+																													Line:   57,
 																												},
 																											},
 																										},
@@ -3481,14 +3481,14 @@ var pkgAST = &ast.Package{
 																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
-																													Column: 68,
-																													Line:   50,
+																													Column: 72,
+																													Line:   57,
 																												},
 																												File:   "teams.flux",
 																												Source: "summary",
 																												Start: ast.Position{
-																													Column: 61,
-																													Line:   50,
+																													Column: 65,
+																													Line:   57,
 																												},
 																											},
 																										},
@@ -3503,14 +3503,14 @@ var pkgAST = &ast.Package{
 																											Errors:   nil,
 																											Loc: &ast.SourceLocation{
 																												End: ast.Position{
-																													Column: 51,
-																													Line:   50,
+																													Column: 55,
+																													Line:   57,
 																												},
 																												File:   "teams.flux",
 																												Source: "obj.summary",
 																												Start: ast.Position{
-																													Column: 40,
-																													Line:   50,
+																													Column: 44,
+																													Line:   57,
 																												},
 																											},
 																										},
@@ -3521,14 +3521,14 @@ var pkgAST = &ast.Package{
 																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
-																														Column: 43,
-																														Line:   50,
+																														Column: 47,
+																														Line:   57,
 																													},
 																													File:   "teams.flux",
 																													Source: "obj",
 																													Start: ast.Position{
-																														Column: 40,
-																														Line:   50,
+																														Column: 44,
+																														Line:   57,
 																													},
 																												},
 																											},
@@ -3540,14 +3540,14 @@ var pkgAST = &ast.Package{
 																												Errors:   nil,
 																												Loc: &ast.SourceLocation{
 																													End: ast.Position{
-																														Column: 51,
-																														Line:   50,
+																														Column: 55,
+																														Line:   57,
 																													},
 																													File:   "teams.flux",
 																													Source: "summary",
 																													Start: ast.Position{
-																														Column: 44,
-																														Line:   50,
+																														Column: 48,
+																														Line:   57,
 																													},
 																												},
 																											},
@@ -3560,14 +3560,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 51,
-																												Line:   50,
+																												Column: 55,
+																												Line:   57,
 																											},
 																											File:   "teams.flux",
 																											Source: "exists obj.summary",
 																											Start: ast.Position{
-																												Column: 33,
-																												Line:   50,
+																												Column: 37,
+																												Line:   57,
 																											},
 																										},
 																									},
@@ -3586,14 +3586,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 18,
-																								Line:   51,
+																								Column: 22,
+																								Line:   58,
 																							},
 																							File:   "teams.flux",
-																							Source: "message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                )",
+																							Source: "message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    )",
 																							Start: ast.Position{
-																								Column: 54,
-																								Line:   46,
+																								Column: 29,
+																								Line:   53,
 																							},
 																						},
 																					},
@@ -3603,14 +3603,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 61,
-																									Line:   46,
+																									Column: 36,
+																									Line:   53,
 																								},
 																								File:   "teams.flux",
 																								Source: "message",
 																								Start: ast.Position{
-																									Column: 54,
-																									Line:   46,
+																									Column: 29,
+																									Line:   53,
 																								},
 																							},
 																						},
@@ -3626,14 +3626,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 24,
-																								Line:   51,
+																								Column: 28,
+																								Line:   58,
 																							},
 																							File:   "teams.flux",
 																							Source: "100",
 																							Start: ast.Position{
-																								Column: 21,
-																								Line:   51,
+																								Column: 25,
+																								Line:   58,
 																							},
 																						},
 																					},
@@ -3650,14 +3650,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 25,
-																			Line:   51,
+																			Column: 18,
+																			Line:   59,
 																		},
 																		File:   "teams.flux",
-																		Source: "string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)",
+																		Source: "string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                )",
 																		Start: ast.Position{
-																			Column: 39,
-																			Line:   46,
+																			Column: 24,
+																			Line:   52,
 																		},
 																	},
 																},
@@ -3667,14 +3667,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   46,
+																				Column: 30,
+																				Line:   52,
 																			},
 																			File:   "teams.flux",
 																			Source: "string",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   46,
+																				Column: 24,
+																				Line:   52,
 																			},
 																		},
 																	},
@@ -3691,14 +3691,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 26,
-																		Line:   46,
+																		Column: 22,
+																		Line:   51,
 																	},
 																	File:   "teams.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 25,
-																		Line:   46,
+																		Column: 21,
+																		Line:   51,
 																	},
 																},
 															},
@@ -3710,14 +3710,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   51,
+																Column: 14,
+																Line:   60,
 															},
 															File:   "teams.flux",
-															Source: "return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}",
+															Source: "return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
-																Column: 17,
-																Line:   46,
+																Column: 13,
+																Line:   51,
 															},
 														},
 													},
@@ -3732,14 +3732,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   44,
+															Column: 15,
+															Line:   48,
 														},
 														File:   "teams.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 25,
-															Line:   44,
+															Column: 14,
+															Line:   48,
 														},
 													},
 												},
@@ -3750,14 +3750,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   44,
+																Column: 15,
+																Line:   48,
 															},
 															File:   "teams.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 25,
-																Line:   44,
+																Column: 14,
+																Line:   48,
 															},
 														},
 													},
@@ -3777,14 +3777,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   52,
+											Column: 6,
+											Line:   62,
 										},
 										File:   "teams.flux",
-										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == message(\n                    url: url,\n                    title: obj.title,\n                    text: obj.text,\n                    summary: if exists obj.summary then obj.summary else \"\"\n                ) / 100)}\n            })",
+										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == message(\n                        url: url,\n                        title: obj.title,\n                        text: obj.text,\n                        summary: if exists obj.summary then obj.summary else \"\",\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
-											Column: 16,
-											Line:   44,
+											Column: 8,
+											Line:   47,
 										},
 									},
 								},
@@ -3794,14 +3794,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   44,
+												Column: 11,
+												Line:   47,
 											},
 											File:   "teams.flux",
 											Source: "map",
 											Start: ast.Position{
-												Column: 16,
-												Line:   44,
+												Column: 8,
+												Line:   47,
 											},
 										},
 									},
@@ -3818,14 +3818,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   43,
+										Column: 42,
+										Line:   46,
 									},
 									File:   "teams.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
-										Column: 10,
-										Line:   43,
+										Column: 33,
+										Line:   46,
 									},
 								},
 							},
@@ -3836,14 +3836,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 16,
-											Line:   43,
+											Column: 39,
+											Line:   46,
 										},
 										File:   "teams.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 10,
-											Line:   43,
+											Column: 33,
+											Line:   46,
 										},
 									},
 								},
@@ -3855,14 +3855,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   43,
+										Column: 42,
+										Line:   46,
 									},
 									File:   "teams.flux",
 									Source: "<-",
 									Start: ast.Position{
-										Column: 17,
-										Line:   43,
+										Column: 40,
+										Line:   46,
 									},
 								},
 							}},
@@ -3876,14 +3876,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   42,
+									Column: 27,
+									Line:   46,
 								},
 								File:   "teams.flux",
 								Source: "mapFn",
 								Start: ast.Position{
-									Column: 6,
-									Line:   42,
+									Column: 22,
+									Line:   46,
 								},
 							},
 						},
@@ -3894,14 +3894,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   42,
+										Column: 27,
+										Line:   46,
 									},
 									File:   "teams.flux",
 									Source: "mapFn",
 									Start: ast.Position{
-										Column: 6,
-										Line:   42,
+										Column: 22,
+										Line:   46,
 									},
 								},
 							},
@@ -3920,13 +3920,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   41,
+								Line:   46,
 							},
 							File:   "teams.flux",
 							Source: "url",
 							Start: ast.Position{
 								Column: 13,
-								Line:   41,
+								Line:   46,
 							},
 						},
 					},
@@ -3938,13 +3938,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   41,
+									Line:   46,
 								},
 								File:   "teams.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   41,
+									Line:   46,
 								},
 							},
 						},
@@ -3965,13 +3965,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "teams.flux",
 					Source: "import \"http\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -3982,13 +3982,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "teams.flux",
 						Source: "\"http\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -4002,13 +4002,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "teams.flux",
 					Source: "import \"json\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -4019,13 +4019,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "teams.flux",
 						Source: "\"json\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -4039,13 +4039,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "teams.flux",
 					Source: "import \"strings\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -4056,13 +4056,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "teams.flux",
 						Source: "\"strings\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
