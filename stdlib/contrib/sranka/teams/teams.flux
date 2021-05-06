@@ -1,5 +1,6 @@
 package teams
 
+
 import "http"
 import "json"
 import "strings"
@@ -16,21 +17,25 @@ message = (url, title, text, summary="") => {
     headers = {
         "Content-Type": "application/json; charset=utf-8",
     }
+
     // see https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#card-fields
     // using string body, object cannot be used because '@' is an illegal character in the object property key
-    summary2 = if summary == "" 
-        then text 
-        else summary
-    shortSummary = if strings.strlen(v: summary2) > summaryCutoff 
-        then "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}..."
-        else summary2
+    summary2 = if summary == "" then
+        text
+else
+        summary
+    shortSummary = if strings.strlen(v: summary2) > summaryCutoff then
+        "${strings.substring(v: summary2, start: 0, end: summaryCutoff)}..."
+else
+        summary2
     body = "{
 \"@type\": \"MessageCard\",
 \"@context\": \"http://schema.org/extensions\",
-\"title\": ${string(v: json.encode(v:title))},
-\"text\": ${string(v: json.encode(v:text))},
-\"summary\": ${string(v:json.encode(v:shortSummary))}
+\"title\": ${string(v: json.encode(v: title))},
+\"text\": ${string(v: json.encode(v: text))},
+\"summary\": ${string(v: json.encode(v: shortSummary))}
 }"
+
     return http.post(headers: headers, url: url, data: bytes(v: body))
 }
 
@@ -38,15 +43,20 @@ message = (url, title, text, summary="") => {
 // `url` - string - URL of the incoming web hook.
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` must return an object with `title`, `text`, and `summary`, as defined in the `message` function arguments.
-endpoint = (url) =>
-    (mapFn) =>
-        (tables=<-) => tables
-            |> map(fn: (r) => {
-                obj = mapFn(r: r)
-                return {r with _sent: string(v: 2 == message(
-                    url: url,
-                    title: obj.title,
-                    text: obj.text,
-                    summary: if exists obj.summary then obj.summary else ""
-                ) / 100)}
-            })
+endpoint = (url) => (mapFn) => (tables=<-) => tables
+    |> map(
+        fn: (r) => {
+            obj = mapFn(r: r)
+
+            return {r with
+                _sent: string(
+                    v: 2 == message(
+                        url: url,
+                        title: obj.title,
+                        text: obj.text,
+                        summary: if exists obj.summary then obj.summary else "",
+                    ) / 100,
+                ),
+            }
+        },
+    )

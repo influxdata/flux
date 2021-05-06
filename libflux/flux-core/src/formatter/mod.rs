@@ -617,7 +617,8 @@ impl Formatter {
     }
 
     fn format_text_part(&mut self, n: &ast::TextPart) {
-        self.write_string(&n.value)
+        let escaped_string = self.escape_string(&n.value);
+        self.write_string(&escaped_string);
     }
 
     fn format_interpolated_part(&mut self, n: &ast::InterpolatedPart) {
@@ -1070,24 +1071,26 @@ impl Formatter {
                 return;
             }
         }
-
         // Write out escaped string value
         self.write_rune('"');
-        let mut escaped: String;
-        if n.value.contains("\"\\") {
-            escaped = n.value.clone()
-        } else {
-            escaped = String::with_capacity(n.value.len() * 2);
-            for r in n.value.chars() {
-                if r == '"' || r == '\\' {
-                    escaped.push('\\')
-                }
-                escaped.push(r)
-            }
-        }
-
-        self.write_string(&escaped);
+        let escaped_string = self.escape_string(&n.value);
+        self.write_string(&escaped_string);
         self.write_rune('"');
+    }
+
+    fn escape_string(&mut self, s: &str) -> String {
+        if !(s.contains('\"') || s.contains('\\')) {
+            return s.to_string();
+        }
+        let mut escaped: String;
+        escaped = String::with_capacity(s.len() * 2);
+        for r in s.chars() {
+            if r == '"' || r == '\\' {
+                escaped.push('\\')
+            }
+            escaped.push(r)
+        }
+        escaped
     }
 
     // TODO(adriandt): this code appears dead. Boolean literal is no longer a node type?
