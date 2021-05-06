@@ -588,7 +588,7 @@ func TestCompiler_ReturnType(t *testing.T) {
 					{Key: []byte("_time"), Value: semantic.BasicTime},
 				})},
 			}),
-			want: `{_time: time | _value: float | _value: float}`,
+			want: `{_time: time, _value: float, _value: float}`,
 		},
 		{
 			name: "array access",

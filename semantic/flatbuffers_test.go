@@ -77,12 +77,12 @@ func TestDeserializeFromFlatBuffer(t *testing.T) {
 		{
 			name:     "simple unary expr",
 			fbFn:     getUnaryOpFlatBuffer,
-			polyType: `forall [] float`,
+			polyType: `float`,
 		},
 		{
 			name:     "function expression",
 			fbFn:     getFnExprFlatBuffer,
-			polyType: `forall [t0, t1] (a: t0, <-b: t1, ?c: int) -> int`,
+			polyType: `(a: A, <-b: B, ?c: int) => int`,
 		},
 	}
 
@@ -488,7 +488,7 @@ func getFBPolyType(b *flatbuffers.Builder, mt flatbuffers.UOffsetT) flatbuffers.
 
 func getFnPolyType(b *flatbuffers.Builder) flatbuffers.UOffsetT {
 	// The type of `(a, b=<-, c=72) => { return c }`
-	// is `forall [t0, t1] (a: t0, <-b: t1, ?c: int) -> int`
+	// is `(a: A, <-b: B, ?c: int) => int`
 
 	fbsemantic.VarStart(b)
 	fbsemantic.VarAddI(b, 0)
@@ -809,7 +809,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name:    "option with assignment",
 			fluxSrc: `option o = "hello"`,
 			types: map[string]string{
-				"o": "forall [] string",
+				"o": "string",
 			},
 		},
 		{
@@ -833,7 +833,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 		       import "testing"
 		       test t = () => ({input: testing.loadStorage(csv: ""), want: testing.loadMem(csv: ""), fn: (table=<-) => table})`,
 			types: map[string]string{
-				"t": "forall [t0, t1, t2, t3, t4] where t4: Record () -> {fn: (<-table: t0) -> t0 | input: [{_field: t1 | _field: t1 | _measurement: t2 | _measurement: t2 | _start: time | _stop: time | _time: time | _time: time | t3}] | want: [t4]}",
+				"t": "() => {fn: (<-table: A) => A, input: [{D with _field: B, _field: B, _measurement: C, _measurement: C, _start: time, _stop: time, _time: time, _time: time}], want: [E]} where E: Record",
 			},
 		},
 		{
@@ -844,7 +844,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name:    "native variable assignment",
 			fluxSrc: `x = 42`,
 			types: map[string]string{
-				"x": "forall [] int",
+				"x": "int",
 			},
 		},
 		{
@@ -853,8 +853,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 str = "hello"
                 x = "${str} world"`,
 			types: map[string]string{
-				"str": "forall [] string",
-				"x":   "forall [] string",
+				"str": "string",
+				"x":   "string",
 			},
 		},
 		{
@@ -863,22 +863,22 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 x = [1, 2, 3]
                 y = x[2]`,
 			types: map[string]string{
-				"x": "forall [] [int]",
-				"y": "forall [] int",
+				"x": "[int]",
+				"y": "int",
 			},
 		},
 		{
 			name:    "simple fn",
 			fluxSrc: `f = (x) => x`,
 			types: map[string]string{
-				"f": "forall [t0] (x: t0) -> t0",
+				"f": "(x: A) => A",
 			},
 		},
 		{
 			name:    "simple fn with block (return statement)",
 			fluxSrc: `f = (x) => {return x}`,
 			types: map[string]string{
-				"f": "forall [t0] (x: t0) -> t0",
+				"f": "(x: A) => A",
 			},
 		},
 		{
@@ -890,50 +890,50 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                     return z
                 }`,
 			types: map[string]string{
-				"f": "forall [] (x: int) -> int",
-				"z": "forall [] int",
+				"f": "(x: int) => int",
+				"z": "int",
 			},
 		},
 		{
 			name:    "simple fn with 2 params",
 			fluxSrc: `f = (x, y) => x + y`,
 			types: map[string]string{
-				"f": "forall [t0] where t0: Addable (x: t0, y: t0) -> t0",
+				"f": "(x: A, y: A) => A where A: Addable",
 			},
 		},
 		{
 			name:    "apply",
 			fluxSrc: `apply = (f, p) => f(param: p)`,
 			types: map[string]string{
-				"apply": "forall [t0, t1] (f: (param: t0) -> t1, p: t0) -> t1",
+				"apply": "(f: (param: A) => B, p: A) => B",
 			},
 		},
 		{
 			name:    "apply2",
 			fluxSrc: `apply2 = (f, p0, p1) => f(param0: p0, param1: p1)`,
 			types: map[string]string{
-				"apply2": "forall [t0, t1, t2] (f: (param0: t0, param1: t1) -> t2, p0: t0, p1: t1) -> t2",
+				"apply2": "(f: (param0: A, param1: B) => C, p0: A, p1: B) => C",
 			},
 		},
 		{
 			name:    "default args",
 			fluxSrc: `f = (x=1, y) => x + y`,
 			types: map[string]string{
-				"f": "forall [] (?x: int, y: int) -> int",
+				"f": "(?x: int, y: int) => int",
 			},
 		},
 		{
 			name:    "two default args",
 			fluxSrc: `f = (x=1, y=10, z) => x + y + z`,
 			types: map[string]string{
-				"f": "forall [] (?x: int, ?y: int, z: int) -> int",
+				"f": "(?x: int, ?y: int, z: int) => int",
 			},
 		},
 		{
 			name:    "pipe args",
 			fluxSrc: `f = (x=<-, y) => x + y`,
 			types: map[string]string{
-				"f": "forall [t0] where t0: Addable (<-x: t0, y: t0) -> t0",
+				"f": "(<-x: A, y: A) => A where A: Addable",
 			},
 		},
 		{
@@ -949,15 +949,15 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 rem = "foo" =~ /foo/
                 renm = "food" !~ /foog/`,
 			types: map[string]string{
-				"x":    "forall [] int",
-				"lt":   "forall [] bool",
-				"lte":  "forall [] bool",
-				"gt":   "forall [] bool",
-				"gte":  "forall [] bool",
-				"eq":   "forall [] bool",
-				"neq":  "forall [] bool",
-				"rem":  "forall [] bool",
-				"renm": "forall [] bool",
+				"x":    "int",
+				"lt":   "bool",
+				"lte":  "bool",
+				"gt":   "bool",
+				"gte":  "bool",
+				"eq":   "bool",
+				"neq":  "bool",
+				"rem":  "bool",
+				"renm": "bool",
 			},
 		},
 		{
@@ -966,8 +966,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 f = (x) => x + 1
                 y = f(x: 10)`,
 			types: map[string]string{
-				"f": "forall [] (x: int) -> int",
-				"y": "forall [] int",
+				"f": "(x: int) => int",
+				"y": "int",
 			},
 		},
 		{
@@ -976,8 +976,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 f = (x, y) => x + y
                 y = f(x: 10, y: 30)`,
 			types: map[string]string{
-				"f": "forall [t0] where t0: Addable (x: t0, y: t0) -> t0",
-				"y": "forall [] int",
+				"f": "(x: A, y: A) => A where A: Addable",
+				"y": "int",
 			},
 		},
 		{
@@ -986,8 +986,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 f = (x, y=<-) => x + y
                 y = 30 |> f(x: 10)`,
 			types: map[string]string{
-				"f": "forall [t0] where t0: Addable (x: t0, <-y: t0) -> t0",
-				"y": "forall [] int",
+				"f": "(x: A, <-y: A) => A where A: Addable",
+				"y": "int",
 			},
 		},
 		{
@@ -995,7 +995,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			fluxSrc: `
                 ans = if 100 > 0 then "yes" else "no"`,
 			types: map[string]string{
-				"ans": "forall [] string",
+				"ans": "string",
 			},
 		},
 		{
@@ -1004,15 +1004,15 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 x = 34
                 y = x`,
 			types: map[string]string{
-				"x": "forall [] int",
-				"y": "forall [] int",
+				"x": "int",
+				"y": "int",
 			},
 		},
 		{
 			name:    "logical expression",
 			fluxSrc: `x = true and false or true`,
 			types: map[string]string{
-				"x": "forall [] bool",
+				"x": "bool",
 			},
 		},
 		{
@@ -1021,8 +1021,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 o = {temp: 30.0, loc: "FL"}
                 t = o.temp`,
 			types: map[string]string{
-				"o": "forall [] {loc: string | temp: float}",
-				"t": "forall [] float",
+				"o": "{loc: string, temp: float}",
+				"t": "float",
 			},
 		},
 		{
@@ -1031,8 +1031,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 o = {temp: 30.0, loc: "FL"}
                 o2 = {o with city: "Tampa"}`,
 			types: map[string]string{
-				"o":  "forall [] {loc: string | temp: float}",
-				"o2": "forall [] {city: string | loc: string | temp: float}",
+				"o":  "{loc: string, temp: float}",
+				"o2": "{city: string, loc: string, temp: float}",
 			},
 		},
 		{
@@ -1041,8 +1041,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 f = (r) => ({r with val: 32})
                 o = f(r: {val: "thirty-two"})`,
 			types: map[string]string{
-				"f": "forall [t0] (r: t0) -> {val: int | t0}",
-				"o": "forall [] {val: int | val: string}",
+				"f": "(r: A) => {A with val: int}",
+				"o": "{val: int, val: string}",
 			},
 		},
 		{
@@ -1052,9 +1052,9 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 y = +1
                 b = not false`,
 			types: map[string]string{
-				"x": "forall [] int",
-				"y": "forall [] int",
-				"b": "forall [] bool",
+				"x": "int",
+				"y": "int",
+				"b": "bool",
 			},
 		},
 		{
@@ -1066,7 +1066,7 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 			name:    "exists operator with tvar",
 			fluxSrc: `f = (r) => exists r.foo`,
 			types: map[string]string{
-				"f": "forall [t0, t1] (r: {foo: t0 | t1}) -> bool",
+				"f": "(r: {B with foo: A}) => bool",
 			},
 		},
 		{
@@ -1076,52 +1076,52 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
                 f = (r) => exists r.foo
                 ff = (r) => f(r: {r with bar: 1})`,
 			types: map[string]string{
-				"f": "forall [t0, t1] (r: {foo: t0 | t1}) -> bool",
-				// Note: t1 is unused in the monotype, and t2 is not quantified.
+				"f": "(r: {B with foo: A}) => bool",
+				// Note: B is unused in the monotype, and C is not quantified.
 				// Type of ff should be the same as f.
-				"ff": "forall [t0, t2] (r: {foo: t0 | t1}) -> bool",
+				"ff": "(r: {B with foo: A}) => bool",
 			},
 		},
 		{
 			name:    "datetime literal",
 			fluxSrc: `t = 2018-08-15T13:36:23-07:00`,
 			types: map[string]string{
-				"t": "forall [] time",
+				"t": "time",
 			},
 		},
 		{
 			name:    "duration literal",
 			fluxSrc: `d = 1y1mo1w1d1h1m1s1ms1us1ns`,
 			types: map[string]string{
-				"d": "forall [] duration",
+				"d": "duration",
 			},
 		},
 		{
 			name:    "negative duration literal",
 			fluxSrc: `d = -1y1d`,
 			types: map[string]string{
-				"d": "forall [] duration",
+				"d": "duration",
 			},
 		},
 		{
 			name:    "zero duration literal",
 			fluxSrc: `d = 0d`,
 			types: map[string]string{
-				"d": "forall [] duration",
+				"d": "duration",
 			},
 		},
 		{
 			name:    "regexp literal",
 			fluxSrc: `re = /foo/`,
 			types: map[string]string{
-				"re": "forall [] regexp",
+				"re": "regexp",
 			},
 		},
 		{
 			name:    "float literal",
 			fluxSrc: `f = 3.0`,
 			types: map[string]string{
-				"f": "forall [] float",
+				"f": "float",
 			},
 		},
 		{
@@ -1136,8 +1136,8 @@ func TestFlatBuffersRoundTrip(t *testing.T) {
 					|> filter(fn: (r) => r._measurement == "disk")
 					|> filter(fn: (r) => r._field == "used_percent")`,
 			types: map[string]string{
-				"v": "forall [] {bucket: string | timeRangeStart: duration | windowPeriod: duration}",
-				"q": "forall [t0, t1] [{_field: string | _measurement: string | _time: time | _value: t0 | t1}]",
+				"v": "{bucket: string, timeRangeStart: duration, windowPeriod: duration}",
+				"q": "[{B with _field: string, _measurement: string, _time: time, _value: A}]",
 			},
 		},
 	}

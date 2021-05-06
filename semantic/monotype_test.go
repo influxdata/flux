@@ -44,7 +44,7 @@ func TestNewFunctionType(t *testing.T) {
 			{Name: []byte("v"), Type: semantic.BasicInt},
 		},
 	)
-	if want, got := functionType.String(), "(v: int) -> string"; want != got {
+	if want, got := functionType.String(), "(v: int) => string"; want != got {
 		t.Errorf("unexpected monotype -want/+got:\n\t- %s\n\t+ %s", want, got)
 	}
 }
@@ -56,7 +56,7 @@ func TestNewObjectType(t *testing.T) {
 			{Key: []byte("b"), Value: semantic.BasicString},
 		},
 	)
-	if want, got := objectType.String(), "{a: int | b: string}"; want != got {
+	if want, got := objectType.String(), "{a: int, b: string}"; want != got {
 		t.Errorf("unexpected monotype -want/+got:\n\t- %s\n\t+ %s", want, got)
 	}
 }

@@ -169,54 +169,30 @@ func (pt PolyType) string(m map[uint64]uint64) string {
 	}
 	var sb strings.Builder
 
-	sb.WriteString("forall [")
-	needComma := false
-	svars, err := pt.sortedVars(m)
-	if err != nil {
-		return "<" + err.Error() + ">"
-	}
-	for _, v := range svars {
-		if needComma {
-			sb.WriteString(", ")
-		} else {
-			needComma = true
-		}
-		mt := monoTypeFromVar(v)
-		sb.WriteString(mt.string(m))
-	}
-	sb.WriteString("] ")
-
-	needWhere := true
-	cs, err := pt.sortedConstraints(m)
-	if err != nil {
-		return "<" + err.Error() + ">"
-	}
-	for i := 0; i < len(cs); i++ {
-		cons := cs[i]
-		tv := cons.Tvar(nil)
-		k := cons.Kind()
-
-		if needWhere {
-			sb.WriteString("where ")
-			needWhere = false
-		}
-		mtv := monoTypeFromVar(tv)
-		sb.WriteString(mtv.string(m))
-		sb.WriteString(": ")
-		sb.WriteString(fbsemantic.EnumNamesKind[k])
-
-		if i < pt.NumConstraints()-1 {
-			sb.WriteString(", ")
-		} else {
-			sb.WriteString(" ")
-		}
-	}
-
 	mt, err := pt.Expr()
 	if err != nil {
 		return "<" + err.Error() + ">"
 	}
 	sb.WriteString(mt.string(m))
+
+	cs, err := pt.sortedConstraints(m)
+	if err != nil {
+		return "<" + err.Error() + ">"
+	}
+	for i, cons := range cs {
+		tv := cons.Tvar(nil)
+		k := cons.Kind()
+
+		if i != 0 {
+			sb.WriteString(", ")
+		} else {
+			sb.WriteString(" where ")
+		}
+		mtv := monoTypeFromVar(tv)
+		sb.WriteString(mtv.string(m))
+		sb.WriteString(": ")
+		sb.WriteString(fbsemantic.EnumNamesKind[k])
+	}
 
 	return sb.String()
 }

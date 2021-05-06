@@ -538,7 +538,30 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 				return "<could not find var num in map>"
 			}
 		}
-		return fmt.Sprintf("t%d", i)
+		switch i {
+		case 0:
+			return "A"
+		case 1:
+			return "B"
+		case 2:
+			return "C"
+		case 3:
+			return "D"
+		case 4:
+			return "E"
+		case 5:
+			return "F"
+		case 6:
+			return "G"
+		case 7:
+			return "H"
+		case 8:
+			return "I"
+		case 9:
+			return "J"
+		default:
+			return fmt.Sprintf("t%d", i)
+		}
 	case Arr:
 		et, err := mt.ElemType()
 		if err != nil {
@@ -548,6 +571,14 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 	case Record:
 		var sb strings.Builder
 		sb.WriteString("{")
+		extends, ok, err := mt.Extends()
+		if err != nil {
+			return "<" + err.Error() + ">"
+		}
+		if ok {
+			sb.WriteString(extends.string(m))
+			sb.WriteString(" with ")
+		}
 		sprops, err := mt.SortedProperties()
 		if err != nil {
 			return "<" + err.Error() + ">"
@@ -555,7 +586,7 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 		needBar := false
 		for _, prop := range sprops {
 			if needBar {
-				sb.WriteString(" | ")
+				sb.WriteString(", ")
 			} else {
 				needBar = true
 			}
@@ -565,16 +596,6 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 				return "<" + err.Error() + ">"
 			}
 			sb.WriteString(ty.string(m))
-		}
-		extends, ok, err := mt.Extends()
-		if err != nil {
-			return "<" + err.Error() + ">"
-		}
-		if ok {
-			if needBar {
-				sb.WriteString(" | ")
-			}
-			sb.WriteString(extends.string(m))
 		}
 		sb.WriteString("}")
 		return sb.String()
@@ -604,7 +625,7 @@ func (mt MonoType) string(m map[uint64]uint64) string {
 			}
 			sb.WriteString(argTyp.string(m))
 		}
-		sb.WriteString(") -> ")
+		sb.WriteString(") => ")
 		rt, err := mt.ReturnType()
 		if err != nil {
 			return "<" + err.Error() + ">"
