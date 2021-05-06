@@ -55,6 +55,7 @@ var privateIPBlocks []*net.IPNet
 
 func init() {
 	for _, cidr := range []string{
+		"0.0.0.0/32",     // Linux treats 0.0.0.0 as 127.0.0.1
 		"127.0.0.0/8",    // IPv4 loopback
 		"10.0.0.0/8",     // RFC1918
 		"172.16.0.0/12",  // RFC1918
