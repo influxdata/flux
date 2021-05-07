@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! Flux start-up.
 
 use std::collections::HashSet;
 use std::fs;
@@ -27,8 +27,10 @@ const PRELUDE: [&str; 2] = ["universe", "influxdata/influxdb"];
 
 type AstFileMap = SemanticMap<String, ast::File>;
 
+/// Error returned during bootstrap.
 #[derive(Debug, PartialEq)]
 pub struct Error {
+    /// Error message.
     pub msg: String,
 }
 
@@ -77,10 +79,9 @@ impl From<&str> for Error {
         }
     }
 }
-
+/// Infers the types of the standard library returning two [`Importer`]s, one for the prelude
+/// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
-// Infer the types of the standard library returning two importers, one for the prelude
-// and one for the standard library, as well as a type variable fresher.
 pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
     let mut f = Fresher::default();
 
@@ -223,7 +224,7 @@ fn dependencies<'a>(
     }
 }
 
-// Constructs a polytype, or more specifically a generic row type, from a hash map
+/// Constructs a polytype, or more specifically a generic row type, from a hash map.
 pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Error> {
     let (r, cons) = build_row(from, f);
     let mut kinds = TvarKinds::new();
