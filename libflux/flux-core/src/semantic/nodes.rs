@@ -1872,21 +1872,23 @@ impl DateTimeLit {
     }
 }
 
-/// Duration is a struct that keeps track of time in months and nanoseconds.
-/// Months and nanoseconds must be positive values. Negative is a bool to indicate
-/// whether the magnitude of durations converted from the AST have a positive or
-/// negative value
+/// A struct that keeps track of time in months and nanoseconds.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[serde(rename = "Duration")]
 #[allow(missing_docs)]
 pub struct Duration {
+    /// Must be a positive value.
     pub months: i64,
+    /// Must be a positive value.
     pub nanoseconds: i64,
+    /// Indicates whether the magnitude of durations converted from the AST have a positive or
+    /// negative value. This field is `true` when magnitudes are negative.
     pub negative: bool,
 }
 
-/// DurationLit is a pair consisting of length of time and the unit of time measured.
-/// It is the atomic unit from which all duration literals are composed.
+/// The atomic unit from which all duration literals are composed.
+///
+/// A `DurationLit` is a pair consisting of a length of time and the unit of time measured.
 #[derive(Derivative)]
 #[derivative(Debug, PartialEq, Clone)]
 #[allow(missing_docs)]
@@ -1919,7 +1921,7 @@ const WEEKS: i64 = DAYS * 7;
 const MONTHS: i64 = 1;
 const YEARS: i64 = MONTHS * 12;
 
-/// Convert an `ast::Duration` node to a `semantic::nodes::Duration`.
+/// Convert an [`ast::Duration`] node to its semantic counterpart [`Duration`].
 ///
 /// Returns a `Result` type with a possible error message.
 #[allow(missing_docs)]
