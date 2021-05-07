@@ -32,8 +32,8 @@ pub type PolyTypeMap = SemanticMap<String, PolyType>;
 #[allow(missing_docs)]
 pub type PolyTypeMapMap = SemanticMap<String, SemanticMap<String, PolyType>>;
 
-#[macro_export]
 /// Alias the maplit literal construction macro so we can specify the type here.
+#[macro_export]
 macro_rules! semantic_map {
     ( $($x:tt)* ) => ( maplit::btreemap!( $($x)* ) );
 }
@@ -147,8 +147,8 @@ pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
     from
 }
 
-#[derive(Debug, PartialEq)]
 /// Errors that can be returned during type inference.
+#[derive(Debug, PartialEq)]
 #[allow(missing_docs)]
 pub enum Error {
     CannotUnify {
@@ -726,7 +726,6 @@ impl Dictionary {
 /// A row may extend what is referred to as a row
 /// variable. A row variable is a type variable that
 /// represents an unknown record type.
-///
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type")]
 #[allow(missing_docs)]
@@ -1036,7 +1035,7 @@ impl MaxTvar for Property {
     }
 }
 
-/// `Function` represents a function type.
+/// Represents a function type.
 ///
 /// A function type is defined by a set of required arguments,
 /// a set of optional arguments, an optional pipe argument, and
