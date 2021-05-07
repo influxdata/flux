@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! FlatBuffers serialization for the semantic graph.
 
 #[allow(clippy::all, missing_docs)]
 pub mod semantic_generated;
@@ -17,6 +17,7 @@ use semantic_generated::fbsemantic;
 extern crate chrono;
 use chrono::Duration as ChronoDuration;
 
+/// Serializes a [`semantic::nodes::Package`].
 pub fn serialize(semantic_pkg: &semantic::nodes::Package) -> Result<(Vec<u8>, usize), String> {
     let mut v = new_serializing_visitor_with_capacity(1024);
     walk::walk(&mut v, Rc::new(walk::Node::Package(semantic_pkg)));
