@@ -1,5 +1,3 @@
-#![allow(missing_docs)]
-
 use crate::ast::SourceLocation;
 use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;
@@ -8,6 +6,7 @@ use std::rc::Rc;
 
 /// Node represents any structure that can appear in the semantic graph.
 #[derive(Debug)]
+#[allow(missing_docs)]
 pub enum Node<'a> {
     Package(&'a Package),
     File(&'a File),
@@ -109,6 +108,7 @@ impl<'a> fmt::Display for Node<'a> {
 }
 
 impl<'a> Node<'a> {
+    /// Returns the source location of a semantic graph node.
     pub fn loc(&self) -> &SourceLocation {
         match self {
             Node::Package(n) => &n.loc,
@@ -152,6 +152,7 @@ impl<'a> Node<'a> {
             Node::MemberAssgn(n) => &n.loc,
         }
     }
+    /// Returns the type of a semantic graph node.
     pub fn type_of(&self) -> Option<MonoType> {
         match self {
             Node::IdentifierExpr(n) => Some(Expression::Identifier((*n).clone()).type_of()),
@@ -184,6 +185,7 @@ impl<'a> Node<'a> {
 
 // Utility functions.
 impl<'a> Node<'a> {
+    /// Get a semantic graph node from an [`Expression`].
     pub fn from_expr(expr: &'a Expression) -> Node {
         match *expr {
             Expression::Identifier(ref e) => Node::IdentifierExpr(e),
@@ -209,6 +211,8 @@ impl<'a> Node<'a> {
             Expression::Regexp(ref e) => Node::RegexpLit(e),
         }
     }
+
+    /// Get a semantic graph node from a [`Statement`].
     pub fn from_stmt(stmt: &'a Statement) -> Node {
         match *stmt {
             Statement::Expr(ref s) => Node::ExprStmt(s),
@@ -234,8 +238,8 @@ impl<'a> Node<'a> {
     }
 }
 
-/// Visitor is used by `walk` to recursively visit a semantic graph.
-/// One can implement Visitor or use a `FnMut(Node)`.
+/// `Visitor` is used by `walk` to recursively visit a semantic graph.
+/// One can implement `Visitor` or use a `FnMut(Node)`.
 ///
 /// # Examples
 ///
@@ -310,16 +314,17 @@ impl<'a> Node<'a> {
 /// }
 /// ```
 pub trait Visitor<'a>: Sized {
-    /// Visit is called for a node.
-    /// When the Visitor is used in function `walk`, the boolean value returned
-    /// is used to continue (true) or stop (false) walking.
+    /// `visit` is called for a node.
+    /// When the `Visitor` is used in function [`walk`], the boolean value returned
+    /// is used to continue (`true`) or stop (`false`) walking.
     fn visit(&mut self, node: Rc<Node<'a>>) -> bool;
-    /// Done is called for a node once it has been visited along with all of its children.
+    /// `done` is called for a node once it has been visited along with all of its children.
+    ///
     /// The default is to do nothing.
     fn done(&mut self, _: Rc<Node<'a>>) {}
 }
 
-/// `walk` recursively visits children of a node given a Visitor.
+/// Recursively visits children of a node given a [`Visitor`].
 /// Nodes are visited in depth-first order.
 pub fn walk<'a, T>(v: &mut T, node: Rc<Node<'a>>)
 where
