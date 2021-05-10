@@ -135,7 +135,7 @@ func TestDisplay(t *testing.T) {
 				},
 				false,
 			),
-			display: "() -> int",
+			display: "() => int",
 		},
 	}
 	for _, tc := range testCases {

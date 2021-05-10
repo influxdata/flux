@@ -86,7 +86,7 @@ s = {v with tmp: 1}                // construct a new struct with "object with"
 m = s.tmp                          // not belong to "v"
 p = s.timeRangeStop                // transitive reference
 `,
-			ty: "{int: int | num: t0 | self: t1 | str: string | sweet: t2 | timeRangeStop: t3 | t4}",
+			ty: "{E with int: int, num: A, self: B, str: string, sweet: C, timeRangeStop: D}",
 		},
 		{
 			name: "failure",
