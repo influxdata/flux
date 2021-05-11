@@ -229,7 +229,7 @@ impl fmt::Display for Error {
     }
 }
 
-/// `Kind` represents a class or family of types.
+/// Represents a constraint on a type variable to a specific kind (*i.e.*, a type class).
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash)]
 #[allow(missing_docs)]
 pub enum Kind {
