@@ -151,6 +151,8 @@ pub(crate) fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
 }
 
 /// Errors that can be returned during type inference.
+/// (Note that these error messages are read by end users.
+/// This should be kept in mind when returning one of these errors.)
 #[derive(Debug, PartialEq)]
 #[allow(missing_docs)]
 pub enum Error {
