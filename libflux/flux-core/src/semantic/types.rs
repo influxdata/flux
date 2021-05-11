@@ -738,9 +738,11 @@ pub enum Record {
     /// A record that has no properties.
     Empty,
     /// Extension of a record.
-    ///
-    /// `tail` is the record variable.
-    Extension { head: Property, tail: MonoType },
+    Extension {
+        /// The [`Property`] that extends the record type.
+        head: Property,
+        /// `tail` is the record variable.
+        tail: MonoType },
 }
 
 impl fmt::Display for Record {
