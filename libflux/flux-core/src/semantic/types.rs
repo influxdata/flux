@@ -127,22 +127,25 @@ impl PolyType {
             .collect::<Vec<_>>()
             .join(" + ")
     }
-    #[allow(missing_docs)]
+    /// Produces a `PolyType` where the type variables have been normalized to start at 0
+    /// (i.e. A), instead of whatever type variables are present in the orginal.
+    ///
+    /// Useful for pretty printing the type in error messages.
     pub fn normal(&self) -> PolyType {
         self.clone()
             .fresh(&mut Fresher::from(0), &mut TvarMap::new())
     }
 }
 
-#[allow(missing_docs)]
-pub fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> {
+/// Helper function that concatenates two vectors into a single vector while removing duplicates.
+pub(crate) fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> {
     with.retain(|tv| !vars.contains(tv));
     vars.append(&mut with);
     vars
 }
 
-#[allow(missing_docs)]
-pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
+/// Helper function that removes all elements in `vars` from `from`.
+pub(crate) fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
     from.retain(|tv| !vars.contains(tv));
     from
 }
