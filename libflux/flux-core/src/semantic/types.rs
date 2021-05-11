@@ -293,7 +293,7 @@ pub enum MonoType {
     Fun(Box<Function>),
 }
 
-/// Ordered map of string identifiers to monotypes.
+/// An ordered map of string identifiers to monotypes.
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
 #[allow(missing_docs)]
 pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
@@ -525,7 +525,7 @@ impl MonoType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64);
 
-/// TvarKinds is a map from type variables to their constraining kinds.
+/// A map from type variables to their constraining kinds.
 pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
 #[allow(missing_docs)]
 pub type TvarMap = SemanticMap<Tvar, Tvar>;
