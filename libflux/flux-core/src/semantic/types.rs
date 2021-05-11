@@ -629,7 +629,7 @@ impl Tvar {
     }
 }
 
-/// `Array` is a homogeneous list type.
+/// A homogeneous list type.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "[{}]", _0)]
 pub struct Array(pub MonoType);
@@ -675,7 +675,7 @@ impl Array {
     }
 }
 
-/// `Dictionary` is a key-value data structure.
+/// A key-value data structure.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "[{}:{}]", key, val)]
 pub struct Dictionary {
