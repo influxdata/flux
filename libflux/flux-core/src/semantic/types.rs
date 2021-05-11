@@ -745,7 +745,8 @@ pub enum Record {
         /// The [`Property`] that extends the record type.
         head: Property,
         /// `tail` is the record variable.
-        tail: MonoType },
+        tail: MonoType,
+    },
 }
 
 impl fmt::Display for Record {
