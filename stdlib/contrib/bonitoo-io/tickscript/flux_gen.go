@@ -25,11 +25,11 @@ var pkgAST = &ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 71,
-					Line:   158,
+					Column: 69,
+					Line:   148,
 				},
 				File:   "tickscript.flux",
-				Source: "package tickscript\n\nimport \"experimental\"\nimport \"experimental/array\"\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\nimport \"universe\"\n\n// defineCheck creates custom check data required by alert() and deadman()\ndefineCheck = (id, name, type=\"custom\") => {\n    return {\n        _check_id:   id,\n        _check_name: name,\n        _type:       type,\n        tags:        {}\n    }\n}\n\n// alert is a helper function similar to TICKscript alert.\nalert = (\n    check,\n    id=(r)=>\"${r._check_id}\",\n    details=(r)=>\"\",\n    message=(r)=>\"Threshold Check: ${r._check_name} is: ${r._level}\",\n    crit=(r) => false,\n    warn=(r) => false,\n    info=(r) => false,\n    ok=(r) => true,\n    topic=\"\",\n    tables=<-) => {\n\n  _addTopic =\n    if topic != \"\" then\n      (tables=<-) => tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\n    else\n      (tables=<-) => tables\n\n  return tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))\n    |> _addTopic()\n    |> monitor.check(\n        crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check\n    )\n}\n\n// deadman is a helper function similar to TICKscript deadman.\ndeadman = (\n    check,\n    measurement, threshold=0,\n    id=(r)=>\"${r._check_id}\",\n    message=(r)=>\"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\"),\n    topic=\"\",\n    tables=<-) => {\n\n   // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n   // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n   // table is used as input for actual threshold check in order to get 0.\n\n  _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\") // required by monitor.check\n    |> schema.fieldsAsCols() // input tables are expected to be pivoted already\n\n  _counts = union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\") // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n\n  _tables =\n    if _counts[0] == 1 then // only dummy table is in the concatenated stream\n      _dummy\n        |> drop(columns: [\"unknown\"])\n        |> limit(n: 0) // need empty table\n    else\n      tables\n\n  return _tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds\n    |> drop(columns: [\"__value__\"])                              // drop dummy field\n    |> alert(\n      check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic\n    )\n}\n\n// select selects a column and optionally computes aggregated value.\n// It is meant to be a convenience function to be used for:\n//\n//   query(\"SELECT x AS y\")\n//   query(\"SELECT f(x) AS y\") without time grouping\n//\nselect = (column=\"_value\", fn=(column, tables=<-) => tables, as, tables=<-) => {\n  _column = column\n  _as = as\n  return\n    tables\n      |> fn(column: _column)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}\n\n// selectWindow selects a column with time grouping and computes aggregated values.\n// It is a convenience function to be used as\n//\n//   query(\"SELECT f(x) AS y\")\n//     .groupBy(time(t), ...)\n//\nselectWindow = (column=\"_value\", fn, as, every, defaultValue, tables=<-) => {\n  _column = column\n  _as = as\n  return\n    tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n      |> fill(column: _column, value: defaultValue)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}\n\n// compute computes aggregated value of the input data.\n// It is a convenience function to be used as\n//\n//   |median('x)'\n//      .as(y)\n//\ncompute = select\n\n// groupBy groups by specified columns.\n// It is a convenience function, it adds _measurement column which is required by monitor.check().\ngroupBy = (columns, tables=<-) =>\n  tables\n    |> group(columns: columns)\n    |> experimental.group(columns: [\"_measurement\"], mode:\"extend\") // required by monitor.check\n\n// join merges two streams using standard join().\n// It is meant a convenience function, it ensures _measurement column exists and is in the group key.\njoin = (tables, on=[\"_time\"], measurement) =>\n    universe.join(tables: tables, on: on)\n      |> map(fn: (r) => ({ r with _measurement: measurement }))\n      |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
+				Source: "package tickscript\n\n\nimport \"experimental\"\nimport \"experimental/array\"\nimport \"influxdata/influxdb\"\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/schema\"\nimport \"universe\"\n\n// defineCheck creates custom check data required by alert() and deadman()\ndefineCheck = (id, name, type=\"custom\") => {\n    return {\n        _check_id: id,\n        _check_name: name,\n        _type: type,\n        tags: {},\n    }\n}\n\n// alert is a helper function similar to TICKscript alert.\nalert = (check, id=(r) => \"${r._check_id}\", details=(r) => \"\", message=(r) => \"Threshold Check: ${r._check_name} is: ${r._level}\", crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true, topic=\"\", tables=<-) => {\n    _addTopic = if topic != \"\" then\n        (tables=<-) => tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\nelse\n        (tables=<-) => tables\n\n    return tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))\n        |> _addTopic()\n        |> monitor.check(\n            crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check,\n        )\n}\n\n// deadman is a helper function similar to TICKscript deadman.\ndeadman = (check, measurement, threshold=0, id=(r) => \"${r._check_id}\", message=(r) => \"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\"), topic=\"\", tables=<-) => {\n    // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n    // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n    // table is used as input for actual threshold check in order to get 0.\n    _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)\n        // required by monitor.check\n        |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")\n        // input tables are expected to be pivoted already    \n        |> schema.fieldsAsCols()\n    _counts = union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n    _tables = \n        // only dummy table is in the concatenated stream\n        if _counts[0] == 1 then\n            _dummy\n                |> drop(columns: [\"unknown\"])\n                // need empty table\n                |> limit(n: 0)\nelse\n            tables\n\n    return _tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))\n        // drop dummy field\n        |> drop(columns: [\"__value__\"])\n        |> alert(\n            check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic,\n        )\n}\n\n// select selects a column and optionally computes aggregated value.\n// It is meant to be a convenience function to be used for:\n//\n//   query(\"SELECT x AS y\")\n//   query(\"SELECT f(x) AS y\") without time grouping\n//\nselect = (column=\"_value\", fn=(column, tables=<-) => tables, as, tables=<-) => {\n    _column = column\n    _as = as\n\n    return tables\n        |> fn(column: _column)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}\n\n// selectWindow selects a column with time grouping and computes aggregated values.\n// It is a convenience function to be used as\n//\n//   query(\"SELECT f(x) AS y\")\n//     .groupBy(time(t), ...)\n//\nselectWindow = (column=\"_value\", fn, as, every, defaultValue, tables=<-) => {\n    _column = column\n    _as = as\n\n    return tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n        |> fill(column: _column, value: defaultValue)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}\n\n// compute computes aggregated value of the input data.\n// It is a convenience function to be used as\n//\n//   |median('x)'\n//      .as(y)\n//\ncompute = select\n\n// groupBy groups by specified columns.\n// It is a convenience function, it adds _measurement column which is required by monitor.check().\ngroupBy = (columns, tables=<-) => tables\n    |> group(columns: columns)\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")\n\n// join merges two streams using standard join().\n// It is meant a convenience function, it ensures _measurement column exists and is in the group key.\njoin = (tables, on=[\"_time\"], measurement) => universe.join(tables: tables, on: on)\n    |> map(fn: (r) => ({r with _measurement: measurement}))\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -43,13 +43,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   18,
+						Line:   19,
 					},
 					File:   "tickscript.flux",
-					Source: "defineCheck = (id, name, type=\"custom\") => {\n    return {\n        _check_id:   id,\n        _check_name: name,\n        _type:       type,\n        tags:        {}\n    }\n}",
+					Source: "defineCheck = (id, name, type=\"custom\") => {\n    return {\n        _check_id: id,\n        _check_name: name,\n        _type: type,\n        tags: {},\n    }\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   11,
+						Line:   12,
 					},
 				},
 			},
@@ -60,13 +60,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 12,
-							Line:   11,
+							Line:   12,
 						},
 						File:   "tickscript.flux",
 						Source: "defineCheck",
 						Start: ast.Position{
 							Column: 1,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -80,13 +80,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   18,
+							Line:   19,
 						},
 						File:   "tickscript.flux",
-						Source: "(id, name, type=\"custom\") => {\n    return {\n        _check_id:   id,\n        _check_name: name,\n        _type:       type,\n        tags:        {}\n    }\n}",
+						Source: "(id, name, type=\"custom\") => {\n    return {\n        _check_id: id,\n        _check_name: name,\n        _type: type,\n        tags: {},\n    }\n}",
 						Start: ast.Position{
 							Column: 15,
-							Line:   11,
+							Line:   12,
 						},
 					},
 				},
@@ -97,13 +97,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   18,
+								Line:   19,
 							},
 							File:   "tickscript.flux",
-							Source: "{\n    return {\n        _check_id:   id,\n        _check_name: name,\n        _type:       type,\n        tags:        {}\n    }\n}",
+							Source: "{\n    return {\n        _check_id: id,\n        _check_name: name,\n        _type: type,\n        tags: {},\n    }\n}",
 							Start: ast.Position{
 								Column: 44,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -115,13 +115,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   17,
+										Line:   18,
 									},
 									File:   "tickscript.flux",
-									Source: "{\n        _check_id:   id,\n        _check_name: name,\n        _type:       type,\n        tags:        {}\n    }",
+									Source: "{\n        _check_id: id,\n        _check_name: name,\n        _type: type,\n        tags: {},\n    }",
 									Start: ast.Position{
 										Column: 12,
-										Line:   12,
+										Line:   13,
 									},
 								},
 							},
@@ -132,14 +132,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
-											Line:   13,
+											Column: 22,
+											Line:   14,
 										},
 										File:   "tickscript.flux",
-										Source: "_check_id:   id",
+										Source: "_check_id: id",
 										Start: ast.Position{
 											Column: 9,
-											Line:   13,
+											Line:   14,
 										},
 									},
 								},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   13,
+												Line:   14,
 											},
 											File:   "tickscript.flux",
 											Source: "_check_id",
 											Start: ast.Position{
 												Column: 9,
-												Line:   13,
+												Line:   14,
 											},
 										},
 									},
@@ -170,14 +170,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   13,
+												Column: 22,
+												Line:   14,
 											},
 											File:   "tickscript.flux",
 											Source: "id",
 											Start: ast.Position{
-												Column: 22,
-												Line:   13,
+												Column: 20,
+												Line:   14,
 											},
 										},
 									},
@@ -190,13 +190,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   14,
+											Line:   15,
 										},
 										File:   "tickscript.flux",
 										Source: "_check_name: name",
 										Start: ast.Position{
 											Column: 9,
-											Line:   14,
+											Line:   15,
 										},
 									},
 								},
@@ -208,13 +208,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   14,
+												Line:   15,
 											},
 											File:   "tickscript.flux",
 											Source: "_check_name",
 											Start: ast.Position{
 												Column: 9,
-												Line:   14,
+												Line:   15,
 											},
 										},
 									},
@@ -228,13 +228,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 26,
-												Line:   14,
+												Line:   15,
 											},
 											File:   "tickscript.flux",
 											Source: "name",
 											Start: ast.Position{
 												Column: 22,
-												Line:   14,
+												Line:   15,
 											},
 										},
 									},
@@ -246,14 +246,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 26,
-											Line:   15,
+											Column: 20,
+											Line:   16,
 										},
 										File:   "tickscript.flux",
-										Source: "_type:       type",
+										Source: "_type: type",
 										Start: ast.Position{
 											Column: 9,
-											Line:   15,
+											Line:   16,
 										},
 									},
 								},
@@ -265,13 +265,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   15,
+												Line:   16,
 											},
 											File:   "tickscript.flux",
 											Source: "_type",
 											Start: ast.Position{
 												Column: 9,
-												Line:   15,
+												Line:   16,
 											},
 										},
 									},
@@ -284,14 +284,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 26,
-												Line:   15,
+												Column: 20,
+												Line:   16,
 											},
 											File:   "tickscript.flux",
 											Source: "type",
 											Start: ast.Position{
-												Column: 22,
-												Line:   15,
+												Column: 16,
+												Line:   16,
 											},
 										},
 									},
@@ -303,14 +303,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 24,
-											Line:   16,
+											Column: 17,
+											Line:   17,
 										},
 										File:   "tickscript.flux",
-										Source: "tags:        {}",
+										Source: "tags: {}",
 										Start: ast.Position{
 											Column: 9,
-											Line:   16,
+											Line:   17,
 										},
 									},
 								},
@@ -322,13 +322,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 13,
-												Line:   16,
+												Line:   17,
 											},
 											File:   "tickscript.flux",
 											Source: "tags",
 											Start: ast.Position{
 												Column: 9,
-												Line:   16,
+												Line:   17,
 											},
 										},
 									},
@@ -341,14 +341,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 24,
-												Line:   16,
+												Column: 17,
+												Line:   17,
 											},
 											File:   "tickscript.flux",
 											Source: "{}",
 											Start: ast.Position{
-												Column: 22,
-												Line:   16,
+												Column: 15,
+												Line:   17,
 											},
 										},
 									},
@@ -367,13 +367,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   17,
+									Line:   18,
 								},
 								File:   "tickscript.flux",
-								Source: "return {\n        _check_id:   id,\n        _check_name: name,\n        _type:       type,\n        tags:        {}\n    }",
+								Source: "return {\n        _check_id: id,\n        _check_name: name,\n        _type: type,\n        tags: {},\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   12,
+									Line:   13,
 								},
 							},
 						},
@@ -389,13 +389,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 18,
-								Line:   11,
+								Line:   12,
 							},
 							File:   "tickscript.flux",
 							Source: "id",
 							Start: ast.Position{
 								Column: 16,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -407,13 +407,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "tickscript.flux",
 								Source: "id",
 								Start: ast.Position{
 									Column: 16,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -428,13 +428,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 24,
-								Line:   11,
+								Line:   12,
 							},
 							File:   "tickscript.flux",
 							Source: "name",
 							Start: ast.Position{
 								Column: 20,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -446,13 +446,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 24,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "tickscript.flux",
 								Source: "name",
 								Start: ast.Position{
 									Column: 20,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -467,13 +467,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 39,
-								Line:   11,
+								Line:   12,
 							},
 							File:   "tickscript.flux",
 							Source: "type=\"custom\"",
 							Start: ast.Position{
 								Column: 26,
-								Line:   11,
+								Line:   12,
 							},
 						},
 					},
@@ -485,13 +485,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "tickscript.flux",
 								Source: "type",
 								Start: ast.Position{
 									Column: 26,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -505,13 +505,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   11,
+									Line:   12,
 								},
 								File:   "tickscript.flux",
 								Source: "\"custom\"",
 								Start: ast.Position{
 									Column: 31,
-									Line:   11,
+									Line:   12,
 								},
 							},
 						},
@@ -527,13 +527,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   58,
+						Line:   49,
 					},
 					File:   "tickscript.flux",
-					Source: "alert = (\n    check,\n    id=(r)=>\"${r._check_id}\",\n    details=(r)=>\"\",\n    message=(r)=>\"Threshold Check: ${r._check_name} is: ${r._level}\",\n    crit=(r) => false,\n    warn=(r) => false,\n    info=(r) => false,\n    ok=(r) => true,\n    topic=\"\",\n    tables=<-) => {\n\n  _addTopic =\n    if topic != \"\" then\n      (tables=<-) => tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\n    else\n      (tables=<-) => tables\n\n  return tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))\n    |> _addTopic()\n    |> monitor.check(\n        crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check\n    )\n}",
+					Source: "alert = (check, id=(r) => \"${r._check_id}\", details=(r) => \"\", message=(r) => \"Threshold Check: ${r._check_name} is: ${r._level}\", crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true, topic=\"\", tables=<-) => {\n    _addTopic = if topic != \"\" then\n        (tables=<-) => tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\nelse\n        (tables=<-) => tables\n\n    return tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))\n        |> _addTopic()\n        |> monitor.check(\n            crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check,\n        )\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   21,
+						Line:   22,
 					},
 				},
 			},
@@ -544,13 +544,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   21,
+							Line:   22,
 						},
 						File:   "tickscript.flux",
 						Source: "alert",
 						Start: ast.Position{
 							Column: 1,
-							Line:   21,
+							Line:   22,
 						},
 					},
 				},
@@ -564,13 +564,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   58,
+							Line:   49,
 						},
 						File:   "tickscript.flux",
-						Source: "(\n    check,\n    id=(r)=>\"${r._check_id}\",\n    details=(r)=>\"\",\n    message=(r)=>\"Threshold Check: ${r._check_name} is: ${r._level}\",\n    crit=(r) => false,\n    warn=(r) => false,\n    info=(r) => false,\n    ok=(r) => true,\n    topic=\"\",\n    tables=<-) => {\n\n  _addTopic =\n    if topic != \"\" then\n      (tables=<-) => tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\n    else\n      (tables=<-) => tables\n\n  return tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))\n    |> _addTopic()\n    |> monitor.check(\n        crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check\n    )\n}",
+						Source: "(check, id=(r) => \"${r._check_id}\", details=(r) => \"\", message=(r) => \"Threshold Check: ${r._check_name} is: ${r._level}\", crit=(r) => false, warn=(r) => false, info=(r) => false, ok=(r) => true, topic=\"\", tables=<-) => {\n    _addTopic = if topic != \"\" then\n        (tables=<-) => tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\nelse\n        (tables=<-) => tables\n\n    return tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))\n        |> _addTopic()\n        |> monitor.check(\n            crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check,\n        )\n}",
 						Start: ast.Position{
 							Column: 9,
-							Line:   21,
+							Line:   22,
 						},
 					},
 				},
@@ -581,13 +581,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   58,
+								Line:   49,
 							},
 							File:   "tickscript.flux",
-							Source: "{\n\n  _addTopic =\n    if topic != \"\" then\n      (tables=<-) => tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\n    else\n      (tables=<-) => tables\n\n  return tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))\n    |> _addTopic()\n    |> monitor.check(\n        crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check\n    )\n}",
+							Source: "{\n    _addTopic = if topic != \"\" then\n        (tables=<-) => tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\nelse\n        (tables=<-) => tables\n\n    return tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))\n        |> _addTopic()\n        |> monitor.check(\n            crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check,\n        )\n}",
 							Start: ast.Position{
-								Column: 19,
-								Line:   31,
+								Column: 229,
+								Line:   22,
 							},
 						},
 					},
@@ -597,14 +597,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   39,
+									Column: 30,
+									Line:   28,
 								},
 								File:   "tickscript.flux",
-								Source: "_addTopic =\n    if topic != \"\" then\n      (tables=<-) => tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\n    else\n      (tables=<-) => tables",
+								Source: "_addTopic = if topic != \"\" then\n        (tables=<-) => tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\nelse\n        (tables=<-) => tables",
 								Start: ast.Position{
-									Column: 3,
-									Line:   33,
+									Column: 5,
+									Line:   23,
 								},
 							},
 						},
@@ -614,14 +614,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   33,
+										Column: 14,
+										Line:   23,
 									},
 									File:   "tickscript.flux",
 									Source: "_addTopic",
 									Start: ast.Position{
-										Column: 3,
-										Line:   33,
+										Column: 5,
+										Line:   23,
 									},
 								},
 							},
@@ -635,14 +635,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
-											Line:   39,
+											Column: 30,
+											Line:   28,
 										},
 										File:   "tickscript.flux",
 										Source: "(tables=<-) => tables",
 										Start: ast.Position{
-											Column: 7,
-											Line:   39,
+											Column: 9,
+											Line:   28,
 										},
 									},
 								},
@@ -652,14 +652,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 28,
-												Line:   39,
+												Column: 30,
+												Line:   28,
 											},
 											File:   "tickscript.flux",
 											Source: "tables",
 											Start: ast.Position{
-												Column: 22,
-												Line:   39,
+												Column: 24,
+												Line:   28,
 											},
 										},
 									},
@@ -672,14 +672,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 17,
-												Line:   39,
+												Column: 19,
+												Line:   28,
 											},
 											File:   "tickscript.flux",
 											Source: "tables=<-",
 											Start: ast.Position{
-												Column: 8,
-												Line:   39,
+												Column: 10,
+												Line:   28,
 											},
 										},
 									},
@@ -690,14 +690,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 14,
-													Line:   39,
+													Column: 16,
+													Line:   28,
 												},
 												File:   "tickscript.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 8,
-													Line:   39,
+													Column: 10,
+													Line:   28,
 												},
 											},
 										},
@@ -709,14 +709,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 17,
-												Line:   39,
+												Column: 19,
+												Line:   28,
 											},
 											File:   "tickscript.flux",
 											Source: "<-",
 											Start: ast.Position{
-												Column: 15,
-												Line:   39,
+												Column: 17,
+												Line:   28,
 											},
 										},
 									}},
@@ -728,14 +728,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
-										Line:   39,
+										Column: 30,
+										Line:   28,
 									},
 									File:   "tickscript.flux",
-									Source: "if topic != \"\" then\n      (tables=<-) => tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\n    else\n      (tables=<-) => tables",
+									Source: "if topic != \"\" then\n        (tables=<-) => tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])\nelse\n        (tables=<-) => tables",
 									Start: ast.Position{
-										Column: 5,
-										Line:   34,
+										Column: 17,
+										Line:   23,
 									},
 								},
 							},
@@ -746,14 +746,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 67,
-											Line:   37,
+											Column: 71,
+											Line:   26,
 										},
 										File:   "tickscript.flux",
-										Source: "(tables=<-) => tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])",
+										Source: "(tables=<-) => tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])",
 										Start: ast.Position{
-											Column: 7,
-											Line:   35,
+											Column: 9,
+											Line:   24,
 										},
 									},
 								},
@@ -765,14 +765,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 28,
-														Line:   35,
+														Column: 30,
+														Line:   24,
 													},
 													File:   "tickscript.flux",
 													Source: "tables",
 													Start: ast.Position{
-														Column: 22,
-														Line:   35,
+														Column: 24,
+														Line:   24,
 													},
 												},
 											},
@@ -783,14 +783,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 45,
-													Line:   36,
+													Column: 48,
+													Line:   25,
 												},
 												File:   "tickscript.flux",
-												Source: "tables\n        |> set(key: \"_topic\", value: topic )",
+												Source: "tables\n            |> set(key: \"_topic\", value: topic)",
 												Start: ast.Position{
-													Column: 22,
-													Line:   35,
+													Column: 24,
+													Line:   24,
 												},
 											},
 										},
@@ -801,14 +801,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 43,
-															Line:   36,
+															Column: 47,
+															Line:   25,
 														},
 														File:   "tickscript.flux",
 														Source: "key: \"_topic\", value: topic",
 														Start: ast.Position{
-															Column: 16,
-															Line:   36,
+															Column: 20,
+															Line:   25,
 														},
 													},
 												},
@@ -819,14 +819,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 29,
-																Line:   36,
+																Column: 33,
+																Line:   25,
 															},
 															File:   "tickscript.flux",
 															Source: "key: \"_topic\"",
 															Start: ast.Position{
-																Column: 16,
-																Line:   36,
+																Column: 20,
+																Line:   25,
 															},
 														},
 													},
@@ -837,14 +837,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 19,
-																	Line:   36,
+																	Column: 23,
+																	Line:   25,
 																},
 																File:   "tickscript.flux",
 																Source: "key",
 																Start: ast.Position{
-																	Column: 16,
-																	Line:   36,
+																	Column: 20,
+																	Line:   25,
 																},
 															},
 														},
@@ -857,14 +857,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 29,
-																	Line:   36,
+																	Column: 33,
+																	Line:   25,
 																},
 																File:   "tickscript.flux",
 																Source: "\"_topic\"",
 																Start: ast.Position{
-																	Column: 21,
-																	Line:   36,
+																	Column: 25,
+																	Line:   25,
 																},
 															},
 														},
@@ -876,14 +876,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 43,
-																Line:   36,
+																Column: 47,
+																Line:   25,
 															},
 															File:   "tickscript.flux",
 															Source: "value: topic",
 															Start: ast.Position{
-																Column: 31,
-																Line:   36,
+																Column: 35,
+																Line:   25,
 															},
 														},
 													},
@@ -894,14 +894,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 36,
-																	Line:   36,
+																	Column: 40,
+																	Line:   25,
 																},
 																File:   "tickscript.flux",
 																Source: "value",
 																Start: ast.Position{
-																	Column: 31,
-																	Line:   36,
+																	Column: 35,
+																	Line:   25,
 																},
 															},
 														},
@@ -914,14 +914,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 43,
-																	Line:   36,
+																	Column: 47,
+																	Line:   25,
 																},
 																File:   "tickscript.flux",
 																Source: "topic",
 																Start: ast.Position{
-																	Column: 38,
-																	Line:   36,
+																	Column: 42,
+																	Line:   25,
 																},
 															},
 														},
@@ -936,14 +936,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 45,
-														Line:   36,
+														Column: 48,
+														Line:   25,
 													},
 													File:   "tickscript.flux",
-													Source: "set(key: \"_topic\", value: topic )",
+													Source: "set(key: \"_topic\", value: topic)",
 													Start: ast.Position{
-														Column: 12,
-														Line:   36,
+														Column: 16,
+														Line:   25,
 													},
 												},
 											},
@@ -953,14 +953,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   36,
+															Column: 19,
+															Line:   25,
 														},
 														File:   "tickscript.flux",
 														Source: "set",
 														Start: ast.Position{
-															Column: 12,
-															Line:   36,
+															Column: 16,
+															Line:   25,
 														},
 													},
 												},
@@ -975,14 +975,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 67,
-												Line:   37,
+												Column: 71,
+												Line:   26,
 											},
 											File:   "tickscript.flux",
-											Source: "tables\n        |> set(key: \"_topic\", value: topic )\n        |> experimental.group(mode: \"extend\", columns: [\"_topic\"])",
+											Source: "tables\n            |> set(key: \"_topic\", value: topic)\n            |> experimental.group(mode: \"extend\", columns: [\"_topic\"])",
 											Start: ast.Position{
-												Column: 22,
-												Line:   35,
+												Column: 24,
+												Line:   24,
 											},
 										},
 									},
@@ -993,14 +993,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 66,
-														Line:   37,
+														Column: 70,
+														Line:   26,
 													},
 													File:   "tickscript.flux",
 													Source: "mode: \"extend\", columns: [\"_topic\"]",
 													Start: ast.Position{
-														Column: 31,
-														Line:   37,
+														Column: 35,
+														Line:   26,
 													},
 												},
 											},
@@ -1011,14 +1011,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 45,
-															Line:   37,
+															Column: 49,
+															Line:   26,
 														},
 														File:   "tickscript.flux",
 														Source: "mode: \"extend\"",
 														Start: ast.Position{
-															Column: 31,
-															Line:   37,
+															Column: 35,
+															Line:   26,
 														},
 													},
 												},
@@ -1029,14 +1029,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 35,
-																Line:   37,
+																Column: 39,
+																Line:   26,
 															},
 															File:   "tickscript.flux",
 															Source: "mode",
 															Start: ast.Position{
-																Column: 31,
-																Line:   37,
+																Column: 35,
+																Line:   26,
 															},
 														},
 													},
@@ -1049,14 +1049,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 45,
-																Line:   37,
+																Column: 49,
+																Line:   26,
 															},
 															File:   "tickscript.flux",
 															Source: "\"extend\"",
 															Start: ast.Position{
-																Column: 37,
-																Line:   37,
+																Column: 41,
+																Line:   26,
 															},
 														},
 													},
@@ -1068,14 +1068,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 66,
-															Line:   37,
+															Column: 70,
+															Line:   26,
 														},
 														File:   "tickscript.flux",
 														Source: "columns: [\"_topic\"]",
 														Start: ast.Position{
-															Column: 47,
-															Line:   37,
+															Column: 51,
+															Line:   26,
 														},
 													},
 												},
@@ -1086,14 +1086,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 54,
-																Line:   37,
+																Column: 58,
+																Line:   26,
 															},
 															File:   "tickscript.flux",
 															Source: "columns",
 															Start: ast.Position{
-																Column: 47,
-																Line:   37,
+																Column: 51,
+																Line:   26,
 															},
 														},
 													},
@@ -1106,14 +1106,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 66,
-																Line:   37,
+																Column: 70,
+																Line:   26,
 															},
 															File:   "tickscript.flux",
 															Source: "[\"_topic\"]",
 															Start: ast.Position{
-																Column: 56,
-																Line:   37,
+																Column: 60,
+																Line:   26,
 															},
 														},
 													},
@@ -1123,14 +1123,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 65,
-																	Line:   37,
+																	Column: 69,
+																	Line:   26,
 																},
 																File:   "tickscript.flux",
 																Source: "\"_topic\"",
 																Start: ast.Position{
-																	Column: 57,
-																	Line:   37,
+																	Column: 61,
+																	Line:   26,
 																},
 															},
 														},
@@ -1148,14 +1148,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 67,
-													Line:   37,
+													Column: 71,
+													Line:   26,
 												},
 												File:   "tickscript.flux",
 												Source: "experimental.group(mode: \"extend\", columns: [\"_topic\"])",
 												Start: ast.Position{
-													Column: 12,
-													Line:   37,
+													Column: 16,
+													Line:   26,
 												},
 											},
 										},
@@ -1165,14 +1165,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 30,
-														Line:   37,
+														Column: 34,
+														Line:   26,
 													},
 													File:   "tickscript.flux",
 													Source: "experimental.group",
 													Start: ast.Position{
-														Column: 12,
-														Line:   37,
+														Column: 16,
+														Line:   26,
 													},
 												},
 											},
@@ -1183,14 +1183,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 24,
-															Line:   37,
+															Column: 28,
+															Line:   26,
 														},
 														File:   "tickscript.flux",
 														Source: "experimental",
 														Start: ast.Position{
-															Column: 12,
-															Line:   37,
+															Column: 16,
+															Line:   26,
 														},
 													},
 												},
@@ -1202,14 +1202,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 30,
-															Line:   37,
+															Column: 34,
+															Line:   26,
 														},
 														File:   "tickscript.flux",
 														Source: "group",
 														Start: ast.Position{
-															Column: 25,
-															Line:   37,
+															Column: 29,
+															Line:   26,
 														},
 													},
 												},
@@ -1228,14 +1228,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 17,
-												Line:   35,
+												Column: 19,
+												Line:   24,
 											},
 											File:   "tickscript.flux",
 											Source: "tables=<-",
 											Start: ast.Position{
-												Column: 8,
-												Line:   35,
+												Column: 10,
+												Line:   24,
 											},
 										},
 									},
@@ -1246,14 +1246,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 14,
-													Line:   35,
+													Column: 16,
+													Line:   24,
 												},
 												File:   "tickscript.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 8,
-													Line:   35,
+													Column: 10,
+													Line:   24,
 												},
 											},
 										},
@@ -1265,14 +1265,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 17,
-												Line:   35,
+												Column: 19,
+												Line:   24,
 											},
 											File:   "tickscript.flux",
 											Source: "<-",
 											Start: ast.Position{
-												Column: 15,
-												Line:   35,
+												Column: 17,
+												Line:   24,
 											},
 										},
 									}},
@@ -1285,14 +1285,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 19,
-											Line:   34,
+											Column: 31,
+											Line:   23,
 										},
 										File:   "tickscript.flux",
 										Source: "topic != \"\"",
 										Start: ast.Position{
-											Column: 8,
-											Line:   34,
+											Column: 20,
+											Line:   23,
 										},
 									},
 								},
@@ -1302,14 +1302,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 13,
-												Line:   34,
+												Column: 25,
+												Line:   23,
 											},
 											File:   "tickscript.flux",
 											Source: "topic",
 											Start: ast.Position{
-												Column: 8,
-												Line:   34,
+												Column: 20,
+												Line:   23,
 											},
 										},
 									},
@@ -1322,14 +1322,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   34,
+												Column: 31,
+												Line:   23,
 											},
 											File:   "tickscript.flux",
 											Source: "\"\"",
 											Start: ast.Position{
-												Column: 17,
-												Line:   34,
+												Column: 29,
+												Line:   23,
 											},
 										},
 									},
@@ -1353,14 +1353,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 16,
-																Line:   41,
+																Column: 18,
+																Line:   30,
 															},
 															File:   "tickscript.flux",
 															Source: "tables",
 															Start: ast.Position{
-																Column: 10,
-																Line:   41,
+																Column: 12,
+																Line:   30,
 															},
 														},
 													},
@@ -1371,14 +1371,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 73,
-															Line:   42,
+															Column: 77,
+															Line:   31,
 														},
 														File:   "tickscript.flux",
-														Source: "tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)",
+														Source: "tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)",
 														Start: ast.Position{
-															Column: 10,
-															Line:   41,
+															Column: 12,
+															Line:   30,
 														},
 													},
 												},
@@ -1389,14 +1389,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 72,
-																	Line:   42,
+																	Column: 76,
+																	Line:   31,
 																},
 																File:   "tickscript.flux",
 																Source: "fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   42,
+																	Column: 17,
+																	Line:   31,
 																},
 															},
 														},
@@ -1407,14 +1407,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 72,
-																		Line:   42,
+																		Column: 76,
+																		Line:   31,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/",
 																	Start: ast.Position{
-																		Column: 13,
-																		Line:   42,
+																		Column: 17,
+																		Line:   31,
 																	},
 																},
 															},
@@ -1425,14 +1425,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 15,
-																			Line:   42,
+																			Column: 19,
+																			Line:   31,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "fn",
 																		Start: ast.Position{
-																			Column: 13,
-																			Line:   42,
+																			Column: 17,
+																			Line:   31,
 																		},
 																	},
 																},
@@ -1446,14 +1446,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 72,
-																			Line:   42,
+																			Column: 76,
+																			Line:   31,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "(column) => column =~ /_start.*/ or column =~ /_stop.*/",
 																		Start: ast.Position{
-																			Column: 17,
-																			Line:   42,
+																			Column: 21,
+																			Line:   31,
 																		},
 																	},
 																},
@@ -1463,14 +1463,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 72,
-																				Line:   42,
+																				Column: 76,
+																				Line:   31,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "column =~ /_start.*/ or column =~ /_stop.*/",
 																			Start: ast.Position{
-																				Column: 29,
-																				Line:   42,
+																				Column: 33,
+																				Line:   31,
 																			},
 																		},
 																	},
@@ -1480,14 +1480,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 49,
-																					Line:   42,
+																					Column: 53,
+																					Line:   31,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "column =~ /_start.*/",
 																				Start: ast.Position{
-																					Column: 29,
-																					Line:   42,
+																					Column: 33,
+																					Line:   31,
 																				},
 																			},
 																		},
@@ -1497,14 +1497,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 35,
-																						Line:   42,
+																						Column: 39,
+																						Line:   31,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "column",
 																					Start: ast.Position{
-																						Column: 29,
-																						Line:   42,
+																						Column: 33,
+																						Line:   31,
 																					},
 																				},
 																			},
@@ -1517,14 +1517,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 49,
-																						Line:   42,
+																						Column: 53,
+																						Line:   31,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "/_start.*/",
 																					Start: ast.Position{
-																						Column: 39,
-																						Line:   42,
+																						Column: 43,
+																						Line:   31,
 																					},
 																				},
 																			},
@@ -1538,14 +1538,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 72,
-																					Line:   42,
+																					Column: 76,
+																					Line:   31,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "column =~ /_stop.*/",
 																				Start: ast.Position{
-																					Column: 53,
-																					Line:   42,
+																					Column: 57,
+																					Line:   31,
 																				},
 																			},
 																		},
@@ -1555,14 +1555,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 59,
-																						Line:   42,
+																						Column: 63,
+																						Line:   31,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "column",
 																					Start: ast.Position{
-																						Column: 53,
-																						Line:   42,
+																						Column: 57,
+																						Line:   31,
 																					},
 																				},
 																			},
@@ -1575,14 +1575,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 72,
-																						Line:   42,
+																						Column: 76,
+																						Line:   31,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "/_stop.*/",
 																					Start: ast.Position{
-																						Column: 63,
-																						Line:   42,
+																						Column: 67,
+																						Line:   31,
 																					},
 																				},
 																			},
@@ -1597,14 +1597,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 24,
-																				Line:   42,
+																				Column: 28,
+																				Line:   31,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "column",
 																			Start: ast.Position{
-																				Column: 18,
-																				Line:   42,
+																				Column: 22,
+																				Line:   31,
 																			},
 																		},
 																	},
@@ -1615,14 +1615,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 24,
-																					Line:   42,
+																					Column: 28,
+																					Line:   31,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "column",
 																				Start: ast.Position{
-																					Column: 18,
-																					Line:   42,
+																					Column: 22,
+																					Line:   31,
 																				},
 																			},
 																		},
@@ -1642,14 +1642,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 73,
-																Line:   42,
+																Column: 77,
+																Line:   31,
 															},
 															File:   "tickscript.flux",
 															Source: "drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)",
 															Start: ast.Position{
-																Column: 8,
-																Line:   42,
+																Column: 12,
+																Line:   31,
 															},
 														},
 													},
@@ -1659,14 +1659,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 12,
-																	Line:   42,
+																	Column: 16,
+																	Line:   31,
 																},
 																File:   "tickscript.flux",
 																Source: "drop",
 																Start: ast.Position{
-																	Column: 8,
-																	Line:   42,
+																	Column: 12,
+																	Line:   31,
 																},
 															},
 														},
@@ -1681,14 +1681,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 8,
-														Line:   46,
+														Column: 10,
+														Line:   37,
 													},
 													File:   "tickscript.flux",
-													Source: "tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))",
+													Source: "tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )",
 													Start: ast.Position{
-														Column: 10,
-														Line:   41,
+														Column: 12,
+														Line:   30,
 													},
 												},
 											},
@@ -1699,14 +1699,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 7,
-																Line:   46,
+																Column: 15,
+																Line:   36,
 															},
 															File:   "tickscript.flux",
-															Source: "fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    })",
+															Source: "fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            })",
 															Start: ast.Position{
-																Column: 12,
-																Line:   43,
+																Column: 13,
+																Line:   33,
 															},
 														},
 													},
@@ -1717,14 +1717,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 7,
-																	Line:   46,
+																	Column: 15,
+																	Line:   36,
 																},
 																File:   "tickscript.flux",
-																Source: "fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    })",
+																Source: "fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            })",
 																Start: ast.Position{
-																	Column: 12,
-																	Line:   43,
+																	Column: 13,
+																	Line:   33,
 																},
 															},
 														},
@@ -1735,14 +1735,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 14,
-																		Line:   43,
+																		Column: 15,
+																		Line:   33,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "fn",
 																	Start: ast.Position{
-																		Column: 12,
-																		Line:   43,
+																		Column: 13,
+																		Line:   33,
 																	},
 																},
 															},
@@ -1756,14 +1756,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 7,
-																		Line:   46,
+																		Column: 15,
+																		Line:   36,
 																	},
 																	File:   "tickscript.flux",
-																	Source: "(r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    })",
+																	Source: "(r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            })",
 																	Start: ast.Position{
-																		Column: 16,
-																		Line:   43,
+																		Column: 17,
+																		Line:   33,
 																	},
 																},
 															},
@@ -1773,14 +1773,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 7,
-																			Line:   46,
+																			Column: 15,
+																			Line:   36,
 																		},
 																		File:   "tickscript.flux",
-																		Source: "({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    })",
+																		Source: "({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            })",
 																		Start: ast.Position{
-																			Column: 23,
-																			Line:   43,
+																			Column: 24,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -1790,14 +1790,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 6,
-																				Line:   46,
+																				Column: 14,
+																				Line:   36,
 																			},
 																			File:   "tickscript.flux",
-																			Source: "{r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }",
+																			Source: "{r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }",
 																			Start: ast.Position{
-																				Column: 24,
-																				Line:   43,
+																				Column: 25,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -1808,14 +1808,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 35,
-																					Line:   44,
+																					Column: 43,
+																					Line:   34,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "_check_id: check._check_id",
 																				Start: ast.Position{
-																					Column: 9,
-																					Line:   44,
+																					Column: 17,
+																					Line:   34,
 																				},
 																			},
 																		},
@@ -1826,14 +1826,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 18,
-																						Line:   44,
+																						Column: 26,
+																						Line:   34,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "_check_id",
 																					Start: ast.Position{
-																						Column: 9,
-																						Line:   44,
+																						Column: 17,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -1846,14 +1846,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 35,
-																						Line:   44,
+																						Column: 43,
+																						Line:   34,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "check._check_id",
 																					Start: ast.Position{
-																						Column: 20,
-																						Line:   44,
+																						Column: 28,
+																						Line:   34,
 																					},
 																				},
 																			},
@@ -1864,14 +1864,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 25,
-																							Line:   44,
+																							Column: 33,
+																							Line:   34,
 																						},
 																						File:   "tickscript.flux",
 																						Source: "check",
 																						Start: ast.Position{
-																							Column: 20,
-																							Line:   44,
+																							Column: 28,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -1883,14 +1883,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 35,
-																							Line:   44,
+																							Column: 43,
+																							Line:   34,
 																						},
 																						File:   "tickscript.flux",
 																						Source: "_check_id",
 																						Start: ast.Position{
-																							Column: 26,
-																							Line:   44,
+																							Column: 34,
+																							Line:   34,
 																						},
 																					},
 																				},
@@ -1904,14 +1904,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 39,
-																					Line:   45,
+																					Column: 47,
+																					Line:   35,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "_check_name: check._check_name",
 																				Start: ast.Position{
-																					Column: 9,
-																					Line:   45,
+																					Column: 17,
+																					Line:   35,
 																				},
 																			},
 																		},
@@ -1922,14 +1922,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 20,
-																						Line:   45,
+																						Column: 28,
+																						Line:   35,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "_check_name",
 																					Start: ast.Position{
-																						Column: 9,
-																						Line:   45,
+																						Column: 17,
+																						Line:   35,
 																					},
 																				},
 																			},
@@ -1942,14 +1942,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 39,
-																						Line:   45,
+																						Column: 47,
+																						Line:   35,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "check._check_name",
 																					Start: ast.Position{
-																						Column: 22,
-																						Line:   45,
+																						Column: 30,
+																						Line:   35,
 																					},
 																				},
 																			},
@@ -1960,14 +1960,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 27,
-																							Line:   45,
+																							Column: 35,
+																							Line:   35,
 																						},
 																						File:   "tickscript.flux",
 																						Source: "check",
 																						Start: ast.Position{
-																							Column: 22,
-																							Line:   45,
+																							Column: 30,
+																							Line:   35,
 																						},
 																					},
 																				},
@@ -1979,14 +1979,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 39,
-																							Line:   45,
+																							Column: 47,
+																							Line:   35,
 																						},
 																						File:   "tickscript.flux",
 																						Source: "_check_name",
 																						Start: ast.Position{
-																							Column: 28,
-																							Line:   45,
+																							Column: 36,
+																							Line:   35,
 																						},
 																					},
 																				},
@@ -2002,14 +2002,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 26,
-																					Line:   43,
+																					Column: 27,
+																					Line:   33,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "r",
 																				Start: ast.Position{
-																					Column: 25,
-																					Line:   43,
+																					Column: 26,
+																					Line:   33,
 																				},
 																			},
 																		},
@@ -2026,14 +2026,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 18,
-																			Line:   43,
+																			Column: 19,
+																			Line:   33,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 17,
-																			Line:   43,
+																			Column: 18,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -2044,14 +2044,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 18,
-																				Line:   43,
+																				Column: 19,
+																				Line:   33,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 17,
-																				Line:   43,
+																				Column: 18,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -2071,14 +2071,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 8,
-															Line:   46,
+															Column: 10,
+															Line:   37,
 														},
 														File:   "tickscript.flux",
-														Source: "map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))",
+														Source: "map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )",
 														Start: ast.Position{
-															Column: 8,
-															Line:   43,
+															Column: 12,
+															Line:   32,
 														},
 													},
 												},
@@ -2088,14 +2088,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 11,
-																Line:   43,
+																Column: 15,
+																Line:   32,
 															},
 															File:   "tickscript.flux",
 															Source: "map",
 															Start: ast.Position{
-																Column: 8,
-																Line:   43,
+																Column: 12,
+																Line:   32,
 															},
 														},
 													},
@@ -2110,14 +2110,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 49,
-													Line:   47,
+													Column: 51,
+													Line:   38,
 												},
 												File:   "tickscript.flux",
-												Source: "tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))",
+												Source: "tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))",
 												Start: ast.Position{
-													Column: 10,
-													Line:   41,
+													Column: 12,
+													Line:   30,
 												},
 											},
 										},
@@ -2128,14 +2128,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 48,
-															Line:   47,
+															Column: 50,
+															Line:   38,
 														},
 														File:   "tickscript.flux",
-														Source: "fn: (r) => ({ r with id: id(r: r) })",
+														Source: "fn: (r) => ({r with id: id(r: r)})",
 														Start: ast.Position{
-															Column: 12,
-															Line:   47,
+															Column: 16,
+															Line:   38,
 														},
 													},
 												},
@@ -2146,14 +2146,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 48,
-																Line:   47,
+																Column: 50,
+																Line:   38,
 															},
 															File:   "tickscript.flux",
-															Source: "fn: (r) => ({ r with id: id(r: r) })",
+															Source: "fn: (r) => ({r with id: id(r: r)})",
 															Start: ast.Position{
-																Column: 12,
-																Line:   47,
+																Column: 16,
+																Line:   38,
 															},
 														},
 													},
@@ -2164,14 +2164,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 14,
-																	Line:   47,
+																	Column: 18,
+																	Line:   38,
 																},
 																File:   "tickscript.flux",
 																Source: "fn",
 																Start: ast.Position{
-																	Column: 12,
-																	Line:   47,
+																	Column: 16,
+																	Line:   38,
 																},
 															},
 														},
@@ -2185,14 +2185,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 48,
-																	Line:   47,
+																	Column: 50,
+																	Line:   38,
 																},
 																File:   "tickscript.flux",
-																Source: "(r) => ({ r with id: id(r: r) })",
+																Source: "(r) => ({r with id: id(r: r)})",
 																Start: ast.Position{
-																	Column: 16,
-																	Line:   47,
+																	Column: 20,
+																	Line:   38,
 																},
 															},
 														},
@@ -2202,14 +2202,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 48,
-																		Line:   47,
+																		Column: 50,
+																		Line:   38,
 																	},
 																	File:   "tickscript.flux",
-																	Source: "({ r with id: id(r: r) })",
+																	Source: "({r with id: id(r: r)})",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   47,
+																		Column: 27,
+																		Line:   38,
 																	},
 																},
 															},
@@ -2219,14 +2219,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 47,
-																			Line:   47,
+																			Column: 49,
+																			Line:   38,
 																		},
 																		File:   "tickscript.flux",
-																		Source: "{ r with id: id(r: r) }",
+																		Source: "{r with id: id(r: r)}",
 																		Start: ast.Position{
-																			Column: 24,
-																			Line:   47,
+																			Column: 28,
+																			Line:   38,
 																		},
 																	},
 																},
@@ -2237,14 +2237,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   47,
+																				Column: 48,
+																				Line:   38,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "id: id(r: r)",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   47,
+																				Column: 36,
+																				Line:   38,
 																			},
 																		},
 																	},
@@ -2255,14 +2255,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 35,
-																					Line:   47,
+																					Column: 38,
+																					Line:   38,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "id",
 																				Start: ast.Position{
-																					Column: 33,
-																					Line:   47,
+																					Column: 36,
+																					Line:   38,
 																				},
 																			},
 																		},
@@ -2276,14 +2276,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 44,
-																						Line:   47,
+																						Column: 47,
+																						Line:   38,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "r: r",
 																					Start: ast.Position{
-																						Column: 40,
-																						Line:   47,
+																						Column: 43,
+																						Line:   38,
 																					},
 																				},
 																			},
@@ -2294,14 +2294,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 44,
-																							Line:   47,
+																							Column: 47,
+																							Line:   38,
 																						},
 																						File:   "tickscript.flux",
 																						Source: "r: r",
 																						Start: ast.Position{
-																							Column: 40,
-																							Line:   47,
+																							Column: 43,
+																							Line:   38,
 																						},
 																					},
 																				},
@@ -2312,14 +2312,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 41,
-																								Line:   47,
+																								Column: 44,
+																								Line:   38,
 																							},
 																							File:   "tickscript.flux",
 																							Source: "r",
 																							Start: ast.Position{
-																								Column: 40,
-																								Line:   47,
+																								Column: 43,
+																								Line:   38,
 																							},
 																						},
 																					},
@@ -2332,14 +2332,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 44,
-																								Line:   47,
+																								Column: 47,
+																								Line:   38,
 																							},
 																							File:   "tickscript.flux",
 																							Source: "r",
 																							Start: ast.Position{
-																								Column: 43,
-																								Line:   47,
+																								Column: 46,
+																								Line:   38,
 																							},
 																						},
 																					},
@@ -2354,14 +2354,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 45,
-																					Line:   47,
+																					Column: 48,
+																					Line:   38,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "id(r: r)",
 																				Start: ast.Position{
-																					Column: 37,
-																					Line:   47,
+																					Column: 40,
+																					Line:   38,
 																				},
 																			},
 																		},
@@ -2371,14 +2371,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 39,
-																						Line:   47,
+																						Column: 42,
+																						Line:   38,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "id",
 																					Start: ast.Position{
-																						Column: 37,
-																						Line:   47,
+																						Column: 40,
+																						Line:   38,
 																					},
 																				},
 																			},
@@ -2395,14 +2395,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 27,
-																				Line:   47,
+																				Column: 30,
+																				Line:   38,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 26,
-																				Line:   47,
+																				Column: 29,
+																				Line:   38,
 																			},
 																		},
 																	},
@@ -2419,14 +2419,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 18,
-																		Line:   47,
+																		Column: 22,
+																		Line:   38,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 17,
-																		Line:   47,
+																		Column: 21,
+																		Line:   38,
 																	},
 																},
 															},
@@ -2437,14 +2437,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 18,
-																			Line:   47,
+																			Column: 22,
+																			Line:   38,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 17,
-																			Line:   47,
+																			Column: 21,
+																			Line:   38,
 																		},
 																	},
 																},
@@ -2464,14 +2464,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 49,
-														Line:   47,
+														Column: 51,
+														Line:   38,
 													},
 													File:   "tickscript.flux",
-													Source: "map(fn: (r) => ({ r with id: id(r: r) }))",
+													Source: "map(fn: (r) => ({r with id: id(r: r)}))",
 													Start: ast.Position{
-														Column: 8,
-														Line:   47,
+														Column: 12,
+														Line:   38,
 													},
 												},
 											},
@@ -2481,14 +2481,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 11,
-															Line:   47,
+															Column: 15,
+															Line:   38,
 														},
 														File:   "tickscript.flux",
 														Source: "map",
 														Start: ast.Position{
-															Column: 8,
-															Line:   47,
+															Column: 12,
+															Line:   38,
 														},
 													},
 												},
@@ -2503,14 +2503,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 59,
-												Line:   48,
+												Column: 61,
+												Line:   39,
 											},
 											File:   "tickscript.flux",
-											Source: "tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))",
+											Source: "tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))",
 											Start: ast.Position{
-												Column: 10,
-												Line:   41,
+												Column: 12,
+												Line:   30,
 											},
 										},
 									},
@@ -2521,14 +2521,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 58,
-														Line:   48,
+														Column: 60,
+														Line:   39,
 													},
 													File:   "tickscript.flux",
-													Source: "fn: (r) => ({ r with details: details(r: r) })",
+													Source: "fn: (r) => ({r with details: details(r: r)})",
 													Start: ast.Position{
-														Column: 12,
-														Line:   48,
+														Column: 16,
+														Line:   39,
 													},
 												},
 											},
@@ -2539,14 +2539,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 58,
-															Line:   48,
+															Column: 60,
+															Line:   39,
 														},
 														File:   "tickscript.flux",
-														Source: "fn: (r) => ({ r with details: details(r: r) })",
+														Source: "fn: (r) => ({r with details: details(r: r)})",
 														Start: ast.Position{
-															Column: 12,
-															Line:   48,
+															Column: 16,
+															Line:   39,
 														},
 													},
 												},
@@ -2557,14 +2557,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 14,
-																Line:   48,
+																Column: 18,
+																Line:   39,
 															},
 															File:   "tickscript.flux",
 															Source: "fn",
 															Start: ast.Position{
-																Column: 12,
-																Line:   48,
+																Column: 16,
+																Line:   39,
 															},
 														},
 													},
@@ -2578,14 +2578,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 58,
-																Line:   48,
+																Column: 60,
+																Line:   39,
 															},
 															File:   "tickscript.flux",
-															Source: "(r) => ({ r with details: details(r: r) })",
+															Source: "(r) => ({r with details: details(r: r)})",
 															Start: ast.Position{
-																Column: 16,
-																Line:   48,
+																Column: 20,
+																Line:   39,
 															},
 														},
 													},
@@ -2595,14 +2595,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 58,
-																	Line:   48,
+																	Column: 60,
+																	Line:   39,
 																},
 																File:   "tickscript.flux",
-																Source: "({ r with details: details(r: r) })",
+																Source: "({r with details: details(r: r)})",
 																Start: ast.Position{
-																	Column: 23,
-																	Line:   48,
+																	Column: 27,
+																	Line:   39,
 																},
 															},
 														},
@@ -2612,14 +2612,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 57,
-																		Line:   48,
+																		Column: 59,
+																		Line:   39,
 																	},
 																	File:   "tickscript.flux",
-																	Source: "{ r with details: details(r: r) }",
+																	Source: "{r with details: details(r: r)}",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   48,
+																		Column: 28,
+																		Line:   39,
 																	},
 																},
 															},
@@ -2630,14 +2630,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 55,
-																			Line:   48,
+																			Column: 58,
+																			Line:   39,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "details: details(r: r)",
 																		Start: ast.Position{
-																			Column: 33,
-																			Line:   48,
+																			Column: 36,
+																			Line:   39,
 																		},
 																	},
 																},
@@ -2648,14 +2648,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 40,
-																				Line:   48,
+																				Column: 43,
+																				Line:   39,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "details",
 																			Start: ast.Position{
-																				Column: 33,
-																				Line:   48,
+																				Column: 36,
+																				Line:   39,
 																			},
 																		},
 																	},
@@ -2669,14 +2669,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 54,
-																					Line:   48,
+																					Column: 57,
+																					Line:   39,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "r: r",
 																				Start: ast.Position{
-																					Column: 50,
-																					Line:   48,
+																					Column: 53,
+																					Line:   39,
 																				},
 																			},
 																		},
@@ -2687,14 +2687,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 54,
-																						Line:   48,
+																						Column: 57,
+																						Line:   39,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "r: r",
 																					Start: ast.Position{
-																						Column: 50,
-																						Line:   48,
+																						Column: 53,
+																						Line:   39,
 																					},
 																				},
 																			},
@@ -2705,14 +2705,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 51,
-																							Line:   48,
+																							Column: 54,
+																							Line:   39,
 																						},
 																						File:   "tickscript.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 50,
-																							Line:   48,
+																							Column: 53,
+																							Line:   39,
 																						},
 																					},
 																				},
@@ -2725,14 +2725,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 54,
-																							Line:   48,
+																							Column: 57,
+																							Line:   39,
 																						},
 																						File:   "tickscript.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 53,
-																							Line:   48,
+																							Column: 56,
+																							Line:   39,
 																						},
 																					},
 																				},
@@ -2747,14 +2747,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 55,
-																				Line:   48,
+																				Column: 58,
+																				Line:   39,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "details(r: r)",
 																			Start: ast.Position{
-																				Column: 42,
-																				Line:   48,
+																				Column: 45,
+																				Line:   39,
 																			},
 																		},
 																	},
@@ -2764,14 +2764,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 49,
-																					Line:   48,
+																					Column: 52,
+																					Line:   39,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "details",
 																				Start: ast.Position{
-																					Column: 42,
-																					Line:   48,
+																					Column: 45,
+																					Line:   39,
 																				},
 																			},
 																		},
@@ -2788,14 +2788,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 27,
-																			Line:   48,
+																			Column: 30,
+																			Line:   39,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 26,
-																			Line:   48,
+																			Column: 29,
+																			Line:   39,
 																		},
 																	},
 																},
@@ -2812,14 +2812,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   48,
+																	Column: 22,
+																	Line:   39,
 																},
 																File:   "tickscript.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 17,
-																	Line:   48,
+																	Column: 21,
+																	Line:   39,
 																},
 															},
 														},
@@ -2830,14 +2830,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 18,
-																		Line:   48,
+																		Column: 22,
+																		Line:   39,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 17,
-																		Line:   48,
+																		Column: 21,
+																		Line:   39,
 																	},
 																},
 															},
@@ -2857,14 +2857,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 59,
-													Line:   48,
+													Column: 61,
+													Line:   39,
 												},
 												File:   "tickscript.flux",
-												Source: "map(fn: (r) => ({ r with details: details(r: r) }))",
+												Source: "map(fn: (r) => ({r with details: details(r: r)}))",
 												Start: ast.Position{
-													Column: 8,
-													Line:   48,
+													Column: 12,
+													Line:   39,
 												},
 											},
 										},
@@ -2874,14 +2874,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   48,
+														Column: 15,
+														Line:   39,
 													},
 													File:   "tickscript.flux",
 													Source: "map",
 													Start: ast.Position{
-														Column: 8,
-														Line:   48,
+														Column: 12,
+														Line:   39,
 													},
 												},
 											},
@@ -2896,14 +2896,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 19,
-											Line:   49,
+											Column: 23,
+											Line:   40,
 										},
 										File:   "tickscript.flux",
-										Source: "tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))\n    |> _addTopic()",
+										Source: "tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))\n        |> _addTopic()",
 										Start: ast.Position{
-											Column: 10,
-											Line:   41,
+											Column: 12,
+											Line:   30,
 										},
 									},
 								},
@@ -2914,14 +2914,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   49,
+												Column: 23,
+												Line:   40,
 											},
 											File:   "tickscript.flux",
 											Source: "_addTopic()",
 											Start: ast.Position{
-												Column: 8,
-												Line:   49,
+												Column: 12,
+												Line:   40,
 											},
 										},
 									},
@@ -2931,14 +2931,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   49,
+													Column: 21,
+													Line:   40,
 												},
 												File:   "tickscript.flux",
 												Source: "_addTopic",
 												Start: ast.Position{
-													Column: 8,
-													Line:   49,
+													Column: 12,
+													Line:   40,
 												},
 											},
 										},
@@ -2953,14 +2953,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   57,
+										Column: 10,
+										Line:   48,
 									},
 									File:   "tickscript.flux",
-									Source: "tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))\n    |> _addTopic()\n    |> monitor.check(\n        crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check\n    )",
+									Source: "tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))\n        |> _addTopic()\n        |> monitor.check(\n            crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check,\n        )",
 									Start: ast.Position{
-										Column: 10,
-										Line:   41,
+										Column: 12,
+										Line:   30,
 									},
 								},
 							},
@@ -2971,14 +2971,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 20,
-												Line:   56,
+												Column: 24,
+												Line:   47,
 											},
 											File:   "tickscript.flux",
-											Source: "crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check",
+											Source: "crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check",
 											Start: ast.Position{
-												Column: 9,
-												Line:   51,
+												Column: 13,
+												Line:   42,
 											},
 										},
 									},
@@ -2989,14 +2989,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   51,
+													Column: 23,
+													Line:   42,
 												},
 												File:   "tickscript.flux",
 												Source: "crit: crit",
 												Start: ast.Position{
-													Column: 9,
-													Line:   51,
+													Column: 13,
+													Line:   42,
 												},
 											},
 										},
@@ -3007,14 +3007,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   51,
+														Column: 17,
+														Line:   42,
 													},
 													File:   "tickscript.flux",
 													Source: "crit",
 													Start: ast.Position{
-														Column: 9,
-														Line:   51,
+														Column: 13,
+														Line:   42,
 													},
 												},
 											},
@@ -3027,14 +3027,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   51,
+														Column: 23,
+														Line:   42,
 													},
 													File:   "tickscript.flux",
 													Source: "crit",
 													Start: ast.Position{
-														Column: 15,
-														Line:   51,
+														Column: 19,
+														Line:   42,
 													},
 												},
 											},
@@ -3046,14 +3046,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   52,
+													Column: 23,
+													Line:   43,
 												},
 												File:   "tickscript.flux",
 												Source: "warn: warn",
 												Start: ast.Position{
-													Column: 9,
-													Line:   52,
+													Column: 13,
+													Line:   43,
 												},
 											},
 										},
@@ -3064,14 +3064,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   52,
+														Column: 17,
+														Line:   43,
 													},
 													File:   "tickscript.flux",
 													Source: "warn",
 													Start: ast.Position{
-														Column: 9,
-														Line:   52,
+														Column: 13,
+														Line:   43,
 													},
 												},
 											},
@@ -3084,18 +3084,75 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   52,
+														Column: 23,
+														Line:   43,
 													},
 													File:   "tickscript.flux",
 													Source: "warn",
 													Start: ast.Position{
-														Column: 15,
-														Line:   52,
+														Column: 19,
+														Line:   43,
 													},
 												},
 											},
 											Name: "warn",
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 23,
+													Line:   44,
+												},
+												File:   "tickscript.flux",
+												Source: "info: info",
+												Start: ast.Position{
+													Column: 13,
+													Line:   44,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 17,
+														Line:   44,
+													},
+													File:   "tickscript.flux",
+													Source: "info",
+													Start: ast.Position{
+														Column: 13,
+														Line:   44,
+													},
+												},
+											},
+											Name: "info",
+										},
+										Separator: nil,
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 23,
+														Line:   44,
+													},
+													File:   "tickscript.flux",
+													Source: "info",
+													Start: ast.Position{
+														Column: 19,
+														Line:   44,
+													},
+												},
+											},
+											Name: "info",
 										},
 									}, &ast.Property{
 										BaseNode: ast.BaseNode{
@@ -3104,13 +3161,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   53,
+													Line:   45,
 												},
 												File:   "tickscript.flux",
-												Source: "info: info",
+												Source: "ok: ok",
 												Start: ast.Position{
-													Column: 9,
-													Line:   53,
+													Column: 13,
+													Line:   45,
 												},
 											},
 										},
@@ -3121,18 +3178,18 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   53,
+														Column: 15,
+														Line:   45,
 													},
 													File:   "tickscript.flux",
-													Source: "info",
+													Source: "ok",
 													Start: ast.Position{
-														Column: 9,
-														Line:   53,
+														Column: 13,
+														Line:   45,
 													},
 												},
 											},
-											Name: "info",
+											Name: "ok",
 										},
 										Separator: nil,
 										Value: &ast.Identifier{
@@ -3142,70 +3199,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   53,
-													},
-													File:   "tickscript.flux",
-													Source: "info",
-													Start: ast.Position{
-														Column: 15,
-														Line:   53,
-													},
-												},
-											},
-											Name: "info",
-										},
-									}, &ast.Property{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 15,
-													Line:   54,
-												},
-												File:   "tickscript.flux",
-												Source: "ok: ok",
-												Start: ast.Position{
-													Column: 9,
-													Line:   54,
-												},
-											},
-										},
-										Comma: nil,
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 11,
-														Line:   54,
+														Line:   45,
 													},
 													File:   "tickscript.flux",
 													Source: "ok",
 													Start: ast.Position{
-														Column: 9,
-														Line:   54,
-													},
-												},
-											},
-											Name: "ok",
-										},
-										Separator: nil,
-										Value: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 15,
-														Line:   54,
-													},
-													File:   "tickscript.flux",
-													Source: "ok",
-													Start: ast.Position{
-														Column: 13,
-														Line:   54,
+														Column: 17,
+														Line:   45,
 													},
 												},
 											},
@@ -3217,14 +3217,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   55,
+													Column: 31,
+													Line:   46,
 												},
 												File:   "tickscript.flux",
 												Source: "messageFn: message",
 												Start: ast.Position{
-													Column: 9,
-													Line:   55,
+													Column: 13,
+													Line:   46,
 												},
 											},
 										},
@@ -3235,14 +3235,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 18,
-														Line:   55,
+														Column: 22,
+														Line:   46,
 													},
 													File:   "tickscript.flux",
 													Source: "messageFn",
 													Start: ast.Position{
-														Column: 9,
-														Line:   55,
+														Column: 13,
+														Line:   46,
 													},
 												},
 											},
@@ -3255,14 +3255,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 27,
-														Line:   55,
+														Column: 31,
+														Line:   46,
 													},
 													File:   "tickscript.flux",
 													Source: "message",
 													Start: ast.Position{
-														Column: 20,
-														Line:   55,
+														Column: 24,
+														Line:   46,
 													},
 												},
 											},
@@ -3274,14 +3274,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 20,
-													Line:   56,
+													Column: 24,
+													Line:   47,
 												},
 												File:   "tickscript.flux",
 												Source: "data: check",
 												Start: ast.Position{
-													Column: 9,
-													Line:   56,
+													Column: 13,
+													Line:   47,
 												},
 											},
 										},
@@ -3292,14 +3292,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 13,
-														Line:   56,
+														Column: 17,
+														Line:   47,
 													},
 													File:   "tickscript.flux",
 													Source: "data",
 													Start: ast.Position{
-														Column: 9,
-														Line:   56,
+														Column: 13,
+														Line:   47,
 													},
 												},
 											},
@@ -3312,14 +3312,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
-														Line:   56,
+														Column: 24,
+														Line:   47,
 													},
 													File:   "tickscript.flux",
 													Source: "check",
 													Start: ast.Position{
-														Column: 15,
-														Line:   56,
+														Column: 19,
+														Line:   47,
 													},
 												},
 											},
@@ -3334,14 +3334,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 6,
-											Line:   57,
+											Column: 10,
+											Line:   48,
 										},
 										File:   "tickscript.flux",
-										Source: "monitor.check(\n        crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check\n    )",
+										Source: "monitor.check(\n            crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check,\n        )",
 										Start: ast.Position{
-											Column: 8,
-											Line:   50,
+											Column: 12,
+											Line:   41,
 										},
 									},
 								},
@@ -3351,14 +3351,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 21,
-												Line:   50,
+												Column: 25,
+												Line:   41,
 											},
 											File:   "tickscript.flux",
 											Source: "monitor.check",
 											Start: ast.Position{
-												Column: 8,
-												Line:   50,
+												Column: 12,
+												Line:   41,
 											},
 										},
 									},
@@ -3369,14 +3369,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 15,
-													Line:   50,
+													Column: 19,
+													Line:   41,
 												},
 												File:   "tickscript.flux",
 												Source: "monitor",
 												Start: ast.Position{
-													Column: 8,
-													Line:   50,
+													Column: 12,
+													Line:   41,
 												},
 											},
 										},
@@ -3388,14 +3388,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 21,
-													Line:   50,
+													Column: 25,
+													Line:   41,
 												},
 												File:   "tickscript.flux",
 												Source: "check",
 												Start: ast.Position{
-													Column: 16,
-													Line:   50,
+													Column: 20,
+													Line:   41,
 												},
 											},
 										},
@@ -3412,14 +3412,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   57,
+									Column: 10,
+									Line:   48,
 								},
 								File:   "tickscript.flux",
-								Source: "return tables\n    |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n    |> map(fn: (r) => ({r with\n        _check_id: check._check_id,\n        _check_name: check._check_name,\n    }))\n    |> map(fn: (r) => ({ r with id: id(r: r) }))\n    |> map(fn: (r) => ({ r with details: details(r: r) }))\n    |> _addTopic()\n    |> monitor.check(\n        crit: crit,\n        warn: warn,\n        info: info,\n        ok: ok,\n        messageFn: message,\n        data: check\n    )",
+								Source: "return tables\n        |> drop(fn: (column) => column =~ /_start.*/ or column =~ /_stop.*/)\n        |> map(\n            fn: (r) => ({r with\n                _check_id: check._check_id,\n                _check_name: check._check_name,\n            }),\n        )\n        |> map(fn: (r) => ({r with id: id(r: r)}))\n        |> map(fn: (r) => ({r with details: details(r: r)}))\n        |> _addTopic()\n        |> monitor.check(\n            crit: crit,\n            warn: warn,\n            info: info,\n            ok: ok,\n            messageFn: message,\n            data: check,\n        )",
 								Start: ast.Position{
-									Column: 3,
-									Line:   41,
+									Column: 5,
+									Line:   30,
 								},
 							},
 						},
@@ -3434,13 +3434,13 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
+								Column: 15,
 								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "check",
 							Start: ast.Position{
-								Column: 5,
+								Column: 10,
 								Line:   22,
 							},
 						},
@@ -3452,13 +3452,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 10,
+									Column: 15,
 									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "check",
 								Start: ast.Position{
-									Column: 5,
+									Column: 10,
 									Line:   22,
 								},
 							},
@@ -3473,14 +3473,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 29,
-								Line:   23,
+								Column: 43,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
-							Source: "id=(r)=>\"${r._check_id}\"",
+							Source: "id=(r) => \"${r._check_id}\"",
 							Start: ast.Position{
-								Column: 5,
-								Line:   23,
+								Column: 17,
+								Line:   22,
 							},
 						},
 					},
@@ -3491,14 +3491,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
-									Line:   23,
+									Column: 19,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "id",
 								Start: ast.Position{
-									Column: 5,
-									Line:   23,
+									Column: 17,
+									Line:   22,
 								},
 							},
 						},
@@ -3512,14 +3512,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 29,
-									Line:   23,
+									Column: 43,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
-								Source: "(r)=>\"${r._check_id}\"",
+								Source: "(r) => \"${r._check_id}\"",
 								Start: ast.Position{
-									Column: 8,
-									Line:   23,
+									Column: 20,
+									Line:   22,
 								},
 							},
 						},
@@ -3529,14 +3529,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 29,
-										Line:   23,
+										Column: 43,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "\"${r._check_id}\"",
 									Start: ast.Position{
-										Column: 13,
-										Line:   23,
+										Column: 27,
+										Line:   22,
 									},
 								},
 							},
@@ -3546,14 +3546,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
-											Line:   23,
+											Column: 42,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "${r._check_id}",
 										Start: ast.Position{
-											Column: 14,
-											Line:   23,
+											Column: 28,
+											Line:   22,
 										},
 									},
 								},
@@ -3563,14 +3563,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   23,
+												Column: 41,
+												Line:   22,
 											},
 											File:   "tickscript.flux",
 											Source: "r._check_id",
 											Start: ast.Position{
-												Column: 16,
-												Line:   23,
+												Column: 30,
+												Line:   22,
 											},
 										},
 									},
@@ -3581,14 +3581,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   23,
+													Column: 31,
+													Line:   22,
 												},
 												File:   "tickscript.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 16,
-													Line:   23,
+													Column: 30,
+													Line:   22,
 												},
 											},
 										},
@@ -3600,14 +3600,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   23,
+													Column: 41,
+													Line:   22,
 												},
 												File:   "tickscript.flux",
 												Source: "_check_id",
 												Start: ast.Position{
-													Column: 18,
-													Line:   23,
+													Column: 32,
+													Line:   22,
 												},
 											},
 										},
@@ -3624,14 +3624,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   23,
+										Column: 22,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 9,
-										Line:   23,
+										Column: 21,
+										Line:   22,
 									},
 								},
 							},
@@ -3642,14 +3642,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 10,
-											Line:   23,
+											Column: 22,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 9,
-											Line:   23,
+											Column: 21,
+											Line:   22,
 										},
 									},
 								},
@@ -3666,14 +3666,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 20,
-								Line:   24,
+								Column: 62,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
-							Source: "details=(r)=>\"\"",
+							Source: "details=(r) => \"\"",
 							Start: ast.Position{
-								Column: 5,
-								Line:   24,
+								Column: 45,
+								Line:   22,
 							},
 						},
 					},
@@ -3684,14 +3684,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   24,
+									Column: 52,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "details",
 								Start: ast.Position{
-									Column: 5,
-									Line:   24,
+									Column: 45,
+									Line:   22,
 								},
 							},
 						},
@@ -3705,14 +3705,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 20,
-									Line:   24,
+									Column: 62,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
-								Source: "(r)=>\"\"",
+								Source: "(r) => \"\"",
 								Start: ast.Position{
-									Column: 13,
-									Line:   24,
+									Column: 53,
+									Line:   22,
 								},
 							},
 						},
@@ -3722,14 +3722,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 20,
-										Line:   24,
+										Column: 62,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "\"\"",
 									Start: ast.Position{
-										Column: 18,
-										Line:   24,
+										Column: 60,
+										Line:   22,
 									},
 								},
 							},
@@ -3742,14 +3742,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
-										Line:   24,
+										Column: 55,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 14,
-										Line:   24,
+										Column: 54,
+										Line:   22,
 									},
 								},
 							},
@@ -3760,14 +3760,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   24,
+											Column: 55,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 14,
-											Line:   24,
+											Column: 54,
+											Line:   22,
 										},
 									},
 								},
@@ -3784,14 +3784,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 69,
-								Line:   25,
+								Column: 130,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
-							Source: "message=(r)=>\"Threshold Check: ${r._check_name} is: ${r._level}\"",
+							Source: "message=(r) => \"Threshold Check: ${r._check_name} is: ${r._level}\"",
 							Start: ast.Position{
-								Column: 5,
-								Line:   25,
+								Column: 64,
+								Line:   22,
 							},
 						},
 					},
@@ -3802,14 +3802,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   25,
+									Column: 71,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "message",
 								Start: ast.Position{
-									Column: 5,
-									Line:   25,
+									Column: 64,
+									Line:   22,
 								},
 							},
 						},
@@ -3823,14 +3823,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 69,
-									Line:   25,
+									Column: 130,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
-								Source: "(r)=>\"Threshold Check: ${r._check_name} is: ${r._level}\"",
+								Source: "(r) => \"Threshold Check: ${r._check_name} is: ${r._level}\"",
 								Start: ast.Position{
-									Column: 13,
-									Line:   25,
+									Column: 72,
+									Line:   22,
 								},
 							},
 						},
@@ -3840,14 +3840,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 69,
-										Line:   25,
+										Column: 130,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "\"Threshold Check: ${r._check_name} is: ${r._level}\"",
 									Start: ast.Position{
-										Column: 18,
-										Line:   25,
+										Column: 79,
+										Line:   22,
 									},
 								},
 							},
@@ -3857,14 +3857,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
-											Line:   25,
+											Column: 97,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "Threshold Check: ",
 										Start: ast.Position{
-											Column: 19,
-											Line:   25,
+											Column: 80,
+											Line:   22,
 										},
 									},
 								},
@@ -3875,14 +3875,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 52,
-											Line:   25,
+											Column: 113,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "${r._check_name}",
 										Start: ast.Position{
-											Column: 36,
-											Line:   25,
+											Column: 97,
+											Line:   22,
 										},
 									},
 								},
@@ -3892,14 +3892,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 51,
-												Line:   25,
+												Column: 112,
+												Line:   22,
 											},
 											File:   "tickscript.flux",
 											Source: "r._check_name",
 											Start: ast.Position{
-												Column: 38,
-												Line:   25,
+												Column: 99,
+												Line:   22,
 											},
 										},
 									},
@@ -3910,14 +3910,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 39,
-													Line:   25,
+													Column: 100,
+													Line:   22,
 												},
 												File:   "tickscript.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 38,
-													Line:   25,
+													Column: 99,
+													Line:   22,
 												},
 											},
 										},
@@ -3929,14 +3929,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 51,
-													Line:   25,
+													Column: 112,
+													Line:   22,
 												},
 												File:   "tickscript.flux",
 												Source: "_check_name",
 												Start: ast.Position{
-													Column: 40,
-													Line:   25,
+													Column: 101,
+													Line:   22,
 												},
 											},
 										},
@@ -3950,14 +3950,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 57,
-											Line:   25,
+											Column: 118,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: " is: ",
 										Start: ast.Position{
-											Column: 52,
-											Line:   25,
+											Column: 113,
+											Line:   22,
 										},
 									},
 								},
@@ -3968,14 +3968,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 68,
-											Line:   25,
+											Column: 129,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "${r._level}",
 										Start: ast.Position{
-											Column: 57,
-											Line:   25,
+											Column: 118,
+											Line:   22,
 										},
 									},
 								},
@@ -3985,14 +3985,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 67,
-												Line:   25,
+												Column: 128,
+												Line:   22,
 											},
 											File:   "tickscript.flux",
 											Source: "r._level",
 											Start: ast.Position{
-												Column: 59,
-												Line:   25,
+												Column: 120,
+												Line:   22,
 											},
 										},
 									},
@@ -4003,14 +4003,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 60,
-													Line:   25,
+													Column: 121,
+													Line:   22,
 												},
 												File:   "tickscript.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 59,
-													Line:   25,
+													Column: 120,
+													Line:   22,
 												},
 											},
 										},
@@ -4022,14 +4022,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 67,
-													Line:   25,
+													Column: 128,
+													Line:   22,
 												},
 												File:   "tickscript.flux",
 												Source: "_level",
 												Start: ast.Position{
-													Column: 61,
-													Line:   25,
+													Column: 122,
+													Line:   22,
 												},
 											},
 										},
@@ -4046,14 +4046,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
-										Line:   25,
+										Column: 74,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 14,
-										Line:   25,
+										Column: 73,
+										Line:   22,
 									},
 								},
 							},
@@ -4064,14 +4064,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   25,
+											Column: 74,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 14,
-											Line:   25,
+											Column: 73,
+											Line:   22,
 										},
 									},
 								},
@@ -4088,14 +4088,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
-								Line:   26,
+								Column: 149,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "crit=(r) => false",
 							Start: ast.Position{
-								Column: 5,
-								Line:   26,
+								Column: 132,
+								Line:   22,
 							},
 						},
 					},
@@ -4106,14 +4106,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 9,
-									Line:   26,
+									Column: 136,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "crit",
 								Start: ast.Position{
-									Column: 5,
-									Line:   26,
+									Column: 132,
+									Line:   22,
 								},
 							},
 						},
@@ -4127,14 +4127,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
-									Line:   26,
+									Column: 149,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
-									Column: 10,
-									Line:   26,
+									Column: 137,
+									Line:   22,
 								},
 							},
 						},
@@ -4144,14 +4144,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   26,
+										Column: 149,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "false",
 									Start: ast.Position{
-										Column: 17,
-										Line:   26,
+										Column: 144,
+										Line:   22,
 									},
 								},
 							},
@@ -4164,14 +4164,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   26,
+										Column: 139,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 11,
-										Line:   26,
+										Column: 138,
+										Line:   22,
 									},
 								},
 							},
@@ -4182,14 +4182,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
-											Line:   26,
+											Column: 139,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 11,
-											Line:   26,
+											Column: 138,
+											Line:   22,
 										},
 									},
 								},
@@ -4206,14 +4206,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
-								Line:   27,
+								Column: 168,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "warn=(r) => false",
 							Start: ast.Position{
-								Column: 5,
-								Line:   27,
+								Column: 151,
+								Line:   22,
 							},
 						},
 					},
@@ -4224,14 +4224,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 9,
-									Line:   27,
+									Column: 155,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "warn",
 								Start: ast.Position{
-									Column: 5,
-									Line:   27,
+									Column: 151,
+									Line:   22,
 								},
 							},
 						},
@@ -4245,14 +4245,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
-									Line:   27,
+									Column: 168,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
-									Column: 10,
-									Line:   27,
+									Column: 156,
+									Line:   22,
 								},
 							},
 						},
@@ -4262,14 +4262,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   27,
+										Column: 168,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "false",
 									Start: ast.Position{
-										Column: 17,
-										Line:   27,
+										Column: 163,
+										Line:   22,
 									},
 								},
 							},
@@ -4282,14 +4282,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   27,
+										Column: 158,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 11,
-										Line:   27,
+										Column: 157,
+										Line:   22,
 									},
 								},
 							},
@@ -4300,14 +4300,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
-											Line:   27,
+											Column: 158,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 11,
-											Line:   27,
+											Column: 157,
+											Line:   22,
 										},
 									},
 								},
@@ -4324,14 +4324,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 22,
-								Line:   28,
+								Column: 187,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "info=(r) => false",
 							Start: ast.Position{
-								Column: 5,
-								Line:   28,
+								Column: 170,
+								Line:   22,
 							},
 						},
 					},
@@ -4342,14 +4342,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 9,
-									Line:   28,
+									Column: 174,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "info",
 								Start: ast.Position{
-									Column: 5,
-									Line:   28,
+									Column: 170,
+									Line:   22,
 								},
 							},
 						},
@@ -4363,14 +4363,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 22,
-									Line:   28,
+									Column: 187,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "(r) => false",
 								Start: ast.Position{
-									Column: 10,
-									Line:   28,
+									Column: 175,
+									Line:   22,
 								},
 							},
 						},
@@ -4380,14 +4380,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 22,
-										Line:   28,
+										Column: 187,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "false",
 									Start: ast.Position{
-										Column: 17,
-										Line:   28,
+										Column: 182,
+										Line:   22,
 									},
 								},
 							},
@@ -4400,14 +4400,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 12,
-										Line:   28,
+										Column: 177,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 11,
-										Line:   28,
+										Column: 176,
+										Line:   22,
 									},
 								},
 							},
@@ -4418,14 +4418,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 12,
-											Line:   28,
+											Column: 177,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 11,
-											Line:   28,
+											Column: 176,
+											Line:   22,
 										},
 									},
 								},
@@ -4442,14 +4442,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 19,
-								Line:   29,
+								Column: 203,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "ok=(r) => true",
 							Start: ast.Position{
-								Column: 5,
-								Line:   29,
+								Column: 189,
+								Line:   22,
 							},
 						},
 					},
@@ -4460,14 +4460,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
-									Line:   29,
+									Column: 191,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "ok",
 								Start: ast.Position{
-									Column: 5,
-									Line:   29,
+									Column: 189,
+									Line:   22,
 								},
 							},
 						},
@@ -4481,14 +4481,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
-									Line:   29,
+									Column: 203,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "(r) => true",
 								Start: ast.Position{
-									Column: 8,
-									Line:   29,
+									Column: 192,
+									Line:   22,
 								},
 							},
 						},
@@ -4498,14 +4498,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   29,
+										Column: 203,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "true",
 									Start: ast.Position{
-										Column: 15,
-										Line:   29,
+										Column: 199,
+										Line:   22,
 									},
 								},
 							},
@@ -4518,14 +4518,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   29,
+										Column: 194,
+										Line:   22,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 9,
-										Line:   29,
+										Column: 193,
+										Line:   22,
 									},
 								},
 							},
@@ -4536,14 +4536,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 10,
-											Line:   29,
+											Column: 194,
+											Line:   22,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 9,
-											Line:   29,
+											Column: 193,
+											Line:   22,
 										},
 									},
 								},
@@ -4560,14 +4560,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 13,
-								Line:   30,
+								Column: 213,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "topic=\"\"",
 							Start: ast.Position{
-								Column: 5,
-								Line:   30,
+								Column: 205,
+								Line:   22,
 							},
 						},
 					},
@@ -4578,14 +4578,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 10,
-									Line:   30,
+									Column: 210,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "topic",
 								Start: ast.Position{
-									Column: 5,
-									Line:   30,
+									Column: 205,
+									Line:   22,
 								},
 							},
 						},
@@ -4598,14 +4598,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
-									Line:   30,
+									Column: 213,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 11,
-									Line:   30,
+									Column: 211,
+									Line:   22,
 								},
 							},
 						},
@@ -4617,14 +4617,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
-								Line:   31,
+								Column: 224,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
-								Column: 5,
-								Line:   31,
+								Column: 215,
+								Line:   22,
 							},
 						},
 					},
@@ -4635,14 +4635,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   31,
+									Column: 221,
+									Line:   22,
 								},
 								File:   "tickscript.flux",
 								Source: "tables",
 								Start: ast.Position{
-									Column: 5,
-									Line:   31,
+									Column: 215,
+									Line:   22,
 								},
 							},
 						},
@@ -4654,14 +4654,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
-								Line:   31,
+								Column: 224,
+								Line:   22,
 							},
 							File:   "tickscript.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 12,
-								Line:   31,
+								Column: 222,
+								Line:   22,
 							},
 						},
 					}},
@@ -4675,13 +4675,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   105,
+						Line:   95,
 					},
 					File:   "tickscript.flux",
-					Source: "deadman = (\n    check,\n    measurement, threshold=0,\n    id=(r)=>\"${r._check_id}\",\n    message=(r)=>\"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\"),\n    topic=\"\",\n    tables=<-) => {\n\n   // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n   // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n   // table is used as input for actual threshold check in order to get 0.\n\n  _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\") // required by monitor.check\n    |> schema.fieldsAsCols() // input tables are expected to be pivoted already\n\n  _counts = union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\") // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n\n  _tables =\n    if _counts[0] == 1 then // only dummy table is in the concatenated stream\n      _dummy\n        |> drop(columns: [\"unknown\"])\n        |> limit(n: 0) // need empty table\n    else\n      tables\n\n  return _tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds\n    |> drop(columns: [\"__value__\"])                              // drop dummy field\n    |> alert(\n      check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic\n    )\n}",
+					Source: "deadman = (check, measurement, threshold=0, id=(r) => \"${r._check_id}\", message=(r) => \"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\"), topic=\"\", tables=<-) => {\n    // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n    // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n    // table is used as input for actual threshold check in order to get 0.\n    _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)\n        // required by monitor.check\n        |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")\n        // input tables are expected to be pivoted already    \n        |> schema.fieldsAsCols()\n    _counts = union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n    _tables = \n        // only dummy table is in the concatenated stream\n        if _counts[0] == 1 then\n            _dummy\n                |> drop(columns: [\"unknown\"])\n                // need empty table\n                |> limit(n: 0)\nelse\n            tables\n\n    return _tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))\n        // drop dummy field\n        |> drop(columns: [\"__value__\"])\n        |> alert(\n            check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic,\n        )\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   61,
+						Line:   52,
 					},
 				},
 			},
@@ -4692,13 +4692,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   61,
+							Line:   52,
 						},
 						File:   "tickscript.flux",
 						Source: "deadman",
 						Start: ast.Position{
 							Column: 1,
-							Line:   61,
+							Line:   52,
 						},
 					},
 				},
@@ -4712,13 +4712,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   105,
+							Line:   95,
 						},
 						File:   "tickscript.flux",
-						Source: "(\n    check,\n    measurement, threshold=0,\n    id=(r)=>\"${r._check_id}\",\n    message=(r)=>\"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\"),\n    topic=\"\",\n    tables=<-) => {\n\n   // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n   // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n   // table is used as input for actual threshold check in order to get 0.\n\n  _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\") // required by monitor.check\n    |> schema.fieldsAsCols() // input tables are expected to be pivoted already\n\n  _counts = union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\") // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n\n  _tables =\n    if _counts[0] == 1 then // only dummy table is in the concatenated stream\n      _dummy\n        |> drop(columns: [\"unknown\"])\n        |> limit(n: 0) // need empty table\n    else\n      tables\n\n  return _tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds\n    |> drop(columns: [\"__value__\"])                              // drop dummy field\n    |> alert(\n      check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic\n    )\n}",
+						Source: "(check, measurement, threshold=0, id=(r) => \"${r._check_id}\", message=(r) => \"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\"), topic=\"\", tables=<-) => {\n    // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n    // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n    // table is used as input for actual threshold check in order to get 0.\n    _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)\n        // required by monitor.check\n        |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")\n        // input tables are expected to be pivoted already    \n        |> schema.fieldsAsCols()\n    _counts = union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n    _tables = \n        // only dummy table is in the concatenated stream\n        if _counts[0] == 1 then\n            _dummy\n                |> drop(columns: [\"unknown\"])\n                // need empty table\n                |> limit(n: 0)\nelse\n            tables\n\n    return _tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))\n        // drop dummy field\n        |> drop(columns: [\"__value__\"])\n        |> alert(\n            check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic,\n        )\n}",
 						Start: ast.Position{
 							Column: 11,
-							Line:   61,
+							Line:   52,
 						},
 					},
 				},
@@ -4729,13 +4729,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   105,
+								Line:   95,
 							},
 							File:   "tickscript.flux",
-							Source: "{\n\n   // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n   // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n   // table is used as input for actual threshold check in order to get 0.\n\n  _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\") // required by monitor.check\n    |> schema.fieldsAsCols() // input tables are expected to be pivoted already\n\n  _counts = union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\") // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n\n  _tables =\n    if _counts[0] == 1 then // only dummy table is in the concatenated stream\n      _dummy\n        |> drop(columns: [\"unknown\"])\n        |> limit(n: 0) // need empty table\n    else\n      tables\n\n  return _tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds\n    |> drop(columns: [\"__value__\"])                              // drop dummy field\n    |> alert(\n      check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic\n    )\n}",
+							Source: "{\n    // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,\n    // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty\n    // table is used as input for actual threshold check in order to get 0.\n    _dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)\n        // required by monitor.check\n        |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")\n        // input tables are expected to be pivoted already    \n        |> schema.fieldsAsCols()\n    _counts = union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")\n    _tables = \n        // only dummy table is in the concatenated stream\n        if _counts[0] == 1 then\n            _dummy\n                |> drop(columns: [\"unknown\"])\n                // need empty table\n                |> limit(n: 0)\nelse\n            tables\n\n    return _tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))\n        // drop dummy field\n        |> drop(columns: [\"__value__\"])\n        |> alert(\n            check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic,\n        )\n}",
 							Start: ast.Position{
-								Column: 19,
-								Line:   67,
+								Column: 191,
+								Line:   52,
 							},
 						},
 					},
@@ -4745,14 +4745,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 29,
-									Line:   76,
+									Column: 33,
+									Line:   61,
 								},
 								File:   "tickscript.flux",
-								Source: "_dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\") // required by monitor.check\n    |> schema.fieldsAsCols()",
+								Source: "_dummy = array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)\n        // required by monitor.check\n        |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")\n        // input tables are expected to be pivoted already    \n        |> schema.fieldsAsCols()",
 								Start: ast.Position{
-									Column: 3,
-									Line:   73,
+									Column: 5,
+									Line:   56,
 								},
 							},
 						},
@@ -4762,14 +4762,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 9,
-										Line:   73,
+										Column: 11,
+										Line:   56,
 									},
 									File:   "tickscript.flux",
 									Source: "_dummy",
 									Start: ast.Position{
-										Column: 3,
-										Line:   73,
+										Column: 5,
+										Line:   56,
 									},
 								},
 							},
@@ -4785,14 +4785,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 90,
-														Line:   73,
+														Column: 92,
+														Line:   56,
 													},
 													File:   "tickscript.flux",
 													Source: "rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}]",
 													Start: ast.Position{
-														Column: 23,
-														Line:   73,
+														Column: 25,
+														Line:   56,
 													},
 												},
 											},
@@ -4803,14 +4803,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 90,
-															Line:   73,
+															Column: 92,
+															Line:   56,
 														},
 														File:   "tickscript.flux",
 														Source: "rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}]",
 														Start: ast.Position{
-															Column: 23,
-															Line:   73,
+															Column: 25,
+															Line:   56,
 														},
 													},
 												},
@@ -4821,14 +4821,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 27,
-																Line:   73,
+																Column: 29,
+																Line:   56,
 															},
 															File:   "tickscript.flux",
 															Source: "rows",
 															Start: ast.Position{
-																Column: 23,
-																Line:   73,
+																Column: 25,
+																Line:   56,
 															},
 														},
 													},
@@ -4841,14 +4841,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 90,
-																Line:   73,
+																Column: 92,
+																Line:   56,
 															},
 															File:   "tickscript.flux",
 															Source: "[{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}]",
 															Start: ast.Position{
-																Column: 29,
-																Line:   73,
+																Column: 31,
+																Line:   56,
 															},
 														},
 													},
@@ -4858,14 +4858,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 89,
-																	Line:   73,
+																	Column: 91,
+																	Line:   56,
 																},
 																File:   "tickscript.flux",
 																Source: "{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}",
 																Start: ast.Position{
-																	Column: 30,
-																	Line:   73,
+																	Column: 32,
+																	Line:   56,
 																},
 															},
 														},
@@ -4876,14 +4876,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 58,
-																		Line:   73,
+																		Column: 60,
+																		Line:   56,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "_time: 2000-01-01T00:00:00Z",
 																	Start: ast.Position{
-																		Column: 31,
-																		Line:   73,
+																		Column: 33,
+																		Line:   56,
 																	},
 																},
 															},
@@ -4894,14 +4894,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 36,
-																			Line:   73,
+																			Column: 38,
+																			Line:   56,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "_time",
 																		Start: ast.Position{
-																			Column: 31,
-																			Line:   73,
+																			Column: 33,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -4914,14 +4914,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 58,
-																			Line:   73,
+																			Column: 60,
+																			Line:   56,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "2000-01-01T00:00:00Z",
 																		Start: ast.Position{
-																			Column: 38,
-																			Line:   73,
+																			Column: 40,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -4933,14 +4933,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 77,
-																		Line:   73,
+																		Column: 79,
+																		Line:   56,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "_field: \"unknown\"",
 																	Start: ast.Position{
-																		Column: 60,
-																		Line:   73,
+																		Column: 62,
+																		Line:   56,
 																	},
 																},
 															},
@@ -4951,14 +4951,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 66,
-																			Line:   73,
+																			Column: 68,
+																			Line:   56,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "_field",
 																		Start: ast.Position{
-																			Column: 60,
-																			Line:   73,
+																			Column: 62,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -4971,14 +4971,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 77,
-																			Line:   73,
+																			Column: 79,
+																			Line:   56,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "\"unknown\"",
 																		Start: ast.Position{
-																			Column: 68,
-																			Line:   73,
+																			Column: 70,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -4990,14 +4990,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 88,
-																		Line:   73,
+																		Column: 90,
+																		Line:   56,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "_value: 0",
 																	Start: ast.Position{
-																		Column: 79,
-																		Line:   73,
+																		Column: 81,
+																		Line:   56,
 																	},
 																},
 															},
@@ -5008,14 +5008,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 85,
-																			Line:   73,
+																			Column: 87,
+																			Line:   56,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "_value",
 																		Start: ast.Position{
-																			Column: 79,
-																			Line:   73,
+																			Column: 81,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -5028,14 +5028,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 88,
-																			Line:   73,
+																			Column: 90,
+																			Line:   56,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "0",
 																		Start: ast.Position{
-																			Column: 87,
-																			Line:   73,
+																			Column: 89,
+																			Line:   56,
 																		},
 																	},
 																},
@@ -5057,14 +5057,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 91,
-													Line:   73,
+													Column: 93,
+													Line:   56,
 												},
 												File:   "tickscript.flux",
 												Source: "array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])",
 												Start: ast.Position{
-													Column: 12,
-													Line:   73,
+													Column: 14,
+													Line:   56,
 												},
 											},
 										},
@@ -5074,14 +5074,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   73,
+														Column: 24,
+														Line:   56,
 													},
 													File:   "tickscript.flux",
 													Source: "array.from",
 													Start: ast.Position{
-														Column: 12,
-														Line:   73,
+														Column: 14,
+														Line:   56,
 													},
 												},
 											},
@@ -5092,14 +5092,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 17,
-															Line:   73,
+															Column: 19,
+															Line:   56,
 														},
 														File:   "tickscript.flux",
 														Source: "array",
 														Start: ast.Position{
-															Column: 12,
-															Line:   73,
+															Column: 14,
+															Line:   56,
 														},
 													},
 												},
@@ -5111,14 +5111,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 22,
-															Line:   73,
+															Column: 24,
+															Line:   56,
 														},
 														File:   "tickscript.flux",
 														Source: "from",
 														Start: ast.Position{
-															Column: 18,
-															Line:   73,
+															Column: 20,
+															Line:   56,
 														},
 													},
 												},
@@ -5134,14 +5134,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 52,
-												Line:   74,
+												Column: 56,
+												Line:   57,
 											},
 											File:   "tickscript.flux",
-											Source: "array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)",
+											Source: "array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)",
 											Start: ast.Position{
-												Column: 12,
-												Line:   73,
+												Column: 14,
+												Line:   56,
 											},
 										},
 									},
@@ -5152,14 +5152,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 51,
-														Line:   74,
+														Column: 55,
+														Line:   57,
 													},
 													File:   "tickscript.flux",
 													Source: "key: \"_measurement\", value: measurement",
 													Start: ast.Position{
-														Column: 12,
-														Line:   74,
+														Column: 16,
+														Line:   57,
 													},
 												},
 											},
@@ -5170,14 +5170,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 31,
-															Line:   74,
+															Column: 35,
+															Line:   57,
 														},
 														File:   "tickscript.flux",
 														Source: "key: \"_measurement\"",
 														Start: ast.Position{
-															Column: 12,
-															Line:   74,
+															Column: 16,
+															Line:   57,
 														},
 													},
 												},
@@ -5188,14 +5188,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 15,
-																Line:   74,
+																Column: 19,
+																Line:   57,
 															},
 															File:   "tickscript.flux",
 															Source: "key",
 															Start: ast.Position{
-																Column: 12,
-																Line:   74,
+																Column: 16,
+																Line:   57,
 															},
 														},
 													},
@@ -5208,14 +5208,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 31,
-																Line:   74,
+																Column: 35,
+																Line:   57,
 															},
 															File:   "tickscript.flux",
 															Source: "\"_measurement\"",
 															Start: ast.Position{
-																Column: 17,
-																Line:   74,
+																Column: 21,
+																Line:   57,
 															},
 														},
 													},
@@ -5227,14 +5227,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 51,
-															Line:   74,
+															Column: 55,
+															Line:   57,
 														},
 														File:   "tickscript.flux",
 														Source: "value: measurement",
 														Start: ast.Position{
-															Column: 33,
-															Line:   74,
+															Column: 37,
+															Line:   57,
 														},
 													},
 												},
@@ -5245,14 +5245,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
-																Line:   74,
+																Column: 42,
+																Line:   57,
 															},
 															File:   "tickscript.flux",
 															Source: "value",
 															Start: ast.Position{
-																Column: 33,
-																Line:   74,
+																Column: 37,
+																Line:   57,
 															},
 														},
 													},
@@ -5265,14 +5265,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 51,
-																Line:   74,
+																Column: 55,
+																Line:   57,
 															},
 															File:   "tickscript.flux",
 															Source: "measurement",
 															Start: ast.Position{
-																Column: 40,
-																Line:   74,
+																Column: 44,
+																Line:   57,
 															},
 														},
 													},
@@ -5287,14 +5287,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 52,
-													Line:   74,
+													Column: 56,
+													Line:   57,
 												},
 												File:   "tickscript.flux",
 												Source: "set(key: \"_measurement\", value: measurement)",
 												Start: ast.Position{
-													Column: 8,
-													Line:   74,
+													Column: 12,
+													Line:   57,
 												},
 											},
 										},
@@ -5304,14 +5304,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   74,
+														Column: 15,
+														Line:   57,
 													},
 													File:   "tickscript.flux",
 													Source: "set",
 													Start: ast.Position{
-														Column: 8,
-														Line:   74,
+														Column: 12,
+														Line:   57,
 													},
 												},
 											},
@@ -5322,18 +5322,18 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Comments: nil,
+									Comments: []ast.Comment{ast.Comment{Text: "// required by monitor.check\n"}},
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 69,
-											Line:   75,
+											Column: 73,
+											Line:   59,
 										},
 										File:   "tickscript.flux",
-										Source: "array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
+										Source: "array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)\n        // required by monitor.check\n        |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 										Start: ast.Position{
-											Column: 12,
-											Line:   73,
+											Column: 14,
+											Line:   56,
 										},
 									},
 								},
@@ -5344,14 +5344,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 68,
-													Line:   75,
+													Column: 72,
+													Line:   59,
 												},
 												File:   "tickscript.flux",
 												Source: "columns: [\"_measurement\"], mode: \"extend\"",
 												Start: ast.Position{
-													Column: 27,
-													Line:   75,
+													Column: 31,
+													Line:   59,
 												},
 											},
 										},
@@ -5362,14 +5362,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 52,
-														Line:   75,
+														Column: 56,
+														Line:   59,
 													},
 													File:   "tickscript.flux",
 													Source: "columns: [\"_measurement\"]",
 													Start: ast.Position{
-														Column: 27,
-														Line:   75,
+														Column: 31,
+														Line:   59,
 													},
 												},
 											},
@@ -5380,14 +5380,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 34,
-															Line:   75,
+															Column: 38,
+															Line:   59,
 														},
 														File:   "tickscript.flux",
 														Source: "columns",
 														Start: ast.Position{
-															Column: 27,
-															Line:   75,
+															Column: 31,
+															Line:   59,
 														},
 													},
 												},
@@ -5400,14 +5400,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 52,
-															Line:   75,
+															Column: 56,
+															Line:   59,
 														},
 														File:   "tickscript.flux",
 														Source: "[\"_measurement\"]",
 														Start: ast.Position{
-															Column: 36,
-															Line:   75,
+															Column: 40,
+															Line:   59,
 														},
 													},
 												},
@@ -5417,14 +5417,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 51,
-																Line:   75,
+																Column: 55,
+																Line:   59,
 															},
 															File:   "tickscript.flux",
 															Source: "\"_measurement\"",
 															Start: ast.Position{
-																Column: 37,
-																Line:   75,
+																Column: 41,
+																Line:   59,
 															},
 														},
 													},
@@ -5439,14 +5439,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 68,
-														Line:   75,
+														Column: 72,
+														Line:   59,
 													},
 													File:   "tickscript.flux",
 													Source: "mode: \"extend\"",
 													Start: ast.Position{
-														Column: 54,
-														Line:   75,
+														Column: 58,
+														Line:   59,
 													},
 												},
 											},
@@ -5457,14 +5457,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 58,
-															Line:   75,
+															Column: 62,
+															Line:   59,
 														},
 														File:   "tickscript.flux",
 														Source: "mode",
 														Start: ast.Position{
-															Column: 54,
-															Line:   75,
+															Column: 58,
+															Line:   59,
 														},
 													},
 												},
@@ -5477,14 +5477,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 68,
-															Line:   75,
+															Column: 72,
+															Line:   59,
 														},
 														File:   "tickscript.flux",
 														Source: "\"extend\"",
 														Start: ast.Position{
-															Column: 60,
-															Line:   75,
+															Column: 64,
+															Line:   59,
 														},
 													},
 												},
@@ -5499,14 +5499,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 69,
-												Line:   75,
+												Column: 73,
+												Line:   59,
 											},
 											File:   "tickscript.flux",
 											Source: "experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 											Start: ast.Position{
-												Column: 8,
-												Line:   75,
+												Column: 12,
+												Line:   59,
 											},
 										},
 									},
@@ -5516,14 +5516,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 26,
-													Line:   75,
+													Column: 30,
+													Line:   59,
 												},
 												File:   "tickscript.flux",
 												Source: "experimental.group",
 												Start: ast.Position{
-													Column: 8,
-													Line:   75,
+													Column: 12,
+													Line:   59,
 												},
 											},
 										},
@@ -5534,14 +5534,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
-														Line:   75,
+														Column: 24,
+														Line:   59,
 													},
 													File:   "tickscript.flux",
 													Source: "experimental",
 													Start: ast.Position{
-														Column: 8,
-														Line:   75,
+														Column: 12,
+														Line:   59,
 													},
 												},
 											},
@@ -5553,14 +5553,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 26,
-														Line:   75,
+														Column: 30,
+														Line:   59,
 													},
 													File:   "tickscript.flux",
 													Source: "group",
 													Start: ast.Position{
-														Column: 21,
-														Line:   75,
+														Column: 25,
+														Line:   59,
 													},
 												},
 											},
@@ -5573,18 +5573,18 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Comments: []ast.Comment{ast.Comment{Text: "// required by monitor.check\n"}},
+								Comments: []ast.Comment{ast.Comment{Text: "// input tables are expected to be pivoted already    \n"}},
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 29,
-										Line:   76,
+										Column: 33,
+										Line:   61,
 									},
 									File:   "tickscript.flux",
-									Source: "array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n    |> set(key: \"_measurement\", value: measurement)\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\") // required by monitor.check\n    |> schema.fieldsAsCols()",
+									Source: "array.from(rows: [{_time: 2000-01-01T00:00:00Z, _field: \"unknown\", _value: 0}])\n        |> set(key: \"_measurement\", value: measurement)\n        // required by monitor.check\n        |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")\n        // input tables are expected to be pivoted already    \n        |> schema.fieldsAsCols()",
 									Start: ast.Position{
-										Column: 12,
-										Line:   73,
+										Column: 14,
+										Line:   56,
 									},
 								},
 							},
@@ -5595,14 +5595,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 29,
-											Line:   76,
+											Column: 33,
+											Line:   61,
 										},
 										File:   "tickscript.flux",
 										Source: "schema.fieldsAsCols()",
 										Start: ast.Position{
-											Column: 8,
-											Line:   76,
+											Column: 12,
+											Line:   61,
 										},
 									},
 								},
@@ -5612,14 +5612,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   76,
+												Column: 31,
+												Line:   61,
 											},
 											File:   "tickscript.flux",
 											Source: "schema.fieldsAsCols",
 											Start: ast.Position{
-												Column: 8,
-												Line:   76,
+												Column: 12,
+												Line:   61,
 											},
 										},
 									},
@@ -5630,14 +5630,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 14,
-													Line:   76,
+													Column: 18,
+													Line:   61,
 												},
 												File:   "tickscript.flux",
 												Source: "schema",
 												Start: ast.Position{
-													Column: 8,
-													Line:   76,
+													Column: 12,
+													Line:   61,
 												},
 											},
 										},
@@ -5649,14 +5649,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   76,
+													Column: 31,
+													Line:   61,
 												},
 												File:   "tickscript.flux",
 												Source: "fieldsAsCols",
 												Start: ast.Position{
-													Column: 15,
-													Line:   76,
+													Column: 19,
+													Line:   61,
 												},
 											},
 										},
@@ -5674,31 +5674,31 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 85,
-									Line:   82,
+									Column: 89,
+									Line:   67,
 								},
 								File:   "tickscript.flux",
-								Source: "_counts = union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\") // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")",
+								Source: "_counts = union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")",
 								Start: ast.Position{
-									Column: 3,
-									Line:   78,
+									Column: 5,
+									Line:   62,
 								},
 							},
 						},
 						ID: &ast.Identifier{
 							BaseNode: ast.BaseNode{
-								Comments: []ast.Comment{ast.Comment{Text: "// input tables are expected to be pivoted already\n"}},
+								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   78,
+										Column: 12,
+										Line:   62,
 									},
 									File:   "tickscript.flux",
 									Source: "_counts",
 									Start: ast.Position{
-										Column: 3,
-										Line:   78,
+										Column: 5,
+										Line:   62,
 									},
 								},
 							},
@@ -5715,14 +5715,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 43,
-															Line:   78,
+															Column: 45,
+															Line:   62,
 														},
 														File:   "tickscript.flux",
 														Source: "tables: [_dummy, tables]",
 														Start: ast.Position{
-															Column: 19,
-															Line:   78,
+															Column: 21,
+															Line:   62,
 														},
 													},
 												},
@@ -5733,14 +5733,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 43,
-																Line:   78,
+																Column: 45,
+																Line:   62,
 															},
 															File:   "tickscript.flux",
 															Source: "tables: [_dummy, tables]",
 															Start: ast.Position{
-																Column: 19,
-																Line:   78,
+																Column: 21,
+																Line:   62,
 															},
 														},
 													},
@@ -5751,14 +5751,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 25,
-																	Line:   78,
+																	Column: 27,
+																	Line:   62,
 																},
 																File:   "tickscript.flux",
 																Source: "tables",
 																Start: ast.Position{
-																	Column: 19,
-																	Line:   78,
+																	Column: 21,
+																	Line:   62,
 																},
 															},
 														},
@@ -5771,14 +5771,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 43,
-																	Line:   78,
+																	Column: 45,
+																	Line:   62,
 																},
 																File:   "tickscript.flux",
 																Source: "[_dummy, tables]",
 																Start: ast.Position{
-																	Column: 27,
-																	Line:   78,
+																	Column: 29,
+																	Line:   62,
 																},
 															},
 														},
@@ -5788,14 +5788,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 34,
-																		Line:   78,
+																		Column: 36,
+																		Line:   62,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "_dummy",
 																	Start: ast.Position{
-																		Column: 28,
-																		Line:   78,
+																		Column: 30,
+																		Line:   62,
 																	},
 																},
 															},
@@ -5806,14 +5806,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 42,
-																		Line:   78,
+																		Column: 44,
+																		Line:   62,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "tables",
 																	Start: ast.Position{
-																		Column: 36,
-																		Line:   78,
+																		Column: 38,
+																		Line:   62,
 																	},
 																},
 															},
@@ -5831,14 +5831,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 44,
-														Line:   78,
+														Column: 46,
+														Line:   62,
 													},
 													File:   "tickscript.flux",
 													Source: "union(tables: [_dummy, tables])",
 													Start: ast.Position{
-														Column: 13,
-														Line:   78,
+														Column: 15,
+														Line:   62,
 													},
 												},
 											},
@@ -5848,14 +5848,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 18,
-															Line:   78,
+															Column: 20,
+															Line:   62,
 														},
 														File:   "tickscript.flux",
 														Source: "union",
 														Start: ast.Position{
-															Column: 13,
-															Line:   78,
+															Column: 15,
+															Line:   62,
 														},
 													},
 												},
@@ -5869,14 +5869,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 48,
-													Line:   79,
+													Column: 52,
+													Line:   63,
 												},
 												File:   "tickscript.flux",
-												Source: "union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])",
+												Source: "union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])",
 												Start: ast.Position{
-													Column: 13,
-													Line:   78,
+													Column: 15,
+													Line:   62,
 												},
 											},
 										},
@@ -5887,14 +5887,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 47,
-															Line:   79,
+															Column: 51,
+															Line:   63,
 														},
 														File:   "tickscript.flux",
 														Source: "columns: [\"_measurement\", \"_time\"]",
 														Start: ast.Position{
-															Column: 13,
-															Line:   79,
+															Column: 17,
+															Line:   63,
 														},
 													},
 												},
@@ -5905,14 +5905,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
-																Line:   79,
+																Column: 51,
+																Line:   63,
 															},
 															File:   "tickscript.flux",
 															Source: "columns: [\"_measurement\", \"_time\"]",
 															Start: ast.Position{
-																Column: 13,
-																Line:   79,
+																Column: 17,
+																Line:   63,
 															},
 														},
 													},
@@ -5923,14 +5923,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
-																	Line:   79,
+																	Column: 24,
+																	Line:   63,
 																},
 																File:   "tickscript.flux",
 																Source: "columns",
 																Start: ast.Position{
-																	Column: 13,
-																	Line:   79,
+																	Column: 17,
+																	Line:   63,
 																},
 															},
 														},
@@ -5943,14 +5943,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
-																	Line:   79,
+																	Column: 51,
+																	Line:   63,
 																},
 																File:   "tickscript.flux",
 																Source: "[\"_measurement\", \"_time\"]",
 																Start: ast.Position{
-																	Column: 22,
-																	Line:   79,
+																	Column: 26,
+																	Line:   63,
 																},
 															},
 														},
@@ -5960,14 +5960,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 37,
-																		Line:   79,
+																		Column: 41,
+																		Line:   63,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "\"_measurement\"",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   79,
+																		Column: 27,
+																		Line:   63,
 																	},
 																},
 															},
@@ -5978,14 +5978,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 46,
-																		Line:   79,
+																		Column: 50,
+																		Line:   63,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "\"_time\"",
 																	Start: ast.Position{
-																		Column: 39,
-																		Line:   79,
+																		Column: 43,
+																		Line:   63,
 																	},
 																},
 															},
@@ -6003,14 +6003,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 48,
-														Line:   79,
+														Column: 52,
+														Line:   63,
 													},
 													File:   "tickscript.flux",
 													Source: "keep(columns: [\"_measurement\", \"_time\"])",
 													Start: ast.Position{
-														Column: 8,
-														Line:   79,
+														Column: 12,
+														Line:   63,
 													},
 												},
 											},
@@ -6020,14 +6020,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 12,
-															Line:   79,
+															Column: 16,
+															Line:   63,
 														},
 														File:   "tickscript.flux",
 														Source: "keep",
 														Start: ast.Position{
-															Column: 8,
-															Line:   79,
+															Column: 12,
+															Line:   63,
 														},
 													},
 												},
@@ -6038,18 +6038,18 @@ var pkgAST = &ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Comments: nil,
+										Comments: []ast.Comment{ast.Comment{Text: "// _measurement column is always present\n"}},
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 58,
-												Line:   80,
+												Column: 62,
+												Line:   65,
 											},
 											File:   "tickscript.flux",
-											Source: "union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\")",
+											Source: "union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")",
 											Start: ast.Position{
-												Column: 13,
-												Line:   78,
+												Column: 15,
+												Line:   62,
 											},
 										},
 									},
@@ -6060,14 +6060,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 57,
-														Line:   80,
+														Column: 61,
+														Line:   65,
 													},
 													File:   "tickscript.flux",
 													Source: "column: \"_measurement\", as: \"__value__\"",
 													Start: ast.Position{
-														Column: 18,
-														Line:   80,
+														Column: 22,
+														Line:   65,
 													},
 												},
 											},
@@ -6078,14 +6078,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 40,
-															Line:   80,
+															Column: 44,
+															Line:   65,
 														},
 														File:   "tickscript.flux",
 														Source: "column: \"_measurement\"",
 														Start: ast.Position{
-															Column: 18,
-															Line:   80,
+															Column: 22,
+															Line:   65,
 														},
 													},
 												},
@@ -6096,14 +6096,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 24,
-																Line:   80,
+																Column: 28,
+																Line:   65,
 															},
 															File:   "tickscript.flux",
 															Source: "column",
 															Start: ast.Position{
-																Column: 18,
-																Line:   80,
+																Column: 22,
+																Line:   65,
 															},
 														},
 													},
@@ -6116,14 +6116,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 40,
-																Line:   80,
+																Column: 44,
+																Line:   65,
 															},
 															File:   "tickscript.flux",
 															Source: "\"_measurement\"",
 															Start: ast.Position{
-																Column: 26,
-																Line:   80,
+																Column: 30,
+																Line:   65,
 															},
 														},
 													},
@@ -6135,14 +6135,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 57,
-															Line:   80,
+															Column: 61,
+															Line:   65,
 														},
 														File:   "tickscript.flux",
 														Source: "as: \"__value__\"",
 														Start: ast.Position{
-															Column: 42,
-															Line:   80,
+															Column: 46,
+															Line:   65,
 														},
 													},
 												},
@@ -6153,14 +6153,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 44,
-																Line:   80,
+																Column: 48,
+																Line:   65,
 															},
 															File:   "tickscript.flux",
 															Source: "as",
 															Start: ast.Position{
-																Column: 42,
-																Line:   80,
+																Column: 46,
+																Line:   65,
 															},
 														},
 													},
@@ -6173,14 +6173,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 57,
-																Line:   80,
+																Column: 61,
+																Line:   65,
 															},
 															File:   "tickscript.flux",
 															Source: "\"__value__\"",
 															Start: ast.Position{
-																Column: 46,
-																Line:   80,
+																Column: 50,
+																Line:   65,
 															},
 														},
 													},
@@ -6195,14 +6195,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 58,
-													Line:   80,
+													Column: 62,
+													Line:   65,
 												},
 												File:   "tickscript.flux",
 												Source: "duplicate(column: \"_measurement\", as: \"__value__\")",
 												Start: ast.Position{
-													Column: 8,
-													Line:   80,
+													Column: 12,
+													Line:   65,
 												},
 											},
 										},
@@ -6212,14 +6212,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 17,
-														Line:   80,
+														Column: 21,
+														Line:   65,
 													},
 													File:   "tickscript.flux",
 													Source: "duplicate",
 													Start: ast.Position{
-														Column: 8,
-														Line:   80,
+														Column: 12,
+														Line:   65,
 													},
 												},
 											},
@@ -6230,18 +6230,18 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Comments: []ast.Comment{ast.Comment{Text: "// _measurement column is always present\n"}},
+									Comments: nil,
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 34,
-											Line:   81,
+											Column: 38,
+											Line:   66,
 										},
 										File:   "tickscript.flux",
-										Source: "union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\") // _measurement column is always present\n    |> count(column: \"__value__\")",
+										Source: "union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")",
 										Start: ast.Position{
-											Column: 13,
-											Line:   78,
+											Column: 15,
+											Line:   62,
 										},
 									},
 								},
@@ -6252,14 +6252,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 33,
-													Line:   81,
+													Column: 37,
+													Line:   66,
 												},
 												File:   "tickscript.flux",
 												Source: "column: \"__value__\"",
 												Start: ast.Position{
-													Column: 14,
-													Line:   81,
+													Column: 18,
+													Line:   66,
 												},
 											},
 										},
@@ -6270,14 +6270,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 33,
-														Line:   81,
+														Column: 37,
+														Line:   66,
 													},
 													File:   "tickscript.flux",
 													Source: "column: \"__value__\"",
 													Start: ast.Position{
-														Column: 14,
-														Line:   81,
+														Column: 18,
+														Line:   66,
 													},
 												},
 											},
@@ -6288,14 +6288,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 20,
-															Line:   81,
+															Column: 24,
+															Line:   66,
 														},
 														File:   "tickscript.flux",
 														Source: "column",
 														Start: ast.Position{
-															Column: 14,
-															Line:   81,
+															Column: 18,
+															Line:   66,
 														},
 													},
 												},
@@ -6308,14 +6308,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 33,
-															Line:   81,
+															Column: 37,
+															Line:   66,
 														},
 														File:   "tickscript.flux",
 														Source: "\"__value__\"",
 														Start: ast.Position{
-															Column: 22,
-															Line:   81,
+															Column: 26,
+															Line:   66,
 														},
 													},
 												},
@@ -6330,14 +6330,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 34,
-												Line:   81,
+												Column: 38,
+												Line:   66,
 											},
 											File:   "tickscript.flux",
 											Source: "count(column: \"__value__\")",
 											Start: ast.Position{
-												Column: 8,
-												Line:   81,
+												Column: 12,
+												Line:   66,
 											},
 										},
 									},
@@ -6347,14 +6347,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 13,
-													Line:   81,
+													Column: 17,
+													Line:   66,
 												},
 												File:   "tickscript.flux",
 												Source: "count",
 												Start: ast.Position{
-													Column: 8,
-													Line:   81,
+													Column: 12,
+													Line:   66,
 												},
 											},
 										},
@@ -6369,14 +6369,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 85,
-										Line:   82,
+										Column: 89,
+										Line:   67,
 									},
 									File:   "tickscript.flux",
-									Source: "union(tables: [_dummy, tables])\n    |> keep(columns: [\"_measurement\", \"_time\"])\n    |> duplicate(column: \"_measurement\", as: \"__value__\") // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")",
+									Source: "union(tables: [_dummy, tables])\n        |> keep(columns: [\"_measurement\", \"_time\"])\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        |> findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")",
 									Start: ast.Position{
-										Column: 13,
-										Line:   78,
+										Column: 15,
+										Line:   62,
 									},
 								},
 							},
@@ -6387,14 +6387,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 84,
-												Line:   82,
+												Column: 88,
+												Line:   67,
 											},
 											File:   "tickscript.flux",
 											Source: "fn: (key) => key._measurement == measurement, column: \"__value__\"",
 											Start: ast.Position{
-												Column: 19,
-												Line:   82,
+												Column: 23,
+												Line:   67,
 											},
 										},
 									},
@@ -6405,14 +6405,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 63,
-													Line:   82,
+													Column: 67,
+													Line:   67,
 												},
 												File:   "tickscript.flux",
 												Source: "fn: (key) => key._measurement == measurement",
 												Start: ast.Position{
-													Column: 19,
-													Line:   82,
+													Column: 23,
+													Line:   67,
 												},
 											},
 										},
@@ -6423,14 +6423,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 21,
-														Line:   82,
+														Column: 25,
+														Line:   67,
 													},
 													File:   "tickscript.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 19,
-														Line:   82,
+														Column: 23,
+														Line:   67,
 													},
 												},
 											},
@@ -6444,14 +6444,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 63,
-														Line:   82,
+														Column: 67,
+														Line:   67,
 													},
 													File:   "tickscript.flux",
 													Source: "(key) => key._measurement == measurement",
 													Start: ast.Position{
-														Column: 23,
-														Line:   82,
+														Column: 27,
+														Line:   67,
 													},
 												},
 											},
@@ -6461,14 +6461,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 63,
-															Line:   82,
+															Column: 67,
+															Line:   67,
 														},
 														File:   "tickscript.flux",
 														Source: "key._measurement == measurement",
 														Start: ast.Position{
-															Column: 32,
-															Line:   82,
+															Column: 36,
+															Line:   67,
 														},
 													},
 												},
@@ -6478,14 +6478,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 48,
-																Line:   82,
+																Column: 52,
+																Line:   67,
 															},
 															File:   "tickscript.flux",
 															Source: "key._measurement",
 															Start: ast.Position{
-																Column: 32,
-																Line:   82,
+																Column: 36,
+																Line:   67,
 															},
 														},
 													},
@@ -6496,14 +6496,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 35,
-																	Line:   82,
+																	Column: 39,
+																	Line:   67,
 																},
 																File:   "tickscript.flux",
 																Source: "key",
 																Start: ast.Position{
-																	Column: 32,
-																	Line:   82,
+																	Column: 36,
+																	Line:   67,
 																},
 															},
 														},
@@ -6515,14 +6515,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 48,
-																	Line:   82,
+																	Column: 52,
+																	Line:   67,
 																},
 																File:   "tickscript.flux",
 																Source: "_measurement",
 																Start: ast.Position{
-																	Column: 36,
-																	Line:   82,
+																	Column: 40,
+																	Line:   67,
 																},
 															},
 														},
@@ -6537,14 +6537,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 63,
-																Line:   82,
+																Column: 67,
+																Line:   67,
 															},
 															File:   "tickscript.flux",
 															Source: "measurement",
 															Start: ast.Position{
-																Column: 52,
-																Line:   82,
+																Column: 56,
+																Line:   67,
 															},
 														},
 													},
@@ -6558,14 +6558,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 27,
-															Line:   82,
+															Column: 31,
+															Line:   67,
 														},
 														File:   "tickscript.flux",
 														Source: "key",
 														Start: ast.Position{
-															Column: 24,
-															Line:   82,
+															Column: 28,
+															Line:   67,
 														},
 													},
 												},
@@ -6576,14 +6576,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 27,
-																Line:   82,
+																Column: 31,
+																Line:   67,
 															},
 															File:   "tickscript.flux",
 															Source: "key",
 															Start: ast.Position{
-																Column: 24,
-																Line:   82,
+																Column: 28,
+																Line:   67,
 															},
 														},
 													},
@@ -6600,14 +6600,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 84,
-													Line:   82,
+													Column: 88,
+													Line:   67,
 												},
 												File:   "tickscript.flux",
 												Source: "column: \"__value__\"",
 												Start: ast.Position{
-													Column: 65,
-													Line:   82,
+													Column: 69,
+													Line:   67,
 												},
 											},
 										},
@@ -6618,14 +6618,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 71,
-														Line:   82,
+														Column: 75,
+														Line:   67,
 													},
 													File:   "tickscript.flux",
 													Source: "column",
 													Start: ast.Position{
-														Column: 65,
-														Line:   82,
+														Column: 69,
+														Line:   67,
 													},
 												},
 											},
@@ -6638,14 +6638,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 84,
-														Line:   82,
+														Column: 88,
+														Line:   67,
 													},
 													File:   "tickscript.flux",
 													Source: "\"__value__\"",
 													Start: ast.Position{
-														Column: 73,
-														Line:   82,
+														Column: 77,
+														Line:   67,
 													},
 												},
 											},
@@ -6660,14 +6660,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 85,
-											Line:   82,
+											Column: 89,
+											Line:   67,
 										},
 										File:   "tickscript.flux",
 										Source: "findColumn(fn: (key) => key._measurement == measurement, column: \"__value__\")",
 										Start: ast.Position{
-											Column: 8,
-											Line:   82,
+											Column: 12,
+											Line:   67,
 										},
 									},
 								},
@@ -6677,14 +6677,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 18,
-												Line:   82,
+												Column: 22,
+												Line:   67,
 											},
 											File:   "tickscript.flux",
 											Source: "findColumn",
 											Start: ast.Position{
-												Column: 8,
-												Line:   82,
+												Column: 12,
+												Line:   67,
 											},
 										},
 									},
@@ -6700,14 +6700,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
-									Line:   90,
+									Column: 19,
+									Line:   76,
 								},
 								File:   "tickscript.flux",
-								Source: "_tables =\n    if _counts[0] == 1 then // only dummy table is in the concatenated stream\n      _dummy\n        |> drop(columns: [\"unknown\"])\n        |> limit(n: 0) // need empty table\n    else\n      tables",
+								Source: "_tables = \n        // only dummy table is in the concatenated stream\n        if _counts[0] == 1 then\n            _dummy\n                |> drop(columns: [\"unknown\"])\n                // need empty table\n                |> limit(n: 0)\nelse\n            tables",
 								Start: ast.Position{
-									Column: 3,
-									Line:   84,
+									Column: 5,
+									Line:   68,
 								},
 							},
 						},
@@ -6717,14 +6717,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   84,
+										Column: 12,
+										Line:   68,
 									},
 									File:   "tickscript.flux",
 									Source: "_tables",
 									Start: ast.Position{
-										Column: 3,
-										Line:   84,
+										Column: 5,
+										Line:   68,
 									},
 								},
 							},
@@ -6737,14 +6737,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
-											Line:   90,
+											Column: 19,
+											Line:   76,
 										},
 										File:   "tickscript.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 7,
-											Line:   90,
+											Column: 13,
+											Line:   76,
 										},
 									},
 								},
@@ -6755,14 +6755,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 13,
-										Line:   90,
+										Column: 19,
+										Line:   76,
 									},
 									File:   "tickscript.flux",
-									Source: "if _counts[0] == 1 then // only dummy table is in the concatenated stream\n      _dummy\n        |> drop(columns: [\"unknown\"])\n        |> limit(n: 0) // need empty table\n    else\n      tables",
+									Source: "if _counts[0] == 1 then\n            _dummy\n                |> drop(columns: [\"unknown\"])\n                // need empty table\n                |> limit(n: 0)\nelse\n            tables",
 									Start: ast.Position{
-										Column: 5,
-										Line:   85,
+										Column: 9,
+										Line:   70,
 									},
 								},
 							},
@@ -6770,18 +6770,18 @@ var pkgAST = &ast.Package{
 								Argument: &ast.PipeExpression{
 									Argument: &ast.Identifier{
 										BaseNode: ast.BaseNode{
-											Comments: []ast.Comment{ast.Comment{Text: "// only dummy table is in the concatenated stream\n"}},
+											Comments: nil,
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 13,
-													Line:   86,
+													Column: 19,
+													Line:   71,
 												},
 												File:   "tickscript.flux",
 												Source: "_dummy",
 												Start: ast.Position{
-													Column: 7,
-													Line:   86,
+													Column: 13,
+													Line:   71,
 												},
 											},
 										},
@@ -6792,14 +6792,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 38,
-												Line:   87,
+												Column: 46,
+												Line:   72,
 											},
 											File:   "tickscript.flux",
-											Source: "_dummy\n        |> drop(columns: [\"unknown\"])",
+											Source: "_dummy\n                |> drop(columns: [\"unknown\"])",
 											Start: ast.Position{
-												Column: 7,
-												Line:   86,
+												Column: 13,
+												Line:   71,
 											},
 										},
 									},
@@ -6810,14 +6810,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
-														Line:   87,
+														Column: 45,
+														Line:   72,
 													},
 													File:   "tickscript.flux",
 													Source: "columns: [\"unknown\"]",
 													Start: ast.Position{
-														Column: 17,
-														Line:   87,
+														Column: 25,
+														Line:   72,
 													},
 												},
 											},
@@ -6828,14 +6828,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 37,
-															Line:   87,
+															Column: 45,
+															Line:   72,
 														},
 														File:   "tickscript.flux",
 														Source: "columns: [\"unknown\"]",
 														Start: ast.Position{
-															Column: 17,
-															Line:   87,
+															Column: 25,
+															Line:   72,
 														},
 													},
 												},
@@ -6846,14 +6846,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 24,
-																Line:   87,
+																Column: 32,
+																Line:   72,
 															},
 															File:   "tickscript.flux",
 															Source: "columns",
 															Start: ast.Position{
-																Column: 17,
-																Line:   87,
+																Column: 25,
+																Line:   72,
 															},
 														},
 													},
@@ -6866,14 +6866,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 37,
-																Line:   87,
+																Column: 45,
+																Line:   72,
 															},
 															File:   "tickscript.flux",
 															Source: "[\"unknown\"]",
 															Start: ast.Position{
-																Column: 26,
-																Line:   87,
+																Column: 34,
+																Line:   72,
 															},
 														},
 													},
@@ -6883,14 +6883,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 36,
-																	Line:   87,
+																	Column: 44,
+																	Line:   72,
 																},
 																File:   "tickscript.flux",
 																Source: "\"unknown\"",
 																Start: ast.Position{
-																	Column: 27,
-																	Line:   87,
+																	Column: 35,
+																	Line:   72,
 																},
 															},
 														},
@@ -6908,14 +6908,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 38,
-													Line:   87,
+													Column: 46,
+													Line:   72,
 												},
 												File:   "tickscript.flux",
 												Source: "drop(columns: [\"unknown\"])",
 												Start: ast.Position{
-													Column: 12,
-													Line:   87,
+													Column: 20,
+													Line:   72,
 												},
 											},
 										},
@@ -6925,14 +6925,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 16,
-														Line:   87,
+														Column: 24,
+														Line:   72,
 													},
 													File:   "tickscript.flux",
 													Source: "drop",
 													Start: ast.Position{
-														Column: 12,
-														Line:   87,
+														Column: 20,
+														Line:   72,
 													},
 												},
 											},
@@ -6943,18 +6943,18 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Comments: nil,
+									Comments: []ast.Comment{ast.Comment{Text: "// need empty table\n"}},
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
-											Line:   88,
+											Column: 31,
+											Line:   74,
 										},
 										File:   "tickscript.flux",
-										Source: "_dummy\n        |> drop(columns: [\"unknown\"])\n        |> limit(n: 0)",
+										Source: "_dummy\n                |> drop(columns: [\"unknown\"])\n                // need empty table\n                |> limit(n: 0)",
 										Start: ast.Position{
-											Column: 7,
-											Line:   86,
+											Column: 13,
+											Line:   71,
 										},
 									},
 								},
@@ -6965,14 +6965,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 22,
-													Line:   88,
+													Column: 30,
+													Line:   74,
 												},
 												File:   "tickscript.flux",
 												Source: "n: 0",
 												Start: ast.Position{
-													Column: 18,
-													Line:   88,
+													Column: 26,
+													Line:   74,
 												},
 											},
 										},
@@ -6983,14 +6983,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   88,
+														Column: 30,
+														Line:   74,
 													},
 													File:   "tickscript.flux",
 													Source: "n: 0",
 													Start: ast.Position{
-														Column: 18,
-														Line:   88,
+														Column: 26,
+														Line:   74,
 													},
 												},
 											},
@@ -7001,14 +7001,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 19,
-															Line:   88,
+															Column: 27,
+															Line:   74,
 														},
 														File:   "tickscript.flux",
 														Source: "n",
 														Start: ast.Position{
-															Column: 18,
-															Line:   88,
+															Column: 26,
+															Line:   74,
 														},
 													},
 												},
@@ -7021,14 +7021,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 22,
-															Line:   88,
+															Column: 30,
+															Line:   74,
 														},
 														File:   "tickscript.flux",
 														Source: "0",
 														Start: ast.Position{
-															Column: 21,
-															Line:   88,
+															Column: 29,
+															Line:   74,
 														},
 													},
 												},
@@ -7043,14 +7043,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 23,
-												Line:   88,
+												Column: 31,
+												Line:   74,
 											},
 											File:   "tickscript.flux",
 											Source: "limit(n: 0)",
 											Start: ast.Position{
-												Column: 12,
-												Line:   88,
+												Column: 20,
+												Line:   74,
 											},
 										},
 									},
@@ -7060,14 +7060,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   88,
+													Column: 25,
+													Line:   74,
 												},
 												File:   "tickscript.flux",
 												Source: "limit",
 												Start: ast.Position{
-													Column: 12,
-													Line:   88,
+													Column: 20,
+													Line:   74,
 												},
 											},
 										},
@@ -7083,14 +7083,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 23,
-											Line:   85,
+											Column: 27,
+											Line:   70,
 										},
 										File:   "tickscript.flux",
 										Source: "_counts[0] == 1",
 										Start: ast.Position{
-											Column: 8,
-											Line:   85,
+											Column: 12,
+											Line:   70,
 										},
 									},
 								},
@@ -7101,14 +7101,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 15,
-													Line:   85,
+													Column: 19,
+													Line:   70,
 												},
 												File:   "tickscript.flux",
 												Source: "_counts",
 												Start: ast.Position{
-													Column: 8,
-													Line:   85,
+													Column: 12,
+													Line:   70,
 												},
 											},
 										},
@@ -7119,14 +7119,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 18,
-												Line:   85,
+												Column: 22,
+												Line:   70,
 											},
 											File:   "tickscript.flux",
 											Source: "_counts[0]",
 											Start: ast.Position{
-												Column: 8,
-												Line:   85,
+												Column: 12,
+												Line:   70,
 											},
 										},
 									},
@@ -7136,14 +7136,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   85,
+													Column: 21,
+													Line:   70,
 												},
 												File:   "tickscript.flux",
 												Source: "0",
 												Start: ast.Position{
-													Column: 16,
-													Line:   85,
+													Column: 20,
+													Line:   70,
 												},
 											},
 										},
@@ -7159,22 +7159,22 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 23,
-												Line:   85,
+												Column: 27,
+												Line:   70,
 											},
 											File:   "tickscript.flux",
 											Source: "1",
 											Start: ast.Position{
-												Column: 22,
-												Line:   85,
+												Column: 26,
+												Line:   70,
 											},
 										},
 									},
 									Value: int64(1),
 								},
 							},
-							Tk_else: []ast.Comment{ast.Comment{Text: "// need empty table\n"}},
-							Tk_if:   nil,
+							Tk_else: nil,
+							Tk_if:   []ast.Comment{ast.Comment{Text: "// only dummy table is in the concatenated stream\n"}},
 							Tk_then: nil,
 						},
 					}, &ast.ReturnStatement{
@@ -7190,32 +7190,32 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 17,
-																Line:   92,
+																Column: 19,
+																Line:   78,
 															},
 															File:   "tickscript.flux",
 															Source: "_tables",
 															Start: ast.Position{
-																Column: 10,
-																Line:   92,
+																Column: 12,
+																Line:   78,
 															},
 														},
 													},
 													Name: "_tables",
 												},
 												BaseNode: ast.BaseNode{
-													Comments: nil,
+													Comments: []ast.Comment{ast.Comment{Text: "// _measurement column is always present\n"}},
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 58,
-															Line:   93,
+															Column: 62,
+															Line:   80,
 														},
 														File:   "tickscript.flux",
-														Source: "_tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")",
+														Source: "_tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")",
 														Start: ast.Position{
-															Column: 10,
-															Line:   92,
+															Column: 12,
+															Line:   78,
 														},
 													},
 												},
@@ -7226,14 +7226,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 57,
-																	Line:   93,
+																	Column: 61,
+																	Line:   80,
 																},
 																File:   "tickscript.flux",
 																Source: "column: \"_measurement\", as: \"__value__\"",
 																Start: ast.Position{
-																	Column: 18,
-																	Line:   93,
+																	Column: 22,
+																	Line:   80,
 																},
 															},
 														},
@@ -7244,14 +7244,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 40,
-																		Line:   93,
+																		Column: 44,
+																		Line:   80,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "column: \"_measurement\"",
 																	Start: ast.Position{
-																		Column: 18,
-																		Line:   93,
+																		Column: 22,
+																		Line:   80,
 																	},
 																},
 															},
@@ -7262,14 +7262,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 24,
-																			Line:   93,
+																			Column: 28,
+																			Line:   80,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "column",
 																		Start: ast.Position{
-																			Column: 18,
-																			Line:   93,
+																			Column: 22,
+																			Line:   80,
 																		},
 																	},
 																},
@@ -7282,14 +7282,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 40,
-																			Line:   93,
+																			Column: 44,
+																			Line:   80,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "\"_measurement\"",
 																		Start: ast.Position{
-																			Column: 26,
-																			Line:   93,
+																			Column: 30,
+																			Line:   80,
 																		},
 																	},
 																},
@@ -7301,14 +7301,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 57,
-																		Line:   93,
+																		Column: 61,
+																		Line:   80,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "as: \"__value__\"",
 																	Start: ast.Position{
-																		Column: 42,
-																		Line:   93,
+																		Column: 46,
+																		Line:   80,
 																	},
 																},
 															},
@@ -7319,14 +7319,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 44,
-																			Line:   93,
+																			Column: 48,
+																			Line:   80,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "as",
 																		Start: ast.Position{
-																			Column: 42,
-																			Line:   93,
+																			Column: 46,
+																			Line:   80,
 																		},
 																	},
 																},
@@ -7339,14 +7339,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 57,
-																			Line:   93,
+																			Column: 61,
+																			Line:   80,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "\"__value__\"",
 																		Start: ast.Position{
-																			Column: 46,
-																			Line:   93,
+																			Column: 50,
+																			Line:   80,
 																		},
 																	},
 																},
@@ -7361,14 +7361,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 58,
-																Line:   93,
+																Column: 62,
+																Line:   80,
 															},
 															File:   "tickscript.flux",
 															Source: "duplicate(column: \"_measurement\", as: \"__value__\")",
 															Start: ast.Position{
-																Column: 8,
-																Line:   93,
+																Column: 12,
+																Line:   80,
 															},
 														},
 													},
@@ -7378,14 +7378,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 17,
-																	Line:   93,
+																	Column: 21,
+																	Line:   80,
 																},
 																File:   "tickscript.flux",
 																Source: "duplicate",
 																Start: ast.Position{
-																	Column: 8,
-																	Line:   93,
+																	Column: 12,
+																	Line:   80,
 																},
 															},
 														},
@@ -7396,18 +7396,18 @@ var pkgAST = &ast.Package{
 												},
 											},
 											BaseNode: ast.BaseNode{
-												Comments: []ast.Comment{ast.Comment{Text: "// _measurement column is always present\n"}},
+												Comments: nil,
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 34,
-														Line:   94,
+														Column: 38,
+														Line:   81,
 													},
 													File:   "tickscript.flux",
-													Source: "_tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")",
+													Source: "_tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")",
 													Start: ast.Position{
-														Column: 10,
-														Line:   92,
+														Column: 12,
+														Line:   78,
 													},
 												},
 											},
@@ -7418,14 +7418,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 33,
-																Line:   94,
+																Column: 37,
+																Line:   81,
 															},
 															File:   "tickscript.flux",
 															Source: "column: \"__value__\"",
 															Start: ast.Position{
-																Column: 14,
-																Line:   94,
+																Column: 18,
+																Line:   81,
 															},
 														},
 													},
@@ -7436,14 +7436,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 33,
-																	Line:   94,
+																	Column: 37,
+																	Line:   81,
 																},
 																File:   "tickscript.flux",
 																Source: "column: \"__value__\"",
 																Start: ast.Position{
-																	Column: 14,
-																	Line:   94,
+																	Column: 18,
+																	Line:   81,
 																},
 															},
 														},
@@ -7454,14 +7454,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 20,
-																		Line:   94,
+																		Column: 24,
+																		Line:   81,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "column",
 																	Start: ast.Position{
-																		Column: 14,
-																		Line:   94,
+																		Column: 18,
+																		Line:   81,
 																	},
 																},
 															},
@@ -7474,14 +7474,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 33,
-																		Line:   94,
+																		Column: 37,
+																		Line:   81,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "\"__value__\"",
 																	Start: ast.Position{
-																		Column: 22,
-																		Line:   94,
+																		Column: 26,
+																		Line:   81,
 																	},
 																},
 															},
@@ -7496,14 +7496,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 34,
-															Line:   94,
+															Column: 38,
+															Line:   81,
 														},
 														File:   "tickscript.flux",
 														Source: "count(column: \"__value__\")",
 														Start: ast.Position{
-															Column: 8,
-															Line:   94,
+															Column: 12,
+															Line:   81,
 														},
 													},
 												},
@@ -7513,14 +7513,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 13,
-																Line:   94,
+																Column: 17,
+																Line:   81,
 															},
 															File:   "tickscript.flux",
 															Source: "count",
 															Start: ast.Position{
-																Column: 8,
-																Line:   94,
+																Column: 12,
+																Line:   81,
 															},
 														},
 													},
@@ -7531,18 +7531,18 @@ var pkgAST = &ast.Package{
 											},
 										},
 										BaseNode: ast.BaseNode{
-											Comments: nil,
+											Comments: []ast.Comment{ast.Comment{Text: "// recreate _time column after aggregation\n"}},
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 47,
-													Line:   95,
+													Column: 51,
+													Line:   83,
 												},
 												File:   "tickscript.flux",
-												Source: "_tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))",
+												Source: "_tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))",
 												Start: ast.Position{
-													Column: 10,
-													Line:   92,
+													Column: 12,
+													Line:   78,
 												},
 											},
 										},
@@ -7553,14 +7553,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 46,
-															Line:   95,
+															Column: 50,
+															Line:   83,
 														},
 														File:   "tickscript.flux",
 														Source: "fn: (r) => ({r with _time: now()})",
 														Start: ast.Position{
-															Column: 12,
-															Line:   95,
+															Column: 16,
+															Line:   83,
 														},
 													},
 												},
@@ -7571,14 +7571,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 46,
-																Line:   95,
+																Column: 50,
+																Line:   83,
 															},
 															File:   "tickscript.flux",
 															Source: "fn: (r) => ({r with _time: now()})",
 															Start: ast.Position{
-																Column: 12,
-																Line:   95,
+																Column: 16,
+																Line:   83,
 															},
 														},
 													},
@@ -7589,14 +7589,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 14,
-																	Line:   95,
+																	Column: 18,
+																	Line:   83,
 																},
 																File:   "tickscript.flux",
 																Source: "fn",
 																Start: ast.Position{
-																	Column: 12,
-																	Line:   95,
+																	Column: 16,
+																	Line:   83,
 																},
 															},
 														},
@@ -7610,14 +7610,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 46,
-																	Line:   95,
+																	Column: 50,
+																	Line:   83,
 																},
 																File:   "tickscript.flux",
 																Source: "(r) => ({r with _time: now()})",
 																Start: ast.Position{
-																	Column: 16,
-																	Line:   95,
+																	Column: 20,
+																	Line:   83,
 																},
 															},
 														},
@@ -7627,14 +7627,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 46,
-																		Line:   95,
+																		Column: 50,
+																		Line:   83,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "({r with _time: now()})",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   95,
+																		Column: 27,
+																		Line:   83,
 																	},
 																},
 															},
@@ -7644,14 +7644,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 45,
-																			Line:   95,
+																			Column: 49,
+																			Line:   83,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "{r with _time: now()}",
 																		Start: ast.Position{
-																			Column: 24,
-																			Line:   95,
+																			Column: 28,
+																			Line:   83,
 																		},
 																	},
 																},
@@ -7662,14 +7662,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 44,
-																				Line:   95,
+																				Column: 48,
+																				Line:   83,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "_time: now()",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   95,
+																				Column: 36,
+																				Line:   83,
 																			},
 																		},
 																	},
@@ -7680,14 +7680,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 37,
-																					Line:   95,
+																					Column: 41,
+																					Line:   83,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "_time",
 																				Start: ast.Position{
-																					Column: 32,
-																					Line:   95,
+																					Column: 36,
+																					Line:   83,
 																				},
 																			},
 																		},
@@ -7701,14 +7701,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 44,
-																					Line:   95,
+																					Column: 48,
+																					Line:   83,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "now()",
 																				Start: ast.Position{
-																					Column: 39,
-																					Line:   95,
+																					Column: 43,
+																					Line:   83,
 																				},
 																			},
 																		},
@@ -7718,14 +7718,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 42,
-																						Line:   95,
+																						Column: 46,
+																						Line:   83,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "now",
 																					Start: ast.Position{
-																						Column: 39,
-																						Line:   95,
+																						Column: 43,
+																						Line:   83,
 																					},
 																				},
 																			},
@@ -7742,14 +7742,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 26,
-																				Line:   95,
+																				Column: 30,
+																				Line:   83,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 25,
-																				Line:   95,
+																				Column: 29,
+																				Line:   83,
 																			},
 																		},
 																	},
@@ -7766,14 +7766,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 18,
-																		Line:   95,
+																		Column: 22,
+																		Line:   83,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 17,
-																		Line:   95,
+																		Column: 21,
+																		Line:   83,
 																	},
 																},
 															},
@@ -7784,14 +7784,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 18,
-																			Line:   95,
+																			Column: 22,
+																			Line:   83,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 17,
-																			Line:   95,
+																			Column: 21,
+																			Line:   83,
 																		},
 																	},
 																},
@@ -7811,14 +7811,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 47,
-														Line:   95,
+														Column: 51,
+														Line:   83,
 													},
 													File:   "tickscript.flux",
 													Source: "map(fn: (r) => ({r with _time: now()}))",
 													Start: ast.Position{
-														Column: 8,
-														Line:   95,
+														Column: 12,
+														Line:   83,
 													},
 												},
 											},
@@ -7828,14 +7828,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 11,
-															Line:   95,
+															Column: 15,
+															Line:   83,
 														},
 														File:   "tickscript.flux",
 														Source: "map",
 														Start: ast.Position{
-															Column: 8,
-															Line:   95,
+															Column: 12,
+															Line:   83,
 														},
 													},
 												},
@@ -7846,18 +7846,18 @@ var pkgAST = &ast.Package{
 										},
 									},
 									BaseNode: ast.BaseNode{
-										Comments: []ast.Comment{ast.Comment{Text: "// recreate _time column after aggregation\n"}},
+										Comments: []ast.Comment{ast.Comment{Text: "// same tag that monitor.deadman() adds\n"}},
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 65,
-												Line:   96,
+												Column: 69,
+												Line:   85,
 											},
 											File:   "tickscript.flux",
-											Source: "_tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))",
+											Source: "_tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))",
 											Start: ast.Position{
-												Column: 10,
-												Line:   92,
+												Column: 12,
+												Line:   78,
 											},
 										},
 									},
@@ -7868,14 +7868,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 64,
-														Line:   96,
+														Column: 68,
+														Line:   85,
 													},
 													File:   "tickscript.flux",
 													Source: "fn: (r) => ({r with dead: r.__value__ <= threshold})",
 													Start: ast.Position{
-														Column: 12,
-														Line:   96,
+														Column: 16,
+														Line:   85,
 													},
 												},
 											},
@@ -7886,14 +7886,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 64,
-															Line:   96,
+															Column: 68,
+															Line:   85,
 														},
 														File:   "tickscript.flux",
 														Source: "fn: (r) => ({r with dead: r.__value__ <= threshold})",
 														Start: ast.Position{
-															Column: 12,
-															Line:   96,
+															Column: 16,
+															Line:   85,
 														},
 													},
 												},
@@ -7904,14 +7904,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 14,
-																Line:   96,
+																Column: 18,
+																Line:   85,
 															},
 															File:   "tickscript.flux",
 															Source: "fn",
 															Start: ast.Position{
-																Column: 12,
-																Line:   96,
+																Column: 16,
+																Line:   85,
 															},
 														},
 													},
@@ -7925,14 +7925,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 64,
-																Line:   96,
+																Column: 68,
+																Line:   85,
 															},
 															File:   "tickscript.flux",
 															Source: "(r) => ({r with dead: r.__value__ <= threshold})",
 															Start: ast.Position{
-																Column: 16,
-																Line:   96,
+																Column: 20,
+																Line:   85,
 															},
 														},
 													},
@@ -7942,14 +7942,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 64,
-																	Line:   96,
+																	Column: 68,
+																	Line:   85,
 																},
 																File:   "tickscript.flux",
 																Source: "({r with dead: r.__value__ <= threshold})",
 																Start: ast.Position{
-																	Column: 23,
-																	Line:   96,
+																	Column: 27,
+																	Line:   85,
 																},
 															},
 														},
@@ -7959,14 +7959,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 63,
-																		Line:   96,
+																		Column: 67,
+																		Line:   85,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "{r with dead: r.__value__ <= threshold}",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   96,
+																		Column: 28,
+																		Line:   85,
 																	},
 																},
 															},
@@ -7977,14 +7977,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 62,
-																			Line:   96,
+																			Column: 66,
+																			Line:   85,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "dead: r.__value__ <= threshold",
 																		Start: ast.Position{
-																			Column: 32,
-																			Line:   96,
+																			Column: 36,
+																			Line:   85,
 																		},
 																	},
 																},
@@ -7995,14 +7995,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 36,
-																				Line:   96,
+																				Column: 40,
+																				Line:   85,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "dead",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   96,
+																				Column: 36,
+																				Line:   85,
 																			},
 																		},
 																	},
@@ -8015,14 +8015,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 62,
-																				Line:   96,
+																				Column: 66,
+																				Line:   85,
 																			},
 																			File:   "tickscript.flux",
 																			Source: "r.__value__ <= threshold",
 																			Start: ast.Position{
-																				Column: 38,
-																				Line:   96,
+																				Column: 42,
+																				Line:   85,
 																			},
 																		},
 																	},
@@ -8032,14 +8032,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 49,
-																					Line:   96,
+																					Column: 53,
+																					Line:   85,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "r.__value__",
 																				Start: ast.Position{
-																					Column: 38,
-																					Line:   96,
+																					Column: 42,
+																					Line:   85,
 																				},
 																			},
 																		},
@@ -8050,14 +8050,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 39,
-																						Line:   96,
+																						Column: 43,
+																						Line:   85,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "r",
 																					Start: ast.Position{
-																						Column: 38,
-																						Line:   96,
+																						Column: 42,
+																						Line:   85,
 																					},
 																				},
 																			},
@@ -8069,14 +8069,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 49,
-																						Line:   96,
+																						Column: 53,
+																						Line:   85,
 																					},
 																					File:   "tickscript.flux",
 																					Source: "__value__",
 																					Start: ast.Position{
-																						Column: 40,
-																						Line:   96,
+																						Column: 44,
+																						Line:   85,
 																					},
 																				},
 																			},
@@ -8091,14 +8091,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 62,
-																					Line:   96,
+																					Column: 66,
+																					Line:   85,
 																				},
 																				File:   "tickscript.flux",
 																				Source: "threshold",
 																				Start: ast.Position{
-																					Column: 53,
-																					Line:   96,
+																					Column: 57,
+																					Line:   85,
 																				},
 																			},
 																		},
@@ -8113,14 +8113,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 26,
-																			Line:   96,
+																			Column: 30,
+																			Line:   85,
 																		},
 																		File:   "tickscript.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 25,
-																			Line:   96,
+																			Column: 29,
+																			Line:   85,
 																		},
 																	},
 																},
@@ -8137,14 +8137,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 18,
-																	Line:   96,
+																	Column: 22,
+																	Line:   85,
 																},
 																File:   "tickscript.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 17,
-																	Line:   96,
+																	Column: 21,
+																	Line:   85,
 																},
 															},
 														},
@@ -8155,14 +8155,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 18,
-																		Line:   96,
+																		Column: 22,
+																		Line:   85,
 																	},
 																	File:   "tickscript.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 17,
-																		Line:   96,
+																		Column: 21,
+																		Line:   85,
 																	},
 																},
 															},
@@ -8182,14 +8182,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 65,
-													Line:   96,
+													Column: 69,
+													Line:   85,
 												},
 												File:   "tickscript.flux",
 												Source: "map(fn: (r) => ({r with dead: r.__value__ <= threshold}))",
 												Start: ast.Position{
-													Column: 8,
-													Line:   96,
+													Column: 12,
+													Line:   85,
 												},
 											},
 										},
@@ -8199,14 +8199,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   96,
+														Column: 15,
+														Line:   85,
 													},
 													File:   "tickscript.flux",
 													Source: "map",
 													Start: ast.Position{
-														Column: 8,
-														Line:   96,
+														Column: 12,
+														Line:   85,
 													},
 												},
 											},
@@ -8217,18 +8217,18 @@ var pkgAST = &ast.Package{
 									},
 								},
 								BaseNode: ast.BaseNode{
-									Comments: []ast.Comment{ast.Comment{Text: "// same tag that monitor.deadman() adds\n"}},
+									Comments: []ast.Comment{ast.Comment{Text: "// drop dummy field\n"}},
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 36,
-											Line:   97,
+											Column: 40,
+											Line:   87,
 										},
 										File:   "tickscript.flux",
-										Source: "_tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds\n    |> drop(columns: [\"__value__\"])",
+										Source: "_tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))\n        // drop dummy field\n        |> drop(columns: [\"__value__\"])",
 										Start: ast.Position{
-											Column: 10,
-											Line:   92,
+											Column: 12,
+											Line:   78,
 										},
 									},
 								},
@@ -8239,14 +8239,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 35,
-													Line:   97,
+													Column: 39,
+													Line:   87,
 												},
 												File:   "tickscript.flux",
 												Source: "columns: [\"__value__\"]",
 												Start: ast.Position{
-													Column: 13,
-													Line:   97,
+													Column: 17,
+													Line:   87,
 												},
 											},
 										},
@@ -8257,14 +8257,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 35,
-														Line:   97,
+														Column: 39,
+														Line:   87,
 													},
 													File:   "tickscript.flux",
 													Source: "columns: [\"__value__\"]",
 													Start: ast.Position{
-														Column: 13,
-														Line:   97,
+														Column: 17,
+														Line:   87,
 													},
 												},
 											},
@@ -8275,14 +8275,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 20,
-															Line:   97,
+															Column: 24,
+															Line:   87,
 														},
 														File:   "tickscript.flux",
 														Source: "columns",
 														Start: ast.Position{
-															Column: 13,
-															Line:   97,
+															Column: 17,
+															Line:   87,
 														},
 													},
 												},
@@ -8295,14 +8295,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
-															Line:   97,
+															Column: 39,
+															Line:   87,
 														},
 														File:   "tickscript.flux",
 														Source: "[\"__value__\"]",
 														Start: ast.Position{
-															Column: 22,
-															Line:   97,
+															Column: 26,
+															Line:   87,
 														},
 													},
 												},
@@ -8312,14 +8312,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 34,
-																Line:   97,
+																Column: 38,
+																Line:   87,
 															},
 															File:   "tickscript.flux",
 															Source: "\"__value__\"",
 															Start: ast.Position{
-																Column: 23,
-																Line:   97,
+																Column: 27,
+																Line:   87,
 															},
 														},
 													},
@@ -8337,14 +8337,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 36,
-												Line:   97,
+												Column: 40,
+												Line:   87,
 											},
 											File:   "tickscript.flux",
 											Source: "drop(columns: [\"__value__\"])",
 											Start: ast.Position{
-												Column: 8,
-												Line:   97,
+												Column: 12,
+												Line:   87,
 											},
 										},
 									},
@@ -8354,14 +8354,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 12,
-													Line:   97,
+													Column: 16,
+													Line:   87,
 												},
 												File:   "tickscript.flux",
 												Source: "drop",
 												Start: ast.Position{
-													Column: 8,
-													Line:   97,
+													Column: 12,
+													Line:   87,
 												},
 											},
 										},
@@ -8372,18 +8372,18 @@ var pkgAST = &ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Comments: []ast.Comment{ast.Comment{Text: "// drop dummy field\n"}},
+								Comments: nil,
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   104,
+										Column: 10,
+										Line:   94,
 									},
 									File:   "tickscript.flux",
-									Source: "_tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds\n    |> drop(columns: [\"__value__\"])                              // drop dummy field\n    |> alert(\n      check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic\n    )",
+									Source: "_tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))\n        // drop dummy field\n        |> drop(columns: [\"__value__\"])\n        |> alert(\n            check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic,\n        )",
 									Start: ast.Position{
-										Column: 10,
-										Line:   92,
+										Column: 12,
+										Line:   78,
 									},
 								},
 							},
@@ -8394,14 +8394,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   103,
+												Column: 25,
+												Line:   93,
 											},
 											File:   "tickscript.flux",
-											Source: "check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic",
+											Source: "check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic",
 											Start: ast.Position{
-												Column: 7,
-												Line:   99,
+												Column: 13,
+												Line:   89,
 											},
 										},
 									},
@@ -8412,14 +8412,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   99,
+													Column: 25,
+													Line:   89,
 												},
 												File:   "tickscript.flux",
 												Source: "check: check",
 												Start: ast.Position{
-													Column: 7,
-													Line:   99,
+													Column: 13,
+													Line:   89,
 												},
 											},
 										},
@@ -8430,18 +8430,75 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 12,
-														Line:   99,
+														Column: 18,
+														Line:   89,
 													},
 													File:   "tickscript.flux",
 													Source: "check",
 													Start: ast.Position{
-														Column: 7,
-														Line:   99,
+														Column: 13,
+														Line:   89,
 													},
 												},
 											},
 											Name: "check",
+										},
+										Separator: nil,
+										Value: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 25,
+														Line:   89,
+													},
+													File:   "tickscript.flux",
+													Source: "check",
+													Start: ast.Position{
+														Column: 20,
+														Line:   89,
+													},
+												},
+											},
+											Name: "check",
+										},
+									}, &ast.Property{
+										BaseNode: ast.BaseNode{
+											Comments: nil,
+											Errors:   nil,
+											Loc: &ast.SourceLocation{
+												End: ast.Position{
+													Column: 19,
+													Line:   90,
+												},
+												File:   "tickscript.flux",
+												Source: "id: id",
+												Start: ast.Position{
+													Column: 13,
+													Line:   90,
+												},
+											},
+										},
+										Comma: nil,
+										Key: &ast.Identifier{
+											BaseNode: ast.BaseNode{
+												Comments: nil,
+												Errors:   nil,
+												Loc: &ast.SourceLocation{
+													End: ast.Position{
+														Column: 15,
+														Line:   90,
+													},
+													File:   "tickscript.flux",
+													Source: "id",
+													Start: ast.Position{
+														Column: 13,
+														Line:   90,
+													},
+												},
+											},
+											Name: "id",
 										},
 										Separator: nil,
 										Value: &ast.Identifier{
@@ -8451,70 +8508,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 19,
-														Line:   99,
-													},
-													File:   "tickscript.flux",
-													Source: "check",
-													Start: ast.Position{
-														Column: 14,
-														Line:   99,
-													},
-												},
-											},
-											Name: "check",
-										},
-									}, &ast.Property{
-										BaseNode: ast.BaseNode{
-											Comments: nil,
-											Errors:   nil,
-											Loc: &ast.SourceLocation{
-												End: ast.Position{
-													Column: 13,
-													Line:   100,
-												},
-												File:   "tickscript.flux",
-												Source: "id: id",
-												Start: ast.Position{
-													Column: 7,
-													Line:   100,
-												},
-											},
-										},
-										Comma: nil,
-										Key: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 9,
-														Line:   100,
+														Line:   90,
 													},
 													File:   "tickscript.flux",
 													Source: "id",
 													Start: ast.Position{
-														Column: 7,
-														Line:   100,
-													},
-												},
-											},
-											Name: "id",
-										},
-										Separator: nil,
-										Value: &ast.Identifier{
-											BaseNode: ast.BaseNode{
-												Comments: nil,
-												Errors:   nil,
-												Loc: &ast.SourceLocation{
-													End: ast.Position{
-														Column: 13,
-														Line:   100,
-													},
-													File:   "tickscript.flux",
-													Source: "id",
-													Start: ast.Position{
-														Column: 11,
-														Line:   100,
+														Column: 17,
+														Line:   90,
 													},
 												},
 											},
@@ -8526,14 +8526,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 23,
-													Line:   101,
+													Column: 29,
+													Line:   91,
 												},
 												File:   "tickscript.flux",
 												Source: "message: message",
 												Start: ast.Position{
-													Column: 7,
-													Line:   101,
+													Column: 13,
+													Line:   91,
 												},
 											},
 										},
@@ -8544,14 +8544,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   101,
+														Column: 20,
+														Line:   91,
 													},
 													File:   "tickscript.flux",
 													Source: "message",
 													Start: ast.Position{
-														Column: 7,
-														Line:   101,
+														Column: 13,
+														Line:   91,
 													},
 												},
 											},
@@ -8564,14 +8564,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 23,
-														Line:   101,
+														Column: 29,
+														Line:   91,
 													},
 													File:   "tickscript.flux",
 													Source: "message",
 													Start: ast.Position{
-														Column: 16,
-														Line:   101,
+														Column: 22,
+														Line:   91,
 													},
 												},
 											},
@@ -8583,14 +8583,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 26,
-													Line:   102,
+													Column: 32,
+													Line:   92,
 												},
 												File:   "tickscript.flux",
 												Source: "crit: (r) => r.dead",
 												Start: ast.Position{
-													Column: 7,
-													Line:   102,
+													Column: 13,
+													Line:   92,
 												},
 											},
 										},
@@ -8601,14 +8601,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 11,
-														Line:   102,
+														Column: 17,
+														Line:   92,
 													},
 													File:   "tickscript.flux",
 													Source: "crit",
 													Start: ast.Position{
-														Column: 7,
-														Line:   102,
+														Column: 13,
+														Line:   92,
 													},
 												},
 											},
@@ -8622,14 +8622,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 26,
-														Line:   102,
+														Column: 32,
+														Line:   92,
 													},
 													File:   "tickscript.flux",
 													Source: "(r) => r.dead",
 													Start: ast.Position{
-														Column: 13,
-														Line:   102,
+														Column: 19,
+														Line:   92,
 													},
 												},
 											},
@@ -8639,14 +8639,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   102,
+															Column: 32,
+															Line:   92,
 														},
 														File:   "tickscript.flux",
 														Source: "r.dead",
 														Start: ast.Position{
-															Column: 20,
-															Line:   102,
+															Column: 26,
+															Line:   92,
 														},
 													},
 												},
@@ -8657,14 +8657,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 21,
-																Line:   102,
+																Column: 27,
+																Line:   92,
 															},
 															File:   "tickscript.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 20,
-																Line:   102,
+																Column: 26,
+																Line:   92,
 															},
 														},
 													},
@@ -8676,14 +8676,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   102,
+																Column: 32,
+																Line:   92,
 															},
 															File:   "tickscript.flux",
 															Source: "dead",
 															Start: ast.Position{
-																Column: 22,
-																Line:   102,
+																Column: 28,
+																Line:   92,
 															},
 														},
 													},
@@ -8698,14 +8698,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 15,
-															Line:   102,
+															Column: 21,
+															Line:   92,
 														},
 														File:   "tickscript.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 14,
-															Line:   102,
+															Column: 20,
+															Line:   92,
 														},
 													},
 												},
@@ -8716,14 +8716,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 15,
-																Line:   102,
+																Column: 21,
+																Line:   92,
 															},
 															File:   "tickscript.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 14,
-																Line:   102,
+																Column: 20,
+																Line:   92,
 															},
 														},
 													},
@@ -8740,14 +8740,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 19,
-													Line:   103,
+													Column: 25,
+													Line:   93,
 												},
 												File:   "tickscript.flux",
 												Source: "topic: topic",
 												Start: ast.Position{
-													Column: 7,
-													Line:   103,
+													Column: 13,
+													Line:   93,
 												},
 											},
 										},
@@ -8758,14 +8758,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 12,
-														Line:   103,
+														Column: 18,
+														Line:   93,
 													},
 													File:   "tickscript.flux",
 													Source: "topic",
 													Start: ast.Position{
-														Column: 7,
-														Line:   103,
+														Column: 13,
+														Line:   93,
 													},
 												},
 											},
@@ -8778,14 +8778,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   103,
+														Column: 25,
+														Line:   93,
 													},
 													File:   "tickscript.flux",
 													Source: "topic",
 													Start: ast.Position{
-														Column: 14,
-														Line:   103,
+														Column: 20,
+														Line:   93,
 													},
 												},
 											},
@@ -8800,14 +8800,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 6,
-											Line:   104,
+											Column: 10,
+											Line:   94,
 										},
 										File:   "tickscript.flux",
-										Source: "alert(\n      check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic\n    )",
+										Source: "alert(\n            check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic,\n        )",
 										Start: ast.Position{
-											Column: 8,
-											Line:   98,
+											Column: 12,
+											Line:   88,
 										},
 									},
 								},
@@ -8817,14 +8817,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 13,
-												Line:   98,
+												Column: 17,
+												Line:   88,
 											},
 											File:   "tickscript.flux",
 											Source: "alert",
 											Start: ast.Position{
-												Column: 8,
-												Line:   98,
+												Column: 12,
+												Line:   88,
 											},
 										},
 									},
@@ -8839,14 +8839,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 6,
-									Line:   104,
+									Column: 10,
+									Line:   94,
 								},
 								File:   "tickscript.flux",
-								Source: "return _tables\n    |> duplicate(column: \"_measurement\", as: \"__value__\")        // _measurement column is always present\n    |> count(column: \"__value__\")\n    |> map(fn: (r) => ({r with _time: now()}))                   // recreate _time column after aggregation\n    |> map(fn: (r) => ({r with dead: r.__value__ <= threshold})) // same tag that monitor.deadman() adds\n    |> drop(columns: [\"__value__\"])                              // drop dummy field\n    |> alert(\n      check: check,\n      id: id,\n      message: message,\n      crit: (r) => r.dead,\n      topic: topic\n    )",
+								Source: "return _tables\n        // _measurement column is always present\n        |> duplicate(column: \"_measurement\", as: \"__value__\")\n        |> count(column: \"__value__\")\n        // recreate _time column after aggregation\n        |> map(fn: (r) => ({r with _time: now()}))\n        // same tag that monitor.deadman() adds\n        |> map(fn: (r) => ({r with dead: r.__value__ <= threshold}))\n        // drop dummy field\n        |> drop(columns: [\"__value__\"])\n        |> alert(\n            check: check,\n            id: id,\n            message: message,\n            crit: (r) => r.dead,\n            topic: topic,\n        )",
 								Start: ast.Position{
-									Column: 3,
-									Line:   92,
+									Column: 5,
+									Line:   78,
 								},
 							},
 						},
@@ -8861,14 +8861,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 10,
-								Line:   62,
+								Column: 17,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
 							Source: "check",
 							Start: ast.Position{
-								Column: 5,
-								Line:   62,
+								Column: 12,
+								Line:   52,
 							},
 						},
 					},
@@ -8879,14 +8879,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 10,
-									Line:   62,
+									Column: 17,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "check",
 								Start: ast.Position{
-									Column: 5,
-									Line:   62,
+									Column: 12,
+									Line:   52,
 								},
 							},
 						},
@@ -8900,14 +8900,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
-								Line:   63,
+								Column: 30,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
 							Source: "measurement",
 							Start: ast.Position{
-								Column: 5,
-								Line:   63,
+								Column: 19,
+								Line:   52,
 							},
 						},
 					},
@@ -8918,14 +8918,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
-									Line:   63,
+									Column: 30,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "measurement",
 								Start: ast.Position{
-									Column: 5,
-									Line:   63,
+									Column: 19,
+									Line:   52,
 								},
 							},
 						},
@@ -8939,14 +8939,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 29,
-								Line:   63,
+								Column: 43,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
 							Source: "threshold=0",
 							Start: ast.Position{
-								Column: 18,
-								Line:   63,
+								Column: 32,
+								Line:   52,
 							},
 						},
 					},
@@ -8957,14 +8957,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 27,
-									Line:   63,
+									Column: 41,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "threshold",
 								Start: ast.Position{
-									Column: 18,
-									Line:   63,
+									Column: 32,
+									Line:   52,
 								},
 							},
 						},
@@ -8977,14 +8977,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 29,
-									Line:   63,
+									Column: 43,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "0",
 								Start: ast.Position{
-									Column: 28,
-									Line:   63,
+									Column: 42,
+									Line:   52,
 								},
 							},
 						},
@@ -8996,14 +8996,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 29,
-								Line:   64,
+								Column: 71,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
-							Source: "id=(r)=>\"${r._check_id}\"",
+							Source: "id=(r) => \"${r._check_id}\"",
 							Start: ast.Position{
-								Column: 5,
-								Line:   64,
+								Column: 45,
+								Line:   52,
 							},
 						},
 					},
@@ -9014,14 +9014,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 7,
-									Line:   64,
+									Column: 47,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "id",
 								Start: ast.Position{
-									Column: 5,
-									Line:   64,
+									Column: 45,
+									Line:   52,
 								},
 							},
 						},
@@ -9035,14 +9035,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 29,
-									Line:   64,
+									Column: 71,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
-								Source: "(r)=>\"${r._check_id}\"",
+								Source: "(r) => \"${r._check_id}\"",
 								Start: ast.Position{
-									Column: 8,
-									Line:   64,
+									Column: 48,
+									Line:   52,
 								},
 							},
 						},
@@ -9052,14 +9052,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 29,
-										Line:   64,
+										Column: 71,
+										Line:   52,
 									},
 									File:   "tickscript.flux",
 									Source: "\"${r._check_id}\"",
 									Start: ast.Position{
-										Column: 13,
-										Line:   64,
+										Column: 55,
+										Line:   52,
 									},
 								},
 							},
@@ -9069,14 +9069,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
-											Line:   64,
+											Column: 70,
+											Line:   52,
 										},
 										File:   "tickscript.flux",
 										Source: "${r._check_id}",
 										Start: ast.Position{
-											Column: 14,
-											Line:   64,
+											Column: 56,
+											Line:   52,
 										},
 									},
 								},
@@ -9086,14 +9086,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   64,
+												Column: 69,
+												Line:   52,
 											},
 											File:   "tickscript.flux",
 											Source: "r._check_id",
 											Start: ast.Position{
-												Column: 16,
-												Line:   64,
+												Column: 58,
+												Line:   52,
 											},
 										},
 									},
@@ -9104,14 +9104,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 17,
-													Line:   64,
+													Column: 59,
+													Line:   52,
 												},
 												File:   "tickscript.flux",
 												Source: "r",
 												Start: ast.Position{
-													Column: 16,
-													Line:   64,
+													Column: 58,
+													Line:   52,
 												},
 											},
 										},
@@ -9123,14 +9123,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 27,
-													Line:   64,
+													Column: 69,
+													Line:   52,
 												},
 												File:   "tickscript.flux",
 												Source: "_check_id",
 												Start: ast.Position{
-													Column: 18,
-													Line:   64,
+													Column: 60,
+													Line:   52,
 												},
 											},
 										},
@@ -9147,14 +9147,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   64,
+										Column: 50,
+										Line:   52,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 9,
-										Line:   64,
+										Column: 49,
+										Line:   52,
 									},
 								},
 							},
@@ -9165,14 +9165,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 10,
-											Line:   64,
+											Column: 50,
+											Line:   52,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 9,
-											Line:   64,
+											Column: 49,
+											Line:   52,
 										},
 									},
 								},
@@ -9189,14 +9189,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 95,
-								Line:   65,
+								Column: 165,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
-							Source: "message=(r)=>\"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\")",
+							Source: "message=(r) => \"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\")",
 							Start: ast.Position{
-								Column: 5,
-								Line:   65,
+								Column: 73,
+								Line:   52,
 							},
 						},
 					},
@@ -9207,14 +9207,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 12,
-									Line:   65,
+									Column: 80,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "message",
 								Start: ast.Position{
-									Column: 5,
-									Line:   65,
+									Column: 73,
+									Line:   52,
 								},
 							},
 						},
@@ -9228,14 +9228,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 95,
-									Line:   65,
+									Column: 165,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
-								Source: "(r)=>\"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\")",
+								Source: "(r) => \"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\")",
 								Start: ast.Position{
-									Column: 13,
-									Line:   65,
+									Column: 81,
+									Line:   52,
 								},
 							},
 						},
@@ -9245,14 +9245,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 95,
-										Line:   65,
+										Column: 165,
+										Line:   52,
 									},
 									File:   "tickscript.flux",
 									Source: "\"Deadman Check: ${r._check_name} is: \" + (if r.dead then \"dead\" else \"alive\")",
 									Start: ast.Position{
-										Column: 18,
-										Line:   65,
+										Column: 88,
+										Line:   52,
 									},
 								},
 							},
@@ -9262,14 +9262,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 56,
-											Line:   65,
+											Column: 126,
+											Line:   52,
 										},
 										File:   "tickscript.flux",
 										Source: "\"Deadman Check: ${r._check_name} is: \"",
 										Start: ast.Position{
-											Column: 18,
-											Line:   65,
+											Column: 88,
+											Line:   52,
 										},
 									},
 								},
@@ -9279,14 +9279,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 34,
-												Line:   65,
+												Column: 104,
+												Line:   52,
 											},
 											File:   "tickscript.flux",
 											Source: "Deadman Check: ",
 											Start: ast.Position{
-												Column: 19,
-												Line:   65,
+												Column: 89,
+												Line:   52,
 											},
 										},
 									},
@@ -9297,14 +9297,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 50,
-												Line:   65,
+												Column: 120,
+												Line:   52,
 											},
 											File:   "tickscript.flux",
 											Source: "${r._check_name}",
 											Start: ast.Position{
-												Column: 34,
-												Line:   65,
+												Column: 104,
+												Line:   52,
 											},
 										},
 									},
@@ -9314,14 +9314,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 49,
-													Line:   65,
+													Column: 119,
+													Line:   52,
 												},
 												File:   "tickscript.flux",
 												Source: "r._check_name",
 												Start: ast.Position{
-													Column: 36,
-													Line:   65,
+													Column: 106,
+													Line:   52,
 												},
 											},
 										},
@@ -9332,14 +9332,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
-														Line:   65,
+														Column: 107,
+														Line:   52,
 													},
 													File:   "tickscript.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 36,
-														Line:   65,
+														Column: 106,
+														Line:   52,
 													},
 												},
 											},
@@ -9351,14 +9351,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 49,
-														Line:   65,
+														Column: 119,
+														Line:   52,
 													},
 													File:   "tickscript.flux",
 													Source: "_check_name",
 													Start: ast.Position{
-														Column: 38,
-														Line:   65,
+														Column: 108,
+														Line:   52,
 													},
 												},
 											},
@@ -9372,14 +9372,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 55,
-												Line:   65,
+												Column: 125,
+												Line:   52,
 											},
 											File:   "tickscript.flux",
 											Source: " is: ",
 											Start: ast.Position{
-												Column: 50,
-												Line:   65,
+												Column: 120,
+												Line:   52,
 											},
 										},
 									},
@@ -9393,14 +9393,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 95,
-											Line:   65,
+											Column: 165,
+											Line:   52,
 										},
 										File:   "tickscript.flux",
 										Source: "(if r.dead then \"dead\" else \"alive\")",
 										Start: ast.Position{
-											Column: 59,
-											Line:   65,
+											Column: 129,
+											Line:   52,
 										},
 									},
 								},
@@ -9411,14 +9411,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 94,
-													Line:   65,
+													Column: 164,
+													Line:   52,
 												},
 												File:   "tickscript.flux",
 												Source: "\"alive\"",
 												Start: ast.Position{
-													Column: 87,
-													Line:   65,
+													Column: 157,
+													Line:   52,
 												},
 											},
 										},
@@ -9429,14 +9429,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 94,
-												Line:   65,
+												Column: 164,
+												Line:   52,
 											},
 											File:   "tickscript.flux",
 											Source: "if r.dead then \"dead\" else \"alive\"",
 											Start: ast.Position{
-												Column: 60,
-												Line:   65,
+												Column: 130,
+												Line:   52,
 											},
 										},
 									},
@@ -9446,14 +9446,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 81,
-													Line:   65,
+													Column: 151,
+													Line:   52,
 												},
 												File:   "tickscript.flux",
 												Source: "\"dead\"",
 												Start: ast.Position{
-													Column: 75,
-													Line:   65,
+													Column: 145,
+													Line:   52,
 												},
 											},
 										},
@@ -9465,14 +9465,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 69,
-													Line:   65,
+													Column: 139,
+													Line:   52,
 												},
 												File:   "tickscript.flux",
 												Source: "r.dead",
 												Start: ast.Position{
-													Column: 63,
-													Line:   65,
+													Column: 133,
+													Line:   52,
 												},
 											},
 										},
@@ -9483,14 +9483,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 64,
-														Line:   65,
+														Column: 134,
+														Line:   52,
 													},
 													File:   "tickscript.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 63,
-														Line:   65,
+														Column: 133,
+														Line:   52,
 													},
 												},
 											},
@@ -9502,14 +9502,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 69,
-														Line:   65,
+														Column: 139,
+														Line:   52,
 													},
 													File:   "tickscript.flux",
 													Source: "dead",
 													Start: ast.Position{
-														Column: 65,
-														Line:   65,
+														Column: 135,
+														Line:   52,
 													},
 												},
 											},
@@ -9532,14 +9532,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
-										Line:   65,
+										Column: 83,
+										Line:   52,
 									},
 									File:   "tickscript.flux",
 									Source: "r",
 									Start: ast.Position{
-										Column: 14,
-										Line:   65,
+										Column: 82,
+										Line:   52,
 									},
 								},
 							},
@@ -9550,14 +9550,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   65,
+											Column: 83,
+											Line:   52,
 										},
 										File:   "tickscript.flux",
 										Source: "r",
 										Start: ast.Position{
-											Column: 14,
-											Line:   65,
+											Column: 82,
+											Line:   52,
 										},
 									},
 								},
@@ -9574,14 +9574,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 13,
-								Line:   66,
+								Column: 175,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
 							Source: "topic=\"\"",
 							Start: ast.Position{
-								Column: 5,
-								Line:   66,
+								Column: 167,
+								Line:   52,
 							},
 						},
 					},
@@ -9592,14 +9592,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 10,
-									Line:   66,
+									Column: 172,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "topic",
 								Start: ast.Position{
-									Column: 5,
-									Line:   66,
+									Column: 167,
+									Line:   52,
 								},
 							},
 						},
@@ -9612,14 +9612,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 13,
-									Line:   66,
+									Column: 175,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 11,
-									Line:   66,
+									Column: 173,
+									Line:   52,
 								},
 							},
 						},
@@ -9631,14 +9631,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
-								Line:   67,
+								Column: 186,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
-								Column: 5,
-								Line:   67,
+								Column: 177,
+								Line:   52,
 							},
 						},
 					},
@@ -9649,14 +9649,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   67,
+									Column: 183,
+									Line:   52,
 								},
 								File:   "tickscript.flux",
 								Source: "tables",
 								Start: ast.Position{
-									Column: 5,
-									Line:   67,
+									Column: 177,
+									Line:   52,
 								},
 							},
 						},
@@ -9668,14 +9668,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
-								Line:   67,
+								Column: 186,
+								Line:   52,
 							},
 							File:   "tickscript.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 12,
-								Line:   67,
+								Column: 184,
+								Line:   52,
 							},
 						},
 					}},
@@ -9689,13 +9689,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   120,
+						Line:   110,
 					},
 					File:   "tickscript.flux",
-					Source: "select = (column=\"_value\", fn=(column, tables=<-) => tables, as, tables=<-) => {\n  _column = column\n  _as = as\n  return\n    tables\n      |> fn(column: _column)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}",
+					Source: "select = (column=\"_value\", fn=(column, tables=<-) => tables, as, tables=<-) => {\n    _column = column\n    _as = as\n\n    return tables\n        |> fn(column: _column)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   113,
+						Line:   103,
 					},
 				},
 			},
@@ -9706,13 +9706,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   113,
+							Line:   103,
 						},
 						File:   "tickscript.flux",
 						Source: "select",
 						Start: ast.Position{
 							Column: 1,
-							Line:   113,
+							Line:   103,
 						},
 					},
 				},
@@ -9726,13 +9726,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   120,
+							Line:   110,
 						},
 						File:   "tickscript.flux",
-						Source: "(column=\"_value\", fn=(column, tables=<-) => tables, as, tables=<-) => {\n  _column = column\n  _as = as\n  return\n    tables\n      |> fn(column: _column)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}",
+						Source: "(column=\"_value\", fn=(column, tables=<-) => tables, as, tables=<-) => {\n    _column = column\n    _as = as\n\n    return tables\n        |> fn(column: _column)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}",
 						Start: ast.Position{
 							Column: 10,
-							Line:   113,
+							Line:   103,
 						},
 					},
 				},
@@ -9743,13 +9743,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   120,
+								Line:   110,
 							},
 							File:   "tickscript.flux",
-							Source: "{\n  _column = column\n  _as = as\n  return\n    tables\n      |> fn(column: _column)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}",
+							Source: "{\n    _column = column\n    _as = as\n\n    return tables\n        |> fn(column: _column)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}",
 							Start: ast.Position{
 								Column: 80,
-								Line:   113,
+								Line:   103,
 							},
 						},
 					},
@@ -9759,14 +9759,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
-									Line:   114,
+									Column: 21,
+									Line:   104,
 								},
 								File:   "tickscript.flux",
 								Source: "_column = column",
 								Start: ast.Position{
-									Column: 3,
-									Line:   114,
+									Column: 5,
+									Line:   104,
 								},
 							},
 						},
@@ -9776,14 +9776,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   114,
+										Column: 12,
+										Line:   104,
 									},
 									File:   "tickscript.flux",
 									Source: "_column",
 									Start: ast.Position{
-										Column: 3,
-										Line:   114,
+										Column: 5,
+										Line:   104,
 									},
 								},
 							},
@@ -9795,14 +9795,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   114,
+										Column: 21,
+										Line:   104,
 									},
 									File:   "tickscript.flux",
 									Source: "column",
 									Start: ast.Position{
-										Column: 13,
-										Line:   114,
+										Column: 15,
+										Line:   104,
 									},
 								},
 							},
@@ -9814,14 +9814,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   115,
+									Column: 13,
+									Line:   105,
 								},
 								File:   "tickscript.flux",
 								Source: "_as = as",
 								Start: ast.Position{
-									Column: 3,
-									Line:   115,
+									Column: 5,
+									Line:   105,
 								},
 							},
 						},
@@ -9831,14 +9831,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   115,
+										Column: 8,
+										Line:   105,
 									},
 									File:   "tickscript.flux",
 									Source: "_as",
 									Start: ast.Position{
-										Column: 3,
-										Line:   115,
+										Column: 5,
+										Line:   105,
 									},
 								},
 							},
@@ -9850,14 +9850,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   115,
+										Column: 13,
+										Line:   105,
 									},
 									File:   "tickscript.flux",
 									Source: "as",
 									Start: ast.Position{
-										Column: 9,
-										Line:   115,
+										Column: 11,
+										Line:   105,
 									},
 								},
 							},
@@ -9872,14 +9872,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 11,
-												Line:   117,
+												Column: 18,
+												Line:   107,
 											},
 											File:   "tickscript.flux",
 											Source: "tables",
 											Start: ast.Position{
-												Column: 5,
-												Line:   117,
+												Column: 12,
+												Line:   107,
 											},
 										},
 									},
@@ -9890,14 +9890,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 29,
-											Line:   118,
+											Column: 31,
+											Line:   108,
 										},
 										File:   "tickscript.flux",
-										Source: "tables\n      |> fn(column: _column)",
+										Source: "tables\n        |> fn(column: _column)",
 										Start: ast.Position{
-											Column: 5,
-											Line:   117,
+											Column: 12,
+											Line:   107,
 										},
 									},
 								},
@@ -9908,14 +9908,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 28,
-													Line:   118,
+													Column: 30,
+													Line:   108,
 												},
 												File:   "tickscript.flux",
 												Source: "column: _column",
 												Start: ast.Position{
-													Column: 13,
-													Line:   118,
+													Column: 15,
+													Line:   108,
 												},
 											},
 										},
@@ -9926,14 +9926,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 28,
-														Line:   118,
+														Column: 30,
+														Line:   108,
 													},
 													File:   "tickscript.flux",
 													Source: "column: _column",
 													Start: ast.Position{
-														Column: 13,
-														Line:   118,
+														Column: 15,
+														Line:   108,
 													},
 												},
 											},
@@ -9944,14 +9944,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 19,
-															Line:   118,
+															Column: 21,
+															Line:   108,
 														},
 														File:   "tickscript.flux",
 														Source: "column",
 														Start: ast.Position{
-															Column: 13,
-															Line:   118,
+															Column: 15,
+															Line:   108,
 														},
 													},
 												},
@@ -9964,14 +9964,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
-															Line:   118,
+															Column: 30,
+															Line:   108,
 														},
 														File:   "tickscript.flux",
 														Source: "_column",
 														Start: ast.Position{
-															Column: 21,
-															Line:   118,
+															Column: 23,
+															Line:   108,
 														},
 													},
 												},
@@ -9986,14 +9986,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 29,
-												Line:   118,
+												Column: 31,
+												Line:   108,
 											},
 											File:   "tickscript.flux",
 											Source: "fn(column: _column)",
 											Start: ast.Position{
-												Column: 10,
-												Line:   118,
+												Column: 12,
+												Line:   108,
 											},
 										},
 									},
@@ -10003,14 +10003,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 12,
-													Line:   118,
+													Column: 14,
+													Line:   108,
 												},
 												File:   "tickscript.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 10,
-													Line:   118,
+													Column: 12,
+													Line:   108,
 												},
 											},
 										},
@@ -10025,14 +10025,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 75,
-										Line:   119,
+										Column: 77,
+										Line:   109,
 									},
 									File:   "tickscript.flux",
-									Source: "tables\n      |> fn(column: _column)\n      |> rename(fn: (column) => if column == _column then _as else column)",
+									Source: "tables\n        |> fn(column: _column)\n        |> rename(fn: (column) => if column == _column then _as else column)",
 									Start: ast.Position{
-										Column: 5,
-										Line:   117,
+										Column: 12,
+										Line:   107,
 									},
 								},
 							},
@@ -10043,14 +10043,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 74,
-												Line:   119,
+												Column: 76,
+												Line:   109,
 											},
 											File:   "tickscript.flux",
 											Source: "fn: (column) => if column == _column then _as else column",
 											Start: ast.Position{
-												Column: 17,
-												Line:   119,
+												Column: 19,
+												Line:   109,
 											},
 										},
 									},
@@ -10061,14 +10061,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 74,
-													Line:   119,
+													Column: 76,
+													Line:   109,
 												},
 												File:   "tickscript.flux",
 												Source: "fn: (column) => if column == _column then _as else column",
 												Start: ast.Position{
-													Column: 17,
-													Line:   119,
+													Column: 19,
+													Line:   109,
 												},
 											},
 										},
@@ -10079,14 +10079,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   119,
+														Column: 21,
+														Line:   109,
 													},
 													File:   "tickscript.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 17,
-														Line:   119,
+														Column: 19,
+														Line:   109,
 													},
 												},
 											},
@@ -10100,14 +10100,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 74,
-														Line:   119,
+														Column: 76,
+														Line:   109,
 													},
 													File:   "tickscript.flux",
 													Source: "(column) => if column == _column then _as else column",
 													Start: ast.Position{
-														Column: 21,
-														Line:   119,
+														Column: 23,
+														Line:   109,
 													},
 												},
 											},
@@ -10118,14 +10118,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 74,
-																Line:   119,
+																Column: 76,
+																Line:   109,
 															},
 															File:   "tickscript.flux",
 															Source: "column",
 															Start: ast.Position{
-																Column: 68,
-																Line:   119,
+																Column: 70,
+																Line:   109,
 															},
 														},
 													},
@@ -10136,14 +10136,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 74,
-															Line:   119,
+															Column: 76,
+															Line:   109,
 														},
 														File:   "tickscript.flux",
 														Source: "if column == _column then _as else column",
 														Start: ast.Position{
-															Column: 33,
-															Line:   119,
+															Column: 35,
+															Line:   109,
 														},
 													},
 												},
@@ -10153,14 +10153,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 62,
-																Line:   119,
+																Column: 64,
+																Line:   109,
 															},
 															File:   "tickscript.flux",
 															Source: "_as",
 															Start: ast.Position{
-																Column: 59,
-																Line:   119,
+																Column: 61,
+																Line:   109,
 															},
 														},
 													},
@@ -10172,14 +10172,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 53,
-																Line:   119,
+																Column: 55,
+																Line:   109,
 															},
 															File:   "tickscript.flux",
 															Source: "column == _column",
 															Start: ast.Position{
-																Column: 36,
-																Line:   119,
+																Column: 38,
+																Line:   109,
 															},
 														},
 													},
@@ -10189,14 +10189,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 42,
-																	Line:   119,
+																	Column: 44,
+																	Line:   109,
 																},
 																File:   "tickscript.flux",
 																Source: "column",
 																Start: ast.Position{
-																	Column: 36,
-																	Line:   119,
+																	Column: 38,
+																	Line:   109,
 																},
 															},
 														},
@@ -10209,14 +10209,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 53,
-																	Line:   119,
+																	Column: 55,
+																	Line:   109,
 																},
 																File:   "tickscript.flux",
 																Source: "_column",
 																Start: ast.Position{
-																	Column: 46,
-																	Line:   119,
+																	Column: 48,
+																	Line:   109,
 																},
 															},
 														},
@@ -10234,14 +10234,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
-															Line:   119,
+															Column: 30,
+															Line:   109,
 														},
 														File:   "tickscript.flux",
 														Source: "column",
 														Start: ast.Position{
-															Column: 22,
-															Line:   119,
+															Column: 24,
+															Line:   109,
 														},
 													},
 												},
@@ -10252,14 +10252,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 28,
-																Line:   119,
+																Column: 30,
+																Line:   109,
 															},
 															File:   "tickscript.flux",
 															Source: "column",
 															Start: ast.Position{
-																Column: 22,
-																Line:   119,
+																Column: 24,
+																Line:   109,
 															},
 														},
 													},
@@ -10279,14 +10279,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 75,
-											Line:   119,
+											Column: 77,
+											Line:   109,
 										},
 										File:   "tickscript.flux",
 										Source: "rename(fn: (column) => if column == _column then _as else column)",
 										Start: ast.Position{
-											Column: 10,
-											Line:   119,
+											Column: 12,
+											Line:   109,
 										},
 									},
 								},
@@ -10296,14 +10296,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 16,
-												Line:   119,
+												Column: 18,
+												Line:   109,
 											},
 											File:   "tickscript.flux",
 											Source: "rename",
 											Start: ast.Position{
-												Column: 10,
-												Line:   119,
+												Column: 12,
+												Line:   109,
 											},
 										},
 									},
@@ -10318,14 +10318,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 75,
-									Line:   119,
+									Column: 77,
+									Line:   109,
 								},
 								File:   "tickscript.flux",
-								Source: "return\n    tables\n      |> fn(column: _column)\n      |> rename(fn: (column) => if column == _column then _as else column)",
+								Source: "return tables\n        |> fn(column: _column)\n        |> rename(fn: (column) => if column == _column then _as else column)",
 								Start: ast.Position{
-									Column: 3,
-									Line:   116,
+									Column: 5,
+									Line:   107,
 								},
 							},
 						},
@@ -10341,13 +10341,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 26,
-								Line:   113,
+								Line:   103,
 							},
 							File:   "tickscript.flux",
 							Source: "column=\"_value\"",
 							Start: ast.Position{
 								Column: 11,
-								Line:   113,
+								Line:   103,
 							},
 						},
 					},
@@ -10359,13 +10359,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   113,
+									Line:   103,
 								},
 								File:   "tickscript.flux",
 								Source: "column",
 								Start: ast.Position{
 									Column: 11,
-									Line:   113,
+									Line:   103,
 								},
 							},
 						},
@@ -10379,13 +10379,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 26,
-									Line:   113,
+									Line:   103,
 								},
 								File:   "tickscript.flux",
 								Source: "\"_value\"",
 								Start: ast.Position{
 									Column: 18,
-									Line:   113,
+									Line:   103,
 								},
 							},
 						},
@@ -10398,13 +10398,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 60,
-								Line:   113,
+								Line:   103,
 							},
 							File:   "tickscript.flux",
 							Source: "fn=(column, tables=<-) => tables",
 							Start: ast.Position{
 								Column: 28,
-								Line:   113,
+								Line:   103,
 							},
 						},
 					},
@@ -10416,13 +10416,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   113,
+									Line:   103,
 								},
 								File:   "tickscript.flux",
 								Source: "fn",
 								Start: ast.Position{
 									Column: 28,
-									Line:   113,
+									Line:   103,
 								},
 							},
 						},
@@ -10437,13 +10437,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 60,
-									Line:   113,
+									Line:   103,
 								},
 								File:   "tickscript.flux",
 								Source: "(column, tables=<-) => tables",
 								Start: ast.Position{
 									Column: 31,
-									Line:   113,
+									Line:   103,
 								},
 							},
 						},
@@ -10454,13 +10454,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 60,
-										Line:   113,
+										Line:   103,
 									},
 									File:   "tickscript.flux",
 									Source: "tables",
 									Start: ast.Position{
 										Column: 54,
-										Line:   113,
+										Line:   103,
 									},
 								},
 							},
@@ -10474,13 +10474,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   113,
+										Line:   103,
 									},
 									File:   "tickscript.flux",
 									Source: "column",
 									Start: ast.Position{
 										Column: 32,
-										Line:   113,
+										Line:   103,
 									},
 								},
 							},
@@ -10492,13 +10492,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 38,
-											Line:   113,
+											Line:   103,
 										},
 										File:   "tickscript.flux",
 										Source: "column",
 										Start: ast.Position{
 											Column: 32,
-											Line:   113,
+											Line:   103,
 										},
 									},
 								},
@@ -10513,13 +10513,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   113,
+										Line:   103,
 									},
 									File:   "tickscript.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
 										Column: 40,
-										Line:   113,
+										Line:   103,
 									},
 								},
 							},
@@ -10531,13 +10531,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   113,
+											Line:   103,
 										},
 										File:   "tickscript.flux",
 										Source: "tables",
 										Start: ast.Position{
 											Column: 40,
-											Line:   113,
+											Line:   103,
 										},
 									},
 								},
@@ -10550,13 +10550,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 49,
-										Line:   113,
+										Line:   103,
 									},
 									File:   "tickscript.flux",
 									Source: "<-",
 									Start: ast.Position{
 										Column: 47,
-										Line:   113,
+										Line:   103,
 									},
 								},
 							}},
@@ -10570,13 +10570,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 64,
-								Line:   113,
+								Line:   103,
 							},
 							File:   "tickscript.flux",
 							Source: "as",
 							Start: ast.Position{
 								Column: 62,
-								Line:   113,
+								Line:   103,
 							},
 						},
 					},
@@ -10588,13 +10588,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 64,
-									Line:   113,
+									Line:   103,
 								},
 								File:   "tickscript.flux",
 								Source: "as",
 								Start: ast.Position{
 									Column: 62,
-									Line:   113,
+									Line:   103,
 								},
 							},
 						},
@@ -10609,13 +10609,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 75,
-								Line:   113,
+								Line:   103,
 							},
 							File:   "tickscript.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 66,
-								Line:   113,
+								Line:   103,
 							},
 						},
 					},
@@ -10627,13 +10627,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 72,
-									Line:   113,
+									Line:   103,
 								},
 								File:   "tickscript.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 66,
-									Line:   113,
+									Line:   103,
 								},
 							},
 						},
@@ -10646,13 +10646,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 75,
-								Line:   113,
+								Line:   103,
 							},
 							File:   "tickscript.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 73,
-								Line:   113,
+								Line:   103,
 							},
 						},
 					}},
@@ -10666,13 +10666,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   136,
+						Line:   126,
 					},
 					File:   "tickscript.flux",
-					Source: "selectWindow = (column=\"_value\", fn, as, every, defaultValue, tables=<-) => {\n  _column = column\n  _as = as\n  return\n    tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n      |> fill(column: _column, value: defaultValue)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}",
+					Source: "selectWindow = (column=\"_value\", fn, as, every, defaultValue, tables=<-) => {\n    _column = column\n    _as = as\n\n    return tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n        |> fill(column: _column, value: defaultValue)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   128,
+						Line:   118,
 					},
 				},
 			},
@@ -10683,13 +10683,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   128,
+							Line:   118,
 						},
 						File:   "tickscript.flux",
 						Source: "selectWindow",
 						Start: ast.Position{
 							Column: 1,
-							Line:   128,
+							Line:   118,
 						},
 					},
 				},
@@ -10703,13 +10703,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   136,
+							Line:   126,
 						},
 						File:   "tickscript.flux",
-						Source: "(column=\"_value\", fn, as, every, defaultValue, tables=<-) => {\n  _column = column\n  _as = as\n  return\n    tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n      |> fill(column: _column, value: defaultValue)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}",
+						Source: "(column=\"_value\", fn, as, every, defaultValue, tables=<-) => {\n    _column = column\n    _as = as\n\n    return tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n        |> fill(column: _column, value: defaultValue)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}",
 						Start: ast.Position{
 							Column: 16,
-							Line:   128,
+							Line:   118,
 						},
 					},
 				},
@@ -10720,13 +10720,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   136,
+								Line:   126,
 							},
 							File:   "tickscript.flux",
-							Source: "{\n  _column = column\n  _as = as\n  return\n    tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n      |> fill(column: _column, value: defaultValue)\n      |> rename(fn: (column) => if column == _column then _as else column)\n}",
+							Source: "{\n    _column = column\n    _as = as\n\n    return tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n        |> fill(column: _column, value: defaultValue)\n        |> rename(fn: (column) => if column == _column then _as else column)\n}",
 							Start: ast.Position{
 								Column: 77,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					},
@@ -10736,14 +10736,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
-									Line:   129,
+									Column: 21,
+									Line:   119,
 								},
 								File:   "tickscript.flux",
 								Source: "_column = column",
 								Start: ast.Position{
-									Column: 3,
-									Line:   129,
+									Column: 5,
+									Line:   119,
 								},
 							},
 						},
@@ -10753,14 +10753,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 10,
-										Line:   129,
+										Column: 12,
+										Line:   119,
 									},
 									File:   "tickscript.flux",
 									Source: "_column",
 									Start: ast.Position{
-										Column: 3,
-										Line:   129,
+										Column: 5,
+										Line:   119,
 									},
 								},
 							},
@@ -10772,14 +10772,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   129,
+										Column: 21,
+										Line:   119,
 									},
 									File:   "tickscript.flux",
 									Source: "column",
 									Start: ast.Position{
-										Column: 13,
-										Line:   129,
+										Column: 15,
+										Line:   119,
 									},
 								},
 							},
@@ -10791,14 +10791,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   130,
+									Column: 13,
+									Line:   120,
 								},
 								File:   "tickscript.flux",
 								Source: "_as = as",
 								Start: ast.Position{
-									Column: 3,
-									Line:   130,
+									Column: 5,
+									Line:   120,
 								},
 							},
 						},
@@ -10808,14 +10808,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 6,
-										Line:   130,
+										Column: 8,
+										Line:   120,
 									},
 									File:   "tickscript.flux",
 									Source: "_as",
 									Start: ast.Position{
-										Column: 3,
-										Line:   130,
+										Column: 5,
+										Line:   120,
 									},
 								},
 							},
@@ -10827,14 +10827,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   130,
+										Column: 13,
+										Line:   120,
 									},
 									File:   "tickscript.flux",
 									Source: "as",
 									Start: ast.Position{
-										Column: 9,
-										Line:   130,
+										Column: 11,
+										Line:   120,
 									},
 								},
 							},
@@ -10850,14 +10850,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 11,
-													Line:   132,
+													Column: 18,
+													Line:   122,
 												},
 												File:   "tickscript.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 5,
-													Line:   132,
+													Column: 12,
+													Line:   122,
 												},
 											},
 										},
@@ -10868,14 +10868,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 83,
-												Line:   133,
+												Column: 85,
+												Line:   123,
 											},
 											File:   "tickscript.flux",
-											Source: "tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)",
+											Source: "tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)",
 											Start: ast.Position{
-												Column: 5,
-												Line:   132,
+												Column: 12,
+												Line:   122,
 											},
 										},
 									},
@@ -10886,14 +10886,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 82,
-														Line:   133,
+														Column: 84,
+														Line:   123,
 													},
 													File:   "tickscript.flux",
 													Source: "every: every, fn: fn, column: _column, createEmpty: true",
 													Start: ast.Position{
-														Column: 26,
-														Line:   133,
+														Column: 28,
+														Line:   123,
 													},
 												},
 											},
@@ -10904,14 +10904,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 38,
-															Line:   133,
+															Column: 40,
+															Line:   123,
 														},
 														File:   "tickscript.flux",
 														Source: "every: every",
 														Start: ast.Position{
-															Column: 26,
-															Line:   133,
+															Column: 28,
+															Line:   123,
 														},
 													},
 												},
@@ -10922,14 +10922,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 31,
-																Line:   133,
+																Column: 33,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "every",
 															Start: ast.Position{
-																Column: 26,
-																Line:   133,
+																Column: 28,
+																Line:   123,
 															},
 														},
 													},
@@ -10942,14 +10942,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 38,
-																Line:   133,
+																Column: 40,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "every",
 															Start: ast.Position{
-																Column: 33,
-																Line:   133,
+																Column: 35,
+																Line:   123,
 															},
 														},
 													},
@@ -10961,14 +10961,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 46,
-															Line:   133,
+															Column: 48,
+															Line:   123,
 														},
 														File:   "tickscript.flux",
 														Source: "fn: fn",
 														Start: ast.Position{
-															Column: 40,
-															Line:   133,
+															Column: 42,
+															Line:   123,
 														},
 													},
 												},
@@ -10979,14 +10979,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 42,
-																Line:   133,
+																Column: 44,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "fn",
 															Start: ast.Position{
-																Column: 40,
-																Line:   133,
+																Column: 42,
+																Line:   123,
 															},
 														},
 													},
@@ -10999,14 +10999,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 46,
-																Line:   133,
+																Column: 48,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "fn",
 															Start: ast.Position{
-																Column: 44,
-																Line:   133,
+																Column: 46,
+																Line:   123,
 															},
 														},
 													},
@@ -11018,14 +11018,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 63,
-															Line:   133,
+															Column: 65,
+															Line:   123,
 														},
 														File:   "tickscript.flux",
 														Source: "column: _column",
 														Start: ast.Position{
-															Column: 48,
-															Line:   133,
+															Column: 50,
+															Line:   123,
 														},
 													},
 												},
@@ -11036,14 +11036,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 54,
-																Line:   133,
+																Column: 56,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "column",
 															Start: ast.Position{
-																Column: 48,
-																Line:   133,
+																Column: 50,
+																Line:   123,
 															},
 														},
 													},
@@ -11056,14 +11056,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 63,
-																Line:   133,
+																Column: 65,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "_column",
 															Start: ast.Position{
-																Column: 56,
-																Line:   133,
+																Column: 58,
+																Line:   123,
 															},
 														},
 													},
@@ -11075,14 +11075,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 82,
-															Line:   133,
+															Column: 84,
+															Line:   123,
 														},
 														File:   "tickscript.flux",
 														Source: "createEmpty: true",
 														Start: ast.Position{
-															Column: 65,
-															Line:   133,
+															Column: 67,
+															Line:   123,
 														},
 													},
 												},
@@ -11093,14 +11093,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 76,
-																Line:   133,
+																Column: 78,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "createEmpty",
 															Start: ast.Position{
-																Column: 65,
-																Line:   133,
+																Column: 67,
+																Line:   123,
 															},
 														},
 													},
@@ -11113,14 +11113,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 82,
-																Line:   133,
+																Column: 84,
+																Line:   123,
 															},
 															File:   "tickscript.flux",
 															Source: "true",
 															Start: ast.Position{
-																Column: 78,
-																Line:   133,
+																Column: 80,
+																Line:   123,
 															},
 														},
 													},
@@ -11135,14 +11135,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 83,
-													Line:   133,
+													Column: 85,
+													Line:   123,
 												},
 												File:   "tickscript.flux",
 												Source: "aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)",
 												Start: ast.Position{
-													Column: 10,
-													Line:   133,
+													Column: 12,
+													Line:   123,
 												},
 											},
 										},
@@ -11152,14 +11152,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 25,
-														Line:   133,
+														Column: 27,
+														Line:   123,
 													},
 													File:   "tickscript.flux",
 													Source: "aggregateWindow",
 													Start: ast.Position{
-														Column: 10,
-														Line:   133,
+														Column: 12,
+														Line:   123,
 													},
 												},
 											},
@@ -11174,14 +11174,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 52,
-											Line:   134,
+											Column: 54,
+											Line:   124,
 										},
 										File:   "tickscript.flux",
-										Source: "tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n      |> fill(column: _column, value: defaultValue)",
+										Source: "tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n        |> fill(column: _column, value: defaultValue)",
 										Start: ast.Position{
-											Column: 5,
-											Line:   132,
+											Column: 12,
+											Line:   122,
 										},
 									},
 								},
@@ -11192,14 +11192,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 51,
-													Line:   134,
+													Column: 53,
+													Line:   124,
 												},
 												File:   "tickscript.flux",
 												Source: "column: _column, value: defaultValue",
 												Start: ast.Position{
-													Column: 15,
-													Line:   134,
+													Column: 17,
+													Line:   124,
 												},
 											},
 										},
@@ -11210,14 +11210,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 30,
-														Line:   134,
+														Column: 32,
+														Line:   124,
 													},
 													File:   "tickscript.flux",
 													Source: "column: _column",
 													Start: ast.Position{
-														Column: 15,
-														Line:   134,
+														Column: 17,
+														Line:   124,
 													},
 												},
 											},
@@ -11228,14 +11228,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 21,
-															Line:   134,
+															Column: 23,
+															Line:   124,
 														},
 														File:   "tickscript.flux",
 														Source: "column",
 														Start: ast.Position{
-															Column: 15,
-															Line:   134,
+															Column: 17,
+															Line:   124,
 														},
 													},
 												},
@@ -11248,14 +11248,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 30,
-															Line:   134,
+															Column: 32,
+															Line:   124,
 														},
 														File:   "tickscript.flux",
 														Source: "_column",
 														Start: ast.Position{
-															Column: 23,
-															Line:   134,
+															Column: 25,
+															Line:   124,
 														},
 													},
 												},
@@ -11267,14 +11267,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 51,
-														Line:   134,
+														Column: 53,
+														Line:   124,
 													},
 													File:   "tickscript.flux",
 													Source: "value: defaultValue",
 													Start: ast.Position{
-														Column: 32,
-														Line:   134,
+														Column: 34,
+														Line:   124,
 													},
 												},
 											},
@@ -11285,14 +11285,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 37,
-															Line:   134,
+															Column: 39,
+															Line:   124,
 														},
 														File:   "tickscript.flux",
 														Source: "value",
 														Start: ast.Position{
-															Column: 32,
-															Line:   134,
+															Column: 34,
+															Line:   124,
 														},
 													},
 												},
@@ -11305,14 +11305,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 51,
-															Line:   134,
+															Column: 53,
+															Line:   124,
 														},
 														File:   "tickscript.flux",
 														Source: "defaultValue",
 														Start: ast.Position{
-															Column: 39,
-															Line:   134,
+															Column: 41,
+															Line:   124,
 														},
 													},
 												},
@@ -11327,14 +11327,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 52,
-												Line:   134,
+												Column: 54,
+												Line:   124,
 											},
 											File:   "tickscript.flux",
 											Source: "fill(column: _column, value: defaultValue)",
 											Start: ast.Position{
-												Column: 10,
-												Line:   134,
+												Column: 12,
+												Line:   124,
 											},
 										},
 									},
@@ -11344,14 +11344,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 14,
-													Line:   134,
+													Column: 16,
+													Line:   124,
 												},
 												File:   "tickscript.flux",
 												Source: "fill",
 												Start: ast.Position{
-													Column: 10,
-													Line:   134,
+													Column: 12,
+													Line:   124,
 												},
 											},
 										},
@@ -11366,14 +11366,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 75,
-										Line:   135,
+										Column: 77,
+										Line:   125,
 									},
 									File:   "tickscript.flux",
-									Source: "tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n      |> fill(column: _column, value: defaultValue)\n      |> rename(fn: (column) => if column == _column then _as else column)",
+									Source: "tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n        |> fill(column: _column, value: defaultValue)\n        |> rename(fn: (column) => if column == _column then _as else column)",
 									Start: ast.Position{
-										Column: 5,
-										Line:   132,
+										Column: 12,
+										Line:   122,
 									},
 								},
 							},
@@ -11384,14 +11384,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 74,
-												Line:   135,
+												Column: 76,
+												Line:   125,
 											},
 											File:   "tickscript.flux",
 											Source: "fn: (column) => if column == _column then _as else column",
 											Start: ast.Position{
-												Column: 17,
-												Line:   135,
+												Column: 19,
+												Line:   125,
 											},
 										},
 									},
@@ -11402,14 +11402,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 74,
-													Line:   135,
+													Column: 76,
+													Line:   125,
 												},
 												File:   "tickscript.flux",
 												Source: "fn: (column) => if column == _column then _as else column",
 												Start: ast.Position{
-													Column: 17,
-													Line:   135,
+													Column: 19,
+													Line:   125,
 												},
 											},
 										},
@@ -11420,14 +11420,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 19,
-														Line:   135,
+														Column: 21,
+														Line:   125,
 													},
 													File:   "tickscript.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 17,
-														Line:   135,
+														Column: 19,
+														Line:   125,
 													},
 												},
 											},
@@ -11441,14 +11441,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 74,
-														Line:   135,
+														Column: 76,
+														Line:   125,
 													},
 													File:   "tickscript.flux",
 													Source: "(column) => if column == _column then _as else column",
 													Start: ast.Position{
-														Column: 21,
-														Line:   135,
+														Column: 23,
+														Line:   125,
 													},
 												},
 											},
@@ -11459,14 +11459,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 74,
-																Line:   135,
+																Column: 76,
+																Line:   125,
 															},
 															File:   "tickscript.flux",
 															Source: "column",
 															Start: ast.Position{
-																Column: 68,
-																Line:   135,
+																Column: 70,
+																Line:   125,
 															},
 														},
 													},
@@ -11477,14 +11477,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 74,
-															Line:   135,
+															Column: 76,
+															Line:   125,
 														},
 														File:   "tickscript.flux",
 														Source: "if column == _column then _as else column",
 														Start: ast.Position{
-															Column: 33,
-															Line:   135,
+															Column: 35,
+															Line:   125,
 														},
 													},
 												},
@@ -11494,14 +11494,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 62,
-																Line:   135,
+																Column: 64,
+																Line:   125,
 															},
 															File:   "tickscript.flux",
 															Source: "_as",
 															Start: ast.Position{
-																Column: 59,
-																Line:   135,
+																Column: 61,
+																Line:   125,
 															},
 														},
 													},
@@ -11513,14 +11513,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 53,
-																Line:   135,
+																Column: 55,
+																Line:   125,
 															},
 															File:   "tickscript.flux",
 															Source: "column == _column",
 															Start: ast.Position{
-																Column: 36,
-																Line:   135,
+																Column: 38,
+																Line:   125,
 															},
 														},
 													},
@@ -11530,14 +11530,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 42,
-																	Line:   135,
+																	Column: 44,
+																	Line:   125,
 																},
 																File:   "tickscript.flux",
 																Source: "column",
 																Start: ast.Position{
-																	Column: 36,
-																	Line:   135,
+																	Column: 38,
+																	Line:   125,
 																},
 															},
 														},
@@ -11550,14 +11550,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 53,
-																	Line:   135,
+																	Column: 55,
+																	Line:   125,
 																},
 																File:   "tickscript.flux",
 																Source: "_column",
 																Start: ast.Position{
-																	Column: 46,
-																	Line:   135,
+																	Column: 48,
+																	Line:   125,
 																},
 															},
 														},
@@ -11575,14 +11575,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
-															Line:   135,
+															Column: 30,
+															Line:   125,
 														},
 														File:   "tickscript.flux",
 														Source: "column",
 														Start: ast.Position{
-															Column: 22,
-															Line:   135,
+															Column: 24,
+															Line:   125,
 														},
 													},
 												},
@@ -11593,14 +11593,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 28,
-																Line:   135,
+																Column: 30,
+																Line:   125,
 															},
 															File:   "tickscript.flux",
 															Source: "column",
 															Start: ast.Position{
-																Column: 22,
-																Line:   135,
+																Column: 24,
+																Line:   125,
 															},
 														},
 													},
@@ -11620,14 +11620,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 75,
-											Line:   135,
+											Column: 77,
+											Line:   125,
 										},
 										File:   "tickscript.flux",
 										Source: "rename(fn: (column) => if column == _column then _as else column)",
 										Start: ast.Position{
-											Column: 10,
-											Line:   135,
+											Column: 12,
+											Line:   125,
 										},
 									},
 								},
@@ -11637,14 +11637,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 16,
-												Line:   135,
+												Column: 18,
+												Line:   125,
 											},
 											File:   "tickscript.flux",
 											Source: "rename",
 											Start: ast.Position{
-												Column: 10,
-												Line:   135,
+												Column: 12,
+												Line:   125,
 											},
 										},
 									},
@@ -11659,14 +11659,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 75,
-									Line:   135,
+									Column: 77,
+									Line:   125,
 								},
 								File:   "tickscript.flux",
-								Source: "return\n    tables\n      |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n      |> fill(column: _column, value: defaultValue)\n      |> rename(fn: (column) => if column == _column then _as else column)",
+								Source: "return tables\n        |> aggregateWindow(every: every, fn: fn, column: _column, createEmpty: true)\n        |> fill(column: _column, value: defaultValue)\n        |> rename(fn: (column) => if column == _column then _as else column)",
 								Start: ast.Position{
-									Column: 3,
-									Line:   131,
+									Column: 5,
+									Line:   122,
 								},
 							},
 						},
@@ -11682,13 +11682,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   128,
+								Line:   118,
 							},
 							File:   "tickscript.flux",
 							Source: "column=\"_value\"",
 							Start: ast.Position{
 								Column: 17,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					},
@@ -11700,13 +11700,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   128,
+									Line:   118,
 								},
 								File:   "tickscript.flux",
 								Source: "column",
 								Start: ast.Position{
 									Column: 17,
-									Line:   128,
+									Line:   118,
 								},
 							},
 						},
@@ -11720,13 +11720,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   128,
+									Line:   118,
 								},
 								File:   "tickscript.flux",
 								Source: "\"_value\"",
 								Start: ast.Position{
 									Column: 24,
-									Line:   128,
+									Line:   118,
 								},
 							},
 						},
@@ -11739,13 +11739,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 36,
-								Line:   128,
+								Line:   118,
 							},
 							File:   "tickscript.flux",
 							Source: "fn",
 							Start: ast.Position{
 								Column: 34,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					},
@@ -11757,13 +11757,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 36,
-									Line:   128,
+									Line:   118,
 								},
 								File:   "tickscript.flux",
 								Source: "fn",
 								Start: ast.Position{
 									Column: 34,
-									Line:   128,
+									Line:   118,
 								},
 							},
 						},
@@ -11778,13 +11778,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 40,
-								Line:   128,
+								Line:   118,
 							},
 							File:   "tickscript.flux",
 							Source: "as",
 							Start: ast.Position{
 								Column: 38,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					},
@@ -11796,13 +11796,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   128,
+									Line:   118,
 								},
 								File:   "tickscript.flux",
 								Source: "as",
 								Start: ast.Position{
 									Column: 38,
-									Line:   128,
+									Line:   118,
 								},
 							},
 						},
@@ -11817,13 +11817,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 47,
-								Line:   128,
+								Line:   118,
 							},
 							File:   "tickscript.flux",
 							Source: "every",
 							Start: ast.Position{
 								Column: 42,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					},
@@ -11835,13 +11835,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   128,
+									Line:   118,
 								},
 								File:   "tickscript.flux",
 								Source: "every",
 								Start: ast.Position{
 									Column: 42,
-									Line:   128,
+									Line:   118,
 								},
 							},
 						},
@@ -11856,13 +11856,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 61,
-								Line:   128,
+								Line:   118,
 							},
 							File:   "tickscript.flux",
 							Source: "defaultValue",
 							Start: ast.Position{
 								Column: 49,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					},
@@ -11874,13 +11874,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   128,
+									Line:   118,
 								},
 								File:   "tickscript.flux",
 								Source: "defaultValue",
 								Start: ast.Position{
 									Column: 49,
-									Line:   128,
+									Line:   118,
 								},
 							},
 						},
@@ -11895,13 +11895,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 72,
-								Line:   128,
+								Line:   118,
 							},
 							File:   "tickscript.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 63,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					},
@@ -11913,13 +11913,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 69,
-									Line:   128,
+									Line:   118,
 								},
 								File:   "tickscript.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 63,
-									Line:   128,
+									Line:   118,
 								},
 							},
 						},
@@ -11932,13 +11932,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 72,
-								Line:   128,
+								Line:   118,
 							},
 							File:   "tickscript.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 70,
-								Line:   128,
+								Line:   118,
 							},
 						},
 					}},
@@ -11952,13 +11952,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   144,
+						Line:   134,
 					},
 					File:   "tickscript.flux",
 					Source: "compute = select",
 					Start: ast.Position{
 						Column: 1,
-						Line:   144,
+						Line:   134,
 					},
 				},
 			},
@@ -11969,13 +11969,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   144,
+							Line:   134,
 						},
 						File:   "tickscript.flux",
 						Source: "compute",
 						Start: ast.Position{
 							Column: 1,
-							Line:   144,
+							Line:   134,
 						},
 					},
 				},
@@ -11988,13 +11988,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   144,
+							Line:   134,
 						},
 						File:   "tickscript.flux",
 						Source: "select",
 						Start: ast.Position{
 							Column: 11,
-							Line:   144,
+							Line:   134,
 						},
 					},
 				},
@@ -12006,14 +12006,14 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 68,
-						Line:   151,
+						Column: 69,
+						Line:   141,
 					},
 					File:   "tickscript.flux",
-					Source: "groupBy = (columns, tables=<-) =>\n  tables\n    |> group(columns: columns)\n    |> experimental.group(columns: [\"_measurement\"], mode:\"extend\")",
+					Source: "groupBy = (columns, tables=<-) => tables\n    |> group(columns: columns)\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   148,
+						Line:   138,
 					},
 				},
 			},
@@ -12024,13 +12024,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 8,
-							Line:   148,
+							Line:   138,
 						},
 						File:   "tickscript.flux",
 						Source: "groupBy",
 						Start: ast.Position{
 							Column: 1,
-							Line:   148,
+							Line:   138,
 						},
 					},
 				},
@@ -12043,14 +12043,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 68,
-							Line:   151,
+							Column: 69,
+							Line:   141,
 						},
 						File:   "tickscript.flux",
-						Source: "(columns, tables=<-) =>\n  tables\n    |> group(columns: columns)\n    |> experimental.group(columns: [\"_measurement\"], mode:\"extend\")",
+						Source: "(columns, tables=<-) => tables\n    |> group(columns: columns)\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 						Start: ast.Position{
 							Column: 11,
-							Line:   148,
+							Line:   138,
 						},
 					},
 				},
@@ -12062,14 +12062,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 9,
-										Line:   149,
+										Column: 41,
+										Line:   138,
 									},
 									File:   "tickscript.flux",
 									Source: "tables",
 									Start: ast.Position{
-										Column: 3,
-										Line:   149,
+										Column: 35,
+										Line:   138,
 									},
 								},
 							},
@@ -12081,13 +12081,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 31,
-									Line:   150,
+									Line:   139,
 								},
 								File:   "tickscript.flux",
 								Source: "tables\n    |> group(columns: columns)",
 								Start: ast.Position{
-									Column: 3,
-									Line:   149,
+									Column: 35,
+									Line:   138,
 								},
 							},
 						},
@@ -12099,13 +12099,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   150,
+											Line:   139,
 										},
 										File:   "tickscript.flux",
 										Source: "columns: columns",
 										Start: ast.Position{
 											Column: 14,
-											Line:   150,
+											Line:   139,
 										},
 									},
 								},
@@ -12117,13 +12117,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   150,
+												Line:   139,
 											},
 											File:   "tickscript.flux",
 											Source: "columns: columns",
 											Start: ast.Position{
 												Column: 14,
-												Line:   150,
+												Line:   139,
 											},
 										},
 									},
@@ -12135,13 +12135,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 21,
-													Line:   150,
+													Line:   139,
 												},
 												File:   "tickscript.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 14,
-													Line:   150,
+													Line:   139,
 												},
 											},
 										},
@@ -12155,13 +12155,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   150,
+													Line:   139,
 												},
 												File:   "tickscript.flux",
 												Source: "columns",
 												Start: ast.Position{
 													Column: 23,
-													Line:   150,
+													Line:   139,
 												},
 											},
 										},
@@ -12177,13 +12177,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 31,
-										Line:   150,
+										Line:   139,
 									},
 									File:   "tickscript.flux",
 									Source: "group(columns: columns)",
 									Start: ast.Position{
 										Column: 8,
-										Line:   150,
+										Line:   139,
 									},
 								},
 							},
@@ -12194,13 +12194,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   150,
+											Line:   139,
 										},
 										File:   "tickscript.flux",
 										Source: "group",
 										Start: ast.Position{
 											Column: 8,
-											Line:   150,
+											Line:   139,
 										},
 									},
 								},
@@ -12211,18 +12211,18 @@ var pkgAST = &ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Comments: nil,
+						Comments: []ast.Comment{ast.Comment{Text: "// required by monitor.check\n"}},
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 68,
-								Line:   151,
+								Column: 69,
+								Line:   141,
 							},
 							File:   "tickscript.flux",
-							Source: "tables\n    |> group(columns: columns)\n    |> experimental.group(columns: [\"_measurement\"], mode:\"extend\")",
+							Source: "tables\n    |> group(columns: columns)\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 							Start: ast.Position{
-								Column: 3,
-								Line:   149,
+								Column: 35,
+								Line:   138,
 							},
 						},
 					},
@@ -12233,14 +12233,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 67,
-										Line:   151,
+										Column: 68,
+										Line:   141,
 									},
 									File:   "tickscript.flux",
-									Source: "columns: [\"_measurement\"], mode:\"extend\"",
+									Source: "columns: [\"_measurement\"], mode: \"extend\"",
 									Start: ast.Position{
 										Column: 27,
-										Line:   151,
+										Line:   141,
 									},
 								},
 							},
@@ -12252,13 +12252,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 52,
-											Line:   151,
+											Line:   141,
 										},
 										File:   "tickscript.flux",
 										Source: "columns: [\"_measurement\"]",
 										Start: ast.Position{
 											Column: 27,
-											Line:   151,
+											Line:   141,
 										},
 									},
 								},
@@ -12270,13 +12270,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   151,
+												Line:   141,
 											},
 											File:   "tickscript.flux",
 											Source: "columns",
 											Start: ast.Position{
 												Column: 27,
-												Line:   151,
+												Line:   141,
 											},
 										},
 									},
@@ -12290,13 +12290,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 52,
-												Line:   151,
+												Line:   141,
 											},
 											File:   "tickscript.flux",
 											Source: "[\"_measurement\"]",
 											Start: ast.Position{
 												Column: 36,
-												Line:   151,
+												Line:   141,
 											},
 										},
 									},
@@ -12307,13 +12307,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 51,
-													Line:   151,
+													Line:   141,
 												},
 												File:   "tickscript.flux",
 												Source: "\"_measurement\"",
 												Start: ast.Position{
 													Column: 37,
-													Line:   151,
+													Line:   141,
 												},
 											},
 										},
@@ -12328,14 +12328,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 67,
-											Line:   151,
+											Column: 68,
+											Line:   141,
 										},
 										File:   "tickscript.flux",
-										Source: "mode:\"extend\"",
+										Source: "mode: \"extend\"",
 										Start: ast.Position{
 											Column: 54,
-											Line:   151,
+											Line:   141,
 										},
 									},
 								},
@@ -12347,13 +12347,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   151,
+												Line:   141,
 											},
 											File:   "tickscript.flux",
 											Source: "mode",
 											Start: ast.Position{
 												Column: 54,
-												Line:   151,
+												Line:   141,
 											},
 										},
 									},
@@ -12366,14 +12366,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 67,
-												Line:   151,
+												Column: 68,
+												Line:   141,
 											},
 											File:   "tickscript.flux",
 											Source: "\"extend\"",
 											Start: ast.Position{
-												Column: 59,
-												Line:   151,
+												Column: 60,
+												Line:   141,
 											},
 										},
 									},
@@ -12388,14 +12388,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 68,
-									Line:   151,
+									Column: 69,
+									Line:   141,
 								},
 								File:   "tickscript.flux",
-								Source: "experimental.group(columns: [\"_measurement\"], mode:\"extend\")",
+								Source: "experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 								Start: ast.Position{
 									Column: 8,
-									Line:   151,
+									Line:   141,
 								},
 							},
 						},
@@ -12406,13 +12406,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 26,
-										Line:   151,
+										Line:   141,
 									},
 									File:   "tickscript.flux",
 									Source: "experimental.group",
 									Start: ast.Position{
 										Column: 8,
-										Line:   151,
+										Line:   141,
 									},
 								},
 							},
@@ -12424,13 +12424,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   151,
+											Line:   141,
 										},
 										File:   "tickscript.flux",
 										Source: "experimental",
 										Start: ast.Position{
 											Column: 8,
-											Line:   151,
+											Line:   141,
 										},
 									},
 								},
@@ -12443,13 +12443,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 26,
-											Line:   151,
+											Line:   141,
 										},
 										File:   "tickscript.flux",
 										Source: "group",
 										Start: ast.Position{
 											Column: 21,
-											Line:   151,
+											Line:   141,
 										},
 									},
 								},
@@ -12469,13 +12469,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 19,
-								Line:   148,
+								Line:   138,
 							},
 							File:   "tickscript.flux",
 							Source: "columns",
 							Start: ast.Position{
 								Column: 12,
-								Line:   148,
+								Line:   138,
 							},
 						},
 					},
@@ -12487,13 +12487,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   148,
+									Line:   138,
 								},
 								File:   "tickscript.flux",
 								Source: "columns",
 								Start: ast.Position{
 									Column: 12,
-									Line:   148,
+									Line:   138,
 								},
 							},
 						},
@@ -12508,13 +12508,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   148,
+								Line:   138,
 							},
 							File:   "tickscript.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
 								Column: 21,
-								Line:   148,
+								Line:   138,
 							},
 						},
 					},
@@ -12526,13 +12526,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 27,
-									Line:   148,
+									Line:   138,
 								},
 								File:   "tickscript.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 21,
-									Line:   148,
+									Line:   138,
 								},
 							},
 						},
@@ -12545,13 +12545,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   148,
+								Line:   138,
 							},
 							File:   "tickscript.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 28,
-								Line:   148,
+								Line:   138,
 							},
 						},
 					}},
@@ -12564,31 +12564,31 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 71,
-						Line:   158,
+						Column: 69,
+						Line:   148,
 					},
 					File:   "tickscript.flux",
-					Source: "join = (tables, on=[\"_time\"], measurement) =>\n    universe.join(tables: tables, on: on)\n      |> map(fn: (r) => ({ r with _measurement: measurement }))\n      |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
+					Source: "join = (tables, on=[\"_time\"], measurement) => universe.join(tables: tables, on: on)\n    |> map(fn: (r) => ({r with _measurement: measurement}))\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 					Start: ast.Position{
 						Column: 1,
-						Line:   155,
+						Line:   145,
 					},
 				},
 			},
 			ID: &ast.Identifier{
 				BaseNode: ast.BaseNode{
-					Comments: []ast.Comment{ast.Comment{Text: "// required by monitor.check\n"}, ast.Comment{Text: "// join merges two streams using standard join().\n"}, ast.Comment{Text: "// It is meant a convenience function, it ensures _measurement column exists and is in the group key.\n"}},
+					Comments: []ast.Comment{ast.Comment{Text: "// join merges two streams using standard join().\n"}, ast.Comment{Text: "// It is meant a convenience function, it ensures _measurement column exists and is in the group key.\n"}},
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   155,
+							Line:   145,
 						},
 						File:   "tickscript.flux",
 						Source: "join",
 						Start: ast.Position{
 							Column: 1,
-							Line:   155,
+							Line:   145,
 						},
 					},
 				},
@@ -12601,14 +12601,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 71,
-							Line:   158,
+							Column: 69,
+							Line:   148,
 						},
 						File:   "tickscript.flux",
-						Source: "(tables, on=[\"_time\"], measurement) =>\n    universe.join(tables: tables, on: on)\n      |> map(fn: (r) => ({ r with _measurement: measurement }))\n      |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
+						Source: "(tables, on=[\"_time\"], measurement) => universe.join(tables: tables, on: on)\n    |> map(fn: (r) => ({r with _measurement: measurement}))\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 						Start: ast.Position{
 							Column: 8,
-							Line:   155,
+							Line:   145,
 						},
 					},
 				},
@@ -12621,14 +12621,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 41,
-											Line:   156,
+											Column: 83,
+											Line:   145,
 										},
 										File:   "tickscript.flux",
 										Source: "tables: tables, on: on",
 										Start: ast.Position{
-											Column: 19,
-											Line:   156,
+											Column: 61,
+											Line:   145,
 										},
 									},
 								},
@@ -12639,14 +12639,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 33,
-												Line:   156,
+												Column: 75,
+												Line:   145,
 											},
 											File:   "tickscript.flux",
 											Source: "tables: tables",
 											Start: ast.Position{
-												Column: 19,
-												Line:   156,
+												Column: 61,
+												Line:   145,
 											},
 										},
 									},
@@ -12657,14 +12657,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 25,
-													Line:   156,
+													Column: 67,
+													Line:   145,
 												},
 												File:   "tickscript.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 19,
-													Line:   156,
+													Column: 61,
+													Line:   145,
 												},
 											},
 										},
@@ -12677,14 +12677,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 33,
-													Line:   156,
+													Column: 75,
+													Line:   145,
 												},
 												File:   "tickscript.flux",
 												Source: "tables",
 												Start: ast.Position{
-													Column: 27,
-													Line:   156,
+													Column: 69,
+													Line:   145,
 												},
 											},
 										},
@@ -12696,14 +12696,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 41,
-												Line:   156,
+												Column: 83,
+												Line:   145,
 											},
 											File:   "tickscript.flux",
 											Source: "on: on",
 											Start: ast.Position{
-												Column: 35,
-												Line:   156,
+												Column: 77,
+												Line:   145,
 											},
 										},
 									},
@@ -12714,14 +12714,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
-													Line:   156,
+													Column: 79,
+													Line:   145,
 												},
 												File:   "tickscript.flux",
 												Source: "on",
 												Start: ast.Position{
-													Column: 35,
-													Line:   156,
+													Column: 77,
+													Line:   145,
 												},
 											},
 										},
@@ -12734,14 +12734,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
-													Line:   156,
+													Column: 83,
+													Line:   145,
 												},
 												File:   "tickscript.flux",
 												Source: "on",
 												Start: ast.Position{
-													Column: 39,
-													Line:   156,
+													Column: 81,
+													Line:   145,
 												},
 											},
 										},
@@ -12756,14 +12756,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 42,
-										Line:   156,
+										Column: 84,
+										Line:   145,
 									},
 									File:   "tickscript.flux",
 									Source: "universe.join(tables: tables, on: on)",
 									Start: ast.Position{
-										Column: 5,
-										Line:   156,
+										Column: 47,
+										Line:   145,
 									},
 								},
 							},
@@ -12773,14 +12773,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 18,
-											Line:   156,
+											Column: 60,
+											Line:   145,
 										},
 										File:   "tickscript.flux",
 										Source: "universe.join",
 										Start: ast.Position{
-											Column: 5,
-											Line:   156,
+											Column: 47,
+											Line:   145,
 										},
 									},
 								},
@@ -12791,14 +12791,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 13,
-												Line:   156,
+												Column: 55,
+												Line:   145,
 											},
 											File:   "tickscript.flux",
 											Source: "universe",
 											Start: ast.Position{
-												Column: 5,
-												Line:   156,
+												Column: 47,
+												Line:   145,
 											},
 										},
 									},
@@ -12810,14 +12810,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 18,
-												Line:   156,
+												Column: 60,
+												Line:   145,
 											},
 											File:   "tickscript.flux",
 											Source: "join",
 											Start: ast.Position{
-												Column: 14,
-												Line:   156,
+												Column: 56,
+												Line:   145,
 											},
 										},
 									},
@@ -12833,14 +12833,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 64,
-									Line:   157,
+									Column: 60,
+									Line:   146,
 								},
 								File:   "tickscript.flux",
-								Source: "universe.join(tables: tables, on: on)\n      |> map(fn: (r) => ({ r with _measurement: measurement }))",
+								Source: "universe.join(tables: tables, on: on)\n    |> map(fn: (r) => ({r with _measurement: measurement}))",
 								Start: ast.Position{
-									Column: 5,
-									Line:   156,
+									Column: 47,
+									Line:   145,
 								},
 							},
 						},
@@ -12851,14 +12851,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 63,
-											Line:   157,
+											Column: 59,
+											Line:   146,
 										},
 										File:   "tickscript.flux",
-										Source: "fn: (r) => ({ r with _measurement: measurement })",
+										Source: "fn: (r) => ({r with _measurement: measurement})",
 										Start: ast.Position{
-											Column: 14,
-											Line:   157,
+											Column: 12,
+											Line:   146,
 										},
 									},
 								},
@@ -12869,14 +12869,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 63,
-												Line:   157,
+												Column: 59,
+												Line:   146,
 											},
 											File:   "tickscript.flux",
-											Source: "fn: (r) => ({ r with _measurement: measurement })",
+											Source: "fn: (r) => ({r with _measurement: measurement})",
 											Start: ast.Position{
-												Column: 14,
-												Line:   157,
+												Column: 12,
+												Line:   146,
 											},
 										},
 									},
@@ -12887,14 +12887,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 16,
-													Line:   157,
+													Column: 14,
+													Line:   146,
 												},
 												File:   "tickscript.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 14,
-													Line:   157,
+													Column: 12,
+													Line:   146,
 												},
 											},
 										},
@@ -12908,14 +12908,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 63,
-													Line:   157,
+													Column: 59,
+													Line:   146,
 												},
 												File:   "tickscript.flux",
-												Source: "(r) => ({ r with _measurement: measurement })",
+												Source: "(r) => ({r with _measurement: measurement})",
 												Start: ast.Position{
-													Column: 18,
-													Line:   157,
+													Column: 16,
+													Line:   146,
 												},
 											},
 										},
@@ -12925,14 +12925,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 63,
-														Line:   157,
+														Column: 59,
+														Line:   146,
 													},
 													File:   "tickscript.flux",
-													Source: "({ r with _measurement: measurement })",
+													Source: "({r with _measurement: measurement})",
 													Start: ast.Position{
-														Column: 25,
-														Line:   157,
+														Column: 23,
+														Line:   146,
 													},
 												},
 											},
@@ -12942,14 +12942,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 62,
-															Line:   157,
+															Column: 58,
+															Line:   146,
 														},
 														File:   "tickscript.flux",
-														Source: "{ r with _measurement: measurement }",
+														Source: "{r with _measurement: measurement}",
 														Start: ast.Position{
-															Column: 26,
-															Line:   157,
+															Column: 24,
+															Line:   146,
 														},
 													},
 												},
@@ -12960,14 +12960,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 60,
-																Line:   157,
+																Column: 57,
+																Line:   146,
 															},
 															File:   "tickscript.flux",
 															Source: "_measurement: measurement",
 															Start: ast.Position{
-																Column: 35,
-																Line:   157,
+																Column: 32,
+																Line:   146,
 															},
 														},
 													},
@@ -12978,14 +12978,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
-																	Line:   157,
+																	Column: 44,
+																	Line:   146,
 																},
 																File:   "tickscript.flux",
 																Source: "_measurement",
 																Start: ast.Position{
-																	Column: 35,
-																	Line:   157,
+																	Column: 32,
+																	Line:   146,
 																},
 															},
 														},
@@ -12998,14 +12998,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 60,
-																	Line:   157,
+																	Column: 57,
+																	Line:   146,
 																},
 																File:   "tickscript.flux",
 																Source: "measurement",
 																Start: ast.Position{
-																	Column: 49,
-																	Line:   157,
+																	Column: 46,
+																	Line:   146,
 																},
 															},
 														},
@@ -13019,14 +13019,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 29,
-																Line:   157,
+																Column: 26,
+																Line:   146,
 															},
 															File:   "tickscript.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 28,
-																Line:   157,
+																Column: 25,
+																Line:   146,
 															},
 														},
 													},
@@ -13043,14 +13043,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
-														Line:   157,
+														Column: 18,
+														Line:   146,
 													},
 													File:   "tickscript.flux",
 													Source: "r",
 													Start: ast.Position{
-														Column: 19,
-														Line:   157,
+														Column: 17,
+														Line:   146,
 													},
 												},
 											},
@@ -13061,14 +13061,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 20,
-															Line:   157,
+															Column: 18,
+															Line:   146,
 														},
 														File:   "tickscript.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 19,
-															Line:   157,
+															Column: 17,
+															Line:   146,
 														},
 													},
 												},
@@ -13088,14 +13088,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 64,
-										Line:   157,
+										Column: 60,
+										Line:   146,
 									},
 									File:   "tickscript.flux",
-									Source: "map(fn: (r) => ({ r with _measurement: measurement }))",
+									Source: "map(fn: (r) => ({r with _measurement: measurement}))",
 									Start: ast.Position{
-										Column: 10,
-										Line:   157,
+										Column: 8,
+										Line:   146,
 									},
 								},
 							},
@@ -13105,14 +13105,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 13,
-											Line:   157,
+											Column: 11,
+											Line:   146,
 										},
 										File:   "tickscript.flux",
 										Source: "map",
 										Start: ast.Position{
-											Column: 10,
-											Line:   157,
+											Column: 8,
+											Line:   146,
 										},
 									},
 								},
@@ -13123,18 +13123,18 @@ var pkgAST = &ast.Package{
 						},
 					},
 					BaseNode: ast.BaseNode{
-						Comments: nil,
+						Comments: []ast.Comment{ast.Comment{Text: "// required by monitor.check\n"}},
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 71,
-								Line:   158,
+								Column: 69,
+								Line:   148,
 							},
 							File:   "tickscript.flux",
-							Source: "universe.join(tables: tables, on: on)\n      |> map(fn: (r) => ({ r with _measurement: measurement }))\n      |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
+							Source: "universe.join(tables: tables, on: on)\n    |> map(fn: (r) => ({r with _measurement: measurement}))\n    // required by monitor.check\n    |> experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 							Start: ast.Position{
-								Column: 5,
-								Line:   156,
+								Column: 47,
+								Line:   145,
 							},
 						},
 					},
@@ -13145,14 +13145,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 70,
-										Line:   158,
+										Column: 68,
+										Line:   148,
 									},
 									File:   "tickscript.flux",
 									Source: "columns: [\"_measurement\"], mode: \"extend\"",
 									Start: ast.Position{
-										Column: 29,
-										Line:   158,
+										Column: 27,
+										Line:   148,
 									},
 								},
 							},
@@ -13163,14 +13163,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 54,
-											Line:   158,
+											Column: 52,
+											Line:   148,
 										},
 										File:   "tickscript.flux",
 										Source: "columns: [\"_measurement\"]",
 										Start: ast.Position{
-											Column: 29,
-											Line:   158,
+											Column: 27,
+											Line:   148,
 										},
 									},
 								},
@@ -13181,14 +13181,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 36,
-												Line:   158,
+												Column: 34,
+												Line:   148,
 											},
 											File:   "tickscript.flux",
 											Source: "columns",
 											Start: ast.Position{
-												Column: 29,
-												Line:   158,
+												Column: 27,
+												Line:   148,
 											},
 										},
 									},
@@ -13201,14 +13201,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 54,
-												Line:   158,
+												Column: 52,
+												Line:   148,
 											},
 											File:   "tickscript.flux",
 											Source: "[\"_measurement\"]",
 											Start: ast.Position{
-												Column: 38,
-												Line:   158,
+												Column: 36,
+												Line:   148,
 											},
 										},
 									},
@@ -13218,14 +13218,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 53,
-													Line:   158,
+													Column: 51,
+													Line:   148,
 												},
 												File:   "tickscript.flux",
 												Source: "\"_measurement\"",
 												Start: ast.Position{
-													Column: 39,
-													Line:   158,
+													Column: 37,
+													Line:   148,
 												},
 											},
 										},
@@ -13240,14 +13240,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 70,
-											Line:   158,
+											Column: 68,
+											Line:   148,
 										},
 										File:   "tickscript.flux",
 										Source: "mode: \"extend\"",
 										Start: ast.Position{
-											Column: 56,
-											Line:   158,
+											Column: 54,
+											Line:   148,
 										},
 									},
 								},
@@ -13258,14 +13258,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 60,
-												Line:   158,
+												Column: 58,
+												Line:   148,
 											},
 											File:   "tickscript.flux",
 											Source: "mode",
 											Start: ast.Position{
-												Column: 56,
-												Line:   158,
+												Column: 54,
+												Line:   148,
 											},
 										},
 									},
@@ -13278,14 +13278,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 70,
-												Line:   158,
+												Column: 68,
+												Line:   148,
 											},
 											File:   "tickscript.flux",
 											Source: "\"extend\"",
 											Start: ast.Position{
-												Column: 62,
-												Line:   158,
+												Column: 60,
+												Line:   148,
 											},
 										},
 									},
@@ -13300,14 +13300,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 71,
-									Line:   158,
+									Column: 69,
+									Line:   148,
 								},
 								File:   "tickscript.flux",
 								Source: "experimental.group(columns: [\"_measurement\"], mode: \"extend\")",
 								Start: ast.Position{
-									Column: 10,
-									Line:   158,
+									Column: 8,
+									Line:   148,
 								},
 							},
 						},
@@ -13317,14 +13317,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
-										Line:   158,
+										Column: 26,
+										Line:   148,
 									},
 									File:   "tickscript.flux",
 									Source: "experimental.group",
 									Start: ast.Position{
-										Column: 10,
-										Line:   158,
+										Column: 8,
+										Line:   148,
 									},
 								},
 							},
@@ -13335,14 +13335,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 22,
-											Line:   158,
+											Column: 20,
+											Line:   148,
 										},
 										File:   "tickscript.flux",
 										Source: "experimental",
 										Start: ast.Position{
-											Column: 10,
-											Line:   158,
+											Column: 8,
+											Line:   148,
 										},
 									},
 								},
@@ -13354,14 +13354,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 28,
-											Line:   158,
+											Column: 26,
+											Line:   148,
 										},
 										File:   "tickscript.flux",
 										Source: "group",
 										Start: ast.Position{
-											Column: 23,
-											Line:   158,
+											Column: 21,
+											Line:   148,
 										},
 									},
 								},
@@ -13381,13 +13381,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   155,
+								Line:   145,
 							},
 							File:   "tickscript.flux",
 							Source: "tables",
 							Start: ast.Position{
 								Column: 9,
-								Line:   155,
+								Line:   145,
 							},
 						},
 					},
@@ -13399,13 +13399,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   155,
+									Line:   145,
 								},
 								File:   "tickscript.flux",
 								Source: "tables",
 								Start: ast.Position{
 									Column: 9,
-									Line:   155,
+									Line:   145,
 								},
 							},
 						},
@@ -13420,13 +13420,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 29,
-								Line:   155,
+								Line:   145,
 							},
 							File:   "tickscript.flux",
 							Source: "on=[\"_time\"]",
 							Start: ast.Position{
 								Column: 17,
-								Line:   155,
+								Line:   145,
 							},
 						},
 					},
@@ -13438,13 +13438,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   155,
+									Line:   145,
 								},
 								File:   "tickscript.flux",
 								Source: "on",
 								Start: ast.Position{
 									Column: 17,
-									Line:   155,
+									Line:   145,
 								},
 							},
 						},
@@ -13458,13 +13458,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 29,
-									Line:   155,
+									Line:   145,
 								},
 								File:   "tickscript.flux",
 								Source: "[\"_time\"]",
 								Start: ast.Position{
 									Column: 20,
-									Line:   155,
+									Line:   145,
 								},
 							},
 						},
@@ -13475,13 +13475,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   155,
+										Line:   145,
 									},
 									File:   "tickscript.flux",
 									Source: "\"_time\"",
 									Start: ast.Position{
 										Column: 21,
-										Line:   155,
+										Line:   145,
 									},
 								},
 							},
@@ -13497,13 +13497,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 42,
-								Line:   155,
+								Line:   145,
 							},
 							File:   "tickscript.flux",
 							Source: "measurement",
 							Start: ast.Position{
 								Column: 31,
-								Line:   155,
+								Line:   145,
 							},
 						},
 					},
@@ -13515,13 +13515,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   155,
+									Line:   145,
 								},
 								File:   "tickscript.flux",
 								Source: "measurement",
 								Start: ast.Position{
 									Column: 31,
-									Line:   155,
+									Line:   145,
 								},
 							},
 						},
@@ -13533,7 +13533,7 @@ var pkgAST = &ast.Package{
 				Rparan: nil,
 			},
 		}},
-		Eof: []ast.Comment{ast.Comment{Text: "// required by monitor.check\n"}},
+		Eof: nil,
 		Imports: []*ast.ImportDeclaration{&ast.ImportDeclaration{
 			As: nil,
 			BaseNode: ast.BaseNode{
@@ -13542,13 +13542,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 22,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "tickscript.flux",
 					Source: "import \"experimental\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -13559,13 +13559,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 22,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "tickscript.flux",
 						Source: "\"experimental\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -13579,13 +13579,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 28,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "tickscript.flux",
 					Source: "import \"experimental/array\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -13596,13 +13596,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 28,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "tickscript.flux",
 						Source: "\"experimental/array\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -13616,13 +13616,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 29,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "tickscript.flux",
 					Source: "import \"influxdata/influxdb\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -13633,13 +13633,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 29,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "tickscript.flux",
 						Source: "\"influxdata/influxdb\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},
@@ -13653,13 +13653,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 37,
-						Line:   6,
+						Line:   7,
 					},
 					File:   "tickscript.flux",
 					Source: "import \"influxdata/influxdb/monitor\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -13670,13 +13670,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 37,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "tickscript.flux",
 						Source: "\"influxdata/influxdb/monitor\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -13690,13 +13690,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 36,
-						Line:   7,
+						Line:   8,
 					},
 					File:   "tickscript.flux",
 					Source: "import \"influxdata/influxdb/schema\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   7,
+						Line:   8,
 					},
 				},
 			},
@@ -13707,13 +13707,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 36,
-							Line:   7,
+							Line:   8,
 						},
 						File:   "tickscript.flux",
 						Source: "\"influxdata/influxdb/schema\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   7,
+							Line:   8,
 						},
 					},
 				},
@@ -13727,13 +13727,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 18,
-						Line:   8,
+						Line:   9,
 					},
 					File:   "tickscript.flux",
 					Source: "import \"universe\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   9,
 					},
 				},
 			},
@@ -13744,13 +13744,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 18,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "tickscript.flux",
 						Source: "\"universe\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},

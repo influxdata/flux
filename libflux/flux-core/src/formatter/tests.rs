@@ -926,6 +926,7 @@ fn parens() {
     assert_format("(a() |> b()) ^ 3", "a() |> b() ^ 3");
     assert_format("1 ^ (a() |> b())", "1 ^ a() |> b()");
     assert_unchanged("(1 ^ a()) |> b()");
+    assert_unchanged(r#"qux = (r) => "foo: ${r._rab} is: " + (if r.bar then "bar" else "baz")"#);
 }
 
 #[test]

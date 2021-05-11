@@ -77,11 +77,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 36,
-							Line:   21,
+							Column: 14,
+							Line:   23,
 						},
 						File:   "duration.flux",
-						Source: "(\n    <-tables: [A],\n    ?unit: duration,\n    ?timeColumn: string,\n    ?columnName: string,\n    ?stopColumn: string,\n    ?stop: time,\n) => [B] where A: Record, B: Record",
+						Source: "(\n    <-tables: [A],\n    ?unit: duration,\n    ?timeColumn: string,\n    ?columnName: string,\n    ?stopColumn: string,\n    ?stop: time,\n) => [B] where\n    A: Record,\n    B: Record",
 						Start: ast.Position{
 							Column: 20,
 							Line:   14,
@@ -94,14 +94,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 25,
-								Line:   21,
+								Column: 14,
+								Line:   22,
 							},
 							File:   "duration.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 16,
-								Line:   21,
+								Column: 5,
+								Line:   22,
 							},
 						},
 					},
@@ -111,14 +111,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   21,
+									Column: 14,
+									Line:   22,
 								},
 								File:   "duration.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 19,
-									Line:   21,
+									Column: 8,
+									Line:   22,
 								},
 							},
 						},
@@ -130,14 +130,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   21,
+									Column: 6,
+									Line:   22,
 								},
 								File:   "duration.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 16,
-									Line:   21,
+									Column: 5,
+									Line:   22,
 								},
 							},
 						},
@@ -149,14 +149,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 36,
-								Line:   21,
+								Column: 14,
+								Line:   23,
 							},
 							File:   "duration.flux",
 							Source: "B: Record",
 							Start: ast.Position{
-								Column: 27,
-								Line:   21,
+								Column: 5,
+								Line:   23,
 							},
 						},
 					},
@@ -166,14 +166,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 36,
-									Line:   21,
+									Column: 14,
+									Line:   23,
 								},
 								File:   "duration.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 30,
-									Line:   21,
+									Column: 8,
+									Line:   23,
 								},
 							},
 						},
@@ -185,14 +185,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   21,
+									Column: 6,
+									Line:   23,
 								},
 								File:   "duration.flux",
 								Source: "B",
 								Start: ast.Position{
-									Column: 27,
-									Line:   21,
+									Column: 5,
+									Line:   23,
 								},
 							},
 						},

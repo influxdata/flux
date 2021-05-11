@@ -1148,6 +1148,8 @@ pub enum Operator {
     RegexpMatchOperator,
     #[display(fmt = "!~")]
     NotRegexpMatchOperator,
+    #[display(fmt = "if/then/else")]
+    ConditionalOperator,
 
     // this is necessary for bad binary expressions.
     #[display(fmt = "<INVALID_OP>")]

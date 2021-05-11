@@ -26,7 +26,8 @@ builtin to : (
     ?orgID: string,
     ?host: string,
     ?token: string,
-) => [A] where A: Record
+) => [A] where
+    A: Record
 
 // An experimental version of join.
 builtin join : (left: [A], right: [B], fn: (left: A, right: B) => C) => [C] where A: Record, B: Record, C: Record
@@ -42,9 +43,7 @@ alignTime = (tables=<-, alignTo=time(v: 0)) => tables
         column: "timeDiff",
         unit: 1ns,
     )
-    |> map(
-        fn: (r) => ({r with _time: time(v: int(v: alignTo) + r.timeDiff)}),
-    )
+    |> map(fn: (r) => ({r with _time: time(v: int(v: alignTo) + r.timeDiff)}))
     |> drop(columns: ["timeDiff"])
 
 // An experimental version of window.

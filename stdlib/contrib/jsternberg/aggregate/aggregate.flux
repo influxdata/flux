@@ -70,7 +70,10 @@ builtin window : (
     every: duration,
     ?period: duration,
     columns: C,
-) => [B] where A: Record, B: Record, C: Record
+) => [B] where
+    A: Record,
+    B: Record,
+    C: Record
 
 // null is a sentinel value for fill that will fill
 // in a null value if there were no values for an interval.
