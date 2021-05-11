@@ -186,7 +186,7 @@ impl<'a> NodeMut<'a> {
         }
     }
 
-    /// TODO
+    #[allow(missing_docs)]
     pub fn set_loc(&mut self, loc: SourceLocation) {
         match self {
             NodeMut::Package(ref mut n) => n.loc = loc,
