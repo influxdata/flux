@@ -256,6 +256,7 @@ enum Operator : byte {
   NotEqualOperator,
   RegexpMatchOperator,
   NotRegexpMatchOperator,
+  ConditionalOperator,
 }
 
 enum LogicalOperator : byte {

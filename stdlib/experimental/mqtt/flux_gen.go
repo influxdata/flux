@@ -77,11 +77,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 36,
-							Line:   18,
+							Column: 14,
+							Line:   20,
 						},
 						File:   "mqtt.flux",
-						Source: "(\n    <-tables: [A],\n    broker: string,\n    ?topic: string,\n    ?message: string,\n    ?qos: int,\n    ?clientid: string,\n    ?username: string,\n    ?password: string,\n    ?name: string,\n    ?timeout: duration,\n    ?timeColumn: string,\n    ?tagColumns: [string],\n    ?valueColumns: [string],\n) => [B] where A: Record, B: Record",
+						Source: "(\n    <-tables: [A],\n    broker: string,\n    ?topic: string,\n    ?message: string,\n    ?qos: int,\n    ?clientid: string,\n    ?username: string,\n    ?password: string,\n    ?name: string,\n    ?timeout: duration,\n    ?timeColumn: string,\n    ?tagColumns: [string],\n    ?valueColumns: [string],\n) => [B] where\n    A: Record,\n    B: Record",
 						Start: ast.Position{
 							Column: 14,
 							Line:   4,
@@ -94,14 +94,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 25,
-								Line:   18,
+								Column: 14,
+								Line:   19,
 							},
 							File:   "mqtt.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 16,
-								Line:   18,
+								Column: 5,
+								Line:   19,
 							},
 						},
 					},
@@ -111,14 +111,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   18,
+									Column: 14,
+									Line:   19,
 								},
 								File:   "mqtt.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 19,
-									Line:   18,
+									Column: 8,
+									Line:   19,
 								},
 							},
 						},
@@ -130,14 +130,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   18,
+									Column: 6,
+									Line:   19,
 								},
 								File:   "mqtt.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 16,
-									Line:   18,
+									Column: 5,
+									Line:   19,
 								},
 							},
 						},
@@ -149,14 +149,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 36,
-								Line:   18,
+								Column: 14,
+								Line:   20,
 							},
 							File:   "mqtt.flux",
 							Source: "B: Record",
 							Start: ast.Position{
-								Column: 27,
-								Line:   18,
+								Column: 5,
+								Line:   20,
 							},
 						},
 					},
@@ -166,14 +166,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 36,
-									Line:   18,
+									Column: 14,
+									Line:   20,
 								},
 								File:   "mqtt.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 30,
-									Line:   18,
+									Column: 8,
+									Line:   20,
 								},
 							},
 						},
@@ -185,14 +185,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   18,
+									Column: 6,
+									Line:   20,
 								},
 								File:   "mqtt.flux",
 								Source: "B",
 								Start: ast.Position{
-									Column: 27,
-									Line:   18,
+									Column: 5,
+									Line:   20,
 								},
 							},
 						},

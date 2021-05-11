@@ -1187,6 +1187,7 @@ fn get_precedences(parent: &Node, child: &Node) -> (u32, u32) {
         Node::MemberExpr(_) => pvp = 1,
         Node::IndexExpr(_) => pvp = 1,
         Node::ParenExpr(p) => return get_precedences(&(Node::from_expr(&p.expression)), child),
+        Node::ConditionalExpr(_) => pvp = 10,
         _ => pvp = 0,
     }
 
@@ -1199,6 +1200,7 @@ fn get_precedences(parent: &Node, child: &Node) -> (u32, u32) {
         Node::MemberExpr(_) => pvc = 1,
         Node::IndexExpr(_) => pvc = 1,
         Node::ParenExpr(p) => return get_precedences(parent, &(Node::from_expr(&p.expression))),
+        Node::ConditionalExpr(_) => pvc = 10,
         _ => pvc = 0,
     }
 
@@ -1252,6 +1254,7 @@ impl<'a> Operator<'a> {
                 ast::Operator::NotOperator => 7,
                 ast::Operator::ExistsOperator => 7,
                 ast::Operator::InvalidOperator => 0,
+                ast::Operator::ConditionalOperator => 10,
             };
         }
         match self.l_op.unwrap() {

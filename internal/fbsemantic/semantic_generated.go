@@ -196,6 +196,7 @@ const (
 	OperatorRegexpMatchOperator      Operator = 18
 	OperatorNotRegexpMatchOperator   Operator = 19
 	OperatorInvalidOperator          Operator = 20
+	OperatorConditionalOperator      Operator = 21
 )
 
 var EnumNamesOperator = map[Operator]string{
@@ -220,6 +221,7 @@ var EnumNamesOperator = map[Operator]string{
 	OperatorRegexpMatchOperator:      "RegexpMatchOperator",
 	OperatorNotRegexpMatchOperator:   "NotRegexpMatchOperator",
 	OperatorInvalidOperator:          "InvalidOperator",
+	OperatorConditionalOperator:      "ConditionalOperator",
 }
 
 type LogicalOperator = int8

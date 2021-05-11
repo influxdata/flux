@@ -960,6 +960,7 @@ fn semantic_operator(fb_op: fbsemantic::Operator) -> ast::Operator {
         fbsemantic::Operator::RegexpMatchOperator => ast::Operator::RegexpMatchOperator,
         fbsemantic::Operator::NotRegexpMatchOperator => ast::Operator::NotRegexpMatchOperator,
         fbsemantic::Operator::InvalidOperator => ast::Operator::InvalidOperator,
+        fbsemantic::Operator::ConditionalOperator => ast::Operator::ConditionalOperator,
     }
 }
 

@@ -34,9 +34,7 @@ outData = "
 "
 t_group = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> filter(
-        fn: (r) => r._measurement == "diskio" and r._field == "io_time",
-    )
+    |> filter(fn: (r) => r._measurement == "diskio" and r._field == "io_time")
     |> experimental.group(mode: "extend", columns: ["name"])
     |> max()
 

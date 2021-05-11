@@ -18,4 +18,6 @@ builtin duration : (
     ?columnName: string,
     ?stopColumn: string,
     ?stop: time,
-) => [B] where A: Record, B: Record
+) => [B] where
+    A: Record,
+    B: Record

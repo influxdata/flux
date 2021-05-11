@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 2,
-					Line:   137,
+					Line:   140,
 				},
 				File:   "aggregate.flux",
-				Source: "package aggregate\n\n\nimport \"contrib/jsternberg/math\"\n\n// table will aggregate columns and create tables with a single\n// row containing the aggregated value.\n//\n// This function takes a single parameter of `columns`. The parameter\n// is an object with the output column name as the key and the aggregate\n// object as the value.\n//\n// The aggregate object is composed of at least the following required attributes:\n//     column = string\n//         The column name for the input.\n//     init = (values) -> state\n//         An initial function to compute the initial state of the\n//         output. This can return either the final aggregate or a\n//         temporary state object that can be used to compute the\n//         final aggregate. The values parameter will always be a\n//         non-empty array of values from the specified column.\n//     reduce = (values, state) -> state\n//         A function that takes in another buffer of values\n//         and the current state of the aggregate and computes\n//         the updated state.\n//     compute = (state) -> value\n//         A function that takes the state and computes the final\n//         aggregate.\n//     fill = value\n//         The value passed to fill, if present, will determine what\n//         the aggregate does when there are no values.\n//         This can either be a value or one of the predefined\n//         identifiers of null or none.\n//         This value must be the same type as the value return from\n//         compute.\n//\n// An example of usage is:\n//     tables |> aggregate.table(columns: {\n//         \"min_bottom_degrees\": aggregate.min(column: \"bottom_degrees\"),\n//     ])\nbuiltin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C: Record\n\n// window will aggregate columns and create tables by\n// organizing incoming points into windows.\n//\n// Each table will have two additional columns: start and stop.\n// These are the start and stop times for each interval.\n// It is not possible to use start or stop as destination column\n// names with this function. The start and stop columns are not\n// added to the group key.\n//\n// The same options as for table apply to window.\n// In addition to those options, window requires one\n// additional parameter.\n//     every = duration\n//         The duration between the start of each interval.\n//\n// Along with the above required option, there are a few additional\n// optional parameters.\n//     time = string\n//         The column name for the time input.\n//         This defaults to _time or time, whichever is earlier in\n//         the list of columns.\n//     period = duration\n//         The length of the interval. This defaults to the\n//         every duration.\nbuiltin window : (\n    <-tables: [A],\n    ?time: string,\n    every: duration,\n    ?period: duration,\n    columns: C,\n) => [B] where A: Record, B: Record, C: Record\n\n// null is a sentinel value for fill that will fill\n// in a null value if there were no values for an interval.\nbuiltin null : A\n\n// none is a sentinel value for fill that will skip\n// emitting a row if there are no values for an interval.\nbuiltin none : A\n\n// define will define an aggregate function.\ndefine = (init, reduce, compute, fill=null) => (column=\"_value\", fill=fill) => ({\n    column: column,\n    init: init,\n    reduce: reduce,\n    compute: compute,\n    fill: fill,\n})\n_make_selector = (fn) => define(\n    init: (values) => fn(values),\n    reduce: (values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    },\n    compute: (state) => state,\n)\n\n// min constructs a min aggregate or selector for the column.\nmin = _make_selector(fn: math.min)\n\n// max constructs a max aggregate or selector for the column.\nmax = _make_selector(fn: math.max)\n\n// sum constructs a sum aggregate for the column.\nsum = define(\n    init: (values) => math.sum(values),\n    reduce: (values, state) => {\n        return state + math.sum(values)\n    },\n    compute: (state) => state,\n)\n\n// count constructs a count aggregate for the column.\ncount = define(\n    init: (values) => length(arr: values),\n    reduce: (values, state) => {\n        return state + length(arr: values)\n    },\n    compute: (state) => state,\n    fill: 0,\n)\n\n// mean constructs a mean aggregate for the column.\nmean = define(\n    init: (values) => ({\n        sum: math.sum(values),\n        count: length(arr: values),\n    }),\n    reduce: (values, state) => ({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    }),\n    compute: (state) => float(v: state.sum) / float(v: state.count),\n)",
+				Source: "package aggregate\n\n\nimport \"contrib/jsternberg/math\"\n\n// table will aggregate columns and create tables with a single\n// row containing the aggregated value.\n//\n// This function takes a single parameter of `columns`. The parameter\n// is an object with the output column name as the key and the aggregate\n// object as the value.\n//\n// The aggregate object is composed of at least the following required attributes:\n//     column = string\n//         The column name for the input.\n//     init = (values) -> state\n//         An initial function to compute the initial state of the\n//         output. This can return either the final aggregate or a\n//         temporary state object that can be used to compute the\n//         final aggregate. The values parameter will always be a\n//         non-empty array of values from the specified column.\n//     reduce = (values, state) -> state\n//         A function that takes in another buffer of values\n//         and the current state of the aggregate and computes\n//         the updated state.\n//     compute = (state) -> value\n//         A function that takes the state and computes the final\n//         aggregate.\n//     fill = value\n//         The value passed to fill, if present, will determine what\n//         the aggregate does when there are no values.\n//         This can either be a value or one of the predefined\n//         identifiers of null or none.\n//         This value must be the same type as the value return from\n//         compute.\n//\n// An example of usage is:\n//     tables |> aggregate.table(columns: {\n//         \"min_bottom_degrees\": aggregate.min(column: \"bottom_degrees\"),\n//     ])\nbuiltin table : (<-tables: [A], columns: C) => [B] where A: Record, B: Record, C: Record\n\n// window will aggregate columns and create tables by\n// organizing incoming points into windows.\n//\n// Each table will have two additional columns: start and stop.\n// These are the start and stop times for each interval.\n// It is not possible to use start or stop as destination column\n// names with this function. The start and stop columns are not\n// added to the group key.\n//\n// The same options as for table apply to window.\n// In addition to those options, window requires one\n// additional parameter.\n//     every = duration\n//         The duration between the start of each interval.\n//\n// Along with the above required option, there are a few additional\n// optional parameters.\n//     time = string\n//         The column name for the time input.\n//         This defaults to _time or time, whichever is earlier in\n//         the list of columns.\n//     period = duration\n//         The length of the interval. This defaults to the\n//         every duration.\nbuiltin window : (\n    <-tables: [A],\n    ?time: string,\n    every: duration,\n    ?period: duration,\n    columns: C,\n) => [B] where\n    A: Record,\n    B: Record,\n    C: Record\n\n// null is a sentinel value for fill that will fill\n// in a null value if there were no values for an interval.\nbuiltin null : A\n\n// none is a sentinel value for fill that will skip\n// emitting a row if there are no values for an interval.\nbuiltin none : A\n\n// define will define an aggregate function.\ndefine = (init, reduce, compute, fill=null) => (column=\"_value\", fill=fill) => ({\n    column: column,\n    init: init,\n    reduce: reduce,\n    compute: compute,\n    fill: fill,\n})\n_make_selector = (fn) => define(\n    init: (values) => fn(values),\n    reduce: (values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    },\n    compute: (state) => state,\n)\n\n// min constructs a min aggregate or selector for the column.\nmin = _make_selector(fn: math.min)\n\n// max constructs a max aggregate or selector for the column.\nmax = _make_selector(fn: math.max)\n\n// sum constructs a sum aggregate for the column.\nsum = define(\n    init: (values) => math.sum(values),\n    reduce: (values, state) => {\n        return state + math.sum(values)\n    },\n    compute: (state) => state,\n)\n\n// count constructs a count aggregate for the column.\ncount = define(\n    init: (values) => length(arr: values),\n    reduce: (values, state) => {\n        return state + length(arr: values)\n    },\n    compute: (state) => state,\n    fill: 0,\n)\n\n// mean constructs a mean aggregate for the column.\nmean = define(\n    init: (values) => ({\n        sum: math.sum(values),\n        count: length(arr: values),\n    }),\n    reduce: (values, state) => ({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    }),\n    compute: (state) => float(v: state.sum) / float(v: state.count),\n)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -538,11 +538,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 47,
-							Line:   73,
+							Column: 14,
+							Line:   76,
 						},
 						File:   "aggregate.flux",
-						Source: "(\n    <-tables: [A],\n    ?time: string,\n    every: duration,\n    ?period: duration,\n    columns: C,\n) => [B] where A: Record, B: Record, C: Record",
+						Source: "(\n    <-tables: [A],\n    ?time: string,\n    every: duration,\n    ?period: duration,\n    columns: C,\n) => [B] where\n    A: Record,\n    B: Record,\n    C: Record",
 						Start: ast.Position{
 							Column: 18,
 							Line:   67,
@@ -555,14 +555,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 25,
-								Line:   73,
+								Column: 14,
+								Line:   74,
 							},
 							File:   "aggregate.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 16,
-								Line:   73,
+								Column: 5,
+								Line:   74,
 							},
 						},
 					},
@@ -572,14 +572,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   73,
+									Column: 14,
+									Line:   74,
 								},
 								File:   "aggregate.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 19,
-									Line:   73,
+									Column: 8,
+									Line:   74,
 								},
 							},
 						},
@@ -591,14 +591,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   73,
+									Column: 6,
+									Line:   74,
 								},
 								File:   "aggregate.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 16,
-									Line:   73,
+									Column: 5,
+									Line:   74,
 								},
 							},
 						},
@@ -610,14 +610,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 36,
-								Line:   73,
+								Column: 14,
+								Line:   75,
 							},
 							File:   "aggregate.flux",
 							Source: "B: Record",
 							Start: ast.Position{
-								Column: 27,
-								Line:   73,
+								Column: 5,
+								Line:   75,
 							},
 						},
 					},
@@ -627,14 +627,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 36,
-									Line:   73,
+									Column: 14,
+									Line:   75,
 								},
 								File:   "aggregate.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 30,
-									Line:   73,
+									Column: 8,
+									Line:   75,
 								},
 							},
 						},
@@ -646,14 +646,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   73,
+									Column: 6,
+									Line:   75,
 								},
 								File:   "aggregate.flux",
 								Source: "B",
 								Start: ast.Position{
-									Column: 27,
-									Line:   73,
+									Column: 5,
+									Line:   75,
 								},
 							},
 						},
@@ -665,14 +665,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 47,
-								Line:   73,
+								Column: 14,
+								Line:   76,
 							},
 							File:   "aggregate.flux",
 							Source: "C: Record",
 							Start: ast.Position{
-								Column: 38,
-								Line:   73,
+								Column: 5,
+								Line:   76,
 							},
 						},
 					},
@@ -682,14 +682,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 47,
-									Line:   73,
+									Column: 14,
+									Line:   76,
 								},
 								File:   "aggregate.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 41,
-									Line:   73,
+									Column: 8,
+									Line:   76,
 								},
 							},
 						},
@@ -701,14 +701,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 39,
-									Line:   73,
+									Column: 6,
+									Line:   76,
 								},
 								File:   "aggregate.flux",
 								Source: "C",
 								Start: ast.Position{
-									Column: 38,
-									Line:   73,
+									Column: 5,
+									Line:   76,
 								},
 							},
 						},
@@ -1185,13 +1185,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   77,
+						Line:   80,
 					},
 					File:   "aggregate.flux",
 					Source: "builtin null",
 					Start: ast.Position{
 						Column: 1,
-						Line:   77,
+						Line:   80,
 					},
 				},
 			},
@@ -1203,13 +1203,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   77,
+							Line:   80,
 						},
 						File:   "aggregate.flux",
 						Source: "null",
 						Start: ast.Position{
 							Column: 9,
-							Line:   77,
+							Line:   80,
 						},
 					},
 				},
@@ -1222,13 +1222,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   77,
+							Line:   80,
 						},
 						File:   "aggregate.flux",
 						Source: "A",
 						Start: ast.Position{
 							Column: 16,
-							Line:   77,
+							Line:   80,
 						},
 					},
 				},
@@ -1240,13 +1240,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   77,
+								Line:   80,
 							},
 							File:   "aggregate.flux",
 							Source: "A",
 							Start: ast.Position{
 								Column: 16,
-								Line:   77,
+								Line:   80,
 							},
 						},
 					},
@@ -1257,13 +1257,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   77,
+									Line:   80,
 								},
 								File:   "aggregate.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 16,
-									Line:   77,
+									Line:   80,
 								},
 							},
 						},
@@ -1278,13 +1278,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   81,
+						Line:   84,
 					},
 					File:   "aggregate.flux",
 					Source: "builtin none",
 					Start: ast.Position{
 						Column: 1,
-						Line:   81,
+						Line:   84,
 					},
 				},
 			},
@@ -1296,13 +1296,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   81,
+							Line:   84,
 						},
 						File:   "aggregate.flux",
 						Source: "none",
 						Start: ast.Position{
 							Column: 9,
-							Line:   81,
+							Line:   84,
 						},
 					},
 				},
@@ -1315,13 +1315,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   81,
+							Line:   84,
 						},
 						File:   "aggregate.flux",
 						Source: "A",
 						Start: ast.Position{
 							Column: 16,
-							Line:   81,
+							Line:   84,
 						},
 					},
 				},
@@ -1333,13 +1333,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 17,
-								Line:   81,
+								Line:   84,
 							},
 							File:   "aggregate.flux",
 							Source: "A",
 							Start: ast.Position{
 								Column: 16,
-								Line:   81,
+								Line:   84,
 							},
 						},
 					},
@@ -1350,13 +1350,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   81,
+									Line:   84,
 								},
 								File:   "aggregate.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 16,
-									Line:   81,
+									Line:   84,
 								},
 							},
 						},
@@ -1371,13 +1371,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 3,
-						Line:   90,
+						Line:   93,
 					},
 					File:   "aggregate.flux",
 					Source: "define = (init, reduce, compute, fill=null) => (column=\"_value\", fill=fill) => ({\n    column: column,\n    init: init,\n    reduce: reduce,\n    compute: compute,\n    fill: fill,\n})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   84,
+						Line:   87,
 					},
 				},
 			},
@@ -1388,13 +1388,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   84,
+							Line:   87,
 						},
 						File:   "aggregate.flux",
 						Source: "define",
 						Start: ast.Position{
 							Column: 1,
-							Line:   84,
+							Line:   87,
 						},
 					},
 				},
@@ -1408,13 +1408,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   90,
+							Line:   93,
 						},
 						File:   "aggregate.flux",
 						Source: "(init, reduce, compute, fill=null) => (column=\"_value\", fill=fill) => ({\n    column: column,\n    init: init,\n    reduce: reduce,\n    compute: compute,\n    fill: fill,\n})",
 						Start: ast.Position{
 							Column: 10,
-							Line:   84,
+							Line:   87,
 						},
 					},
 				},
@@ -1426,13 +1426,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   90,
+								Line:   93,
 							},
 							File:   "aggregate.flux",
 							Source: "(column=\"_value\", fill=fill) => ({\n    column: column,\n    init: init,\n    reduce: reduce,\n    compute: compute,\n    fill: fill,\n})",
 							Start: ast.Position{
 								Column: 48,
-								Line:   84,
+								Line:   87,
 							},
 						},
 					},
@@ -1443,13 +1443,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   90,
+									Line:   93,
 								},
 								File:   "aggregate.flux",
 								Source: "({\n    column: column,\n    init: init,\n    reduce: reduce,\n    compute: compute,\n    fill: fill,\n})",
 								Start: ast.Position{
 									Column: 80,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -1460,13 +1460,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   90,
+										Line:   93,
 									},
 									File:   "aggregate.flux",
 									Source: "{\n    column: column,\n    init: init,\n    reduce: reduce,\n    compute: compute,\n    fill: fill,\n}",
 									Start: ast.Position{
 										Column: 81,
-										Line:   84,
+										Line:   87,
 									},
 								},
 							},
@@ -1478,13 +1478,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   85,
+											Line:   88,
 										},
 										File:   "aggregate.flux",
 										Source: "column: column",
 										Start: ast.Position{
 											Column: 5,
-											Line:   85,
+											Line:   88,
 										},
 									},
 								},
@@ -1496,13 +1496,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   85,
+												Line:   88,
 											},
 											File:   "aggregate.flux",
 											Source: "column",
 											Start: ast.Position{
 												Column: 5,
-												Line:   85,
+												Line:   88,
 											},
 										},
 									},
@@ -1516,13 +1516,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   85,
+												Line:   88,
 											},
 											File:   "aggregate.flux",
 											Source: "column",
 											Start: ast.Position{
 												Column: 13,
-												Line:   85,
+												Line:   88,
 											},
 										},
 									},
@@ -1535,13 +1535,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   86,
+											Line:   89,
 										},
 										File:   "aggregate.flux",
 										Source: "init: init",
 										Start: ast.Position{
 											Column: 5,
-											Line:   86,
+											Line:   89,
 										},
 									},
 								},
@@ -1553,13 +1553,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
-												Line:   86,
+												Line:   89,
 											},
 											File:   "aggregate.flux",
 											Source: "init",
 											Start: ast.Position{
 												Column: 5,
-												Line:   86,
+												Line:   89,
 											},
 										},
 									},
@@ -1573,13 +1573,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   86,
+												Line:   89,
 											},
 											File:   "aggregate.flux",
 											Source: "init",
 											Start: ast.Position{
 												Column: 11,
-												Line:   86,
+												Line:   89,
 											},
 										},
 									},
@@ -1592,13 +1592,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   87,
+											Line:   90,
 										},
 										File:   "aggregate.flux",
 										Source: "reduce: reduce",
 										Start: ast.Position{
 											Column: 5,
-											Line:   87,
+											Line:   90,
 										},
 									},
 								},
@@ -1610,13 +1610,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 11,
-												Line:   87,
+												Line:   90,
 											},
 											File:   "aggregate.flux",
 											Source: "reduce",
 											Start: ast.Position{
 												Column: 5,
-												Line:   87,
+												Line:   90,
 											},
 										},
 									},
@@ -1630,13 +1630,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   87,
+												Line:   90,
 											},
 											File:   "aggregate.flux",
 											Source: "reduce",
 											Start: ast.Position{
 												Column: 13,
-												Line:   87,
+												Line:   90,
 											},
 										},
 									},
@@ -1649,13 +1649,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   88,
+											Line:   91,
 										},
 										File:   "aggregate.flux",
 										Source: "compute: compute",
 										Start: ast.Position{
 											Column: 5,
-											Line:   88,
+											Line:   91,
 										},
 									},
 								},
@@ -1667,13 +1667,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 12,
-												Line:   88,
+												Line:   91,
 											},
 											File:   "aggregate.flux",
 											Source: "compute",
 											Start: ast.Position{
 												Column: 5,
-												Line:   88,
+												Line:   91,
 											},
 										},
 									},
@@ -1687,13 +1687,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   88,
+												Line:   91,
 											},
 											File:   "aggregate.flux",
 											Source: "compute",
 											Start: ast.Position{
 												Column: 14,
-												Line:   88,
+												Line:   91,
 											},
 										},
 									},
@@ -1706,13 +1706,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   89,
+											Line:   92,
 										},
 										File:   "aggregate.flux",
 										Source: "fill: fill",
 										Start: ast.Position{
 											Column: 5,
-											Line:   89,
+											Line:   92,
 										},
 									},
 								},
@@ -1724,13 +1724,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
-												Line:   89,
+												Line:   92,
 											},
 											File:   "aggregate.flux",
 											Source: "fill",
 											Start: ast.Position{
 												Column: 5,
-												Line:   89,
+												Line:   92,
 											},
 										},
 									},
@@ -1744,13 +1744,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   89,
+												Line:   92,
 											},
 											File:   "aggregate.flux",
 											Source: "fill",
 											Start: ast.Position{
 												Column: 11,
-												Line:   89,
+												Line:   92,
 											},
 										},
 									},
@@ -1771,13 +1771,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 64,
-									Line:   84,
+									Line:   87,
 								},
 								File:   "aggregate.flux",
 								Source: "column=\"_value\"",
 								Start: ast.Position{
 									Column: 49,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -1789,13 +1789,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 55,
-										Line:   84,
+										Line:   87,
 									},
 									File:   "aggregate.flux",
 									Source: "column",
 									Start: ast.Position{
 										Column: 49,
-										Line:   84,
+										Line:   87,
 									},
 								},
 							},
@@ -1809,13 +1809,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 64,
-										Line:   84,
+										Line:   87,
 									},
 									File:   "aggregate.flux",
 									Source: "\"_value\"",
 									Start: ast.Position{
 										Column: 56,
-										Line:   84,
+										Line:   87,
 									},
 								},
 							},
@@ -1828,13 +1828,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 75,
-									Line:   84,
+									Line:   87,
 								},
 								File:   "aggregate.flux",
 								Source: "fill=fill",
 								Start: ast.Position{
 									Column: 66,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -1846,13 +1846,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 70,
-										Line:   84,
+										Line:   87,
 									},
 									File:   "aggregate.flux",
 									Source: "fill",
 									Start: ast.Position{
 										Column: 66,
-										Line:   84,
+										Line:   87,
 									},
 								},
 							},
@@ -1866,13 +1866,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 75,
-										Line:   84,
+										Line:   87,
 									},
 									File:   "aggregate.flux",
 									Source: "fill",
 									Start: ast.Position{
 										Column: 71,
-										Line:   84,
+										Line:   87,
 									},
 								},
 							},
@@ -1889,13 +1889,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   84,
+								Line:   87,
 							},
 							File:   "aggregate.flux",
 							Source: "init",
 							Start: ast.Position{
 								Column: 11,
-								Line:   84,
+								Line:   87,
 							},
 						},
 					},
@@ -1907,13 +1907,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 15,
-									Line:   84,
+									Line:   87,
 								},
 								File:   "aggregate.flux",
 								Source: "init",
 								Start: ast.Position{
 									Column: 11,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -1928,13 +1928,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 23,
-								Line:   84,
+								Line:   87,
 							},
 							File:   "aggregate.flux",
 							Source: "reduce",
 							Start: ast.Position{
 								Column: 17,
-								Line:   84,
+								Line:   87,
 							},
 						},
 					},
@@ -1946,13 +1946,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 23,
-									Line:   84,
+									Line:   87,
 								},
 								File:   "aggregate.flux",
 								Source: "reduce",
 								Start: ast.Position{
 									Column: 17,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -1967,13 +1967,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 32,
-								Line:   84,
+								Line:   87,
 							},
 							File:   "aggregate.flux",
 							Source: "compute",
 							Start: ast.Position{
 								Column: 25,
-								Line:   84,
+								Line:   87,
 							},
 						},
 					},
@@ -1985,13 +1985,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   84,
+									Line:   87,
 								},
 								File:   "aggregate.flux",
 								Source: "compute",
 								Start: ast.Position{
 									Column: 25,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -2006,13 +2006,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 43,
-								Line:   84,
+								Line:   87,
 							},
 							File:   "aggregate.flux",
 							Source: "fill=null",
 							Start: ast.Position{
 								Column: 34,
-								Line:   84,
+								Line:   87,
 							},
 						},
 					},
@@ -2024,13 +2024,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 38,
-									Line:   84,
+									Line:   87,
 								},
 								File:   "aggregate.flux",
 								Source: "fill",
 								Start: ast.Position{
 									Column: 34,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -2044,13 +2044,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 43,
-									Line:   84,
+									Line:   87,
 								},
 								File:   "aggregate.flux",
 								Source: "null",
 								Start: ast.Position{
 									Column: 39,
-									Line:   84,
+									Line:   87,
 								},
 							},
 						},
@@ -2066,13 +2066,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   99,
+						Line:   102,
 					},
 					File:   "aggregate.flux",
 					Source: "_make_selector = (fn) => define(\n    init: (values) => fn(values),\n    reduce: (values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    },\n    compute: (state) => state,\n)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   91,
+						Line:   94,
 					},
 				},
 			},
@@ -2083,13 +2083,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 15,
-							Line:   91,
+							Line:   94,
 						},
 						File:   "aggregate.flux",
 						Source: "_make_selector",
 						Start: ast.Position{
 							Column: 1,
-							Line:   91,
+							Line:   94,
 						},
 					},
 				},
@@ -2103,13 +2103,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   99,
+							Line:   102,
 						},
 						File:   "aggregate.flux",
 						Source: "(fn) => define(\n    init: (values) => fn(values),\n    reduce: (values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    },\n    compute: (state) => state,\n)",
 						Start: ast.Position{
 							Column: 18,
-							Line:   91,
+							Line:   94,
 						},
 					},
 				},
@@ -2121,13 +2121,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   98,
+									Line:   101,
 								},
 								File:   "aggregate.flux",
 								Source: "init: (values) => fn(values),\n    reduce: (values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    },\n    compute: (state) => state",
 								Start: ast.Position{
 									Column: 5,
-									Line:   92,
+									Line:   95,
 								},
 							},
 						},
@@ -2139,13 +2139,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 33,
-										Line:   92,
+										Line:   95,
 									},
 									File:   "aggregate.flux",
 									Source: "init: (values) => fn(values)",
 									Start: ast.Position{
 										Column: 5,
-										Line:   92,
+										Line:   95,
 									},
 								},
 							},
@@ -2157,13 +2157,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 9,
-											Line:   92,
+											Line:   95,
 										},
 										File:   "aggregate.flux",
 										Source: "init",
 										Start: ast.Position{
 											Column: 5,
-											Line:   92,
+											Line:   95,
 										},
 									},
 								},
@@ -2178,13 +2178,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   92,
+											Line:   95,
 										},
 										File:   "aggregate.flux",
 										Source: "(values) => fn(values)",
 										Start: ast.Position{
 											Column: 11,
-											Line:   92,
+											Line:   95,
 										},
 									},
 								},
@@ -2196,13 +2196,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 32,
-													Line:   92,
+													Line:   95,
 												},
 												File:   "aggregate.flux",
 												Source: "values",
 												Start: ast.Position{
 													Column: 26,
-													Line:   92,
+													Line:   95,
 												},
 											},
 										},
@@ -2214,13 +2214,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 32,
-														Line:   92,
+														Line:   95,
 													},
 													File:   "aggregate.flux",
 													Source: "values",
 													Start: ast.Position{
 														Column: 26,
-														Line:   92,
+														Line:   95,
 													},
 												},
 											},
@@ -2232,13 +2232,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
-															Line:   92,
+															Line:   95,
 														},
 														File:   "aggregate.flux",
 														Source: "values",
 														Start: ast.Position{
 															Column: 26,
-															Line:   92,
+															Line:   95,
 														},
 													},
 												},
@@ -2256,13 +2256,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   92,
+												Line:   95,
 											},
 											File:   "aggregate.flux",
 											Source: "fn(values)",
 											Start: ast.Position{
 												Column: 23,
-												Line:   92,
+												Line:   95,
 											},
 										},
 									},
@@ -2273,13 +2273,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   92,
+													Line:   95,
 												},
 												File:   "aggregate.flux",
 												Source: "fn",
 												Start: ast.Position{
 													Column: 23,
-													Line:   92,
+													Line:   95,
 												},
 											},
 										},
@@ -2296,13 +2296,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   92,
+												Line:   95,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 12,
-												Line:   92,
+												Line:   95,
 											},
 										},
 									},
@@ -2314,13 +2314,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 18,
-													Line:   92,
+													Line:   95,
 												},
 												File:   "aggregate.flux",
 												Source: "values",
 												Start: ast.Position{
 													Column: 12,
-													Line:   92,
+													Line:   95,
 												},
 											},
 										},
@@ -2338,13 +2338,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   97,
+										Line:   100,
 									},
 									File:   "aggregate.flux",
 									Source: "reduce: (values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    }",
 									Start: ast.Position{
 										Column: 5,
-										Line:   93,
+										Line:   96,
 									},
 								},
 							},
@@ -2356,13 +2356,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   93,
+											Line:   96,
 										},
 										File:   "aggregate.flux",
 										Source: "reduce",
 										Start: ast.Position{
 											Column: 5,
-											Line:   93,
+											Line:   96,
 										},
 									},
 								},
@@ -2377,13 +2377,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   97,
+											Line:   100,
 										},
 										File:   "aggregate.flux",
 										Source: "(values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    }",
 										Start: ast.Position{
 											Column: 13,
-											Line:   93,
+											Line:   96,
 										},
 									},
 								},
@@ -2394,13 +2394,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 6,
-												Line:   97,
+												Line:   100,
 											},
 											File:   "aggregate.flux",
 											Source: "{\n        v = fn(values)\n\n        return fn(values: [state, v])\n    }",
 											Start: ast.Position{
 												Column: 32,
-												Line:   93,
+												Line:   96,
 											},
 										},
 									},
@@ -2411,13 +2411,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   94,
+													Line:   97,
 												},
 												File:   "aggregate.flux",
 												Source: "v = fn(values)",
 												Start: ast.Position{
 													Column: 9,
-													Line:   94,
+													Line:   97,
 												},
 											},
 										},
@@ -2428,13 +2428,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 10,
-														Line:   94,
+														Line:   97,
 													},
 													File:   "aggregate.flux",
 													Source: "v",
 													Start: ast.Position{
 														Column: 9,
-														Line:   94,
+														Line:   97,
 													},
 												},
 											},
@@ -2448,13 +2448,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   94,
+															Line:   97,
 														},
 														File:   "aggregate.flux",
 														Source: "values",
 														Start: ast.Position{
 															Column: 16,
-															Line:   94,
+															Line:   97,
 														},
 													},
 												},
@@ -2466,13 +2466,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
-																Line:   94,
+																Line:   97,
 															},
 															File:   "aggregate.flux",
 															Source: "values",
 															Start: ast.Position{
 																Column: 16,
-																Line:   94,
+																Line:   97,
 															},
 														},
 													},
@@ -2484,13 +2484,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 22,
-																	Line:   94,
+																	Line:   97,
 																},
 																File:   "aggregate.flux",
 																Source: "values",
 																Start: ast.Position{
 																	Column: 16,
-																	Line:   94,
+																	Line:   97,
 																},
 															},
 														},
@@ -2508,13 +2508,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 23,
-														Line:   94,
+														Line:   97,
 													},
 													File:   "aggregate.flux",
 													Source: "fn(values)",
 													Start: ast.Position{
 														Column: 13,
-														Line:   94,
+														Line:   97,
 													},
 												},
 											},
@@ -2525,13 +2525,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 15,
-															Line:   94,
+															Line:   97,
 														},
 														File:   "aggregate.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 13,
-															Line:   94,
+															Line:   97,
 														},
 													},
 												},
@@ -2549,13 +2549,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   96,
+															Line:   99,
 														},
 														File:   "aggregate.flux",
 														Source: "values: [state, v]",
 														Start: ast.Position{
 															Column: 19,
-															Line:   96,
+															Line:   99,
 														},
 													},
 												},
@@ -2567,13 +2567,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   96,
+																Line:   99,
 															},
 															File:   "aggregate.flux",
 															Source: "values: [state, v]",
 															Start: ast.Position{
 																Column: 19,
-																Line:   96,
+																Line:   99,
 															},
 														},
 													},
@@ -2585,13 +2585,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
-																	Line:   96,
+																	Line:   99,
 																},
 																File:   "aggregate.flux",
 																Source: "values",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   96,
+																	Line:   99,
 																},
 															},
 														},
@@ -2605,13 +2605,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
-																	Line:   96,
+																	Line:   99,
 																},
 																File:   "aggregate.flux",
 																Source: "[state, v]",
 																Start: ast.Position{
 																	Column: 27,
-																	Line:   96,
+																	Line:   99,
 																},
 															},
 														},
@@ -2622,13 +2622,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 33,
-																		Line:   96,
+																		Line:   99,
 																	},
 																	File:   "aggregate.flux",
 																	Source: "state",
 																	Start: ast.Position{
 																		Column: 28,
-																		Line:   96,
+																		Line:   99,
 																	},
 																},
 															},
@@ -2640,13 +2640,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 36,
-																		Line:   96,
+																		Line:   99,
 																	},
 																	File:   "aggregate.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 35,
-																		Line:   96,
+																		Line:   99,
 																	},
 																},
 															},
@@ -2665,13 +2665,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   96,
+														Line:   99,
 													},
 													File:   "aggregate.flux",
 													Source: "fn(values: [state, v])",
 													Start: ast.Position{
 														Column: 16,
-														Line:   96,
+														Line:   99,
 													},
 												},
 											},
@@ -2682,13 +2682,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 18,
-															Line:   96,
+															Line:   99,
 														},
 														File:   "aggregate.flux",
 														Source: "fn",
 														Start: ast.Position{
 															Column: 16,
-															Line:   96,
+															Line:   99,
 														},
 													},
 												},
@@ -2703,13 +2703,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   96,
+													Line:   99,
 												},
 												File:   "aggregate.flux",
 												Source: "return fn(values: [state, v])",
 												Start: ast.Position{
 													Column: 9,
-													Line:   96,
+													Line:   99,
 												},
 											},
 										},
@@ -2725,13 +2725,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   93,
+												Line:   96,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 14,
-												Line:   93,
+												Line:   96,
 											},
 										},
 									},
@@ -2743,13 +2743,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   93,
+													Line:   96,
 												},
 												File:   "aggregate.flux",
 												Source: "values",
 												Start: ast.Position{
 													Column: 14,
-													Line:   93,
+													Line:   96,
 												},
 											},
 										},
@@ -2764,13 +2764,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   93,
+												Line:   96,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 22,
-												Line:   93,
+												Line:   96,
 											},
 										},
 									},
@@ -2782,13 +2782,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   93,
+													Line:   96,
 												},
 												File:   "aggregate.flux",
 												Source: "state",
 												Start: ast.Position{
 													Column: 22,
-													Line:   93,
+													Line:   96,
 												},
 											},
 										},
@@ -2806,13 +2806,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   98,
+										Line:   101,
 									},
 									File:   "aggregate.flux",
 									Source: "compute: (state) => state",
 									Start: ast.Position{
 										Column: 5,
-										Line:   98,
+										Line:   101,
 									},
 								},
 							},
@@ -2824,13 +2824,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   98,
+											Line:   101,
 										},
 										File:   "aggregate.flux",
 										Source: "compute",
 										Start: ast.Position{
 											Column: 5,
-											Line:   98,
+											Line:   101,
 										},
 									},
 								},
@@ -2845,13 +2845,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   98,
+											Line:   101,
 										},
 										File:   "aggregate.flux",
 										Source: "(state) => state",
 										Start: ast.Position{
 											Column: 14,
-											Line:   98,
+											Line:   101,
 										},
 									},
 								},
@@ -2862,13 +2862,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   98,
+												Line:   101,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 25,
-												Line:   98,
+												Line:   101,
 											},
 										},
 									},
@@ -2882,13 +2882,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   98,
+												Line:   101,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 15,
-												Line:   98,
+												Line:   101,
 											},
 										},
 									},
@@ -2900,13 +2900,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   98,
+													Line:   101,
 												},
 												File:   "aggregate.flux",
 												Source: "state",
 												Start: ast.Position{
 													Column: 15,
-													Line:   98,
+													Line:   101,
 												},
 											},
 										},
@@ -2927,13 +2927,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   99,
+								Line:   102,
 							},
 							File:   "aggregate.flux",
 							Source: "define(\n    init: (values) => fn(values),\n    reduce: (values, state) => {\n        v = fn(values)\n\n        return fn(values: [state, v])\n    },\n    compute: (state) => state,\n)",
 							Start: ast.Position{
 								Column: 26,
-								Line:   91,
+								Line:   94,
 							},
 						},
 					},
@@ -2944,13 +2944,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 32,
-									Line:   91,
+									Line:   94,
 								},
 								File:   "aggregate.flux",
 								Source: "define",
 								Start: ast.Position{
 									Column: 26,
-									Line:   91,
+									Line:   94,
 								},
 							},
 						},
@@ -2967,13 +2967,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   91,
+								Line:   94,
 							},
 							File:   "aggregate.flux",
 							Source: "fn",
 							Start: ast.Position{
 								Column: 19,
-								Line:   91,
+								Line:   94,
 							},
 						},
 					},
@@ -2985,13 +2985,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 21,
-									Line:   91,
+									Line:   94,
 								},
 								File:   "aggregate.flux",
 								Source: "fn",
 								Start: ast.Position{
 									Column: 19,
-									Line:   91,
+									Line:   94,
 								},
 							},
 						},
@@ -3009,13 +3009,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   102,
+						Line:   105,
 					},
 					File:   "aggregate.flux",
 					Source: "min = _make_selector(fn: math.min)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   102,
+						Line:   105,
 					},
 				},
 			},
@@ -3026,13 +3026,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   102,
+							Line:   105,
 						},
 						File:   "aggregate.flux",
 						Source: "min",
 						Start: ast.Position{
 							Column: 1,
-							Line:   102,
+							Line:   105,
 						},
 					},
 				},
@@ -3046,13 +3046,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   102,
+								Line:   105,
 							},
 							File:   "aggregate.flux",
 							Source: "fn: math.min",
 							Start: ast.Position{
 								Column: 22,
-								Line:   102,
+								Line:   105,
 							},
 						},
 					},
@@ -3064,13 +3064,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   102,
+									Line:   105,
 								},
 								File:   "aggregate.flux",
 								Source: "fn: math.min",
 								Start: ast.Position{
 									Column: 22,
-									Line:   102,
+									Line:   105,
 								},
 							},
 						},
@@ -3082,13 +3082,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   102,
+										Line:   105,
 									},
 									File:   "aggregate.flux",
 									Source: "fn",
 									Start: ast.Position{
 										Column: 22,
-										Line:   102,
+										Line:   105,
 									},
 								},
 							},
@@ -3102,13 +3102,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   102,
+										Line:   105,
 									},
 									File:   "aggregate.flux",
 									Source: "math.min",
 									Start: ast.Position{
 										Column: 26,
-										Line:   102,
+										Line:   105,
 									},
 								},
 							},
@@ -3120,13 +3120,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   102,
+											Line:   105,
 										},
 										File:   "aggregate.flux",
 										Source: "math",
 										Start: ast.Position{
 											Column: 26,
-											Line:   102,
+											Line:   105,
 										},
 									},
 								},
@@ -3139,13 +3139,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   102,
+											Line:   105,
 										},
 										File:   "aggregate.flux",
 										Source: "min",
 										Start: ast.Position{
 											Column: 31,
-											Line:   102,
+											Line:   105,
 										},
 									},
 								},
@@ -3163,13 +3163,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   102,
+							Line:   105,
 						},
 						File:   "aggregate.flux",
 						Source: "_make_selector(fn: math.min)",
 						Start: ast.Position{
 							Column: 7,
-							Line:   102,
+							Line:   105,
 						},
 					},
 				},
@@ -3180,13 +3180,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   102,
+								Line:   105,
 							},
 							File:   "aggregate.flux",
 							Source: "_make_selector",
 							Start: ast.Position{
 								Column: 7,
-								Line:   102,
+								Line:   105,
 							},
 						},
 					},
@@ -3202,13 +3202,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 35,
-						Line:   105,
+						Line:   108,
 					},
 					File:   "aggregate.flux",
 					Source: "max = _make_selector(fn: math.max)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   105,
+						Line:   108,
 					},
 				},
 			},
@@ -3219,13 +3219,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   105,
+							Line:   108,
 						},
 						File:   "aggregate.flux",
 						Source: "max",
 						Start: ast.Position{
 							Column: 1,
-							Line:   105,
+							Line:   108,
 						},
 					},
 				},
@@ -3239,13 +3239,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 34,
-								Line:   105,
+								Line:   108,
 							},
 							File:   "aggregate.flux",
 							Source: "fn: math.max",
 							Start: ast.Position{
 								Column: 22,
-								Line:   105,
+								Line:   108,
 							},
 						},
 					},
@@ -3257,13 +3257,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 34,
-									Line:   105,
+									Line:   108,
 								},
 								File:   "aggregate.flux",
 								Source: "fn: math.max",
 								Start: ast.Position{
 									Column: 22,
-									Line:   105,
+									Line:   108,
 								},
 							},
 						},
@@ -3275,13 +3275,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 24,
-										Line:   105,
+										Line:   108,
 									},
 									File:   "aggregate.flux",
 									Source: "fn",
 									Start: ast.Position{
 										Column: 22,
-										Line:   105,
+										Line:   108,
 									},
 								},
 							},
@@ -3295,13 +3295,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 34,
-										Line:   105,
+										Line:   108,
 									},
 									File:   "aggregate.flux",
 									Source: "math.max",
 									Start: ast.Position{
 										Column: 26,
-										Line:   105,
+										Line:   108,
 									},
 								},
 							},
@@ -3313,13 +3313,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   105,
+											Line:   108,
 										},
 										File:   "aggregate.flux",
 										Source: "math",
 										Start: ast.Position{
 											Column: 26,
-											Line:   105,
+											Line:   108,
 										},
 									},
 								},
@@ -3332,13 +3332,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   105,
+											Line:   108,
 										},
 										File:   "aggregate.flux",
 										Source: "max",
 										Start: ast.Position{
 											Column: 31,
-											Line:   105,
+											Line:   108,
 										},
 									},
 								},
@@ -3356,13 +3356,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 35,
-							Line:   105,
+							Line:   108,
 						},
 						File:   "aggregate.flux",
 						Source: "_make_selector(fn: math.max)",
 						Start: ast.Position{
 							Column: 7,
-							Line:   105,
+							Line:   108,
 						},
 					},
 				},
@@ -3373,13 +3373,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 21,
-								Line:   105,
+								Line:   108,
 							},
 							File:   "aggregate.flux",
 							Source: "_make_selector",
 							Start: ast.Position{
 								Column: 7,
-								Line:   105,
+								Line:   108,
 							},
 						},
 					},
@@ -3395,13 +3395,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   114,
+						Line:   117,
 					},
 					File:   "aggregate.flux",
 					Source: "sum = define(\n    init: (values) => math.sum(values),\n    reduce: (values, state) => {\n        return state + math.sum(values)\n    },\n    compute: (state) => state,\n)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   108,
+						Line:   111,
 					},
 				},
 			},
@@ -3412,13 +3412,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   108,
+							Line:   111,
 						},
 						File:   "aggregate.flux",
 						Source: "sum",
 						Start: ast.Position{
 							Column: 1,
-							Line:   108,
+							Line:   111,
 						},
 					},
 				},
@@ -3432,13 +3432,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 30,
-								Line:   113,
+								Line:   116,
 							},
 							File:   "aggregate.flux",
 							Source: "init: (values) => math.sum(values),\n    reduce: (values, state) => {\n        return state + math.sum(values)\n    },\n    compute: (state) => state",
 							Start: ast.Position{
 								Column: 5,
-								Line:   109,
+								Line:   112,
 							},
 						},
 					},
@@ -3450,13 +3450,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 39,
-									Line:   109,
+									Line:   112,
 								},
 								File:   "aggregate.flux",
 								Source: "init: (values) => math.sum(values)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   109,
+									Line:   112,
 								},
 							},
 						},
@@ -3468,13 +3468,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   109,
+										Line:   112,
 									},
 									File:   "aggregate.flux",
 									Source: "init",
 									Start: ast.Position{
 										Column: 5,
-										Line:   109,
+										Line:   112,
 									},
 								},
 							},
@@ -3489,13 +3489,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   109,
+										Line:   112,
 									},
 									File:   "aggregate.flux",
 									Source: "(values) => math.sum(values)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   109,
+										Line:   112,
 									},
 								},
 							},
@@ -3507,13 +3507,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   109,
+												Line:   112,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 32,
-												Line:   109,
+												Line:   112,
 											},
 										},
 									},
@@ -3525,13 +3525,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   109,
+													Line:   112,
 												},
 												File:   "aggregate.flux",
 												Source: "values",
 												Start: ast.Position{
 													Column: 32,
-													Line:   109,
+													Line:   112,
 												},
 											},
 										},
@@ -3543,13 +3543,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 38,
-														Line:   109,
+														Line:   112,
 													},
 													File:   "aggregate.flux",
 													Source: "values",
 													Start: ast.Position{
 														Column: 32,
-														Line:   109,
+														Line:   112,
 													},
 												},
 											},
@@ -3567,13 +3567,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   109,
+											Line:   112,
 										},
 										File:   "aggregate.flux",
 										Source: "math.sum(values)",
 										Start: ast.Position{
 											Column: 23,
-											Line:   109,
+											Line:   112,
 										},
 									},
 								},
@@ -3584,13 +3584,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   109,
+												Line:   112,
 											},
 											File:   "aggregate.flux",
 											Source: "math.sum",
 											Start: ast.Position{
 												Column: 23,
-												Line:   109,
+												Line:   112,
 											},
 										},
 									},
@@ -3602,13 +3602,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   109,
+													Line:   112,
 												},
 												File:   "aggregate.flux",
 												Source: "math",
 												Start: ast.Position{
 													Column: 23,
-													Line:   109,
+													Line:   112,
 												},
 											},
 										},
@@ -3621,13 +3621,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 31,
-													Line:   109,
+													Line:   112,
 												},
 												File:   "aggregate.flux",
 												Source: "sum",
 												Start: ast.Position{
 													Column: 28,
-													Line:   109,
+													Line:   112,
 												},
 											},
 										},
@@ -3646,13 +3646,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   109,
+											Line:   112,
 										},
 										File:   "aggregate.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 12,
-											Line:   109,
+											Line:   112,
 										},
 									},
 								},
@@ -3664,13 +3664,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   109,
+												Line:   112,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 12,
-												Line:   109,
+												Line:   112,
 											},
 										},
 									},
@@ -3688,13 +3688,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   112,
+									Line:   115,
 								},
 								File:   "aggregate.flux",
 								Source: "reduce: (values, state) => {\n        return state + math.sum(values)\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   110,
+									Line:   113,
 								},
 							},
 						},
@@ -3706,13 +3706,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   110,
+										Line:   113,
 									},
 									File:   "aggregate.flux",
 									Source: "reduce",
 									Start: ast.Position{
 										Column: 5,
-										Line:   110,
+										Line:   113,
 									},
 								},
 							},
@@ -3727,13 +3727,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   112,
+										Line:   115,
 									},
 									File:   "aggregate.flux",
 									Source: "(values, state) => {\n        return state + math.sum(values)\n    }",
 									Start: ast.Position{
 										Column: 13,
-										Line:   110,
+										Line:   113,
 									},
 								},
 							},
@@ -3744,13 +3744,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   112,
+											Line:   115,
 										},
 										File:   "aggregate.flux",
 										Source: "{\n        return state + math.sum(values)\n    }",
 										Start: ast.Position{
 											Column: 32,
-											Line:   110,
+											Line:   113,
 										},
 									},
 								},
@@ -3762,13 +3762,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 40,
-													Line:   111,
+													Line:   114,
 												},
 												File:   "aggregate.flux",
 												Source: "state + math.sum(values)",
 												Start: ast.Position{
 													Column: 16,
-													Line:   111,
+													Line:   114,
 												},
 											},
 										},
@@ -3779,13 +3779,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   111,
+														Line:   114,
 													},
 													File:   "aggregate.flux",
 													Source: "state",
 													Start: ast.Position{
 														Column: 16,
-														Line:   111,
+														Line:   114,
 													},
 												},
 											},
@@ -3800,13 +3800,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 39,
-															Line:   111,
+															Line:   114,
 														},
 														File:   "aggregate.flux",
 														Source: "values",
 														Start: ast.Position{
 															Column: 33,
-															Line:   111,
+															Line:   114,
 														},
 													},
 												},
@@ -3818,13 +3818,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 39,
-																Line:   111,
+																Line:   114,
 															},
 															File:   "aggregate.flux",
 															Source: "values",
 															Start: ast.Position{
 																Column: 33,
-																Line:   111,
+																Line:   114,
 															},
 														},
 													},
@@ -3836,13 +3836,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 39,
-																	Line:   111,
+																	Line:   114,
 																},
 																File:   "aggregate.flux",
 																Source: "values",
 																Start: ast.Position{
 																	Column: 33,
-																	Line:   111,
+																	Line:   114,
 																},
 															},
 														},
@@ -3860,13 +3860,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 40,
-														Line:   111,
+														Line:   114,
 													},
 													File:   "aggregate.flux",
 													Source: "math.sum(values)",
 													Start: ast.Position{
 														Column: 24,
-														Line:   111,
+														Line:   114,
 													},
 												},
 											},
@@ -3877,13 +3877,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
-															Line:   111,
+															Line:   114,
 														},
 														File:   "aggregate.flux",
 														Source: "math.sum",
 														Start: ast.Position{
 															Column: 24,
-															Line:   111,
+															Line:   114,
 														},
 													},
 												},
@@ -3895,13 +3895,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 28,
-																Line:   111,
+																Line:   114,
 															},
 															File:   "aggregate.flux",
 															Source: "math",
 															Start: ast.Position{
 																Column: 24,
-																Line:   111,
+																Line:   114,
 															},
 														},
 													},
@@ -3914,13 +3914,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 32,
-																Line:   111,
+																Line:   114,
 															},
 															File:   "aggregate.flux",
 															Source: "sum",
 															Start: ast.Position{
 																Column: 29,
-																Line:   111,
+																Line:   114,
 															},
 														},
 													},
@@ -3938,13 +3938,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 40,
-												Line:   111,
+												Line:   114,
 											},
 											File:   "aggregate.flux",
 											Source: "return state + math.sum(values)",
 											Start: ast.Position{
 												Column: 9,
-												Line:   111,
+												Line:   114,
 											},
 										},
 									},
@@ -3960,13 +3960,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   110,
+											Line:   113,
 										},
 										File:   "aggregate.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 14,
-											Line:   110,
+											Line:   113,
 										},
 									},
 								},
@@ -3978,13 +3978,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   110,
+												Line:   113,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 14,
-												Line:   110,
+												Line:   113,
 											},
 										},
 									},
@@ -3999,13 +3999,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   110,
+											Line:   113,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 22,
-											Line:   110,
+											Line:   113,
 										},
 									},
 								},
@@ -4017,13 +4017,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   110,
+												Line:   113,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 22,
-												Line:   110,
+												Line:   113,
 											},
 										},
 									},
@@ -4041,13 +4041,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   113,
+									Line:   116,
 								},
 								File:   "aggregate.flux",
 								Source: "compute: (state) => state",
 								Start: ast.Position{
 									Column: 5,
-									Line:   113,
+									Line:   116,
 								},
 							},
 						},
@@ -4059,13 +4059,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   113,
+										Line:   116,
 									},
 									File:   "aggregate.flux",
 									Source: "compute",
 									Start: ast.Position{
 										Column: 5,
-										Line:   113,
+										Line:   116,
 									},
 								},
 							},
@@ -4080,13 +4080,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   113,
+										Line:   116,
 									},
 									File:   "aggregate.flux",
 									Source: "(state) => state",
 									Start: ast.Position{
 										Column: 14,
-										Line:   113,
+										Line:   116,
 									},
 								},
 							},
@@ -4097,13 +4097,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   113,
+											Line:   116,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 25,
-											Line:   113,
+											Line:   116,
 										},
 									},
 								},
@@ -4117,13 +4117,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   113,
+											Line:   116,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 15,
-											Line:   113,
+											Line:   116,
 										},
 									},
 								},
@@ -4135,13 +4135,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   113,
+												Line:   116,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 15,
-												Line:   113,
+												Line:   116,
 											},
 										},
 									},
@@ -4162,13 +4162,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   114,
+							Line:   117,
 						},
 						File:   "aggregate.flux",
 						Source: "define(\n    init: (values) => math.sum(values),\n    reduce: (values, state) => {\n        return state + math.sum(values)\n    },\n    compute: (state) => state,\n)",
 						Start: ast.Position{
 							Column: 7,
-							Line:   108,
+							Line:   111,
 						},
 					},
 				},
@@ -4179,13 +4179,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 13,
-								Line:   108,
+								Line:   111,
 							},
 							File:   "aggregate.flux",
 							Source: "define",
 							Start: ast.Position{
 								Column: 7,
-								Line:   108,
+								Line:   111,
 							},
 						},
 					},
@@ -4201,13 +4201,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   124,
+						Line:   127,
 					},
 					File:   "aggregate.flux",
 					Source: "count = define(\n    init: (values) => length(arr: values),\n    reduce: (values, state) => {\n        return state + length(arr: values)\n    },\n    compute: (state) => state,\n    fill: 0,\n)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   117,
+						Line:   120,
 					},
 				},
 			},
@@ -4218,13 +4218,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 6,
-							Line:   117,
+							Line:   120,
 						},
 						File:   "aggregate.flux",
 						Source: "count",
 						Start: ast.Position{
 							Column: 1,
-							Line:   117,
+							Line:   120,
 						},
 					},
 				},
@@ -4238,13 +4238,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 12,
-								Line:   123,
+								Line:   126,
 							},
 							File:   "aggregate.flux",
 							Source: "init: (values) => length(arr: values),\n    reduce: (values, state) => {\n        return state + length(arr: values)\n    },\n    compute: (state) => state,\n    fill: 0",
 							Start: ast.Position{
 								Column: 5,
-								Line:   118,
+								Line:   121,
 							},
 						},
 					},
@@ -4256,13 +4256,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 42,
-									Line:   118,
+									Line:   121,
 								},
 								File:   "aggregate.flux",
 								Source: "init: (values) => length(arr: values)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   118,
+									Line:   121,
 								},
 							},
 						},
@@ -4274,13 +4274,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   118,
+										Line:   121,
 									},
 									File:   "aggregate.flux",
 									Source: "init",
 									Start: ast.Position{
 										Column: 5,
-										Line:   118,
+										Line:   121,
 									},
 								},
 							},
@@ -4295,13 +4295,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 42,
-										Line:   118,
+										Line:   121,
 									},
 									File:   "aggregate.flux",
 									Source: "(values) => length(arr: values)",
 									Start: ast.Position{
 										Column: 11,
-										Line:   118,
+										Line:   121,
 									},
 								},
 							},
@@ -4313,13 +4313,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   118,
+												Line:   121,
 											},
 											File:   "aggregate.flux",
 											Source: "arr: values",
 											Start: ast.Position{
 												Column: 30,
-												Line:   118,
+												Line:   121,
 											},
 										},
 									},
@@ -4331,13 +4331,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 41,
-													Line:   118,
+													Line:   121,
 												},
 												File:   "aggregate.flux",
 												Source: "arr: values",
 												Start: ast.Position{
 													Column: 30,
-													Line:   118,
+													Line:   121,
 												},
 											},
 										},
@@ -4349,13 +4349,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   118,
+														Line:   121,
 													},
 													File:   "aggregate.flux",
 													Source: "arr",
 													Start: ast.Position{
 														Column: 30,
-														Line:   118,
+														Line:   121,
 													},
 												},
 											},
@@ -4369,13 +4369,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
-														Line:   118,
+														Line:   121,
 													},
 													File:   "aggregate.flux",
 													Source: "values",
 													Start: ast.Position{
 														Column: 35,
-														Line:   118,
+														Line:   121,
 													},
 												},
 											},
@@ -4391,13 +4391,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 42,
-											Line:   118,
+											Line:   121,
 										},
 										File:   "aggregate.flux",
 										Source: "length(arr: values)",
 										Start: ast.Position{
 											Column: 23,
-											Line:   118,
+											Line:   121,
 										},
 									},
 								},
@@ -4408,13 +4408,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   118,
+												Line:   121,
 											},
 											File:   "aggregate.flux",
 											Source: "length",
 											Start: ast.Position{
 												Column: 23,
-												Line:   118,
+												Line:   121,
 											},
 										},
 									},
@@ -4431,13 +4431,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   118,
+											Line:   121,
 										},
 										File:   "aggregate.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 12,
-											Line:   118,
+											Line:   121,
 										},
 									},
 								},
@@ -4449,13 +4449,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   118,
+												Line:   121,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 12,
-												Line:   118,
+												Line:   121,
 											},
 										},
 									},
@@ -4473,13 +4473,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   121,
+									Line:   124,
 								},
 								File:   "aggregate.flux",
 								Source: "reduce: (values, state) => {\n        return state + length(arr: values)\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   119,
+									Line:   122,
 								},
 							},
 						},
@@ -4491,13 +4491,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   119,
+										Line:   122,
 									},
 									File:   "aggregate.flux",
 									Source: "reduce",
 									Start: ast.Position{
 										Column: 5,
-										Line:   119,
+										Line:   122,
 									},
 								},
 							},
@@ -4512,13 +4512,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   121,
+										Line:   124,
 									},
 									File:   "aggregate.flux",
 									Source: "(values, state) => {\n        return state + length(arr: values)\n    }",
 									Start: ast.Position{
 										Column: 13,
-										Line:   119,
+										Line:   122,
 									},
 								},
 							},
@@ -4529,13 +4529,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   121,
+											Line:   124,
 										},
 										File:   "aggregate.flux",
 										Source: "{\n        return state + length(arr: values)\n    }",
 										Start: ast.Position{
 											Column: 32,
-											Line:   119,
+											Line:   122,
 										},
 									},
 								},
@@ -4547,13 +4547,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   120,
+													Line:   123,
 												},
 												File:   "aggregate.flux",
 												Source: "state + length(arr: values)",
 												Start: ast.Position{
 													Column: 16,
-													Line:   120,
+													Line:   123,
 												},
 											},
 										},
@@ -4564,13 +4564,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 21,
-														Line:   120,
+														Line:   123,
 													},
 													File:   "aggregate.flux",
 													Source: "state",
 													Start: ast.Position{
 														Column: 16,
-														Line:   120,
+														Line:   123,
 													},
 												},
 											},
@@ -4585,13 +4585,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   120,
+															Line:   123,
 														},
 														File:   "aggregate.flux",
 														Source: "arr: values",
 														Start: ast.Position{
 															Column: 31,
-															Line:   120,
+															Line:   123,
 														},
 													},
 												},
@@ -4603,13 +4603,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 42,
-																Line:   120,
+																Line:   123,
 															},
 															File:   "aggregate.flux",
 															Source: "arr: values",
 															Start: ast.Position{
 																Column: 31,
-																Line:   120,
+																Line:   123,
 															},
 														},
 													},
@@ -4621,13 +4621,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   120,
+																	Line:   123,
 																},
 																File:   "aggregate.flux",
 																Source: "arr",
 																Start: ast.Position{
 																	Column: 31,
-																	Line:   120,
+																	Line:   123,
 																},
 															},
 														},
@@ -4641,13 +4641,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 42,
-																	Line:   120,
+																	Line:   123,
 																},
 																File:   "aggregate.flux",
 																Source: "values",
 																Start: ast.Position{
 																	Column: 36,
-																	Line:   120,
+																	Line:   123,
 																},
 															},
 														},
@@ -4663,13 +4663,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
-														Line:   120,
+														Line:   123,
 													},
 													File:   "aggregate.flux",
 													Source: "length(arr: values)",
 													Start: ast.Position{
 														Column: 24,
-														Line:   120,
+														Line:   123,
 													},
 												},
 											},
@@ -4680,13 +4680,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 30,
-															Line:   120,
+															Line:   123,
 														},
 														File:   "aggregate.flux",
 														Source: "length",
 														Start: ast.Position{
 															Column: 24,
-															Line:   120,
+															Line:   123,
 														},
 													},
 												},
@@ -4702,13 +4702,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 43,
-												Line:   120,
+												Line:   123,
 											},
 											File:   "aggregate.flux",
 											Source: "return state + length(arr: values)",
 											Start: ast.Position{
 												Column: 9,
-												Line:   120,
+												Line:   123,
 											},
 										},
 									},
@@ -4724,13 +4724,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   119,
+											Line:   122,
 										},
 										File:   "aggregate.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 14,
-											Line:   119,
+											Line:   122,
 										},
 									},
 								},
@@ -4742,13 +4742,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   119,
+												Line:   122,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 14,
-												Line:   119,
+												Line:   122,
 											},
 										},
 									},
@@ -4763,13 +4763,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   119,
+											Line:   122,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 22,
-											Line:   119,
+											Line:   122,
 										},
 									},
 								},
@@ -4781,13 +4781,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   119,
+												Line:   122,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 22,
-												Line:   119,
+												Line:   122,
 											},
 										},
 									},
@@ -4805,13 +4805,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   122,
+									Line:   125,
 								},
 								File:   "aggregate.flux",
 								Source: "compute: (state) => state",
 								Start: ast.Position{
 									Column: 5,
-									Line:   122,
+									Line:   125,
 								},
 							},
 						},
@@ -4823,13 +4823,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   122,
+										Line:   125,
 									},
 									File:   "aggregate.flux",
 									Source: "compute",
 									Start: ast.Position{
 										Column: 5,
-										Line:   122,
+										Line:   125,
 									},
 								},
 							},
@@ -4844,13 +4844,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   122,
+										Line:   125,
 									},
 									File:   "aggregate.flux",
 									Source: "(state) => state",
 									Start: ast.Position{
 										Column: 14,
-										Line:   122,
+										Line:   125,
 									},
 								},
 							},
@@ -4861,13 +4861,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   122,
+											Line:   125,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 25,
-											Line:   122,
+											Line:   125,
 										},
 									},
 								},
@@ -4881,13 +4881,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   122,
+											Line:   125,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 15,
-											Line:   122,
+											Line:   125,
 										},
 									},
 								},
@@ -4899,13 +4899,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   122,
+												Line:   125,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 15,
-												Line:   122,
+												Line:   125,
 											},
 										},
 									},
@@ -4923,13 +4923,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 12,
-									Line:   123,
+									Line:   126,
 								},
 								File:   "aggregate.flux",
 								Source: "fill: 0",
 								Start: ast.Position{
 									Column: 5,
-									Line:   123,
+									Line:   126,
 								},
 							},
 						},
@@ -4941,13 +4941,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   123,
+										Line:   126,
 									},
 									File:   "aggregate.flux",
 									Source: "fill",
 									Start: ast.Position{
 										Column: 5,
-										Line:   123,
+										Line:   126,
 									},
 								},
 							},
@@ -4961,13 +4961,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   123,
+										Line:   126,
 									},
 									File:   "aggregate.flux",
 									Source: "0",
 									Start: ast.Position{
 										Column: 11,
-										Line:   123,
+										Line:   126,
 									},
 								},
 							},
@@ -4983,13 +4983,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   124,
+							Line:   127,
 						},
 						File:   "aggregate.flux",
 						Source: "define(\n    init: (values) => length(arr: values),\n    reduce: (values, state) => {\n        return state + length(arr: values)\n    },\n    compute: (state) => state,\n    fill: 0,\n)",
 						Start: ast.Position{
 							Column: 9,
-							Line:   117,
+							Line:   120,
 						},
 					},
 				},
@@ -5000,13 +5000,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   117,
+								Line:   120,
 							},
 							File:   "aggregate.flux",
 							Source: "define",
 							Start: ast.Position{
 								Column: 9,
-								Line:   117,
+								Line:   120,
 							},
 						},
 					},
@@ -5022,13 +5022,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   137,
+						Line:   140,
 					},
 					File:   "aggregate.flux",
 					Source: "mean = define(\n    init: (values) => ({\n        sum: math.sum(values),\n        count: length(arr: values),\n    }),\n    reduce: (values, state) => ({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    }),\n    compute: (state) => float(v: state.sum) / float(v: state.count),\n)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   127,
+						Line:   130,
 					},
 				},
 			},
@@ -5039,13 +5039,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 5,
-							Line:   127,
+							Line:   130,
 						},
 						File:   "aggregate.flux",
 						Source: "mean",
 						Start: ast.Position{
 							Column: 1,
-							Line:   127,
+							Line:   130,
 						},
 					},
 				},
@@ -5059,13 +5059,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 68,
-								Line:   136,
+								Line:   139,
 							},
 							File:   "aggregate.flux",
 							Source: "init: (values) => ({\n        sum: math.sum(values),\n        count: length(arr: values),\n    }),\n    reduce: (values, state) => ({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    }),\n    compute: (state) => float(v: state.sum) / float(v: state.count)",
 							Start: ast.Position{
 								Column: 5,
-								Line:   128,
+								Line:   131,
 							},
 						},
 					},
@@ -5077,13 +5077,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   131,
+									Line:   134,
 								},
 								File:   "aggregate.flux",
 								Source: "init: (values) => ({\n        sum: math.sum(values),\n        count: length(arr: values),\n    })",
 								Start: ast.Position{
 									Column: 5,
-									Line:   128,
+									Line:   131,
 								},
 							},
 						},
@@ -5095,13 +5095,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   128,
+										Line:   131,
 									},
 									File:   "aggregate.flux",
 									Source: "init",
 									Start: ast.Position{
 										Column: 5,
-										Line:   128,
+										Line:   131,
 									},
 								},
 							},
@@ -5116,13 +5116,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 7,
-										Line:   131,
+										Line:   134,
 									},
 									File:   "aggregate.flux",
 									Source: "(values) => ({\n        sum: math.sum(values),\n        count: length(arr: values),\n    })",
 									Start: ast.Position{
 										Column: 11,
-										Line:   128,
+										Line:   131,
 									},
 								},
 							},
@@ -5133,13 +5133,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 7,
-											Line:   131,
+											Line:   134,
 										},
 										File:   "aggregate.flux",
 										Source: "({\n        sum: math.sum(values),\n        count: length(arr: values),\n    })",
 										Start: ast.Position{
 											Column: 23,
-											Line:   128,
+											Line:   131,
 										},
 									},
 								},
@@ -5150,13 +5150,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 6,
-												Line:   131,
+												Line:   134,
 											},
 											File:   "aggregate.flux",
 											Source: "{\n        sum: math.sum(values),\n        count: length(arr: values),\n    }",
 											Start: ast.Position{
 												Column: 24,
-												Line:   128,
+												Line:   131,
 											},
 										},
 									},
@@ -5168,13 +5168,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   129,
+													Line:   132,
 												},
 												File:   "aggregate.flux",
 												Source: "sum: math.sum(values)",
 												Start: ast.Position{
 													Column: 9,
-													Line:   129,
+													Line:   132,
 												},
 											},
 										},
@@ -5186,13 +5186,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 12,
-														Line:   129,
+														Line:   132,
 													},
 													File:   "aggregate.flux",
 													Source: "sum",
 													Start: ast.Position{
 														Column: 9,
-														Line:   129,
+														Line:   132,
 													},
 												},
 											},
@@ -5207,13 +5207,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 29,
-															Line:   129,
+															Line:   132,
 														},
 														File:   "aggregate.flux",
 														Source: "values",
 														Start: ast.Position{
 															Column: 23,
-															Line:   129,
+															Line:   132,
 														},
 													},
 												},
@@ -5225,13 +5225,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 29,
-																Line:   129,
+																Line:   132,
 															},
 															File:   "aggregate.flux",
 															Source: "values",
 															Start: ast.Position{
 																Column: 23,
-																Line:   129,
+																Line:   132,
 															},
 														},
 													},
@@ -5243,13 +5243,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 29,
-																	Line:   129,
+																	Line:   132,
 																},
 																File:   "aggregate.flux",
 																Source: "values",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   129,
+																	Line:   132,
 																},
 															},
 														},
@@ -5267,13 +5267,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 30,
-														Line:   129,
+														Line:   132,
 													},
 													File:   "aggregate.flux",
 													Source: "math.sum(values)",
 													Start: ast.Position{
 														Column: 14,
-														Line:   129,
+														Line:   132,
 													},
 												},
 											},
@@ -5284,13 +5284,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   129,
+															Line:   132,
 														},
 														File:   "aggregate.flux",
 														Source: "math.sum",
 														Start: ast.Position{
 															Column: 14,
-															Line:   129,
+															Line:   132,
 														},
 													},
 												},
@@ -5302,13 +5302,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 18,
-																Line:   129,
+																Line:   132,
 															},
 															File:   "aggregate.flux",
 															Source: "math",
 															Start: ast.Position{
 																Column: 14,
-																Line:   129,
+																Line:   132,
 															},
 														},
 													},
@@ -5321,13 +5321,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
-																Line:   129,
+																Line:   132,
 															},
 															File:   "aggregate.flux",
 															Source: "sum",
 															Start: ast.Position{
 																Column: 19,
-																Line:   129,
+																Line:   132,
 															},
 														},
 													},
@@ -5345,13 +5345,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   130,
+													Line:   133,
 												},
 												File:   "aggregate.flux",
 												Source: "count: length(arr: values)",
 												Start: ast.Position{
 													Column: 9,
-													Line:   130,
+													Line:   133,
 												},
 											},
 										},
@@ -5363,13 +5363,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   130,
+														Line:   133,
 													},
 													File:   "aggregate.flux",
 													Source: "count",
 													Start: ast.Position{
 														Column: 9,
-														Line:   130,
+														Line:   133,
 													},
 												},
 											},
@@ -5384,13 +5384,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   130,
+															Line:   133,
 														},
 														File:   "aggregate.flux",
 														Source: "arr: values",
 														Start: ast.Position{
 															Column: 23,
-															Line:   130,
+															Line:   133,
 														},
 													},
 												},
@@ -5402,13 +5402,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   130,
+																Line:   133,
 															},
 															File:   "aggregate.flux",
 															Source: "arr: values",
 															Start: ast.Position{
 																Column: 23,
-																Line:   130,
+																Line:   133,
 															},
 														},
 													},
@@ -5420,13 +5420,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 26,
-																	Line:   130,
+																	Line:   133,
 																},
 																File:   "aggregate.flux",
 																Source: "arr",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   130,
+																	Line:   133,
 																},
 															},
 														},
@@ -5440,13 +5440,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   130,
+																	Line:   133,
 																},
 																File:   "aggregate.flux",
 																Source: "values",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   130,
+																	Line:   133,
 																},
 															},
 														},
@@ -5462,13 +5462,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
-														Line:   130,
+														Line:   133,
 													},
 													File:   "aggregate.flux",
 													Source: "length(arr: values)",
 													Start: ast.Position{
 														Column: 16,
-														Line:   130,
+														Line:   133,
 													},
 												},
 											},
@@ -5479,13 +5479,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   130,
+															Line:   133,
 														},
 														File:   "aggregate.flux",
 														Source: "length",
 														Start: ast.Position{
 															Column: 16,
-															Line:   130,
+															Line:   133,
 														},
 													},
 												},
@@ -5509,13 +5509,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   128,
+											Line:   131,
 										},
 										File:   "aggregate.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 12,
-											Line:   128,
+											Line:   131,
 										},
 									},
 								},
@@ -5527,13 +5527,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   128,
+												Line:   131,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 12,
-												Line:   128,
+												Line:   131,
 											},
 										},
 									},
@@ -5551,13 +5551,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 7,
-									Line:   135,
+									Line:   138,
 								},
 								File:   "aggregate.flux",
 								Source: "reduce: (values, state) => ({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    })",
 								Start: ast.Position{
 									Column: 5,
-									Line:   132,
+									Line:   135,
 								},
 							},
 						},
@@ -5569,13 +5569,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   132,
+										Line:   135,
 									},
 									File:   "aggregate.flux",
 									Source: "reduce",
 									Start: ast.Position{
 										Column: 5,
-										Line:   132,
+										Line:   135,
 									},
 								},
 							},
@@ -5590,13 +5590,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 7,
-										Line:   135,
+										Line:   138,
 									},
 									File:   "aggregate.flux",
 									Source: "(values, state) => ({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    })",
 									Start: ast.Position{
 										Column: 13,
-										Line:   132,
+										Line:   135,
 									},
 								},
 							},
@@ -5607,13 +5607,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 7,
-											Line:   135,
+											Line:   138,
 										},
 										File:   "aggregate.flux",
 										Source: "({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    })",
 										Start: ast.Position{
 											Column: 32,
-											Line:   132,
+											Line:   135,
 										},
 									},
 								},
@@ -5624,13 +5624,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 6,
-												Line:   135,
+												Line:   138,
 											},
 											File:   "aggregate.flux",
 											Source: "{\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    }",
 											Start: ast.Position{
 												Column: 33,
-												Line:   132,
+												Line:   135,
 											},
 										},
 									},
@@ -5642,13 +5642,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 42,
-													Line:   133,
+													Line:   136,
 												},
 												File:   "aggregate.flux",
 												Source: "sum: state.sum + math.sum(values)",
 												Start: ast.Position{
 													Column: 9,
-													Line:   133,
+													Line:   136,
 												},
 											},
 										},
@@ -5660,13 +5660,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 12,
-														Line:   133,
+														Line:   136,
 													},
 													File:   "aggregate.flux",
 													Source: "sum",
 													Start: ast.Position{
 														Column: 9,
-														Line:   133,
+														Line:   136,
 													},
 												},
 											},
@@ -5680,13 +5680,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
-														Line:   133,
+														Line:   136,
 													},
 													File:   "aggregate.flux",
 													Source: "state.sum + math.sum(values)",
 													Start: ast.Position{
 														Column: 14,
-														Line:   133,
+														Line:   136,
 													},
 												},
 											},
@@ -5697,13 +5697,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 23,
-															Line:   133,
+															Line:   136,
 														},
 														File:   "aggregate.flux",
 														Source: "state.sum",
 														Start: ast.Position{
 															Column: 14,
-															Line:   133,
+															Line:   136,
 														},
 													},
 												},
@@ -5715,13 +5715,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 19,
-																Line:   133,
+																Line:   136,
 															},
 															File:   "aggregate.flux",
 															Source: "state",
 															Start: ast.Position{
 																Column: 14,
-																Line:   133,
+																Line:   136,
 															},
 														},
 													},
@@ -5734,13 +5734,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 23,
-																Line:   133,
+																Line:   136,
 															},
 															File:   "aggregate.flux",
 															Source: "sum",
 															Start: ast.Position{
 																Column: 20,
-																Line:   133,
+																Line:   136,
 															},
 														},
 													},
@@ -5757,13 +5757,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 41,
-																Line:   133,
+																Line:   136,
 															},
 															File:   "aggregate.flux",
 															Source: "values",
 															Start: ast.Position{
 																Column: 35,
-																Line:   133,
+																Line:   136,
 															},
 														},
 													},
@@ -5775,13 +5775,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 41,
-																	Line:   133,
+																	Line:   136,
 																},
 																File:   "aggregate.flux",
 																Source: "values",
 																Start: ast.Position{
 																	Column: 35,
-																	Line:   133,
+																	Line:   136,
 																},
 															},
 														},
@@ -5793,13 +5793,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 41,
-																		Line:   133,
+																		Line:   136,
 																	},
 																	File:   "aggregate.flux",
 																	Source: "values",
 																	Start: ast.Position{
 																		Column: 35,
-																		Line:   133,
+																		Line:   136,
 																	},
 																},
 															},
@@ -5817,13 +5817,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   133,
+															Line:   136,
 														},
 														File:   "aggregate.flux",
 														Source: "math.sum(values)",
 														Start: ast.Position{
 															Column: 26,
-															Line:   133,
+															Line:   136,
 														},
 													},
 												},
@@ -5834,13 +5834,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   133,
+																Line:   136,
 															},
 															File:   "aggregate.flux",
 															Source: "math.sum",
 															Start: ast.Position{
 																Column: 26,
-																Line:   133,
+																Line:   136,
 															},
 														},
 													},
@@ -5852,13 +5852,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   133,
+																	Line:   136,
 																},
 																File:   "aggregate.flux",
 																Source: "math",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   133,
+																	Line:   136,
 																},
 															},
 														},
@@ -5871,13 +5871,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   133,
+																	Line:   136,
 																},
 																File:   "aggregate.flux",
 																Source: "sum",
 																Start: ast.Position{
 																	Column: 31,
-																	Line:   133,
+																	Line:   136,
 																},
 															},
 														},
@@ -5896,13 +5896,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   134,
+													Line:   137,
 												},
 												File:   "aggregate.flux",
 												Source: "count: state.count + length(arr: values)",
 												Start: ast.Position{
 													Column: 9,
-													Line:   134,
+													Line:   137,
 												},
 											},
 										},
@@ -5914,13 +5914,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   134,
+														Line:   137,
 													},
 													File:   "aggregate.flux",
 													Source: "count",
 													Start: ast.Position{
 														Column: 9,
-														Line:   134,
+														Line:   137,
 													},
 												},
 											},
@@ -5934,13 +5934,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   134,
+														Line:   137,
 													},
 													File:   "aggregate.flux",
 													Source: "state.count + length(arr: values)",
 													Start: ast.Position{
 														Column: 16,
-														Line:   134,
+														Line:   137,
 													},
 												},
 											},
@@ -5951,13 +5951,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
-															Line:   134,
+															Line:   137,
 														},
 														File:   "aggregate.flux",
 														Source: "state.count",
 														Start: ast.Position{
 															Column: 16,
-															Line:   134,
+															Line:   137,
 														},
 													},
 												},
@@ -5969,13 +5969,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   134,
+																Line:   137,
 															},
 															File:   "aggregate.flux",
 															Source: "state",
 															Start: ast.Position{
 																Column: 16,
-																Line:   134,
+																Line:   137,
 															},
 														},
 													},
@@ -5988,13 +5988,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 27,
-																Line:   134,
+																Line:   137,
 															},
 															File:   "aggregate.flux",
 															Source: "count",
 															Start: ast.Position{
 																Column: 22,
-																Line:   134,
+																Line:   137,
 															},
 														},
 													},
@@ -6011,13 +6011,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 48,
-																Line:   134,
+																Line:   137,
 															},
 															File:   "aggregate.flux",
 															Source: "arr: values",
 															Start: ast.Position{
 																Column: 37,
-																Line:   134,
+																Line:   137,
 															},
 														},
 													},
@@ -6029,13 +6029,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 48,
-																	Line:   134,
+																	Line:   137,
 																},
 																File:   "aggregate.flux",
 																Source: "arr: values",
 																Start: ast.Position{
 																	Column: 37,
-																	Line:   134,
+																	Line:   137,
 																},
 															},
 														},
@@ -6047,13 +6047,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 40,
-																		Line:   134,
+																		Line:   137,
 																	},
 																	File:   "aggregate.flux",
 																	Source: "arr",
 																	Start: ast.Position{
 																		Column: 37,
-																		Line:   134,
+																		Line:   137,
 																	},
 																},
 															},
@@ -6067,13 +6067,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 48,
-																		Line:   134,
+																		Line:   137,
 																	},
 																	File:   "aggregate.flux",
 																	Source: "values",
 																	Start: ast.Position{
 																		Column: 42,
-																		Line:   134,
+																		Line:   137,
 																	},
 																},
 															},
@@ -6089,13 +6089,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   134,
+															Line:   137,
 														},
 														File:   "aggregate.flux",
 														Source: "length(arr: values)",
 														Start: ast.Position{
 															Column: 30,
-															Line:   134,
+															Line:   137,
 														},
 													},
 												},
@@ -6106,13 +6106,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   134,
+																Line:   137,
 															},
 															File:   "aggregate.flux",
 															Source: "length",
 															Start: ast.Position{
 																Column: 30,
-																Line:   134,
+																Line:   137,
 															},
 														},
 													},
@@ -6137,13 +6137,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   132,
+											Line:   135,
 										},
 										File:   "aggregate.flux",
 										Source: "values",
 										Start: ast.Position{
 											Column: 14,
-											Line:   132,
+											Line:   135,
 										},
 									},
 								},
@@ -6155,13 +6155,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   132,
+												Line:   135,
 											},
 											File:   "aggregate.flux",
 											Source: "values",
 											Start: ast.Position{
 												Column: 14,
-												Line:   132,
+												Line:   135,
 											},
 										},
 									},
@@ -6176,13 +6176,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   132,
+											Line:   135,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 22,
-											Line:   132,
+											Line:   135,
 										},
 									},
 								},
@@ -6194,13 +6194,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   132,
+												Line:   135,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 22,
-												Line:   132,
+												Line:   135,
 											},
 										},
 									},
@@ -6218,13 +6218,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 68,
-									Line:   136,
+									Line:   139,
 								},
 								File:   "aggregate.flux",
 								Source: "compute: (state) => float(v: state.sum) / float(v: state.count)",
 								Start: ast.Position{
 									Column: 5,
-									Line:   136,
+									Line:   139,
 								},
 							},
 						},
@@ -6236,13 +6236,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   136,
+										Line:   139,
 									},
 									File:   "aggregate.flux",
 									Source: "compute",
 									Start: ast.Position{
 										Column: 5,
-										Line:   136,
+										Line:   139,
 									},
 								},
 							},
@@ -6257,13 +6257,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 68,
-										Line:   136,
+										Line:   139,
 									},
 									File:   "aggregate.flux",
 									Source: "(state) => float(v: state.sum) / float(v: state.count)",
 									Start: ast.Position{
 										Column: 14,
-										Line:   136,
+										Line:   139,
 									},
 								},
 							},
@@ -6274,13 +6274,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 68,
-											Line:   136,
+											Line:   139,
 										},
 										File:   "aggregate.flux",
 										Source: "float(v: state.sum) / float(v: state.count)",
 										Start: ast.Position{
 											Column: 25,
-											Line:   136,
+											Line:   139,
 										},
 									},
 								},
@@ -6292,13 +6292,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   136,
+													Line:   139,
 												},
 												File:   "aggregate.flux",
 												Source: "v: state.sum",
 												Start: ast.Position{
 													Column: 31,
-													Line:   136,
+													Line:   139,
 												},
 											},
 										},
@@ -6310,13 +6310,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 43,
-														Line:   136,
+														Line:   139,
 													},
 													File:   "aggregate.flux",
 													Source: "v: state.sum",
 													Start: ast.Position{
 														Column: 31,
-														Line:   136,
+														Line:   139,
 													},
 												},
 											},
@@ -6328,13 +6328,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 32,
-															Line:   136,
+															Line:   139,
 														},
 														File:   "aggregate.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 31,
-															Line:   136,
+															Line:   139,
 														},
 													},
 												},
@@ -6348,13 +6348,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 43,
-															Line:   136,
+															Line:   139,
 														},
 														File:   "aggregate.flux",
 														Source: "state.sum",
 														Start: ast.Position{
 															Column: 34,
-															Line:   136,
+															Line:   139,
 														},
 													},
 												},
@@ -6366,13 +6366,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 39,
-																Line:   136,
+																Line:   139,
 															},
 															File:   "aggregate.flux",
 															Source: "state",
 															Start: ast.Position{
 																Column: 34,
-																Line:   136,
+																Line:   139,
 															},
 														},
 													},
@@ -6385,13 +6385,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 43,
-																Line:   136,
+																Line:   139,
 															},
 															File:   "aggregate.flux",
 															Source: "sum",
 															Start: ast.Position{
 																Column: 40,
-																Line:   136,
+																Line:   139,
 															},
 														},
 													},
@@ -6409,13 +6409,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 44,
-												Line:   136,
+												Line:   139,
 											},
 											File:   "aggregate.flux",
 											Source: "float(v: state.sum)",
 											Start: ast.Position{
 												Column: 25,
-												Line:   136,
+												Line:   139,
 											},
 										},
 									},
@@ -6426,13 +6426,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 30,
-													Line:   136,
+													Line:   139,
 												},
 												File:   "aggregate.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 25,
-													Line:   136,
+													Line:   139,
 												},
 											},
 										},
@@ -6450,13 +6450,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 67,
-													Line:   136,
+													Line:   139,
 												},
 												File:   "aggregate.flux",
 												Source: "v: state.count",
 												Start: ast.Position{
 													Column: 53,
-													Line:   136,
+													Line:   139,
 												},
 											},
 										},
@@ -6468,13 +6468,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 67,
-														Line:   136,
+														Line:   139,
 													},
 													File:   "aggregate.flux",
 													Source: "v: state.count",
 													Start: ast.Position{
 														Column: 53,
-														Line:   136,
+														Line:   139,
 													},
 												},
 											},
@@ -6486,13 +6486,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 54,
-															Line:   136,
+															Line:   139,
 														},
 														File:   "aggregate.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 53,
-															Line:   136,
+															Line:   139,
 														},
 													},
 												},
@@ -6506,13 +6506,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 67,
-															Line:   136,
+															Line:   139,
 														},
 														File:   "aggregate.flux",
 														Source: "state.count",
 														Start: ast.Position{
 															Column: 56,
-															Line:   136,
+															Line:   139,
 														},
 													},
 												},
@@ -6524,13 +6524,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 61,
-																Line:   136,
+																Line:   139,
 															},
 															File:   "aggregate.flux",
 															Source: "state",
 															Start: ast.Position{
 																Column: 56,
-																Line:   136,
+																Line:   139,
 															},
 														},
 													},
@@ -6543,13 +6543,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 67,
-																Line:   136,
+																Line:   139,
 															},
 															File:   "aggregate.flux",
 															Source: "count",
 															Start: ast.Position{
 																Column: 62,
-																Line:   136,
+																Line:   139,
 															},
 														},
 													},
@@ -6567,13 +6567,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 68,
-												Line:   136,
+												Line:   139,
 											},
 											File:   "aggregate.flux",
 											Source: "float(v: state.count)",
 											Start: ast.Position{
 												Column: 47,
-												Line:   136,
+												Line:   139,
 											},
 										},
 									},
@@ -6584,13 +6584,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 52,
-													Line:   136,
+													Line:   139,
 												},
 												File:   "aggregate.flux",
 												Source: "float",
 												Start: ast.Position{
 													Column: 47,
-													Line:   136,
+													Line:   139,
 												},
 											},
 										},
@@ -6608,13 +6608,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   136,
+											Line:   139,
 										},
 										File:   "aggregate.flux",
 										Source: "state",
 										Start: ast.Position{
 											Column: 15,
-											Line:   136,
+											Line:   139,
 										},
 									},
 								},
@@ -6626,13 +6626,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   136,
+												Line:   139,
 											},
 											File:   "aggregate.flux",
 											Source: "state",
 											Start: ast.Position{
 												Column: 15,
-												Line:   136,
+												Line:   139,
 											},
 										},
 									},
@@ -6653,13 +6653,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   137,
+							Line:   140,
 						},
 						File:   "aggregate.flux",
 						Source: "define(\n    init: (values) => ({\n        sum: math.sum(values),\n        count: length(arr: values),\n    }),\n    reduce: (values, state) => ({\n        sum: state.sum + math.sum(values),\n        count: state.count + length(arr: values),\n    }),\n    compute: (state) => float(v: state.sum) / float(v: state.count),\n)",
 						Start: ast.Position{
 							Column: 8,
-							Line:   127,
+							Line:   130,
 						},
 					},
 				},
@@ -6670,13 +6670,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 14,
-								Line:   127,
+								Line:   130,
 							},
 							File:   "aggregate.flux",
 							Source: "define",
 							Start: ast.Position{
 								Column: 8,
-								Line:   127,
+								Line:   130,
 							},
 						},
 					},
