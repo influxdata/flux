@@ -259,7 +259,8 @@ impl cmp::PartialOrd for Kind {
     }
 }
 
-/// MonoType represents a specific named type.
+/// Represents a Flux type. The type may be unknown, represented as a type variable,
+/// or may be a known concrete type.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[allow(missing_docs)]
 pub enum MonoType {
