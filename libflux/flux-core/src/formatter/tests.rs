@@ -1024,3 +1024,34 @@ fn temp_indent() {
 )"#,
     );
 }
+
+#[test]
+fn test_if_else_indent() {
+    assert_changed(
+        r#"tables
+    |> map(fn: (r) => ({r with
+        level_value: if r._level == levelCrit then 4
+        else if r._level == levelWarn then 3
+                else if r._level == levelInfo then 2 else if r._level == levelOK then 1
+                            else 0
+        }))"#,
+        r#"tables
+    |> map(fn: (r) => ({r with
+        level_value: if r._level == levelCrit then 4
+                            else if r._level == levelWarn then 3
+                            else if r._level == levelInfo then 2
+                            else if r._level == levelOK then 1
+                            else 0
+        }))"#,
+    );
+    assert_unchanged(
+        r#"tables
+    |> map(fn: (r) => ({r with
+        level_value: if r._level == levelCrit then 4
+                            else if r._level == levelWarn then 3
+                            else if r._level == levelInfo then 2
+                            else if r._level == levelOK then 1
+                            else 0
+        }))"#,
+    );
+}
