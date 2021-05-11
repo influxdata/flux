@@ -1,9 +1,10 @@
 package experimental_test
 
+
 import "testing"
 import "experimental"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,string,string,dateTime:RFC3339,unsignedLong
@@ -39,7 +40,6 @@ inData = "
 ,,2,Sgf,qaOnnQc,2018-12-18T22:11:45Z,16.140262630578995
 ,,2,Sgf,qaOnnQc,2018-12-18T22:11:55Z,29.50336437998469
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,double
 #group,false,false,true,true,true,true,false
@@ -49,11 +49,8 @@ outData = "
 ,,1,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,GxUPYq1,9.5
 ,,2,2018-12-01T00:00:00Z,2030-01-01T00:00:00Z,Sgf,qaOnnQc,10.979094987144862
 "
+t_mean = (table=<-) => table
+    |> range(start: 2018-12-01T00:00:00Z)
+    |> experimental.mean()
 
-t_mean = (table=<-) =>
-	(table
-		|> range(start: 2018-12-01T00:00:00Z)
-		|> experimental.mean())
-
-test _mean = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mean})
+test _mean = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_mean})

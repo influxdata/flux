@@ -19,15 +19,14 @@ outData = "
 ,result,table,_measurement,_field,_time,_value
 ,,0,m,f,2018-01-01T00:00:00Z,hello
 "
-t_map_field_type_change = (table=<-) => (table
+t_map_field_type_change = (table=<-) => table
     |> range(start: 2018-01-01T00:00:00Z)
     |> drop(columns: ["_start", "_stop"])
-    |> map(fn: (r) => ({r with _value: 2.0}))
     // establish _value as a double column in output
-    |> map(fn: (r) => ({r with _value: "hello"}))
+    |> map(fn: (r) => ({r with _value: 2.0}))
     // convert to a string
-    |> filter(fn: (r) => r._value == "hello")
+    |> map(fn: (r) => ({r with _value: "hello"}))
     // previously this would produce an error
-    )
+    |> filter(fn: (r) => r._value == "hello")
 
 test _map_field_type_change = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_map_field_type_change})

@@ -262,6 +262,17 @@ fn str_lit() {
 a string
 with multiple lines""#,
     ); // multi lines
+       // StringExpression format textPart with escape sequences
+    assert_format(
+        r#"qux = "{
+    \"@foo\": \"bar\",
+    \"baz\": ${string(v:json.encode(v:rab))}
+    }""#,
+        r#"qux = "{
+    \"@foo\": \"bar\",
+    \"baz\": ${string(v: json.encode(v: rab))}
+    }""#,
+    );
     assert_unchanged(r#""foo \\ \" \r\n""#); // with escape
     assert_unchanged(r#""\xe6\x97\xa5\xe6\x9c\xac\xe8\xaa\x9e""#); // with byte
 }

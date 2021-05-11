@@ -194,7 +194,8 @@ func (r *REPL) executeLine(t string) error {
 					return err
 				}
 			} else {
-				fmt.Println(se.Value)
+				values.Display(os.Stdout, se.Value)
+				fmt.Println()
 			}
 		}
 	}

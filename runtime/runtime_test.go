@@ -25,7 +25,7 @@ func TestEval(t *testing.T) {
 			t.Fatal(err)
 		}
 		want := map[string]string{
-			"f": "(x: int) -> int",
+			"f": "(x: int) => int",
 			"y": "42",
 		}
 		scope.LocalRange(func(k string, v values.Value) {

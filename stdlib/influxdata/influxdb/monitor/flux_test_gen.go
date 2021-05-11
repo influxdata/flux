@@ -23,7 +23,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Line:   58,
 				},
 				File:   "check_test.flux",
-				Source: "package monitor_test\n\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\n\noption now = () => 2018-05-22T19:54:20Z\noption monitor.write = (tables=<-) => tables |> drop(columns: [\"_start\", \"_stop\"])\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,0,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:36Z,89.51118889861233,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:46Z,4.9,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:56Z,4.7,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:06Z,7.0,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:16Z,7.1,usage_idle,cpu,cpu-total,host.local\n\"\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\ndata = {\n    _check_id: \"000000000000000a\",\n    _check_name: \"cpu threshold check\",\n    _type: \"threshold\",\n    tags: {aaa: \"vaaa\", bbb: \"vbbb\"},\n}\ncrit = (r) => r.usage_idle < 5.0\nwarn = (r) => r.usage_idle < 10.0\ninfo = (r) => r.usage_idle < 25.0\nmessageFn = (r) => \"whoa!\"\nt_check = (table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols()\n    // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )\n\ntest monitor_check = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check})",
+				Source: "package monitor_test\n\n\nimport \"influxdata/influxdb/monitor\"\nimport \"influxdata/influxdb/v1\"\nimport \"testing\"\n\noption now = () => 2018-05-22T19:54:20Z\noption monitor.write = (tables=<-) => tables |> drop(columns: [\"_start\", \"_stop\"])\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,double,string,string,string,string\n#group,false,false,false,false,true,true,true,true\n#default,_result,,,,,,,\n,result,table,_time,_value,_field,_measurement,cpu,host\n,,0,2018-05-22T19:53:26Z,91.7364670583823,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:36Z,89.51118889861233,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:46Z,4.9,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:53:56Z,4.7,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:06Z,7.0,usage_idle,cpu,cpu-total,host.local\n,,0,2018-05-22T19:54:16Z,7.1,usage_idle,cpu,cpu-total,host.local\n\"\noutData = \"\n#datatype,string,long,string,string,string,string,string,string,long,dateTime:RFC3339,string,string,string,string,string,double\n#group,false,false,true,true,true,true,false,true,false,false,true,true,true,true,true,false\n#default,got,,,,,,,,,,,,,,,\n,result,table,_check_id,_check_name,_level,_measurement,_message,_source_measurement,_source_timestamp,_time,_type,aaa,bbb,cpu,host,usage_idle\n,,0,000000000000000a,cpu threshold check,crit,statuses,whoa!,cpu,1527018840000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,4.800000000000001\n,,1,000000000000000a,cpu threshold check,ok,statuses,whoa!,cpu,1527018820000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,90.62382797849732\n,,2,000000000000000a,cpu threshold check,warn,statuses,whoa!,cpu,1527018860000000000,2018-05-22T19:54:20Z,threshold,vaaa,vbbb,cpu-total,host.local,7.05\n\"\ndata = {\n    _check_id: \"000000000000000a\",\n    _check_name: \"cpu threshold check\",\n    _type: \"threshold\",\n    tags: {aaa: \"vaaa\", bbb: \"vbbb\"},\n}\ncrit = (r) => r.usage_idle < 5.0\nwarn = (r) => r.usage_idle < 10.0\ninfo = (r) => r.usage_idle < 25.0\nmessageFn = (r) => \"whoa!\"\nt_check = (table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    // pivot data so there is a \"usage_idle\" column\n    |> v1.fieldsAsCols()\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )\n\ntest monitor_check = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_check})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -1705,7 +1705,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Line:   56,
 					},
 					File:   "check_test.flux",
-					Source: "t_check = (table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols()\n    // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
+					Source: "t_check = (table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    // pivot data so there is a \"usage_idle\" column\n    |> v1.fieldsAsCols()\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
 					Start: ast.Position{
 						Column: 1,
 						Line:   42,
@@ -1742,7 +1742,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Line:   56,
 						},
 						File:   "check_test.flux",
-						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols()\n    // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
+						Source: "(table=<-) => table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    // pivot data so there is a \"usage_idle\" column\n    |> v1.fieldsAsCols()\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
 						Start: ast.Position{
 							Column: 11,
 							Line:   42,
@@ -2752,15 +2752,15 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								},
 							},
 							BaseNode: ast.BaseNode{
-								Comments: nil,
+								Comments: []ast.Comment{ast.Comment{Text: "// pivot data so there is a \"usage_idle\" column\n"}},
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 25,
-										Line:   47,
+										Line:   48,
 									},
 									File:   "check_test.flux",
-									Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols()",
+									Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    // pivot data so there is a \"usage_idle\" column\n    |> v1.fieldsAsCols()",
 									Start: ast.Position{
 										Column: 25,
 										Line:   42,
@@ -2775,13 +2775,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   47,
+											Line:   48,
 										},
 										File:   "check_test.flux",
 										Source: "v1.fieldsAsCols()",
 										Start: ast.Position{
 											Column: 8,
-											Line:   47,
+											Line:   48,
 										},
 									},
 								},
@@ -2792,13 +2792,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   47,
+												Line:   48,
 											},
 											File:   "check_test.flux",
 											Source: "v1.fieldsAsCols",
 											Start: ast.Position{
 												Column: 8,
-												Line:   47,
+												Line:   48,
 											},
 										},
 									},
@@ -2810,13 +2810,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 10,
-													Line:   47,
+													Line:   48,
 												},
 												File:   "check_test.flux",
 												Source: "v1",
 												Start: ast.Position{
 													Column: 8,
-													Line:   47,
+													Line:   48,
 												},
 											},
 										},
@@ -2829,13 +2829,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   47,
+													Line:   48,
 												},
 												File:   "check_test.flux",
 												Source: "fieldsAsCols",
 												Start: ast.Position{
 													Column: 11,
-													Line:   47,
+													Line:   48,
 												},
 											},
 										},
@@ -2848,7 +2848,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							},
 						},
 						BaseNode: ast.BaseNode{
-							Comments: []ast.Comment{ast.Comment{Text: "// pivot data so there is a \"usage_idle\" column\n"}},
+							Comments: nil,
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
@@ -2856,7 +2856,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Line:   49,
 								},
 								File:   "check_test.flux",
-								Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols()\n    // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")",
+								Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    // pivot data so there is a \"usage_idle\" column\n    |> v1.fieldsAsCols()\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")",
 								Start: ast.Position{
 									Column: 25,
 									Line:   42,
@@ -3108,7 +3108,7 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Line:   56,
 							},
 							File:   "check_test.flux",
-							Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    |> v1.fieldsAsCols()\n    // pivot data so there is a \"usage_idle\" column\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
+							Source: "table\n    |> range(start: -1m)\n    |> filter(fn: (r) => r._measurement == \"cpu\")\n    |> filter(fn: (r) => r._field == \"usage_idle\")\n    |> filter(fn: (r) => r.cpu == \"cpu-total\")\n    // pivot data so there is a \"usage_idle\" column\n    |> v1.fieldsAsCols()\n    |> aggregateWindow(every: 20s, fn: mean, column: \"usage_idle\")\n    |> monitor.check(\n        data: data,\n        messageFn: messageFn,\n        info: info,\n        warn: warn,\n        crit: crit,\n    )",
 							Start: ast.Position{
 								Column: 25,
 								Line:   42,

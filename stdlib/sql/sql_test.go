@@ -127,7 +127,7 @@ func TestFromRowReader(t *testing.T) {
 			got := buffer.GetRow(i)
 			// the second row has a lot of nil values.Value which cannot pass values.Value.Equals() check.
 			if !(i == 0 && got.Equal(want)) &&
-				!(i == 1 && got.(fmt.Stringer).String() == want.(fmt.Stringer).String()) {
+				!(i == 1 && values.DisplayString(got) == values.DisplayString(want)) {
 				t.Fatalf("unexpected result -want/+got:\n%s", cmp.Diff(want, got))
 			}
 		}

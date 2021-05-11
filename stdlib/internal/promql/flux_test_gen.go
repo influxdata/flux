@@ -19,11 +19,11 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 100,
-					Line:   106,
+					Column: 122,
+					Line:   103,
 				},
 				File:   "join_test.flux",
-				Source: "package promql_test\n\nimport \"internal/promql\"\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,0,2018-12-19T22:13:30Z,_m,a,t,1\n,,0,2018-12-19T22:13:40Z,_m,a,t,2\n,,0,2018-12-19T22:13:50Z,_m,a,t,3\n,,0,2018-12-19T22:14:00Z,_m,a,t,4\n,,0,2018-12-19T22:14:10Z,_m,a,t,5\n,,0,2018-12-19T22:14:20Z,_m,a,t,6\n,,1,2018-12-19T22:13:30Z,_m,a,g,2\n,,1,2018-12-19T22:13:40Z,_m,a,g,3\n,,1,2018-12-19T22:13:50Z,_m,a,g,4\n,,1,2018-12-19T22:14:00Z,_m,a,g,5\n,,1,2018-12-19T22:14:10Z,_m,a,g,6\n,,1,2018-12-19T22:14:20Z,_m,a,g,7\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,2,2018-12-19T22:13:30Z,_m,a,t,1\n,,2,2018-12-19T22:13:40Z,_m,a,t,2\n,,2,2018-12-19T22:13:50Z,_m,a,t,3\n,,2,2018-12-19T22:14:00Z,_m,a,t,4\n,,2,2018-12-19T22:14:10Z,_m,a,t,5\n,,2,2018-12-19T22:14:20Z,_m,a,t,6\n,,3,2018-12-19T22:13:30Z,_m,a,g,1\n,,3,2018-12-19T22:13:40Z,_m,a,g,2\n,,3,2018-12-19T22:13:50Z,_m,a,g,3\n,,3,2018-12-19T22:14:00Z,_m,a,g,4\n,,3,2018-12-19T22:14:10Z,_m,a,g,5\n,,3,2018-12-19T22:14:20Z,_m,a,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,4,2018-12-19T22:13:30Z,_m,b,s,1\n,,4,2018-12-19T22:13:40Z,_m,b,s,2\n,,4,2018-12-19T22:13:50Z,_m,b,s,3\n,,4,2018-12-19T22:14:00Z,_m,b,s,4\n,,4,2018-12-19T22:14:10Z,_m,b,s,5\n,,4,2018-12-19T22:14:20Z,_m,b,s,6\n,,5,2018-12-19T22:13:30Z,_m,b,g,1\n,,5,2018-12-19T22:13:40Z,_m,b,g,2\n,,5,2018-12-19T22:13:50Z,_m,b,g,3\n,,5,2018-12-19T22:14:00Z,_m,b,g,4\n,,5,2018-12-19T22:14:10Z,_m,b,g,5\n,,5,2018-12-19T22:14:20Z,_m,b,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,6,2018-12-19T22:13:30Z,_m,b,s,1\n,,6,2018-12-19T22:13:40Z,_m,b,s,2\n,,6,2018-12-19T22:13:50Z,_m,b,s,3\n,,6,2018-12-19T22:14:00Z,_m,b,s,4\n,,6,2018-12-19T22:14:10Z,_m,b,s,5\n,,6,2018-12-19T22:14:20Z,_m,b,s,6\n,,7,2018-12-19T22:13:30Z,_m,b,p,1\n,,7,2018-12-19T22:13:40Z,_m,b,p,2\n,,7,2018-12-19T22:13:50Z,_m,b,p,3\n,,7,2018-12-19T22:14:00Z,_m,b,p,4\n,,7,2018-12-19T22:14:10Z,_m,b,p,5\n,,7,2018-12-19T22:14:20Z,_m,b,p,6\n\"\n\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double\n#group,false,false,true,true,false,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,tag0,value_a,value_b\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:13:30Z,_m,g,2,1\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:13:40Z,_m,g,3,2\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:13:50Z,_m,g,4,3\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:00Z,_m,g,5,4\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:10Z,_m,g,6,5\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:20Z,_m,g,7,6\n\"\n\njoin_test_fn = (table=<-) => {\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left:a, right:b, fn:(left, right) => ({left with value_b: right.value_b}))\n}\n\ntest prom_join = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+				Source: "package promql_test\n\n\nimport \"internal/promql\"\nimport \"testing\"\n\ninData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,0,2018-12-19T22:13:30Z,_m,a,t,1\n,,0,2018-12-19T22:13:40Z,_m,a,t,2\n,,0,2018-12-19T22:13:50Z,_m,a,t,3\n,,0,2018-12-19T22:14:00Z,_m,a,t,4\n,,0,2018-12-19T22:14:10Z,_m,a,t,5\n,,0,2018-12-19T22:14:20Z,_m,a,t,6\n,,1,2018-12-19T22:13:30Z,_m,a,g,2\n,,1,2018-12-19T22:13:40Z,_m,a,g,3\n,,1,2018-12-19T22:13:50Z,_m,a,g,4\n,,1,2018-12-19T22:14:00Z,_m,a,g,5\n,,1,2018-12-19T22:14:10Z,_m,a,g,6\n,,1,2018-12-19T22:14:20Z,_m,a,g,7\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,2,2018-12-19T22:13:30Z,_m,a,t,1\n,,2,2018-12-19T22:13:40Z,_m,a,t,2\n,,2,2018-12-19T22:13:50Z,_m,a,t,3\n,,2,2018-12-19T22:14:00Z,_m,a,t,4\n,,2,2018-12-19T22:14:10Z,_m,a,t,5\n,,2,2018-12-19T22:14:20Z,_m,a,t,6\n,,3,2018-12-19T22:13:30Z,_m,a,g,1\n,,3,2018-12-19T22:13:40Z,_m,a,g,2\n,,3,2018-12-19T22:13:50Z,_m,a,g,3\n,,3,2018-12-19T22:14:00Z,_m,a,g,4\n,,3,2018-12-19T22:14:10Z,_m,a,g,5\n,,3,2018-12-19T22:14:20Z,_m,a,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,4,2018-12-19T22:13:30Z,_m,b,s,1\n,,4,2018-12-19T22:13:40Z,_m,b,s,2\n,,4,2018-12-19T22:13:50Z,_m,b,s,3\n,,4,2018-12-19T22:14:00Z,_m,b,s,4\n,,4,2018-12-19T22:14:10Z,_m,b,s,5\n,,4,2018-12-19T22:14:20Z,_m,b,s,6\n,,5,2018-12-19T22:13:30Z,_m,b,g,1\n,,5,2018-12-19T22:13:40Z,_m,b,g,2\n,,5,2018-12-19T22:13:50Z,_m,b,g,3\n,,5,2018-12-19T22:14:00Z,_m,b,g,4\n,,5,2018-12-19T22:14:10Z,_m,b,g,5\n,,5,2018-12-19T22:14:20Z,_m,b,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,6,2018-12-19T22:13:30Z,_m,b,s,1\n,,6,2018-12-19T22:13:40Z,_m,b,s,2\n,,6,2018-12-19T22:13:50Z,_m,b,s,3\n,,6,2018-12-19T22:14:00Z,_m,b,s,4\n,,6,2018-12-19T22:14:10Z,_m,b,s,5\n,,6,2018-12-19T22:14:20Z,_m,b,s,6\n,,7,2018-12-19T22:13:30Z,_m,b,p,1\n,,7,2018-12-19T22:13:40Z,_m,b,p,2\n,,7,2018-12-19T22:13:50Z,_m,b,p,3\n,,7,2018-12-19T22:14:00Z,_m,b,p,4\n,,7,2018-12-19T22:14:10Z,_m,b,p,5\n,,7,2018-12-19T22:14:20Z,_m,b,p,6\n\"\noutData = \"\n#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double\n#group,false,false,true,true,false,true,true,false,false\n#default,_result,,,,,,,,\n,result,table,_start,_stop,_time,_measurement,tag0,value_a,value_b\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:13:30Z,_m,g,2,1\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:13:40Z,_m,g,3,2\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:13:50Z,_m,g,4,3\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:00Z,_m,g,5,4\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:10Z,_m,g,6,5\n,,0,2018-12-19T00:00:00Z,2018-12-20T00:00:00Z,2018-12-19T22:14:20Z,_m,g,7,6\n\"\njoin_test_fn = (table=<-) => {\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))\n}\n\ntest prom_join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -37,13 +37,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   74,
+						Line:   75,
 					},
 					File:   "join_test.flux",
 					Source: "inData = \"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,0,2018-12-19T22:13:30Z,_m,a,t,1\n,,0,2018-12-19T22:13:40Z,_m,a,t,2\n,,0,2018-12-19T22:13:50Z,_m,a,t,3\n,,0,2018-12-19T22:14:00Z,_m,a,t,4\n,,0,2018-12-19T22:14:10Z,_m,a,t,5\n,,0,2018-12-19T22:14:20Z,_m,a,t,6\n,,1,2018-12-19T22:13:30Z,_m,a,g,2\n,,1,2018-12-19T22:13:40Z,_m,a,g,3\n,,1,2018-12-19T22:13:50Z,_m,a,g,4\n,,1,2018-12-19T22:14:00Z,_m,a,g,5\n,,1,2018-12-19T22:14:10Z,_m,a,g,6\n,,1,2018-12-19T22:14:20Z,_m,a,g,7\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,2,2018-12-19T22:13:30Z,_m,a,t,1\n,,2,2018-12-19T22:13:40Z,_m,a,t,2\n,,2,2018-12-19T22:13:50Z,_m,a,t,3\n,,2,2018-12-19T22:14:00Z,_m,a,t,4\n,,2,2018-12-19T22:14:10Z,_m,a,t,5\n,,2,2018-12-19T22:14:20Z,_m,a,t,6\n,,3,2018-12-19T22:13:30Z,_m,a,g,1\n,,3,2018-12-19T22:13:40Z,_m,a,g,2\n,,3,2018-12-19T22:13:50Z,_m,a,g,3\n,,3,2018-12-19T22:14:00Z,_m,a,g,4\n,,3,2018-12-19T22:14:10Z,_m,a,g,5\n,,3,2018-12-19T22:14:20Z,_m,a,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,4,2018-12-19T22:13:30Z,_m,b,s,1\n,,4,2018-12-19T22:13:40Z,_m,b,s,2\n,,4,2018-12-19T22:13:50Z,_m,b,s,3\n,,4,2018-12-19T22:14:00Z,_m,b,s,4\n,,4,2018-12-19T22:14:10Z,_m,b,s,5\n,,4,2018-12-19T22:14:20Z,_m,b,s,6\n,,5,2018-12-19T22:13:30Z,_m,b,g,1\n,,5,2018-12-19T22:13:40Z,_m,b,g,2\n,,5,2018-12-19T22:13:50Z,_m,b,g,3\n,,5,2018-12-19T22:14:00Z,_m,b,g,4\n,,5,2018-12-19T22:14:10Z,_m,b,g,5\n,,5,2018-12-19T22:14:20Z,_m,b,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,6,2018-12-19T22:13:30Z,_m,b,s,1\n,,6,2018-12-19T22:13:40Z,_m,b,s,2\n,,6,2018-12-19T22:13:50Z,_m,b,s,3\n,,6,2018-12-19T22:14:00Z,_m,b,s,4\n,,6,2018-12-19T22:14:10Z,_m,b,s,5\n,,6,2018-12-19T22:14:20Z,_m,b,s,6\n,,7,2018-12-19T22:13:30Z,_m,b,p,1\n,,7,2018-12-19T22:13:40Z,_m,b,p,2\n,,7,2018-12-19T22:13:50Z,_m,b,p,3\n,,7,2018-12-19T22:14:00Z,_m,b,p,4\n,,7,2018-12-19T22:14:10Z,_m,b,p,5\n,,7,2018-12-19T22:14:20Z,_m,b,p,6\n\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   6,
+						Line:   7,
 					},
 				},
 			},
@@ -54,13 +54,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 7,
-							Line:   6,
+							Line:   7,
 						},
 						File:   "join_test.flux",
 						Source: "inData",
 						Start: ast.Position{
 							Column: 1,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -73,13 +73,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   74,
+							Line:   75,
 						},
 						File:   "join_test.flux",
 						Source: "\"\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,0,2018-12-19T22:13:30Z,_m,a,t,1\n,,0,2018-12-19T22:13:40Z,_m,a,t,2\n,,0,2018-12-19T22:13:50Z,_m,a,t,3\n,,0,2018-12-19T22:14:00Z,_m,a,t,4\n,,0,2018-12-19T22:14:10Z,_m,a,t,5\n,,0,2018-12-19T22:14:20Z,_m,a,t,6\n,,1,2018-12-19T22:13:30Z,_m,a,g,2\n,,1,2018-12-19T22:13:40Z,_m,a,g,3\n,,1,2018-12-19T22:13:50Z,_m,a,g,4\n,,1,2018-12-19T22:14:00Z,_m,a,g,5\n,,1,2018-12-19T22:14:10Z,_m,a,g,6\n,,1,2018-12-19T22:14:20Z,_m,a,g,7\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,2,2018-12-19T22:13:30Z,_m,a,t,1\n,,2,2018-12-19T22:13:40Z,_m,a,t,2\n,,2,2018-12-19T22:13:50Z,_m,a,t,3\n,,2,2018-12-19T22:14:00Z,_m,a,t,4\n,,2,2018-12-19T22:14:10Z,_m,a,t,5\n,,2,2018-12-19T22:14:20Z,_m,a,t,6\n,,3,2018-12-19T22:13:30Z,_m,a,g,1\n,,3,2018-12-19T22:13:40Z,_m,a,g,2\n,,3,2018-12-19T22:13:50Z,_m,a,g,3\n,,3,2018-12-19T22:14:00Z,_m,a,g,4\n,,3,2018-12-19T22:14:10Z,_m,a,g,5\n,,3,2018-12-19T22:14:20Z,_m,a,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag0,_value\n,,4,2018-12-19T22:13:30Z,_m,b,s,1\n,,4,2018-12-19T22:13:40Z,_m,b,s,2\n,,4,2018-12-19T22:13:50Z,_m,b,s,3\n,,4,2018-12-19T22:14:00Z,_m,b,s,4\n,,4,2018-12-19T22:14:10Z,_m,b,s,5\n,,4,2018-12-19T22:14:20Z,_m,b,s,6\n,,5,2018-12-19T22:13:30Z,_m,b,g,1\n,,5,2018-12-19T22:13:40Z,_m,b,g,2\n,,5,2018-12-19T22:13:50Z,_m,b,g,3\n,,5,2018-12-19T22:14:00Z,_m,b,g,4\n,,5,2018-12-19T22:14:10Z,_m,b,g,5\n,,5,2018-12-19T22:14:20Z,_m,b,g,6\n\n#datatype,string,long,dateTime:RFC3339,string,string,string,double\n#group,false,false,false,true,true,true,false\n#default,_result,,,,,,\n,result,table,_time,_measurement,_field,tag1,_value\n,,6,2018-12-19T22:13:30Z,_m,b,s,1\n,,6,2018-12-19T22:13:40Z,_m,b,s,2\n,,6,2018-12-19T22:13:50Z,_m,b,s,3\n,,6,2018-12-19T22:14:00Z,_m,b,s,4\n,,6,2018-12-19T22:14:10Z,_m,b,s,5\n,,6,2018-12-19T22:14:20Z,_m,b,s,6\n,,7,2018-12-19T22:13:30Z,_m,b,p,1\n,,7,2018-12-19T22:13:40Z,_m,b,p,2\n,,7,2018-12-19T22:13:50Z,_m,b,p,3\n,,7,2018-12-19T22:14:00Z,_m,b,p,4\n,,7,2018-12-19T22:14:10Z,_m,b,p,5\n,,7,2018-12-19T22:14:20Z,_m,b,p,6\n\"",
 						Start: ast.Position{
 							Column: 10,
-							Line:   6,
+							Line:   7,
 						},
 					},
 				},
@@ -147,13 +147,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   103,
+						Line:   101,
 					},
 					File:   "join_test.flux",
-					Source: "join_test_fn = (table=<-) => {\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left:a, right:b, fn:(left, right) => ({left with value_b: right.value_b}))\n}",
+					Source: "join_test_fn = (table=<-) => {\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   89,
+						Line:   88,
 					},
 				},
 			},
@@ -164,13 +164,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   89,
+							Line:   88,
 						},
 						File:   "join_test.flux",
 						Source: "join_test_fn",
 						Start: ast.Position{
 							Column: 1,
-							Line:   89,
+							Line:   88,
 						},
 					},
 				},
@@ -184,13 +184,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   103,
+							Line:   101,
 						},
 						File:   "join_test.flux",
-						Source: "(table=<-) => {\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left:a, right:b, fn:(left, right) => ({left with value_b: right.value_b}))\n}",
+						Source: "(table=<-) => {\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))\n}",
 						Start: ast.Position{
 							Column: 16,
-							Line:   89,
+							Line:   88,
 						},
 					},
 				},
@@ -201,13 +201,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   103,
+								Line:   101,
 							},
 							File:   "join_test.flux",
-							Source: "{\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left:a, right:b, fn:(left, right) => ({left with value_b: right.value_b}))\n}",
+							Source: "{\n    a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})\n    b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})\n\n    return promql.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))\n}",
 							Start: ast.Position{
 								Column: 30,
-								Line:   89,
+								Line:   88,
 							},
 						},
 					},
@@ -218,13 +218,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   94,
+									Line:   93,
 								},
 								File:   "join_test.flux",
 								Source: "a = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   90,
+									Line:   89,
 								},
 							},
 						},
@@ -235,13 +235,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   90,
+										Line:   89,
 									},
 									File:   "join_test.flux",
 									Source: "a",
 									Start: ast.Position{
 										Column: 5,
-										Line:   90,
+										Line:   89,
 									},
 								},
 							},
@@ -258,13 +258,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   90,
+														Line:   89,
 													},
 													File:   "join_test.flux",
 													Source: "table",
 													Start: ast.Position{
 														Column: 9,
-														Line:   90,
+														Line:   89,
 													},
 												},
 											},
@@ -276,13 +276,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 74,
-													Line:   91,
+													Line:   90,
 												},
 												File:   "join_test.flux",
 												Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)",
 												Start: ast.Position{
 													Column: 9,
-													Line:   90,
+													Line:   89,
 												},
 											},
 										},
@@ -294,13 +294,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 73,
-															Line:   91,
+															Line:   90,
 														},
 														File:   "join_test.flux",
 														Source: "start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z",
 														Start: ast.Position{
 															Column: 18,
-															Line:   91,
+															Line:   90,
 														},
 													},
 												},
@@ -312,13 +312,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   91,
+																Line:   90,
 															},
 															File:   "join_test.flux",
 															Source: "start: 2018-12-19T00:00:00Z",
 															Start: ast.Position{
 																Column: 18,
-																Line:   91,
+																Line:   90,
 															},
 														},
 													},
@@ -330,13 +330,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   91,
+																	Line:   90,
 																},
 																File:   "join_test.flux",
 																Source: "start",
 																Start: ast.Position{
 																	Column: 18,
-																	Line:   91,
+																	Line:   90,
 																},
 															},
 														},
@@ -350,13 +350,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 45,
-																	Line:   91,
+																	Line:   90,
 																},
 																File:   "join_test.flux",
 																Source: "2018-12-19T00:00:00Z",
 																Start: ast.Position{
 																	Column: 25,
-																	Line:   91,
+																	Line:   90,
 																},
 															},
 														},
@@ -369,13 +369,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 73,
-																Line:   91,
+																Line:   90,
 															},
 															File:   "join_test.flux",
 															Source: "stop: 2018-12-20T00:00:00Z",
 															Start: ast.Position{
 																Column: 47,
-																Line:   91,
+																Line:   90,
 															},
 														},
 													},
@@ -387,13 +387,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 51,
-																	Line:   91,
+																	Line:   90,
 																},
 																File:   "join_test.flux",
 																Source: "stop",
 																Start: ast.Position{
 																	Column: 47,
-																	Line:   91,
+																	Line:   90,
 																},
 															},
 														},
@@ -407,13 +407,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 73,
-																	Line:   91,
+																	Line:   90,
 																},
 																File:   "join_test.flux",
 																Source: "2018-12-20T00:00:00Z",
 																Start: ast.Position{
 																	Column: 53,
-																	Line:   91,
+																	Line:   90,
 																},
 															},
 														},
@@ -429,13 +429,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 74,
-														Line:   91,
+														Line:   90,
 													},
 													File:   "join_test.flux",
 													Source: "range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)",
 													Start: ast.Position{
 														Column: 12,
-														Line:   91,
+														Line:   90,
 													},
 												},
 											},
@@ -446,13 +446,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
-															Line:   91,
+															Line:   90,
 														},
 														File:   "join_test.flux",
 														Source: "range",
 														Start: ast.Position{
 															Column: 12,
-															Line:   91,
+															Line:   90,
 														},
 													},
 												},
@@ -468,13 +468,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   92,
+												Line:   91,
 											},
 											File:   "join_test.flux",
 											Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")",
 											Start: ast.Position{
 												Column: 9,
-												Line:   90,
+												Line:   89,
 											},
 										},
 									},
@@ -486,13 +486,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   92,
+														Line:   91,
 													},
 													File:   "join_test.flux",
 													Source: "fn: (r) => r._field == \"a\"",
 													Start: ast.Position{
 														Column: 19,
-														Line:   92,
+														Line:   91,
 													},
 												},
 											},
@@ -504,13 +504,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   92,
+															Line:   91,
 														},
 														File:   "join_test.flux",
 														Source: "fn: (r) => r._field == \"a\"",
 														Start: ast.Position{
 															Column: 19,
-															Line:   92,
+															Line:   91,
 														},
 													},
 												},
@@ -522,13 +522,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   92,
+																Line:   91,
 															},
 															File:   "join_test.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 19,
-																Line:   92,
+																Line:   91,
 															},
 														},
 													},
@@ -543,13 +543,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   92,
+																Line:   91,
 															},
 															File:   "join_test.flux",
 															Source: "(r) => r._field == \"a\"",
 															Start: ast.Position{
 																Column: 23,
-																Line:   92,
+																Line:   91,
 															},
 														},
 													},
@@ -560,13 +560,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 45,
-																	Line:   92,
+																	Line:   91,
 																},
 																File:   "join_test.flux",
 																Source: "r._field == \"a\"",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   92,
+																	Line:   91,
 																},
 															},
 														},
@@ -577,13 +577,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
-																		Line:   92,
+																		Line:   91,
 																	},
 																	File:   "join_test.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
 																		Column: 30,
-																		Line:   92,
+																		Line:   91,
 																	},
 																},
 															},
@@ -595,13 +595,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
-																			Line:   92,
+																			Line:   91,
 																		},
 																		File:   "join_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 30,
-																			Line:   92,
+																			Line:   91,
 																		},
 																	},
 																},
@@ -614,13 +614,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 38,
-																			Line:   92,
+																			Line:   91,
 																		},
 																		File:   "join_test.flux",
 																		Source: "_field",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   92,
+																			Line:   91,
 																		},
 																	},
 																},
@@ -636,13 +636,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 45,
-																		Line:   92,
+																		Line:   91,
 																	},
 																	File:   "join_test.flux",
 																	Source: "\"a\"",
 																	Start: ast.Position{
 																		Column: 42,
-																		Line:   92,
+																		Line:   91,
 																	},
 																},
 															},
@@ -657,13 +657,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
-																	Line:   92,
+																	Line:   91,
 																},
 																File:   "join_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   92,
+																	Line:   91,
 																},
 															},
 														},
@@ -675,13 +675,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   92,
+																		Line:   91,
 																	},
 																	File:   "join_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 24,
-																		Line:   92,
+																		Line:   91,
 																	},
 																},
 															},
@@ -702,13 +702,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   92,
+													Line:   91,
 												},
 												File:   "join_test.flux",
 												Source: "filter(fn: (r) => r._field == \"a\")",
 												Start: ast.Position{
 													Column: 12,
-													Line:   92,
+													Line:   91,
 												},
 											},
 										},
@@ -719,13 +719,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   92,
+														Line:   91,
 													},
 													File:   "join_test.flux",
 													Source: "filter",
 													Start: ast.Position{
 														Column: 12,
-														Line:   92,
+														Line:   91,
 													},
 												},
 											},
@@ -741,13 +741,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   93,
+											Line:   92,
 										},
 										File:   "join_test.flux",
 										Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])",
 										Start: ast.Position{
 											Column: 9,
-											Line:   90,
+											Line:   89,
 										},
 									},
 								},
@@ -759,13 +759,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   93,
+													Line:   92,
 												},
 												File:   "join_test.flux",
 												Source: "columns: [\"_field\"]",
 												Start: ast.Position{
 													Column: 17,
-													Line:   93,
+													Line:   92,
 												},
 											},
 										},
@@ -777,13 +777,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   93,
+														Line:   92,
 													},
 													File:   "join_test.flux",
 													Source: "columns: [\"_field\"]",
 													Start: ast.Position{
 														Column: 17,
-														Line:   93,
+														Line:   92,
 													},
 												},
 											},
@@ -795,13 +795,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   93,
+															Line:   92,
 														},
 														File:   "join_test.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 17,
-															Line:   93,
+															Line:   92,
 														},
 													},
 												},
@@ -815,13 +815,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
-															Line:   93,
+															Line:   92,
 														},
 														File:   "join_test.flux",
 														Source: "[\"_field\"]",
 														Start: ast.Position{
 															Column: 26,
-															Line:   93,
+															Line:   92,
 														},
 													},
 												},
@@ -832,13 +832,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   93,
+																Line:   92,
 															},
 															File:   "join_test.flux",
 															Source: "\"_field\"",
 															Start: ast.Position{
 																Column: 27,
-																Line:   93,
+																Line:   92,
 															},
 														},
 													},
@@ -857,13 +857,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   93,
+												Line:   92,
 											},
 											File:   "join_test.flux",
 											Source: "drop(columns: [\"_field\"])",
 											Start: ast.Position{
 												Column: 12,
-												Line:   93,
+												Line:   92,
 											},
 										},
 									},
@@ -874,13 +874,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   93,
+													Line:   92,
 												},
 												File:   "join_test.flux",
 												Source: "drop",
 												Start: ast.Position{
 													Column: 12,
-													Line:   93,
+													Line:   92,
 												},
 											},
 										},
@@ -896,13 +896,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   94,
+										Line:   93,
 									},
 									File:   "join_test.flux",
 									Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"a\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_a\"})",
 									Start: ast.Position{
 										Column: 9,
-										Line:   90,
+										Line:   89,
 									},
 								},
 							},
@@ -914,13 +914,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   94,
+												Line:   93,
 											},
 											File:   "join_test.flux",
 											Source: "columns: {_value: \"value_a\"}",
 											Start: ast.Position{
 												Column: 19,
-												Line:   94,
+												Line:   93,
 											},
 										},
 									},
@@ -932,13 +932,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   94,
+													Line:   93,
 												},
 												File:   "join_test.flux",
 												Source: "columns: {_value: \"value_a\"}",
 												Start: ast.Position{
 													Column: 19,
-													Line:   94,
+													Line:   93,
 												},
 											},
 										},
@@ -950,13 +950,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   94,
+														Line:   93,
 													},
 													File:   "join_test.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 19,
-														Line:   94,
+														Line:   93,
 													},
 												},
 											},
@@ -970,13 +970,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   94,
+														Line:   93,
 													},
 													File:   "join_test.flux",
 													Source: "{_value: \"value_a\"}",
 													Start: ast.Position{
 														Column: 28,
-														Line:   94,
+														Line:   93,
 													},
 												},
 											},
@@ -988,13 +988,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 46,
-															Line:   94,
+															Line:   93,
 														},
 														File:   "join_test.flux",
 														Source: "_value: \"value_a\"",
 														Start: ast.Position{
 															Column: 29,
-															Line:   94,
+															Line:   93,
 														},
 													},
 												},
@@ -1006,13 +1006,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   94,
+																Line:   93,
 															},
 															File:   "join_test.flux",
 															Source: "_value",
 															Start: ast.Position{
 																Column: 29,
-																Line:   94,
+																Line:   93,
 															},
 														},
 													},
@@ -1026,13 +1026,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 46,
-																Line:   94,
+																Line:   93,
 															},
 															File:   "join_test.flux",
 															Source: "\"value_a\"",
 															Start: ast.Position{
 																Column: 37,
-																Line:   94,
+																Line:   93,
 															},
 														},
 													},
@@ -1052,13 +1052,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   94,
+											Line:   93,
 										},
 										File:   "join_test.flux",
 										Source: "rename(columns: {_value: \"value_a\"})",
 										Start: ast.Position{
 											Column: 12,
-											Line:   94,
+											Line:   93,
 										},
 									},
 								},
@@ -1069,13 +1069,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   94,
+												Line:   93,
 											},
 											File:   "join_test.flux",
 											Source: "rename",
 											Start: ast.Position{
 												Column: 12,
-												Line:   94,
+												Line:   93,
 											},
 										},
 									},
@@ -1092,13 +1092,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   100,
+									Line:   98,
 								},
 								File:   "join_test.flux",
 								Source: "b = table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})",
 								Start: ast.Position{
 									Column: 5,
-									Line:   96,
+									Line:   94,
 								},
 							},
 						},
@@ -1109,13 +1109,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   96,
+										Line:   94,
 									},
 									File:   "join_test.flux",
 									Source: "b",
 									Start: ast.Position{
 										Column: 5,
-										Line:   96,
+										Line:   94,
 									},
 								},
 							},
@@ -1132,13 +1132,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 14,
-														Line:   96,
+														Line:   94,
 													},
 													File:   "join_test.flux",
 													Source: "table",
 													Start: ast.Position{
 														Column: 9,
-														Line:   96,
+														Line:   94,
 													},
 												},
 											},
@@ -1150,13 +1150,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 74,
-													Line:   97,
+													Line:   95,
 												},
 												File:   "join_test.flux",
 												Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)",
 												Start: ast.Position{
 													Column: 9,
-													Line:   96,
+													Line:   94,
 												},
 											},
 										},
@@ -1168,13 +1168,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 73,
-															Line:   97,
+															Line:   95,
 														},
 														File:   "join_test.flux",
 														Source: "start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z",
 														Start: ast.Position{
 															Column: 18,
-															Line:   97,
+															Line:   95,
 														},
 													},
 												},
@@ -1186,13 +1186,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   97,
+																Line:   95,
 															},
 															File:   "join_test.flux",
 															Source: "start: 2018-12-19T00:00:00Z",
 															Start: ast.Position{
 																Column: 18,
-																Line:   97,
+																Line:   95,
 															},
 														},
 													},
@@ -1204,13 +1204,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 23,
-																	Line:   97,
+																	Line:   95,
 																},
 																File:   "join_test.flux",
 																Source: "start",
 																Start: ast.Position{
 																	Column: 18,
-																	Line:   97,
+																	Line:   95,
 																},
 															},
 														},
@@ -1224,13 +1224,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 45,
-																	Line:   97,
+																	Line:   95,
 																},
 																File:   "join_test.flux",
 																Source: "2018-12-19T00:00:00Z",
 																Start: ast.Position{
 																	Column: 25,
-																	Line:   97,
+																	Line:   95,
 																},
 															},
 														},
@@ -1243,13 +1243,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 73,
-																Line:   97,
+																Line:   95,
 															},
 															File:   "join_test.flux",
 															Source: "stop: 2018-12-20T00:00:00Z",
 															Start: ast.Position{
 																Column: 47,
-																Line:   97,
+																Line:   95,
 															},
 														},
 													},
@@ -1261,13 +1261,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 51,
-																	Line:   97,
+																	Line:   95,
 																},
 																File:   "join_test.flux",
 																Source: "stop",
 																Start: ast.Position{
 																	Column: 47,
-																	Line:   97,
+																	Line:   95,
 																},
 															},
 														},
@@ -1281,13 +1281,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 73,
-																	Line:   97,
+																	Line:   95,
 																},
 																File:   "join_test.flux",
 																Source: "2018-12-20T00:00:00Z",
 																Start: ast.Position{
 																	Column: 53,
-																	Line:   97,
+																	Line:   95,
 																},
 															},
 														},
@@ -1303,13 +1303,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 74,
-														Line:   97,
+														Line:   95,
 													},
 													File:   "join_test.flux",
 													Source: "range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)",
 													Start: ast.Position{
 														Column: 12,
-														Line:   97,
+														Line:   95,
 													},
 												},
 											},
@@ -1320,13 +1320,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 17,
-															Line:   97,
+															Line:   95,
 														},
 														File:   "join_test.flux",
 														Source: "range",
 														Start: ast.Position{
 															Column: 12,
-															Line:   97,
+															Line:   95,
 														},
 													},
 												},
@@ -1342,13 +1342,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   98,
+												Line:   96,
 											},
 											File:   "join_test.flux",
 											Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")",
 											Start: ast.Position{
 												Column: 9,
-												Line:   96,
+												Line:   94,
 											},
 										},
 									},
@@ -1360,13 +1360,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 45,
-														Line:   98,
+														Line:   96,
 													},
 													File:   "join_test.flux",
 													Source: "fn: (r) => r._field == \"b\"",
 													Start: ast.Position{
 														Column: 19,
-														Line:   98,
+														Line:   96,
 													},
 												},
 											},
@@ -1378,13 +1378,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   98,
+															Line:   96,
 														},
 														File:   "join_test.flux",
 														Source: "fn: (r) => r._field == \"b\"",
 														Start: ast.Position{
 															Column: 19,
-															Line:   98,
+															Line:   96,
 														},
 													},
 												},
@@ -1396,13 +1396,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   98,
+																Line:   96,
 															},
 															File:   "join_test.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 19,
-																Line:   98,
+																Line:   96,
 															},
 														},
 													},
@@ -1417,13 +1417,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   98,
+																Line:   96,
 															},
 															File:   "join_test.flux",
 															Source: "(r) => r._field == \"b\"",
 															Start: ast.Position{
 																Column: 23,
-																Line:   98,
+																Line:   96,
 															},
 														},
 													},
@@ -1434,13 +1434,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 45,
-																	Line:   98,
+																	Line:   96,
 																},
 																File:   "join_test.flux",
 																Source: "r._field == \"b\"",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   98,
+																	Line:   96,
 																},
 															},
 														},
@@ -1451,13 +1451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 38,
-																		Line:   98,
+																		Line:   96,
 																	},
 																	File:   "join_test.flux",
 																	Source: "r._field",
 																	Start: ast.Position{
 																		Column: 30,
-																		Line:   98,
+																		Line:   96,
 																	},
 																},
 															},
@@ -1469,13 +1469,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
-																			Line:   98,
+																			Line:   96,
 																		},
 																		File:   "join_test.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 30,
-																			Line:   98,
+																			Line:   96,
 																		},
 																	},
 																},
@@ -1488,13 +1488,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 38,
-																			Line:   98,
+																			Line:   96,
 																		},
 																		File:   "join_test.flux",
 																		Source: "_field",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   98,
+																			Line:   96,
 																		},
 																	},
 																},
@@ -1510,13 +1510,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 45,
-																		Line:   98,
+																		Line:   96,
 																	},
 																	File:   "join_test.flux",
 																	Source: "\"b\"",
 																	Start: ast.Position{
 																		Column: 42,
-																		Line:   98,
+																		Line:   96,
 																	},
 																},
 															},
@@ -1531,13 +1531,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
-																	Line:   98,
+																	Line:   96,
 																},
 																File:   "join_test.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   98,
+																	Line:   96,
 																},
 															},
 														},
@@ -1549,13 +1549,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   98,
+																		Line:   96,
 																	},
 																	File:   "join_test.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 24,
-																		Line:   98,
+																		Line:   96,
 																	},
 																},
 															},
@@ -1576,13 +1576,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   98,
+													Line:   96,
 												},
 												File:   "join_test.flux",
 												Source: "filter(fn: (r) => r._field == \"b\")",
 												Start: ast.Position{
 													Column: 12,
-													Line:   98,
+													Line:   96,
 												},
 											},
 										},
@@ -1593,13 +1593,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   98,
+														Line:   96,
 													},
 													File:   "join_test.flux",
 													Source: "filter",
 													Start: ast.Position{
 														Column: 12,
-														Line:   98,
+														Line:   96,
 													},
 												},
 											},
@@ -1615,13 +1615,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 37,
-											Line:   99,
+											Line:   97,
 										},
 										File:   "join_test.flux",
 										Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])",
 										Start: ast.Position{
 											Column: 9,
-											Line:   96,
+											Line:   94,
 										},
 									},
 								},
@@ -1633,13 +1633,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 36,
-													Line:   99,
+													Line:   97,
 												},
 												File:   "join_test.flux",
 												Source: "columns: [\"_field\"]",
 												Start: ast.Position{
 													Column: 17,
-													Line:   99,
+													Line:   97,
 												},
 											},
 										},
@@ -1651,13 +1651,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   99,
+														Line:   97,
 													},
 													File:   "join_test.flux",
 													Source: "columns: [\"_field\"]",
 													Start: ast.Position{
 														Column: 17,
-														Line:   99,
+														Line:   97,
 													},
 												},
 											},
@@ -1669,13 +1669,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   99,
+															Line:   97,
 														},
 														File:   "join_test.flux",
 														Source: "columns",
 														Start: ast.Position{
 															Column: 17,
-															Line:   99,
+															Line:   97,
 														},
 													},
 												},
@@ -1689,13 +1689,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
-															Line:   99,
+															Line:   97,
 														},
 														File:   "join_test.flux",
 														Source: "[\"_field\"]",
 														Start: ast.Position{
 															Column: 26,
-															Line:   99,
+															Line:   97,
 														},
 													},
 												},
@@ -1706,13 +1706,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   99,
+																Line:   97,
 															},
 															File:   "join_test.flux",
 															Source: "\"_field\"",
 															Start: ast.Position{
 																Column: 27,
-																Line:   99,
+																Line:   97,
 															},
 														},
 													},
@@ -1731,13 +1731,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 37,
-												Line:   99,
+												Line:   97,
 											},
 											File:   "join_test.flux",
 											Source: "drop(columns: [\"_field\"])",
 											Start: ast.Position{
 												Column: 12,
-												Line:   99,
+												Line:   97,
 											},
 										},
 									},
@@ -1748,13 +1748,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 16,
-													Line:   99,
+													Line:   97,
 												},
 												File:   "join_test.flux",
 												Source: "drop",
 												Start: ast.Position{
 													Column: 12,
-													Line:   99,
+													Line:   97,
 												},
 											},
 										},
@@ -1770,13 +1770,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 48,
-										Line:   100,
+										Line:   98,
 									},
 									File:   "join_test.flux",
 									Source: "table\n        |> range(start: 2018-12-19T00:00:00Z, stop: 2018-12-20T00:00:00Z)\n        |> filter(fn: (r) => r._field == \"b\")\n        |> drop(columns: [\"_field\"])\n        |> rename(columns: {_value: \"value_b\"})",
 									Start: ast.Position{
 										Column: 9,
-										Line:   96,
+										Line:   94,
 									},
 								},
 							},
@@ -1788,13 +1788,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 47,
-												Line:   100,
+												Line:   98,
 											},
 											File:   "join_test.flux",
 											Source: "columns: {_value: \"value_b\"}",
 											Start: ast.Position{
 												Column: 19,
-												Line:   100,
+												Line:   98,
 											},
 										},
 									},
@@ -1806,13 +1806,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 47,
-													Line:   100,
+													Line:   98,
 												},
 												File:   "join_test.flux",
 												Source: "columns: {_value: \"value_b\"}",
 												Start: ast.Position{
 													Column: 19,
-													Line:   100,
+													Line:   98,
 												},
 											},
 										},
@@ -1824,13 +1824,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 26,
-														Line:   100,
+														Line:   98,
 													},
 													File:   "join_test.flux",
 													Source: "columns",
 													Start: ast.Position{
 														Column: 19,
-														Line:   100,
+														Line:   98,
 													},
 												},
 											},
@@ -1844,13 +1844,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 47,
-														Line:   100,
+														Line:   98,
 													},
 													File:   "join_test.flux",
 													Source: "{_value: \"value_b\"}",
 													Start: ast.Position{
 														Column: 28,
-														Line:   100,
+														Line:   98,
 													},
 												},
 											},
@@ -1862,13 +1862,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 46,
-															Line:   100,
+															Line:   98,
 														},
 														File:   "join_test.flux",
 														Source: "_value: \"value_b\"",
 														Start: ast.Position{
 															Column: 29,
-															Line:   100,
+															Line:   98,
 														},
 													},
 												},
@@ -1880,13 +1880,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 35,
-																Line:   100,
+																Line:   98,
 															},
 															File:   "join_test.flux",
 															Source: "_value",
 															Start: ast.Position{
 																Column: 29,
-																Line:   100,
+																Line:   98,
 															},
 														},
 													},
@@ -1900,13 +1900,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 46,
-																Line:   100,
+																Line:   98,
 															},
 															File:   "join_test.flux",
 															Source: "\"value_b\"",
 															Start: ast.Position{
 																Column: 37,
-																Line:   100,
+																Line:   98,
 															},
 														},
 													},
@@ -1926,13 +1926,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 48,
-											Line:   100,
+											Line:   98,
 										},
 										File:   "join_test.flux",
 										Source: "rename(columns: {_value: \"value_b\"})",
 										Start: ast.Position{
 											Column: 12,
-											Line:   100,
+											Line:   98,
 										},
 									},
 								},
@@ -1943,13 +1943,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   100,
+												Line:   98,
 											},
 											File:   "join_test.flux",
 											Source: "rename",
 											Start: ast.Position{
 												Column: 12,
-												Line:   100,
+												Line:   98,
 											},
 										},
 									},
@@ -1967,14 +1967,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 97,
-											Line:   102,
+											Column: 100,
+											Line:   100,
 										},
 										File:   "join_test.flux",
-										Source: "left:a, right:b, fn:(left, right) => ({left with value_b: right.value_b})",
+										Source: "left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b})",
 										Start: ast.Position{
 											Column: 24,
-											Line:   102,
+											Line:   100,
 										},
 									},
 								},
@@ -1985,14 +1985,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 30,
-												Line:   102,
+												Column: 31,
+												Line:   100,
 											},
 											File:   "join_test.flux",
-											Source: "left:a",
+											Source: "left: a",
 											Start: ast.Position{
 												Column: 24,
-												Line:   102,
+												Line:   100,
 											},
 										},
 									},
@@ -2004,13 +2004,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   102,
+													Line:   100,
 												},
 												File:   "join_test.flux",
 												Source: "left",
 												Start: ast.Position{
 													Column: 24,
-													Line:   102,
+													Line:   100,
 												},
 											},
 										},
@@ -2023,14 +2023,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 30,
-													Line:   102,
+													Column: 31,
+													Line:   100,
 												},
 												File:   "join_test.flux",
 												Source: "a",
 												Start: ast.Position{
-													Column: 29,
-													Line:   102,
+													Column: 30,
+													Line:   100,
 												},
 											},
 										},
@@ -2042,14 +2042,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 39,
-												Line:   102,
+												Column: 41,
+												Line:   100,
 											},
 											File:   "join_test.flux",
-											Source: "right:b",
+											Source: "right: b",
 											Start: ast.Position{
-												Column: 32,
-												Line:   102,
+												Column: 33,
+												Line:   100,
 											},
 										},
 									},
@@ -2060,14 +2060,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
-													Line:   102,
+													Column: 38,
+													Line:   100,
 												},
 												File:   "join_test.flux",
 												Source: "right",
 												Start: ast.Position{
-													Column: 32,
-													Line:   102,
+													Column: 33,
+													Line:   100,
 												},
 											},
 										},
@@ -2080,14 +2080,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 39,
-													Line:   102,
+													Column: 41,
+													Line:   100,
 												},
 												File:   "join_test.flux",
 												Source: "b",
 												Start: ast.Position{
-													Column: 38,
-													Line:   102,
+													Column: 40,
+													Line:   100,
 												},
 											},
 										},
@@ -2099,14 +2099,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 97,
-												Line:   102,
+												Column: 100,
+												Line:   100,
 											},
 											File:   "join_test.flux",
-											Source: "fn:(left, right) => ({left with value_b: right.value_b})",
+											Source: "fn: (left, right) => ({left with value_b: right.value_b})",
 											Start: ast.Position{
-												Column: 41,
-												Line:   102,
+												Column: 43,
+												Line:   100,
 											},
 										},
 									},
@@ -2117,14 +2117,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 43,
-													Line:   102,
+													Column: 45,
+													Line:   100,
 												},
 												File:   "join_test.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 41,
-													Line:   102,
+													Column: 43,
+													Line:   100,
 												},
 											},
 										},
@@ -2138,14 +2138,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 97,
-													Line:   102,
+													Column: 100,
+													Line:   100,
 												},
 												File:   "join_test.flux",
 												Source: "(left, right) => ({left with value_b: right.value_b})",
 												Start: ast.Position{
-													Column: 44,
-													Line:   102,
+													Column: 47,
+													Line:   100,
 												},
 											},
 										},
@@ -2155,14 +2155,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 97,
-														Line:   102,
+														Column: 100,
+														Line:   100,
 													},
 													File:   "join_test.flux",
 													Source: "({left with value_b: right.value_b})",
 													Start: ast.Position{
-														Column: 61,
-														Line:   102,
+														Column: 64,
+														Line:   100,
 													},
 												},
 											},
@@ -2172,14 +2172,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 96,
-															Line:   102,
+															Column: 99,
+															Line:   100,
 														},
 														File:   "join_test.flux",
 														Source: "{left with value_b: right.value_b}",
 														Start: ast.Position{
-															Column: 62,
-															Line:   102,
+															Column: 65,
+															Line:   100,
 														},
 													},
 												},
@@ -2190,14 +2190,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 95,
-																Line:   102,
+																Column: 98,
+																Line:   100,
 															},
 															File:   "join_test.flux",
 															Source: "value_b: right.value_b",
 															Start: ast.Position{
-																Column: 73,
-																Line:   102,
+																Column: 76,
+																Line:   100,
 															},
 														},
 													},
@@ -2208,14 +2208,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 80,
-																	Line:   102,
+																	Column: 83,
+																	Line:   100,
 																},
 																File:   "join_test.flux",
 																Source: "value_b",
 																Start: ast.Position{
-																	Column: 73,
-																	Line:   102,
+																	Column: 76,
+																	Line:   100,
 																},
 															},
 														},
@@ -2228,14 +2228,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 95,
-																	Line:   102,
+																	Column: 98,
+																	Line:   100,
 																},
 																File:   "join_test.flux",
 																Source: "right.value_b",
 																Start: ast.Position{
-																	Column: 82,
-																	Line:   102,
+																	Column: 85,
+																	Line:   100,
 																},
 															},
 														},
@@ -2246,14 +2246,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 87,
-																		Line:   102,
+																		Column: 90,
+																		Line:   100,
 																	},
 																	File:   "join_test.flux",
 																	Source: "right",
 																	Start: ast.Position{
-																		Column: 82,
-																		Line:   102,
+																		Column: 85,
+																		Line:   100,
 																	},
 																},
 															},
@@ -2265,14 +2265,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 95,
-																		Line:   102,
+																		Column: 98,
+																		Line:   100,
 																	},
 																	File:   "join_test.flux",
 																	Source: "value_b",
 																	Start: ast.Position{
-																		Column: 88,
-																		Line:   102,
+																		Column: 91,
+																		Line:   100,
 																	},
 																},
 															},
@@ -2288,14 +2288,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 67,
-																Line:   102,
+																Column: 70,
+																Line:   100,
 															},
 															File:   "join_test.flux",
 															Source: "left",
 															Start: ast.Position{
-																Column: 63,
-																Line:   102,
+																Column: 66,
+																Line:   100,
 															},
 														},
 													},
@@ -2312,14 +2312,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 49,
-														Line:   102,
+														Column: 52,
+														Line:   100,
 													},
 													File:   "join_test.flux",
 													Source: "left",
 													Start: ast.Position{
-														Column: 45,
-														Line:   102,
+														Column: 48,
+														Line:   100,
 													},
 												},
 											},
@@ -2330,14 +2330,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 49,
-															Line:   102,
+															Column: 52,
+															Line:   100,
 														},
 														File:   "join_test.flux",
 														Source: "left",
 														Start: ast.Position{
-															Column: 45,
-															Line:   102,
+															Column: 48,
+															Line:   100,
 														},
 													},
 												},
@@ -2351,14 +2351,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 56,
-														Line:   102,
+														Column: 59,
+														Line:   100,
 													},
 													File:   "join_test.flux",
 													Source: "right",
 													Start: ast.Position{
-														Column: 51,
-														Line:   102,
+														Column: 54,
+														Line:   100,
 													},
 												},
 											},
@@ -2369,14 +2369,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 56,
-															Line:   102,
+															Column: 59,
+															Line:   100,
 														},
 														File:   "join_test.flux",
 														Source: "right",
 														Start: ast.Position{
-															Column: 51,
-															Line:   102,
+															Column: 54,
+															Line:   100,
 														},
 													},
 												},
@@ -2396,14 +2396,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 98,
-										Line:   102,
+										Column: 101,
+										Line:   100,
 									},
 									File:   "join_test.flux",
-									Source: "promql.join(left:a, right:b, fn:(left, right) => ({left with value_b: right.value_b}))",
+									Source: "promql.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))",
 									Start: ast.Position{
 										Column: 12,
-										Line:   102,
+										Line:   100,
 									},
 								},
 							},
@@ -2414,13 +2414,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 23,
-											Line:   102,
+											Line:   100,
 										},
 										File:   "join_test.flux",
 										Source: "promql.join",
 										Start: ast.Position{
 											Column: 12,
-											Line:   102,
+											Line:   100,
 										},
 									},
 								},
@@ -2432,13 +2432,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 18,
-												Line:   102,
+												Line:   100,
 											},
 											File:   "join_test.flux",
 											Source: "promql",
 											Start: ast.Position{
 												Column: 12,
-												Line:   102,
+												Line:   100,
 											},
 										},
 									},
@@ -2451,13 +2451,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   102,
+												Line:   100,
 											},
 											File:   "join_test.flux",
 											Source: "join",
 											Start: ast.Position{
 												Column: 19,
-												Line:   102,
+												Line:   100,
 											},
 										},
 									},
@@ -2473,14 +2473,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 98,
-									Line:   102,
+									Column: 101,
+									Line:   100,
 								},
 								File:   "join_test.flux",
-								Source: "return promql.join(left:a, right:b, fn:(left, right) => ({left with value_b: right.value_b}))",
+								Source: "return promql.join(left: a, right: b, fn: (left, right) => ({left with value_b: right.value_b}))",
 								Start: ast.Position{
 									Column: 5,
-									Line:   102,
+									Line:   100,
 								},
 							},
 						},
@@ -2496,13 +2496,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   89,
+								Line:   88,
 							},
 							File:   "join_test.flux",
 							Source: "table=<-",
 							Start: ast.Position{
 								Column: 17,
-								Line:   89,
+								Line:   88,
 							},
 						},
 					},
@@ -2514,13 +2514,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   89,
+									Line:   88,
 								},
 								File:   "join_test.flux",
 								Source: "table",
 								Start: ast.Position{
 									Column: 17,
-									Line:   89,
+									Line:   88,
 								},
 							},
 						},
@@ -2533,13 +2533,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 25,
-								Line:   89,
+								Line:   88,
 							},
 							File:   "join_test.flux",
 							Source: "<-",
 							Start: ast.Position{
 								Column: 23,
-								Line:   89,
+								Line:   88,
 							},
 						},
 					}},
@@ -2553,14 +2553,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 100,
-							Line:   106,
+							Column: 122,
+							Line:   103,
 						},
 						File:   "join_test.flux",
-						Source: "prom_join = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+						Source: "prom_join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
 						Start: ast.Position{
 							Column: 6,
-							Line:   105,
+							Line:   103,
 						},
 					},
 				},
@@ -2571,13 +2571,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 15,
-								Line:   105,
+								Line:   103,
 							},
 							File:   "join_test.flux",
 							Source: "prom_join",
 							Start: ast.Position{
 								Column: 6,
-								Line:   105,
+								Line:   103,
 							},
 						},
 					},
@@ -2590,14 +2590,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 100,
-								Line:   106,
+								Column: 122,
+								Line:   103,
 							},
 							File:   "join_test.flux",
-							Source: "() =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+							Source: "() => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
 							Start: ast.Position{
 								Column: 18,
-								Line:   105,
+								Line:   103,
 							},
 						},
 					},
@@ -2607,14 +2607,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 100,
-									Line:   106,
+									Column: 122,
+									Line:   103,
 								},
 								File:   "join_test.flux",
 								Source: "({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
 								Start: ast.Position{
-									Column: 2,
-									Line:   106,
+									Column: 24,
+									Line:   103,
 								},
 							},
 						},
@@ -2624,14 +2624,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 99,
-										Line:   106,
+										Column: 121,
+										Line:   103,
 									},
 									File:   "join_test.flux",
 									Source: "{input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn}",
 									Start: ast.Position{
-										Column: 3,
-										Line:   106,
+										Column: 25,
+										Line:   103,
 									},
 								},
 							},
@@ -2642,14 +2642,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 43,
-											Line:   106,
+											Column: 65,
+											Line:   103,
 										},
 										File:   "join_test.flux",
 										Source: "input: testing.loadStorage(csv: inData)",
 										Start: ast.Position{
-											Column: 4,
-											Line:   106,
+											Column: 26,
+											Line:   103,
 										},
 									},
 								},
@@ -2660,14 +2660,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 9,
-												Line:   106,
+												Column: 31,
+												Line:   103,
 											},
 											File:   "join_test.flux",
 											Source: "input",
 											Start: ast.Position{
-												Column: 4,
-												Line:   106,
+												Column: 26,
+												Line:   103,
 											},
 										},
 									},
@@ -2681,14 +2681,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 42,
-													Line:   106,
+													Column: 64,
+													Line:   103,
 												},
 												File:   "join_test.flux",
 												Source: "csv: inData",
 												Start: ast.Position{
-													Column: 31,
-													Line:   106,
+													Column: 53,
+													Line:   103,
 												},
 											},
 										},
@@ -2699,14 +2699,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 42,
-														Line:   106,
+														Column: 64,
+														Line:   103,
 													},
 													File:   "join_test.flux",
 													Source: "csv: inData",
 													Start: ast.Position{
-														Column: 31,
-														Line:   106,
+														Column: 53,
+														Line:   103,
 													},
 												},
 											},
@@ -2717,14 +2717,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 34,
-															Line:   106,
+															Column: 56,
+															Line:   103,
 														},
 														File:   "join_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 31,
-															Line:   106,
+															Column: 53,
+															Line:   103,
 														},
 													},
 												},
@@ -2737,14 +2737,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 42,
-															Line:   106,
+															Column: 64,
+															Line:   103,
 														},
 														File:   "join_test.flux",
 														Source: "inData",
 														Start: ast.Position{
-															Column: 36,
-															Line:   106,
+															Column: 58,
+															Line:   103,
 														},
 													},
 												},
@@ -2759,14 +2759,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 43,
-												Line:   106,
+												Column: 65,
+												Line:   103,
 											},
 											File:   "join_test.flux",
 											Source: "testing.loadStorage(csv: inData)",
 											Start: ast.Position{
-												Column: 11,
-												Line:   106,
+												Column: 33,
+												Line:   103,
 											},
 										},
 									},
@@ -2776,14 +2776,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 30,
-													Line:   106,
+													Column: 52,
+													Line:   103,
 												},
 												File:   "join_test.flux",
 												Source: "testing.loadStorage",
 												Start: ast.Position{
-													Column: 11,
-													Line:   106,
+													Column: 33,
+													Line:   103,
 												},
 											},
 										},
@@ -2794,14 +2794,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 18,
-														Line:   106,
+														Column: 40,
+														Line:   103,
 													},
 													File:   "join_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 11,
-														Line:   106,
+														Column: 33,
+														Line:   103,
 													},
 												},
 											},
@@ -2813,14 +2813,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 30,
-														Line:   106,
+														Column: 52,
+														Line:   103,
 													},
 													File:   "join_test.flux",
 													Source: "loadStorage",
 													Start: ast.Position{
-														Column: 19,
-														Line:   106,
+														Column: 41,
+														Line:   103,
 													},
 												},
 											},
@@ -2837,14 +2837,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 80,
-											Line:   106,
+											Column: 102,
+											Line:   103,
 										},
 										File:   "join_test.flux",
 										Source: "want: testing.loadMem(csv: outData)",
 										Start: ast.Position{
-											Column: 45,
-											Line:   106,
+											Column: 67,
+											Line:   103,
 										},
 									},
 								},
@@ -2855,14 +2855,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 49,
-												Line:   106,
+												Column: 71,
+												Line:   103,
 											},
 											File:   "join_test.flux",
 											Source: "want",
 											Start: ast.Position{
-												Column: 45,
-												Line:   106,
+												Column: 67,
+												Line:   103,
 											},
 										},
 									},
@@ -2876,14 +2876,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 79,
-													Line:   106,
+													Column: 101,
+													Line:   103,
 												},
 												File:   "join_test.flux",
 												Source: "csv: outData",
 												Start: ast.Position{
-													Column: 67,
-													Line:   106,
+													Column: 89,
+													Line:   103,
 												},
 											},
 										},
@@ -2894,14 +2894,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 79,
-														Line:   106,
+														Column: 101,
+														Line:   103,
 													},
 													File:   "join_test.flux",
 													Source: "csv: outData",
 													Start: ast.Position{
-														Column: 67,
-														Line:   106,
+														Column: 89,
+														Line:   103,
 													},
 												},
 											},
@@ -2912,14 +2912,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 70,
-															Line:   106,
+															Column: 92,
+															Line:   103,
 														},
 														File:   "join_test.flux",
 														Source: "csv",
 														Start: ast.Position{
-															Column: 67,
-															Line:   106,
+															Column: 89,
+															Line:   103,
 														},
 													},
 												},
@@ -2932,14 +2932,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 79,
-															Line:   106,
+															Column: 101,
+															Line:   103,
 														},
 														File:   "join_test.flux",
 														Source: "outData",
 														Start: ast.Position{
-															Column: 72,
-															Line:   106,
+															Column: 94,
+															Line:   103,
 														},
 													},
 												},
@@ -2954,14 +2954,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 80,
-												Line:   106,
+												Column: 102,
+												Line:   103,
 											},
 											File:   "join_test.flux",
 											Source: "testing.loadMem(csv: outData)",
 											Start: ast.Position{
-												Column: 51,
-												Line:   106,
+												Column: 73,
+												Line:   103,
 											},
 										},
 									},
@@ -2971,14 +2971,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 66,
-													Line:   106,
+													Column: 88,
+													Line:   103,
 												},
 												File:   "join_test.flux",
 												Source: "testing.loadMem",
 												Start: ast.Position{
-													Column: 51,
-													Line:   106,
+													Column: 73,
+													Line:   103,
 												},
 											},
 										},
@@ -2989,14 +2989,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 58,
-														Line:   106,
+														Column: 80,
+														Line:   103,
 													},
 													File:   "join_test.flux",
 													Source: "testing",
 													Start: ast.Position{
-														Column: 51,
-														Line:   106,
+														Column: 73,
+														Line:   103,
 													},
 												},
 											},
@@ -3008,14 +3008,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 66,
-														Line:   106,
+														Column: 88,
+														Line:   103,
 													},
 													File:   "join_test.flux",
 													Source: "loadMem",
 													Start: ast.Position{
-														Column: 59,
-														Line:   106,
+														Column: 81,
+														Line:   103,
 													},
 												},
 											},
@@ -3032,14 +3032,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 98,
-											Line:   106,
+											Column: 120,
+											Line:   103,
 										},
 										File:   "join_test.flux",
 										Source: "fn: join_test_fn",
 										Start: ast.Position{
-											Column: 82,
-											Line:   106,
+											Column: 104,
+											Line:   103,
 										},
 									},
 								},
@@ -3050,14 +3050,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 84,
-												Line:   106,
+												Column: 106,
+												Line:   103,
 											},
 											File:   "join_test.flux",
 											Source: "fn",
 											Start: ast.Position{
-												Column: 82,
-												Line:   106,
+												Column: 104,
+												Line:   103,
 											},
 										},
 									},
@@ -3070,14 +3070,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 98,
-												Line:   106,
+												Column: 120,
+												Line:   103,
 											},
 											File:   "join_test.flux",
 											Source: "join_test_fn",
 											Start: ast.Position{
-												Column: 86,
-												Line:   106,
+												Column: 108,
+												Line:   103,
 											},
 										},
 									},
@@ -3100,14 +3100,14 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 100,
-						Line:   106,
+						Column: 122,
+						Line:   103,
 					},
 					File:   "join_test.flux",
-					Source: "test prom_join = () =>\n\t({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
+					Source: "test prom_join = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: join_test_fn})",
 					Start: ast.Position{
 						Column: 1,
-						Line:   105,
+						Line:   103,
 					},
 				},
 			},
@@ -3121,13 +3121,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "join_test.flux",
 					Source: "import \"internal/promql\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -3138,13 +3138,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "join_test.flux",
 						Source: "\"internal/promql\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -3158,13 +3158,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "join_test.flux",
 					Source: "import \"testing\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -3175,13 +3175,13 @@ var FluxTestPackages = []*ast.Package{&ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "join_test.flux",
 						Source: "\"testing\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},

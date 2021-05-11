@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 11,
-					Line:   3,
+					Line:   4,
 				},
 				File:   "kafka.flux",
-				Source: "package kafka\n\nbuiltin to",
+				Source: "package kafka\n\n\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "kafka.flux",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "kafka.flux",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -77,14 +77,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 210,
-							Line:   3,
+							Column: 25,
+							Line:   14,
 						},
 						File:   "kafka.flux",
-						Source: "(<-tables: [A], brokers: [string], topic: string, ?balancer: string, ?name: string, ?nameColumn: string, ?timeColumn: string, ?tagColumns: [string], ?valueColumns: [string]) => [A] where A: Record",
+						Source: "(\n    <-tables: [A],\n    brokers: [string],\n    topic: string,\n    ?balancer: string,\n    ?name: string,\n    ?nameColumn: string,\n    ?timeColumn: string,\n    ?tagColumns: [string],\n    ?valueColumns: [string],\n) => [A] where A: Record",
 						Start: ast.Position{
 							Column: 14,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -94,14 +94,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 210,
-								Line:   3,
+								Column: 25,
+								Line:   14,
 							},
 							File:   "kafka.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 201,
-								Line:   3,
+								Column: 16,
+								Line:   14,
 							},
 						},
 					},
@@ -111,14 +111,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 210,
-									Line:   3,
+									Column: 25,
+									Line:   14,
 								},
 								File:   "kafka.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 204,
-									Line:   3,
+									Column: 19,
+									Line:   14,
 								},
 							},
 						},
@@ -130,14 +130,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 202,
-									Line:   3,
+									Column: 17,
+									Line:   14,
 								},
 								File:   "kafka.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 201,
-									Line:   3,
+									Column: 16,
+									Line:   14,
 								},
 							},
 						},
@@ -150,14 +150,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 194,
-								Line:   3,
+								Column: 9,
+								Line:   14,
 							},
 							File:   "kafka.flux",
-							Source: "(<-tables: [A], brokers: [string], topic: string, ?balancer: string, ?name: string, ?nameColumn: string, ?timeColumn: string, ?tagColumns: [string], ?valueColumns: [string]) => [A]",
+							Source: "(\n    <-tables: [A],\n    brokers: [string],\n    topic: string,\n    ?balancer: string,\n    ?name: string,\n    ?nameColumn: string,\n    ?timeColumn: string,\n    ?tagColumns: [string],\n    ?valueColumns: [string],\n) => [A]",
 							Start: ast.Position{
 								Column: 14,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -167,14 +167,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   3,
+									Column: 18,
+									Line:   5,
 								},
 								File:   "kafka.flux",
 								Source: "<-tables: [A]",
 								Start: ast.Position{
-									Column: 15,
-									Line:   3,
+									Column: 5,
+									Line:   5,
 								},
 							},
 						},
@@ -185,14 +185,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 23,
-										Line:   3,
+										Column: 13,
+										Line:   5,
 									},
 									File:   "kafka.flux",
 									Source: "tables",
 									Start: ast.Position{
-										Column: 17,
-										Line:   3,
+										Column: 7,
+										Line:   5,
 									},
 								},
 							},
@@ -204,14 +204,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
-										Line:   3,
+										Column: 18,
+										Line:   5,
 									},
 									File:   "kafka.flux",
 									Source: "[A]",
 									Start: ast.Position{
-										Column: 25,
-										Line:   3,
+										Column: 15,
+										Line:   5,
 									},
 								},
 							},
@@ -221,14 +221,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   3,
+											Column: 17,
+											Line:   5,
 										},
 										File:   "kafka.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 26,
-											Line:   3,
+											Column: 16,
+											Line:   5,
 										},
 									},
 								},
@@ -238,14 +238,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   3,
+												Column: 17,
+												Line:   5,
 											},
 											File:   "kafka.flux",
 											Source: "A",
 											Start: ast.Position{
-												Column: 26,
-												Line:   3,
+												Column: 16,
+												Line:   5,
 											},
 										},
 									},
@@ -259,14 +259,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 47,
-									Line:   3,
+									Column: 22,
+									Line:   6,
 								},
 								File:   "kafka.flux",
 								Source: "brokers: [string]",
 								Start: ast.Position{
-									Column: 30,
-									Line:   3,
+									Column: 5,
+									Line:   6,
 								},
 							},
 						},
@@ -277,14 +277,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 37,
-										Line:   3,
+										Column: 12,
+										Line:   6,
 									},
 									File:   "kafka.flux",
 									Source: "brokers",
 									Start: ast.Position{
-										Column: 30,
-										Line:   3,
+										Column: 5,
+										Line:   6,
 									},
 								},
 							},
@@ -296,14 +296,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 47,
-										Line:   3,
+										Column: 22,
+										Line:   6,
 									},
 									File:   "kafka.flux",
 									Source: "[string]",
 									Start: ast.Position{
-										Column: 39,
-										Line:   3,
+										Column: 14,
+										Line:   6,
 									},
 								},
 							},
@@ -313,14 +313,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 46,
-											Line:   3,
+											Column: 21,
+											Line:   6,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 40,
-											Line:   3,
+											Column: 15,
+											Line:   6,
 										},
 									},
 								},
@@ -330,14 +330,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 46,
-												Line:   3,
+												Column: 21,
+												Line:   6,
 											},
 											File:   "kafka.flux",
 											Source: "string",
 											Start: ast.Position{
-												Column: 40,
-												Line:   3,
+												Column: 15,
+												Line:   6,
 											},
 										},
 									},
@@ -351,14 +351,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 62,
-									Line:   3,
+									Column: 18,
+									Line:   7,
 								},
 								File:   "kafka.flux",
 								Source: "topic: string",
 								Start: ast.Position{
-									Column: 49,
-									Line:   3,
+									Column: 5,
+									Line:   7,
 								},
 							},
 						},
@@ -369,14 +369,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 54,
-										Line:   3,
+										Column: 10,
+										Line:   7,
 									},
 									File:   "kafka.flux",
 									Source: "topic",
 									Start: ast.Position{
-										Column: 49,
-										Line:   3,
+										Column: 5,
+										Line:   7,
 									},
 								},
 							},
@@ -388,14 +388,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 62,
-										Line:   3,
+										Column: 18,
+										Line:   7,
 									},
 									File:   "kafka.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 56,
-										Line:   3,
+										Column: 12,
+										Line:   7,
 									},
 								},
 							},
@@ -405,14 +405,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 62,
-											Line:   3,
+											Column: 18,
+											Line:   7,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 56,
-											Line:   3,
+											Column: 12,
+											Line:   7,
 										},
 									},
 								},
@@ -425,14 +425,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 81,
-									Line:   3,
+									Column: 22,
+									Line:   8,
 								},
 								File:   "kafka.flux",
 								Source: "?balancer: string",
 								Start: ast.Position{
-									Column: 64,
-									Line:   3,
+									Column: 5,
+									Line:   8,
 								},
 							},
 						},
@@ -443,14 +443,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 73,
-										Line:   3,
+										Column: 14,
+										Line:   8,
 									},
 									File:   "kafka.flux",
 									Source: "balancer",
 									Start: ast.Position{
-										Column: 65,
-										Line:   3,
+										Column: 6,
+										Line:   8,
 									},
 								},
 							},
@@ -462,14 +462,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 81,
-										Line:   3,
+										Column: 22,
+										Line:   8,
 									},
 									File:   "kafka.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 75,
-										Line:   3,
+										Column: 16,
+										Line:   8,
 									},
 								},
 							},
@@ -479,14 +479,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 81,
-											Line:   3,
+											Column: 22,
+											Line:   8,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 75,
-											Line:   3,
+											Column: 16,
+											Line:   8,
 										},
 									},
 								},
@@ -499,14 +499,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 96,
-									Line:   3,
+									Column: 18,
+									Line:   9,
 								},
 								File:   "kafka.flux",
 								Source: "?name: string",
 								Start: ast.Position{
-									Column: 83,
-									Line:   3,
+									Column: 5,
+									Line:   9,
 								},
 							},
 						},
@@ -517,14 +517,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 88,
-										Line:   3,
+										Column: 10,
+										Line:   9,
 									},
 									File:   "kafka.flux",
 									Source: "name",
 									Start: ast.Position{
-										Column: 84,
-										Line:   3,
+										Column: 6,
+										Line:   9,
 									},
 								},
 							},
@@ -536,14 +536,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 96,
-										Line:   3,
+										Column: 18,
+										Line:   9,
 									},
 									File:   "kafka.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 90,
-										Line:   3,
+										Column: 12,
+										Line:   9,
 									},
 								},
 							},
@@ -553,14 +553,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 96,
-											Line:   3,
+											Column: 18,
+											Line:   9,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 90,
-											Line:   3,
+											Column: 12,
+											Line:   9,
 										},
 									},
 								},
@@ -573,14 +573,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 117,
-									Line:   3,
+									Column: 24,
+									Line:   10,
 								},
 								File:   "kafka.flux",
 								Source: "?nameColumn: string",
 								Start: ast.Position{
-									Column: 98,
-									Line:   3,
+									Column: 5,
+									Line:   10,
 								},
 							},
 						},
@@ -591,14 +591,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 109,
-										Line:   3,
+										Column: 16,
+										Line:   10,
 									},
 									File:   "kafka.flux",
 									Source: "nameColumn",
 									Start: ast.Position{
-										Column: 99,
-										Line:   3,
+										Column: 6,
+										Line:   10,
 									},
 								},
 							},
@@ -610,14 +610,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 117,
-										Line:   3,
+										Column: 24,
+										Line:   10,
 									},
 									File:   "kafka.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 111,
-										Line:   3,
+										Column: 18,
+										Line:   10,
 									},
 								},
 							},
@@ -627,14 +627,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 117,
-											Line:   3,
+											Column: 24,
+											Line:   10,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 111,
-											Line:   3,
+											Column: 18,
+											Line:   10,
 										},
 									},
 								},
@@ -647,14 +647,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 138,
-									Line:   3,
+									Column: 24,
+									Line:   11,
 								},
 								File:   "kafka.flux",
 								Source: "?timeColumn: string",
 								Start: ast.Position{
-									Column: 119,
-									Line:   3,
+									Column: 5,
+									Line:   11,
 								},
 							},
 						},
@@ -665,14 +665,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 130,
-										Line:   3,
+										Column: 16,
+										Line:   11,
 									},
 									File:   "kafka.flux",
 									Source: "timeColumn",
 									Start: ast.Position{
-										Column: 120,
-										Line:   3,
+										Column: 6,
+										Line:   11,
 									},
 								},
 							},
@@ -684,14 +684,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 138,
-										Line:   3,
+										Column: 24,
+										Line:   11,
 									},
 									File:   "kafka.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 132,
-										Line:   3,
+										Column: 18,
+										Line:   11,
 									},
 								},
 							},
@@ -701,14 +701,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 138,
-											Line:   3,
+											Column: 24,
+											Line:   11,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 132,
-											Line:   3,
+											Column: 18,
+											Line:   11,
 										},
 									},
 								},
@@ -721,14 +721,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 161,
-									Line:   3,
+									Column: 26,
+									Line:   12,
 								},
 								File:   "kafka.flux",
 								Source: "?tagColumns: [string]",
 								Start: ast.Position{
-									Column: 140,
-									Line:   3,
+									Column: 5,
+									Line:   12,
 								},
 							},
 						},
@@ -739,14 +739,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 151,
-										Line:   3,
+										Column: 16,
+										Line:   12,
 									},
 									File:   "kafka.flux",
 									Source: "tagColumns",
 									Start: ast.Position{
-										Column: 141,
-										Line:   3,
+										Column: 6,
+										Line:   12,
 									},
 								},
 							},
@@ -758,14 +758,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 161,
-										Line:   3,
+										Column: 26,
+										Line:   12,
 									},
 									File:   "kafka.flux",
 									Source: "[string]",
 									Start: ast.Position{
-										Column: 153,
-										Line:   3,
+										Column: 18,
+										Line:   12,
 									},
 								},
 							},
@@ -775,14 +775,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 160,
-											Line:   3,
+											Column: 25,
+											Line:   12,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 154,
-											Line:   3,
+											Column: 19,
+											Line:   12,
 										},
 									},
 								},
@@ -792,14 +792,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 160,
-												Line:   3,
+												Column: 25,
+												Line:   12,
 											},
 											File:   "kafka.flux",
 											Source: "string",
 											Start: ast.Position{
-												Column: 154,
-												Line:   3,
+												Column: 19,
+												Line:   12,
 											},
 										},
 									},
@@ -813,14 +813,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 186,
-									Line:   3,
+									Column: 28,
+									Line:   13,
 								},
 								File:   "kafka.flux",
 								Source: "?valueColumns: [string]",
 								Start: ast.Position{
-									Column: 163,
-									Line:   3,
+									Column: 5,
+									Line:   13,
 								},
 							},
 						},
@@ -831,14 +831,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 176,
-										Line:   3,
+										Column: 18,
+										Line:   13,
 									},
 									File:   "kafka.flux",
 									Source: "valueColumns",
 									Start: ast.Position{
-										Column: 164,
-										Line:   3,
+										Column: 6,
+										Line:   13,
 									},
 								},
 							},
@@ -850,14 +850,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 186,
-										Line:   3,
+										Column: 28,
+										Line:   13,
 									},
 									File:   "kafka.flux",
 									Source: "[string]",
 									Start: ast.Position{
-										Column: 178,
-										Line:   3,
+										Column: 20,
+										Line:   13,
 									},
 								},
 							},
@@ -867,14 +867,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 185,
-											Line:   3,
+											Column: 27,
+											Line:   13,
 										},
 										File:   "kafka.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 179,
-											Line:   3,
+											Column: 21,
+											Line:   13,
 										},
 									},
 								},
@@ -884,14 +884,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 185,
-												Line:   3,
+												Column: 27,
+												Line:   13,
 											},
 											File:   "kafka.flux",
 											Source: "string",
 											Start: ast.Position{
-												Column: 179,
-												Line:   3,
+												Column: 21,
+												Line:   13,
 											},
 										},
 									},
@@ -906,14 +906,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 194,
-									Line:   3,
+									Column: 9,
+									Line:   14,
 								},
 								File:   "kafka.flux",
 								Source: "[A]",
 								Start: ast.Position{
-									Column: 191,
-									Line:   3,
+									Column: 6,
+									Line:   14,
 								},
 							},
 						},
@@ -923,14 +923,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 193,
-										Line:   3,
+										Column: 8,
+										Line:   14,
 									},
 									File:   "kafka.flux",
 									Source: "A",
 									Start: ast.Position{
-										Column: 192,
-										Line:   3,
+										Column: 7,
+										Line:   14,
 									},
 								},
 							},
@@ -940,14 +940,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 193,
-											Line:   3,
+											Column: 8,
+											Line:   14,
 										},
 										File:   "kafka.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 192,
-											Line:   3,
+											Column: 7,
+											Line:   14,
 										},
 									},
 								},

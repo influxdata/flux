@@ -1,9 +1,10 @@
 package events_test
 
+
 import "testing"
 import "contrib/tomhollingworth/events"
 
-option now = () => (2018-05-22T19:54:16Z)
+option now = () => 2018-05-22T19:54:16Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
@@ -23,7 +24,6 @@ inData = "
 ,,1,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/
 ,,1,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,string,string,string,string,long
 #group,false,false,true,true,false,false,true,true,true,true,true,true,false
@@ -42,11 +42,8 @@ outData = "
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:06Z,34.98204153981662,used_percent,disk,disk1s2,apfs,host.local,/,10
 ,,1,2018-05-22T19:53:26Z,2018-05-22T19:54:36Z,2018-05-22T19:54:16Z,34.982252364543626,used_percent,disk,disk1s2,apfs,host.local,/,20
 "
+t_duration = (table=<-) => table
+    |> range(start: 2018-05-22T19:53:26Z, stop: 2018-05-22T19:54:36Z)
+    |> events.duration()
 
-t_duration = (table=<-) =>
-	(table
-        |> range(start:2018-05-22T19:53:26Z, stop:2018-05-22T19:54:36Z)
-		|> events.duration())
-
-test _duration = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})
+test _duration = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_duration})

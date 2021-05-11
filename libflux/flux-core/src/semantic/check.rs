@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! Checking the semantic graph.
 
 use crate::ast;
 use crate::semantic::nodes;
@@ -22,9 +22,10 @@ type VariableAssignMap<'a> = HashMap<&'a str, Option<&'a nodes::VariableAssgn>>;
 /// at a later stage.
 ///
 /// These are the kind of errors that `check()` will find:
-/// - Option reassignment: options may only be assigned once within a package
+///
+/// - Option reassignment: options may only be assigned once within a package.
 /// - Variable reassignment: variables may only be assigned once within a scope.
-///     A variable of the same name may be declared in a different scope.
+///   A variable of the same name may be declared in a different scope.
 /// - Dependent options: options declared within the same package must not depend on one another.
 ///
 /// If any of these errors are found, `check()` will return the first one it finds, and `Ok(())` otherwise.

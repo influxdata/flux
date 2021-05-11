@@ -1,9 +1,10 @@
 package geo_test
 
+
 import "experimental/geo"
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,string,double
@@ -76,7 +77,6 @@ inData = "
 ,,2,2019-01-05T13:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField
 ,,2,2019-01-05T19:00:00Z,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,migration,91916A,control,ctrlField
 "
-
 outData = "
 #group,false,false,true,true,true,false,false,true,false,false,true
 #datatype,string,long,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,string,string,double,double,string
@@ -88,11 +88,9 @@ outData = "
 ,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T04:00:00Z,ctrlField,91916A,21.1595,39.16733,15c3af
 ,,2,migration,2019-01-01T00:00:00Z,2019-01-02T00:00:00Z,2019-01-05T07:00:00Z,ctrlField,91916A,21.16,39.1665,15c3af
 "
-
-t_shapeDataWithFilter = (table=<-) =>
-  table
+t_shapeDataWithFilter = (table=<-) => table
     |> range(start: 2019-01-01T00:00:00Z)
     |> geo.shapeData(latField: "latitude", lonField: "longitude", level: 10)
     |> geo.filterRows(region: {lat: 21.0, lon: 39.0, radius: 25.0})
-test _shapeDataWithFilter = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter})
+
+test _shapeDataWithFilter = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_shapeDataWithFilter})

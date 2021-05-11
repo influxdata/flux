@@ -23,11 +23,11 @@ var pkgAST = &ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 15,
-					Line:   74,
+					Column: 6,
+					Line:   83,
 				},
 				File:   "opsgenie.flux",
-				Source: "package opsgenie\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// respondersToJSON converts an array of responder strings to JSON array that can be embedded into an alert message\nbuiltin respondersToJSON : (v: [string]) => string\n\n// `sendAlert` sends a message that creates an alert in Opsgenie. See https://docs.opsgenie.com/docs/alert-api#create-alert for details.\n// `url`         - string - Opsgenie API URL. Defaults to \"https://api.opsgenie.com/v2/alerts\". \n// `apiKey`      - string - API Authorization key. \n// `message`     - string - Alert message text, at most 130 characters. \n// `alias`       - string - Opsgenie alias, at most 250 characters that are used to de-deduplicate alerts. Defaults to message. \n// `description` - string - Description field of an alert, at most 15000 characters. Optional. \n// `priority`    - string - \"P1\", \"P2\", \"P3\", \"P4\" or \"P5\". Defaults to \"P3\". \n// `responders`  - array  - Array of strings to identify responder teams or teams, a 'user:' prefix is used for users, 'teams:' prefix for teams. \n// `tags`        - array  - Array of string tags. Optional. \n// `entity`      - string - Entity of the alert, used to specify domain of the alert. Optional. \n// `actions`     - array  - Array of strings that specifies actions that will be available for the alert. \n// `details`     - string - Additional details of an alert, it must be a JSON-encoded map of key-value string pairs. \n// `visibleTo`   - array  - Arrays of teams and users that the alert will become visible to without sending any notification. Optional. \nsendAlert = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, message, alias=\"\", description=\"\", priority=\"P3\", responders=[], tags=[], entity=\"\", actions=[], visibleTo=[], details=\"{}\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey\n    }\n    cutEncode = (v, max, defV = \"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n        return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v:message,max:130)},\n\\\"alias\\\": ${cutEncode(v:alias,max:512,defV: message)},\n\\\"description\\\": ${cutEncode(v:description,max:15000)},\n\\\"responders\\\": ${respondersToJSON(v:responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v:visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v:actions))},\n\\\"tags\\\": ${string(v: json.encode(v:tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v:entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v:priority, max: 2)}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send alerts to opsgenie for each table row.\n// `url`         - string - Opsgenie API URL. Defaults to \"https://api.opsgenie.com/v2/alerts\". \n// `apiKey`      - string - API Authorization key. \n// `entity`      - string - Entity of the alert, used to specify domain of the alert. Optional. \n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and entity).\nendpoint = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, entity = \"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            })",
+				Source: "package opsgenie\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\n// respondersToJSON converts an array of responder strings to JSON array that can be embedded into an alert message\nbuiltin respondersToJSON : (v: [string]) => string\n\n// `sendAlert` sends a message that creates an alert in Opsgenie. See https://docs.opsgenie.com/docs/alert-api#create-alert for details.\n// `url`         - string - Opsgenie API URL. Defaults to \"https://api.opsgenie.com/v2/alerts\". \n// `apiKey`      - string - API Authorization key. \n// `message`     - string - Alert message text, at most 130 characters. \n// `alias`       - string - Opsgenie alias, at most 250 characters that are used to de-deduplicate alerts. Defaults to message. \n// `description` - string - Description field of an alert, at most 15000 characters. Optional. \n// `priority`    - string - \"P1\", \"P2\", \"P3\", \"P4\" or \"P5\". Defaults to \"P3\". \n// `responders`  - array  - Array of strings to identify responder teams or teams, a 'user:' prefix is used for users, 'teams:' prefix for teams. \n// `tags`        - array  - Array of string tags. Optional. \n// `entity`      - string - Entity of the alert, used to specify domain of the alert. Optional. \n// `actions`     - array  - Array of strings that specifies actions that will be available for the alert. \n// `details`     - string - Additional details of an alert, it must be a JSON-encoded map of key-value string pairs. \n// `visibleTo`   - array  - Arrays of teams and users that the alert will become visible to without sending any notification. Optional. \nsendAlert = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, message, alias=\"\", description=\"\", priority=\"P3\", responders=[], tags=[], entity=\"\", actions=[], visibleTo=[], details=\"{}\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey,\n    }\n    cutEncode = (v, max, defV=\"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n\n        return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v: message, max: 130)},\n\\\"alias\\\": ${cutEncode(v: alias, max: 512, defV: message)},\n\\\"description\\\": ${cutEncode(v: description, max: 15000)},\n\\\"responders\\\": ${respondersToJSON(v: responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v: visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v: actions))},\n\\\"tags\\\": ${string(v: json.encode(v: tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v: entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v: priority, max: 2)}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send alerts to opsgenie for each table row.\n// `url`         - string - Opsgenie API URL. Defaults to \"https://api.opsgenie.com/v2/alerts\". \n// `apiKey`      - string - API Authorization key. \n// `entity`      - string - Entity of the alert, used to specify domain of the alert. Optional. \n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and entity).\nendpoint = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, entity=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 25,
-						Line:   8,
+						Line:   9,
 					},
 					File:   "opsgenie.flux",
 					Source: "builtin respondersToJSON",
 					Start: ast.Position{
 						Column: 1,
-						Line:   8,
+						Line:   9,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 25,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "opsgenie.flux",
 						Source: "respondersToJSON",
 						Start: ast.Position{
 							Column: 9,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 51,
-							Line:   8,
+							Line:   9,
 						},
 						File:   "opsgenie.flux",
 						Source: "(v: [string]) => string",
 						Start: ast.Position{
 							Column: 28,
-							Line:   8,
+							Line:   9,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 51,
-								Line:   8,
+								Line:   9,
 							},
 							File:   "opsgenie.flux",
 							Source: "(v: [string]) => string",
 							Start: ast.Position{
 								Column: 28,
-								Line:   8,
+								Line:   9,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 40,
-									Line:   8,
+									Line:   9,
 								},
 								File:   "opsgenie.flux",
 								Source: "v: [string]",
 								Start: ast.Position{
 									Column: 29,
-									Line:   8,
+									Line:   9,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   8,
+										Line:   9,
 									},
 									File:   "opsgenie.flux",
 									Source: "v",
 									Start: ast.Position{
 										Column: 29,
-										Line:   8,
+										Line:   9,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 40,
-										Line:   8,
+										Line:   9,
 									},
 									File:   "opsgenie.flux",
 									Source: "[string]",
 									Start: ast.Position{
 										Column: 32,
-										Line:   8,
+										Line:   9,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 39,
-											Line:   8,
+											Line:   9,
 										},
 										File:   "opsgenie.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 33,
-											Line:   8,
+											Line:   9,
 										},
 									},
 								},
@@ -184,13 +184,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 39,
-												Line:   8,
+												Line:   9,
 											},
 											File:   "opsgenie.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 33,
-												Line:   8,
+												Line:   9,
 											},
 										},
 									},
@@ -206,13 +206,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   8,
+									Line:   9,
 								},
 								File:   "opsgenie.flux",
 								Source: "string",
 								Start: ast.Position{
 									Column: 45,
-									Line:   8,
+									Line:   9,
 								},
 							},
 						},
@@ -223,13 +223,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   8,
+										Line:   9,
 									},
 									File:   "opsgenie.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 45,
-										Line:   8,
+										Line:   9,
 									},
 								},
 							},
@@ -245,13 +245,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   47,
+						Line:   51,
 					},
 					File:   "opsgenie.flux",
-					Source: "sendAlert = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, message, alias=\"\", description=\"\", priority=\"P3\", responders=[], tags=[], entity=\"\", actions=[], visibleTo=[], details=\"{}\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey\n    }\n    cutEncode = (v, max, defV = \"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n        return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v:message,max:130)},\n\\\"alias\\\": ${cutEncode(v:alias,max:512,defV: message)},\n\\\"description\\\": ${cutEncode(v:description,max:15000)},\n\\\"responders\\\": ${respondersToJSON(v:responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v:visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v:actions))},\n\\\"tags\\\": ${string(v: json.encode(v:tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v:entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v:priority, max: 2)}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+					Source: "sendAlert = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, message, alias=\"\", description=\"\", priority=\"P3\", responders=[], tags=[], entity=\"\", actions=[], visibleTo=[], details=\"{}\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey,\n    }\n    cutEncode = (v, max, defV=\"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n\n        return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v: message, max: 130)},\n\\\"alias\\\": ${cutEncode(v: alias, max: 512, defV: message)},\n\\\"description\\\": ${cutEncode(v: description, max: 15000)},\n\\\"responders\\\": ${respondersToJSON(v: responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v: visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v: actions))},\n\\\"tags\\\": ${string(v: json.encode(v: tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v: entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v: priority, max: 2)}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   23,
+						Line:   24,
 					},
 				},
 			},
@@ -262,13 +262,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 10,
-							Line:   23,
+							Line:   24,
 						},
 						File:   "opsgenie.flux",
 						Source: "sendAlert",
 						Start: ast.Position{
 							Column: 1,
-							Line:   23,
+							Line:   24,
 						},
 					},
 				},
@@ -282,13 +282,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   47,
+							Line:   51,
 						},
 						File:   "opsgenie.flux",
-						Source: "(url=\"https://api.opsgenie.com/v2/alerts\", apiKey, message, alias=\"\", description=\"\", priority=\"P3\", responders=[], tags=[], entity=\"\", actions=[], visibleTo=[], details=\"{}\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey\n    }\n    cutEncode = (v, max, defV = \"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n        return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v:message,max:130)},\n\\\"alias\\\": ${cutEncode(v:alias,max:512,defV: message)},\n\\\"description\\\": ${cutEncode(v:description,max:15000)},\n\\\"responders\\\": ${respondersToJSON(v:responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v:visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v:actions))},\n\\\"tags\\\": ${string(v: json.encode(v:tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v:entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v:priority, max: 2)}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+						Source: "(url=\"https://api.opsgenie.com/v2/alerts\", apiKey, message, alias=\"\", description=\"\", priority=\"P3\", responders=[], tags=[], entity=\"\", actions=[], visibleTo=[], details=\"{}\") => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey,\n    }\n    cutEncode = (v, max, defV=\"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n\n        return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v: message, max: 130)},\n\\\"alias\\\": ${cutEncode(v: alias, max: 512, defV: message)},\n\\\"description\\\": ${cutEncode(v: description, max: 15000)},\n\\\"responders\\\": ${respondersToJSON(v: responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v: visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v: actions))},\n\\\"tags\\\": ${string(v: json.encode(v: tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v: entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v: priority, max: 2)}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 						Start: ast.Position{
 							Column: 13,
-							Line:   23,
+							Line:   24,
 						},
 					},
 				},
@@ -299,13 +299,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   47,
+								Line:   51,
 							},
 							File:   "opsgenie.flux",
-							Source: "{\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey\n    }\n    cutEncode = (v, max, defV = \"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n        return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v:message,max:130)},\n\\\"alias\\\": ${cutEncode(v:alias,max:512,defV: message)},\n\\\"description\\\": ${cutEncode(v:description,max:15000)},\n\\\"responders\\\": ${respondersToJSON(v:responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v:visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v:actions))},\n\\\"tags\\\": ${string(v: json.encode(v:tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v:entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v:priority, max: 2)}\n}\"\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
+							Source: "{\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey,\n    }\n    cutEncode = (v, max, defV=\"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n\n        return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))\n    }\n    body = \"{\n\\\"message\\\": ${cutEncode(v: message, max: 130)},\n\\\"alias\\\": ${cutEncode(v: alias, max: 512, defV: message)},\n\\\"description\\\": ${cutEncode(v: description, max: 15000)},\n\\\"responders\\\": ${respondersToJSON(v: responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v: visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v: actions))},\n\\\"tags\\\": ${string(v: json.encode(v: tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v: entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v: priority, max: 2)}\n}\"\n\n    return http.post(headers: headers, url: url, data: bytes(v: body))\n}",
 							Start: ast.Position{
 								Column: 192,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -316,13 +316,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   27,
+									Line:   28,
 								},
 								File:   "opsgenie.flux",
-								Source: "headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey\n    }",
+								Source: "headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey,\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   24,
+									Line:   25,
 								},
 							},
 						},
@@ -333,13 +333,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   24,
+										Line:   25,
 									},
 									File:   "opsgenie.flux",
 									Source: "headers",
 									Start: ast.Position{
 										Column: 5,
-										Line:   24,
+										Line:   25,
 									},
 								},
 							},
@@ -352,13 +352,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   27,
+										Line:   28,
 									},
 									File:   "opsgenie.flux",
-									Source: "{\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey\n    }",
+									Source: "{\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": \"GenieKey \" + apiKey,\n    }",
 									Start: ast.Position{
 										Column: 15,
-										Line:   24,
+										Line:   25,
 									},
 								},
 							},
@@ -370,13 +370,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 58,
-											Line:   25,
+											Line:   26,
 										},
 										File:   "opsgenie.flux",
 										Source: "\"Content-Type\": \"application/json; charset=utf-8\"",
 										Start: ast.Position{
 											Column: 9,
-											Line:   25,
+											Line:   26,
 										},
 									},
 								},
@@ -388,13 +388,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   25,
+												Line:   26,
 											},
 											File:   "opsgenie.flux",
 											Source: "\"Content-Type\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   25,
+												Line:   26,
 											},
 										},
 									},
@@ -408,13 +408,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 58,
-												Line:   25,
+												Line:   26,
 											},
 											File:   "opsgenie.flux",
 											Source: "\"application/json; charset=utf-8\"",
 											Start: ast.Position{
 												Column: 25,
-												Line:   25,
+												Line:   26,
 											},
 										},
 									},
@@ -427,13 +427,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   26,
+											Line:   27,
 										},
 										File:   "opsgenie.flux",
 										Source: "\"Authorization\": \"GenieKey \" + apiKey",
 										Start: ast.Position{
 											Column: 9,
-											Line:   26,
+											Line:   27,
 										},
 									},
 								},
@@ -445,13 +445,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   26,
+												Line:   27,
 											},
 											File:   "opsgenie.flux",
 											Source: "\"Authorization\"",
 											Start: ast.Position{
 												Column: 9,
-												Line:   26,
+												Line:   27,
 											},
 										},
 									},
@@ -465,13 +465,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   26,
+												Line:   27,
 											},
 											File:   "opsgenie.flux",
 											Source: "\"GenieKey \" + apiKey",
 											Start: ast.Position{
 												Column: 26,
-												Line:   26,
+												Line:   27,
 											},
 										},
 									},
@@ -482,13 +482,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
-													Line:   26,
+													Line:   27,
 												},
 												File:   "opsgenie.flux",
 												Source: "\"GenieKey \"",
 												Start: ast.Position{
 													Column: 26,
-													Line:   26,
+													Line:   27,
 												},
 											},
 										},
@@ -502,13 +502,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   26,
+													Line:   27,
 												},
 												File:   "opsgenie.flux",
 												Source: "apiKey",
 												Start: ast.Position{
 													Column: 40,
-													Line:   26,
+													Line:   27,
 												},
 											},
 										},
@@ -526,13 +526,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   33,
+									Line:   36,
 								},
 								File:   "opsgenie.flux",
-								Source: "cutEncode = (v, max, defV = \"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n        return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))\n    }",
+								Source: "cutEncode = (v, max, defV=\"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n\n        return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))\n    }",
 								Start: ast.Position{
 									Column: 5,
-									Line:   28,
+									Line:   29,
 								},
 							},
 						},
@@ -543,13 +543,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   28,
+										Line:   29,
 									},
 									File:   "opsgenie.flux",
 									Source: "cutEncode",
 									Start: ast.Position{
 										Column: 5,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -563,13 +563,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 6,
-										Line:   33,
+										Line:   36,
 									},
 									File:   "opsgenie.flux",
-									Source: "(v, max, defV = \"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n        return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))\n    }",
+									Source: "(v, max, defV=\"\") => {\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n\n        return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))\n    }",
 									Start: ast.Position{
 										Column: 17,
-										Line:   28,
+										Line:   29,
 									},
 								},
 							},
@@ -580,13 +580,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 6,
-											Line:   33,
+											Line:   36,
 										},
 										File:   "opsgenie.flux",
-										Source: "{\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n        return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))\n    }",
+										Source: "{\n        v2 = if strings.strlen(v: v) != 0 then v else defV\n\n        return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))\n    }",
 										Start: ast.Position{
-											Column: 40,
-											Line:   28,
+											Column: 38,
+											Line:   29,
 										},
 									},
 								},
@@ -597,13 +597,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 59,
-												Line:   29,
+												Line:   30,
 											},
 											File:   "opsgenie.flux",
 											Source: "v2 = if strings.strlen(v: v) != 0 then v else defV",
 											Start: ast.Position{
 												Column: 9,
-												Line:   29,
+												Line:   30,
 											},
 										},
 									},
@@ -614,13 +614,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 11,
-													Line:   29,
+													Line:   30,
 												},
 												File:   "opsgenie.flux",
 												Source: "v2",
 												Start: ast.Position{
 													Column: 9,
-													Line:   29,
+													Line:   30,
 												},
 											},
 										},
@@ -634,13 +634,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 59,
-														Line:   29,
+														Line:   30,
 													},
 													File:   "opsgenie.flux",
 													Source: "defV",
 													Start: ast.Position{
 														Column: 55,
-														Line:   29,
+														Line:   30,
 													},
 												},
 											},
@@ -652,13 +652,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 59,
-													Line:   29,
+													Line:   30,
 												},
 												File:   "opsgenie.flux",
 												Source: "if strings.strlen(v: v) != 0 then v else defV",
 												Start: ast.Position{
 													Column: 14,
-													Line:   29,
+													Line:   30,
 												},
 											},
 										},
@@ -669,13 +669,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   29,
+														Line:   30,
 													},
 													File:   "opsgenie.flux",
 													Source: "v",
 													Start: ast.Position{
 														Column: 48,
-														Line:   29,
+														Line:   30,
 													},
 												},
 											},
@@ -688,13 +688,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 42,
-														Line:   29,
+														Line:   30,
 													},
 													File:   "opsgenie.flux",
 													Source: "strings.strlen(v: v) != 0",
 													Start: ast.Position{
 														Column: 17,
-														Line:   29,
+														Line:   30,
 													},
 												},
 											},
@@ -706,13 +706,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 36,
-																Line:   29,
+																Line:   30,
 															},
 															File:   "opsgenie.flux",
 															Source: "v: v",
 															Start: ast.Position{
 																Column: 32,
-																Line:   29,
+																Line:   30,
 															},
 														},
 													},
@@ -724,13 +724,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 36,
-																	Line:   29,
+																	Line:   30,
 																},
 																File:   "opsgenie.flux",
 																Source: "v: v",
 																Start: ast.Position{
 																	Column: 32,
-																	Line:   29,
+																	Line:   30,
 																},
 															},
 														},
@@ -742,13 +742,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 33,
-																		Line:   29,
+																		Line:   30,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 32,
-																		Line:   29,
+																		Line:   30,
 																	},
 																},
 															},
@@ -762,13 +762,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 36,
-																		Line:   29,
+																		Line:   30,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 35,
-																		Line:   29,
+																		Line:   30,
 																	},
 																},
 															},
@@ -784,13 +784,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   29,
+															Line:   30,
 														},
 														File:   "opsgenie.flux",
 														Source: "strings.strlen(v: v)",
 														Start: ast.Position{
 															Column: 17,
-															Line:   29,
+															Line:   30,
 														},
 													},
 												},
@@ -801,13 +801,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 31,
-																Line:   29,
+																Line:   30,
 															},
 															File:   "opsgenie.flux",
 															Source: "strings.strlen",
 															Start: ast.Position{
 																Column: 17,
-																Line:   29,
+																Line:   30,
 															},
 														},
 													},
@@ -819,13 +819,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 24,
-																	Line:   29,
+																	Line:   30,
 																},
 																File:   "opsgenie.flux",
 																Source: "strings",
 																Start: ast.Position{
 																	Column: 17,
-																	Line:   29,
+																	Line:   30,
 																},
 															},
 														},
@@ -838,13 +838,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 31,
-																	Line:   29,
+																	Line:   30,
 																},
 																File:   "opsgenie.flux",
 																Source: "strlen",
 																Start: ast.Position{
 																	Column: 25,
-																	Line:   29,
+																	Line:   30,
 																},
 															},
 														},
@@ -863,13 +863,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 42,
-															Line:   29,
+															Line:   30,
 														},
 														File:   "opsgenie.flux",
 														Source: "0",
 														Start: ast.Position{
 															Column: 41,
-															Line:   29,
+															Line:   30,
 														},
 													},
 												},
@@ -889,14 +889,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 49,
-															Line:   32,
+															Column: 41,
+															Line:   35,
 														},
 														File:   "opsgenie.flux",
-														Source: "v: json.encode(v:v2)",
+														Source: "v: json.encode(v: v2)",
 														Start: ast.Position{
-															Column: 29,
-															Line:   32,
+															Column: 20,
+															Line:   35,
 														},
 													},
 												},
@@ -907,14 +907,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 49,
-																Line:   32,
+																Column: 41,
+																Line:   35,
 															},
 															File:   "opsgenie.flux",
-															Source: "v: json.encode(v:v2)",
+															Source: "v: json.encode(v: v2)",
 															Start: ast.Position{
-																Column: 29,
-																Line:   32,
+																Column: 20,
+																Line:   35,
 															},
 														},
 													},
@@ -925,14 +925,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 30,
-																	Line:   32,
+																	Column: 21,
+																	Line:   35,
 																},
 																File:   "opsgenie.flux",
 																Source: "v",
 																Start: ast.Position{
-																	Column: 29,
-																	Line:   32,
+																	Column: 20,
+																	Line:   35,
 																},
 															},
 														},
@@ -946,14 +946,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 48,
-																		Line:   32,
+																		Column: 40,
+																		Line:   35,
 																	},
 																	File:   "opsgenie.flux",
-																	Source: "v:v2",
+																	Source: "v: v2",
 																	Start: ast.Position{
-																		Column: 44,
-																		Line:   32,
+																		Column: 35,
+																		Line:   35,
 																	},
 																},
 															},
@@ -964,14 +964,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 48,
-																			Line:   32,
+																			Column: 40,
+																			Line:   35,
 																		},
 																		File:   "opsgenie.flux",
-																		Source: "v:v2",
+																		Source: "v: v2",
 																		Start: ast.Position{
-																			Column: 44,
-																			Line:   32,
+																			Column: 35,
+																			Line:   35,
 																		},
 																	},
 																},
@@ -982,14 +982,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   32,
+																				Column: 36,
+																				Line:   35,
 																			},
 																			File:   "opsgenie.flux",
 																			Source: "v",
 																			Start: ast.Position{
-																				Column: 44,
-																				Line:   32,
+																				Column: 35,
+																				Line:   35,
 																			},
 																		},
 																	},
@@ -1002,14 +1002,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 48,
-																				Line:   32,
+																				Column: 40,
+																				Line:   35,
 																			},
 																			File:   "opsgenie.flux",
 																			Source: "v2",
 																			Start: ast.Position{
-																				Column: 46,
-																				Line:   32,
+																				Column: 38,
+																				Line:   35,
 																			},
 																		},
 																	},
@@ -1024,14 +1024,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 49,
-																	Line:   32,
+																	Column: 41,
+																	Line:   35,
 																},
 																File:   "opsgenie.flux",
-																Source: "json.encode(v:v2)",
+																Source: "json.encode(v: v2)",
 																Start: ast.Position{
-																	Column: 32,
-																	Line:   32,
+																	Column: 23,
+																	Line:   35,
 																},
 															},
 														},
@@ -1041,14 +1041,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 43,
-																		Line:   32,
+																		Column: 34,
+																		Line:   35,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "json.encode",
 																	Start: ast.Position{
-																		Column: 32,
-																		Line:   32,
+																		Column: 23,
+																		Line:   35,
 																	},
 																},
 															},
@@ -1059,14 +1059,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 36,
-																			Line:   32,
+																			Column: 27,
+																			Line:   35,
 																		},
 																		File:   "opsgenie.flux",
 																		Source: "json",
 																		Start: ast.Position{
-																			Column: 32,
-																			Line:   32,
+																			Column: 23,
+																			Line:   35,
 																		},
 																	},
 																},
@@ -1078,14 +1078,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 43,
-																			Line:   32,
+																			Column: 34,
+																			Line:   35,
 																		},
 																		File:   "opsgenie.flux",
 																		Source: "encode",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   32,
+																			Column: 28,
+																			Line:   35,
 																		},
 																	},
 																},
@@ -1105,14 +1105,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 50,
-														Line:   32,
+														Column: 42,
+														Line:   35,
 													},
 													File:   "opsgenie.flux",
-													Source: "string(v: json.encode(v:v2))",
+													Source: "string(v: json.encode(v: v2))",
 													Start: ast.Position{
-														Column: 22,
-														Line:   32,
+														Column: 13,
+														Line:   35,
 													},
 												},
 											},
@@ -1122,14 +1122,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
-															Line:   32,
+															Column: 19,
+															Line:   35,
 														},
 														File:   "opsgenie.flux",
 														Source: "string",
 														Start: ast.Position{
-															Column: 22,
-															Line:   32,
+															Column: 13,
+															Line:   35,
 														},
 													},
 												},
@@ -1143,14 +1143,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 50,
-													Line:   32,
+													Column: 42,
+													Line:   35,
 												},
 												File:   "opsgenie.flux",
-												Source: "if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))",
+												Source: "if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))",
 												Start: ast.Position{
 													Column: 16,
-													Line:   30,
+													Line:   32,
 												},
 											},
 										},
@@ -1161,14 +1161,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 97,
-															Line:   31,
+															Column: 88,
+															Line:   33,
 														},
 														File:   "opsgenie.flux",
 														Source: "v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\")",
 														Start: ast.Position{
-															Column: 29,
-															Line:   31,
+															Column: 20,
+															Line:   33,
 														},
 													},
 												},
@@ -1179,14 +1179,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 97,
-																Line:   31,
+																Column: 88,
+																Line:   33,
 															},
 															File:   "opsgenie.flux",
 															Source: "v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\")",
 															Start: ast.Position{
-																Column: 29,
-																Line:   31,
+																Column: 20,
+																Line:   33,
 															},
 														},
 													},
@@ -1197,14 +1197,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 30,
-																	Line:   31,
+																	Column: 21,
+																	Line:   33,
 																},
 																File:   "opsgenie.flux",
 																Source: "v",
 																Start: ast.Position{
-																	Column: 29,
-																	Line:   31,
+																	Column: 20,
+																	Line:   33,
 																},
 															},
 														},
@@ -1218,14 +1218,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 96,
-																		Line:   31,
+																		Column: 87,
+																		Line:   33,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "v: \"${strings.substring(v: v2, start: 0, end: max)}\"",
 																	Start: ast.Position{
-																		Column: 44,
-																		Line:   31,
+																		Column: 35,
+																		Line:   33,
 																	},
 																},
 															},
@@ -1236,14 +1236,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 96,
-																			Line:   31,
+																			Column: 87,
+																			Line:   33,
 																		},
 																		File:   "opsgenie.flux",
 																		Source: "v: \"${strings.substring(v: v2, start: 0, end: max)}\"",
 																		Start: ast.Position{
-																			Column: 44,
-																			Line:   31,
+																			Column: 35,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -1254,14 +1254,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   31,
+																				Column: 36,
+																				Line:   33,
 																			},
 																			File:   "opsgenie.flux",
 																			Source: "v",
 																			Start: ast.Position{
-																				Column: 44,
-																				Line:   31,
+																				Column: 35,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -1274,14 +1274,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 96,
-																				Line:   31,
+																				Column: 87,
+																				Line:   33,
 																			},
 																			File:   "opsgenie.flux",
 																			Source: "\"${strings.substring(v: v2, start: 0, end: max)}\"",
 																			Start: ast.Position{
-																				Column: 47,
-																				Line:   31,
+																				Column: 38,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -1291,14 +1291,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 95,
-																					Line:   31,
+																					Column: 86,
+																					Line:   33,
 																				},
 																				File:   "opsgenie.flux",
 																				Source: "${strings.substring(v: v2, start: 0, end: max)}",
 																				Start: ast.Position{
-																					Column: 48,
-																					Line:   31,
+																					Column: 39,
+																					Line:   33,
 																				},
 																			},
 																		},
@@ -1309,14 +1309,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 93,
-																							Line:   31,
+																							Column: 84,
+																							Line:   33,
 																						},
 																						File:   "opsgenie.flux",
 																						Source: "v: v2, start: 0, end: max",
 																						Start: ast.Position{
-																							Column: 68,
-																							Line:   31,
+																							Column: 59,
+																							Line:   33,
 																						},
 																					},
 																				},
@@ -1327,14 +1327,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 73,
-																								Line:   31,
+																								Column: 64,
+																								Line:   33,
 																							},
 																							File:   "opsgenie.flux",
 																							Source: "v: v2",
 																							Start: ast.Position{
-																								Column: 68,
-																								Line:   31,
+																								Column: 59,
+																								Line:   33,
 																							},
 																						},
 																					},
@@ -1345,14 +1345,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 69,
-																									Line:   31,
+																									Column: 60,
+																									Line:   33,
 																								},
 																								File:   "opsgenie.flux",
 																								Source: "v",
 																								Start: ast.Position{
-																									Column: 68,
-																									Line:   31,
+																									Column: 59,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -1365,14 +1365,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 73,
-																									Line:   31,
+																									Column: 64,
+																									Line:   33,
 																								},
 																								File:   "opsgenie.flux",
 																								Source: "v2",
 																								Start: ast.Position{
-																									Column: 71,
-																									Line:   31,
+																									Column: 62,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -1384,14 +1384,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 83,
-																								Line:   31,
+																								Column: 74,
+																								Line:   33,
 																							},
 																							File:   "opsgenie.flux",
 																							Source: "start: 0",
 																							Start: ast.Position{
-																								Column: 75,
-																								Line:   31,
+																								Column: 66,
+																								Line:   33,
 																							},
 																						},
 																					},
@@ -1402,14 +1402,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 80,
-																									Line:   31,
+																									Column: 71,
+																									Line:   33,
 																								},
 																								File:   "opsgenie.flux",
 																								Source: "start",
 																								Start: ast.Position{
-																									Column: 75,
-																									Line:   31,
+																									Column: 66,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -1422,14 +1422,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 83,
-																									Line:   31,
+																									Column: 74,
+																									Line:   33,
 																								},
 																								File:   "opsgenie.flux",
 																								Source: "0",
 																								Start: ast.Position{
-																									Column: 82,
-																									Line:   31,
+																									Column: 73,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -1441,14 +1441,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 93,
-																								Line:   31,
+																								Column: 84,
+																								Line:   33,
 																							},
 																							File:   "opsgenie.flux",
 																							Source: "end: max",
 																							Start: ast.Position{
-																								Column: 85,
-																								Line:   31,
+																								Column: 76,
+																								Line:   33,
 																							},
 																						},
 																					},
@@ -1459,14 +1459,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 88,
-																									Line:   31,
+																									Column: 79,
+																									Line:   33,
 																								},
 																								File:   "opsgenie.flux",
 																								Source: "end",
 																								Start: ast.Position{
-																									Column: 85,
-																									Line:   31,
+																									Column: 76,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -1479,14 +1479,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 93,
-																									Line:   31,
+																									Column: 84,
+																									Line:   33,
 																								},
 																								File:   "opsgenie.flux",
 																								Source: "max",
 																								Start: ast.Position{
-																									Column: 90,
-																									Line:   31,
+																									Column: 81,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -1501,14 +1501,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 94,
-																						Line:   31,
+																						Column: 85,
+																						Line:   33,
 																					},
 																					File:   "opsgenie.flux",
 																					Source: "strings.substring(v: v2, start: 0, end: max)",
 																					Start: ast.Position{
-																						Column: 50,
-																						Line:   31,
+																						Column: 41,
+																						Line:   33,
 																					},
 																				},
 																			},
@@ -1518,14 +1518,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 67,
-																							Line:   31,
+																							Column: 58,
+																							Line:   33,
 																						},
 																						File:   "opsgenie.flux",
 																						Source: "strings.substring",
 																						Start: ast.Position{
-																							Column: 50,
-																							Line:   31,
+																							Column: 41,
+																							Line:   33,
 																						},
 																					},
 																				},
@@ -1536,14 +1536,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 57,
-																								Line:   31,
+																								Column: 48,
+																								Line:   33,
 																							},
 																							File:   "opsgenie.flux",
 																							Source: "strings",
 																							Start: ast.Position{
-																								Column: 50,
-																								Line:   31,
+																								Column: 41,
+																								Line:   33,
 																							},
 																						},
 																					},
@@ -1555,14 +1555,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 67,
-																								Line:   31,
+																								Column: 58,
+																								Line:   33,
 																							},
 																							File:   "opsgenie.flux",
 																							Source: "substring",
 																							Start: ast.Position{
-																								Column: 58,
-																								Line:   31,
+																								Column: 49,
+																								Line:   33,
 																							},
 																						},
 																					},
@@ -1584,14 +1584,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 97,
-																	Line:   31,
+																	Column: 88,
+																	Line:   33,
 																},
 																File:   "opsgenie.flux",
 																Source: "json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\")",
 																Start: ast.Position{
-																	Column: 32,
-																	Line:   31,
+																	Column: 23,
+																	Line:   33,
 																},
 															},
 														},
@@ -1601,14 +1601,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 43,
-																		Line:   31,
+																		Column: 34,
+																		Line:   33,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "json.encode",
 																	Start: ast.Position{
-																		Column: 32,
-																		Line:   31,
+																		Column: 23,
+																		Line:   33,
 																	},
 																},
 															},
@@ -1619,14 +1619,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 36,
-																			Line:   31,
+																			Column: 27,
+																			Line:   33,
 																		},
 																		File:   "opsgenie.flux",
 																		Source: "json",
 																		Start: ast.Position{
-																			Column: 32,
-																			Line:   31,
+																			Column: 23,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -1638,14 +1638,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 43,
-																			Line:   31,
+																			Column: 34,
+																			Line:   33,
 																		},
 																		File:   "opsgenie.flux",
 																		Source: "encode",
 																		Start: ast.Position{
-																			Column: 37,
-																			Line:   31,
+																			Column: 28,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -1665,14 +1665,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 98,
-														Line:   31,
+														Column: 89,
+														Line:   33,
 													},
 													File:   "opsgenie.flux",
 													Source: "string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))",
 													Start: ast.Position{
-														Column: 22,
-														Line:   31,
+														Column: 13,
+														Line:   33,
 													},
 												},
 											},
@@ -1682,14 +1682,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 28,
-															Line:   31,
+															Column: 19,
+															Line:   33,
 														},
 														File:   "opsgenie.flux",
 														Source: "string",
 														Start: ast.Position{
-															Column: 22,
-															Line:   31,
+															Column: 13,
+															Line:   33,
 														},
 													},
 												},
@@ -1705,13 +1705,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 46,
-														Line:   30,
+														Line:   32,
 													},
 													File:   "opsgenie.flux",
 													Source: "strings.strlen(v: v2) > max",
 													Start: ast.Position{
 														Column: 19,
-														Line:   30,
+														Line:   32,
 													},
 												},
 											},
@@ -1723,13 +1723,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 39,
-																Line:   30,
+																Line:   32,
 															},
 															File:   "opsgenie.flux",
 															Source: "v: v2",
 															Start: ast.Position{
 																Column: 34,
-																Line:   30,
+																Line:   32,
 															},
 														},
 													},
@@ -1741,13 +1741,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 39,
-																	Line:   30,
+																	Line:   32,
 																},
 																File:   "opsgenie.flux",
 																Source: "v: v2",
 																Start: ast.Position{
 																	Column: 34,
-																	Line:   30,
+																	Line:   32,
 																},
 															},
 														},
@@ -1759,13 +1759,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 35,
-																		Line:   30,
+																		Line:   32,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 34,
-																		Line:   30,
+																		Line:   32,
 																	},
 																},
 															},
@@ -1779,13 +1779,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 39,
-																		Line:   30,
+																		Line:   32,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "v2",
 																	Start: ast.Position{
 																		Column: 37,
-																		Line:   30,
+																		Line:   32,
 																	},
 																},
 															},
@@ -1801,13 +1801,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 40,
-															Line:   30,
+															Line:   32,
 														},
 														File:   "opsgenie.flux",
 														Source: "strings.strlen(v: v2)",
 														Start: ast.Position{
 															Column: 19,
-															Line:   30,
+															Line:   32,
 														},
 													},
 												},
@@ -1818,13 +1818,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 33,
-																Line:   30,
+																Line:   32,
 															},
 															File:   "opsgenie.flux",
 															Source: "strings.strlen",
 															Start: ast.Position{
 																Column: 19,
-																Line:   30,
+																Line:   32,
 															},
 														},
 													},
@@ -1836,13 +1836,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 26,
-																	Line:   30,
+																	Line:   32,
 																},
 																File:   "opsgenie.flux",
 																Source: "strings",
 																Start: ast.Position{
 																	Column: 19,
-																	Line:   30,
+																	Line:   32,
 																},
 															},
 														},
@@ -1855,13 +1855,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 33,
-																	Line:   30,
+																	Line:   32,
 																},
 																File:   "opsgenie.flux",
 																Source: "strlen",
 																Start: ast.Position{
 																	Column: 27,
-																	Line:   30,
+																	Line:   32,
 																},
 															},
 														},
@@ -1880,13 +1880,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 46,
-															Line:   30,
+															Line:   32,
 														},
 														File:   "opsgenie.flux",
 														Source: "max",
 														Start: ast.Position{
 															Column: 43,
-															Line:   30,
+															Line:   32,
 														},
 													},
 												},
@@ -1902,14 +1902,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 50,
-												Line:   32,
+												Column: 42,
+												Line:   35,
 											},
 											File:   "opsgenie.flux",
-											Source: "return if strings.strlen(v: v2) > max \n                then string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\n                else string(v: json.encode(v:v2))",
+											Source: "return if strings.strlen(v: v2) > max then\n            string(v: json.encode(v: \"${strings.substring(v: v2, start: 0, end: max)}\"))\nelse\n            string(v: json.encode(v: v2))",
 											Start: ast.Position{
 												Column: 9,
-												Line:   30,
+												Line:   32,
 											},
 										},
 									},
@@ -1925,13 +1925,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   28,
+											Line:   29,
 										},
 										File:   "opsgenie.flux",
 										Source: "v",
 										Start: ast.Position{
 											Column: 18,
-											Line:   28,
+											Line:   29,
 										},
 									},
 								},
@@ -1943,13 +1943,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   28,
+												Line:   29,
 											},
 											File:   "opsgenie.flux",
 											Source: "v",
 											Start: ast.Position{
 												Column: 18,
-												Line:   28,
+												Line:   29,
 											},
 										},
 									},
@@ -1964,13 +1964,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   28,
+											Line:   29,
 										},
 										File:   "opsgenie.flux",
 										Source: "max",
 										Start: ast.Position{
 											Column: 21,
-											Line:   28,
+											Line:   29,
 										},
 									},
 								},
@@ -1982,13 +1982,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   28,
+												Line:   29,
 											},
 											File:   "opsgenie.flux",
 											Source: "max",
 											Start: ast.Position{
 												Column: 21,
-												Line:   28,
+												Line:   29,
 											},
 										},
 									},
@@ -2002,14 +2002,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 35,
-											Line:   28,
+											Column: 33,
+											Line:   29,
 										},
 										File:   "opsgenie.flux",
-										Source: "defV = \"\"",
+										Source: "defV=\"\"",
 										Start: ast.Position{
 											Column: 26,
-											Line:   28,
+											Line:   29,
 										},
 									},
 								},
@@ -2021,13 +2021,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 30,
-												Line:   28,
+												Line:   29,
 											},
 											File:   "opsgenie.flux",
 											Source: "defV",
 											Start: ast.Position{
 												Column: 26,
-												Line:   28,
+												Line:   29,
 											},
 										},
 									},
@@ -2040,14 +2040,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 35,
-												Line:   28,
+												Column: 33,
+												Line:   29,
 											},
 											File:   "opsgenie.flux",
 											Source: "\"\"",
 											Start: ast.Position{
-												Column: 33,
-												Line:   28,
+												Column: 31,
+												Line:   29,
 											},
 										},
 									},
@@ -2063,13 +2063,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   45,
+									Line:   48,
 								},
 								File:   "opsgenie.flux",
-								Source: "body = \"{\n\\\"message\\\": ${cutEncode(v:message,max:130)},\n\\\"alias\\\": ${cutEncode(v:alias,max:512,defV: message)},\n\\\"description\\\": ${cutEncode(v:description,max:15000)},\n\\\"responders\\\": ${respondersToJSON(v:responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v:visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v:actions))},\n\\\"tags\\\": ${string(v: json.encode(v:tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v:entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v:priority, max: 2)}\n}\"",
+								Source: "body = \"{\n\\\"message\\\": ${cutEncode(v: message, max: 130)},\n\\\"alias\\\": ${cutEncode(v: alias, max: 512, defV: message)},\n\\\"description\\\": ${cutEncode(v: description, max: 15000)},\n\\\"responders\\\": ${respondersToJSON(v: responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v: visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v: actions))},\n\\\"tags\\\": ${string(v: json.encode(v: tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v: entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v: priority, max: 2)}\n}\"",
 								Start: ast.Position{
 									Column: 5,
-									Line:   34,
+									Line:   37,
 								},
 							},
 						},
@@ -2080,13 +2080,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   34,
+										Line:   37,
 									},
 									File:   "opsgenie.flux",
 									Source: "body",
 									Start: ast.Position{
 										Column: 5,
-										Line:   34,
+										Line:   37,
 									},
 								},
 							},
@@ -2099,13 +2099,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 3,
-										Line:   45,
+										Line:   48,
 									},
 									File:   "opsgenie.flux",
-									Source: "\"{\n\\\"message\\\": ${cutEncode(v:message,max:130)},\n\\\"alias\\\": ${cutEncode(v:alias,max:512,defV: message)},\n\\\"description\\\": ${cutEncode(v:description,max:15000)},\n\\\"responders\\\": ${respondersToJSON(v:responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v:visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v:actions))},\n\\\"tags\\\": ${string(v: json.encode(v:tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v:entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v:priority, max: 2)}\n}\"",
+									Source: "\"{\n\\\"message\\\": ${cutEncode(v: message, max: 130)},\n\\\"alias\\\": ${cutEncode(v: alias, max: 512, defV: message)},\n\\\"description\\\": ${cutEncode(v: description, max: 15000)},\n\\\"responders\\\": ${respondersToJSON(v: responders)},\n\\\"visibleTo\\\": ${respondersToJSON(v: visibleTo)},\n\\\"actions\\\": ${string(v: json.encode(v: actions))},\n\\\"tags\\\": ${string(v: json.encode(v: tags))},\n\\\"details\\\": ${details},\n\\\"entity\\\": ${cutEncode(v: entity, max: 512)},\n\\\"priority\\\": ${cutEncode(v: priority, max: 2)}\n}\"",
 									Start: ast.Position{
 										Column: 12,
-										Line:   34,
+										Line:   37,
 									},
 								},
 							},
@@ -2116,13 +2116,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   35,
+											Line:   38,
 										},
 										File:   "opsgenie.flux",
 										Source: "{\n\\\"message\\\": ",
 										Start: ast.Position{
 											Column: 13,
-											Line:   34,
+											Line:   37,
 										},
 									},
 								},
@@ -2133,14 +2133,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 45,
-											Line:   35,
+											Column: 48,
+											Line:   38,
 										},
 										File:   "opsgenie.flux",
-										Source: "${cutEncode(v:message,max:130)}",
+										Source: "${cutEncode(v: message, max: 130)}",
 										Start: ast.Position{
 											Column: 14,
-											Line:   35,
+											Line:   38,
 										},
 									},
 								},
@@ -2151,14 +2151,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 43,
-													Line:   35,
+													Column: 46,
+													Line:   38,
 												},
 												File:   "opsgenie.flux",
-												Source: "v:message,max:130",
+												Source: "v: message, max: 130",
 												Start: ast.Position{
 													Column: 26,
-													Line:   35,
+													Line:   38,
 												},
 											},
 										},
@@ -2169,14 +2169,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 35,
-														Line:   35,
+														Column: 36,
+														Line:   38,
 													},
 													File:   "opsgenie.flux",
-													Source: "v:message",
+													Source: "v: message",
 													Start: ast.Position{
 														Column: 26,
-														Line:   35,
+														Line:   38,
 													},
 												},
 											},
@@ -2188,13 +2188,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
-															Line:   35,
+															Line:   38,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 26,
-															Line:   35,
+															Line:   38,
 														},
 													},
 												},
@@ -2207,14 +2207,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
-															Line:   35,
+															Column: 36,
+															Line:   38,
 														},
 														File:   "opsgenie.flux",
 														Source: "message",
 														Start: ast.Position{
-															Column: 28,
-															Line:   35,
+															Column: 29,
+															Line:   38,
 														},
 													},
 												},
@@ -2226,14 +2226,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
-														Line:   35,
+														Column: 46,
+														Line:   38,
 													},
 													File:   "opsgenie.flux",
-													Source: "max:130",
+													Source: "max: 130",
 													Start: ast.Position{
-														Column: 36,
-														Line:   35,
+														Column: 38,
+														Line:   38,
 													},
 												},
 											},
@@ -2244,14 +2244,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
-															Line:   35,
+															Column: 41,
+															Line:   38,
 														},
 														File:   "opsgenie.flux",
 														Source: "max",
 														Start: ast.Position{
-															Column: 36,
-															Line:   35,
+															Column: 38,
+															Line:   38,
 														},
 													},
 												},
@@ -2264,14 +2264,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 43,
-															Line:   35,
+															Column: 46,
+															Line:   38,
 														},
 														File:   "opsgenie.flux",
 														Source: "130",
 														Start: ast.Position{
-															Column: 40,
-															Line:   35,
+															Column: 43,
+															Line:   38,
 														},
 													},
 												},
@@ -2286,14 +2286,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
-												Line:   35,
+												Column: 47,
+												Line:   38,
 											},
 											File:   "opsgenie.flux",
-											Source: "cutEncode(v:message,max:130)",
+											Source: "cutEncode(v: message, max: 130)",
 											Start: ast.Position{
 												Column: 16,
-												Line:   35,
+												Line:   38,
 											},
 										},
 									},
@@ -2304,13 +2304,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   35,
+													Line:   38,
 												},
 												File:   "opsgenie.flux",
 												Source: "cutEncode",
 												Start: ast.Position{
 													Column: 16,
-													Line:   35,
+													Line:   38,
 												},
 											},
 										},
@@ -2326,13 +2326,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 12,
-											Line:   36,
+											Line:   39,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"alias\\\": ",
 										Start: ast.Position{
-											Column: 45,
-											Line:   35,
+											Column: 48,
+											Line:   38,
 										},
 									},
 								},
@@ -2343,14 +2343,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 55,
-											Line:   36,
+											Column: 59,
+											Line:   39,
 										},
 										File:   "opsgenie.flux",
-										Source: "${cutEncode(v:alias,max:512,defV: message)}",
+										Source: "${cutEncode(v: alias, max: 512, defV: message)}",
 										Start: ast.Position{
 											Column: 12,
-											Line:   36,
+											Line:   39,
 										},
 									},
 								},
@@ -2361,14 +2361,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 53,
-													Line:   36,
+													Column: 57,
+													Line:   39,
 												},
 												File:   "opsgenie.flux",
-												Source: "v:alias,max:512,defV: message",
+												Source: "v: alias, max: 512, defV: message",
 												Start: ast.Position{
 													Column: 24,
-													Line:   36,
+													Line:   39,
 												},
 											},
 										},
@@ -2379,14 +2379,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 31,
-														Line:   36,
+														Column: 32,
+														Line:   39,
 													},
 													File:   "opsgenie.flux",
-													Source: "v:alias",
+													Source: "v: alias",
 													Start: ast.Position{
 														Column: 24,
-														Line:   36,
+														Line:   39,
 													},
 												},
 											},
@@ -2398,13 +2398,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 25,
-															Line:   36,
+															Line:   39,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 24,
-															Line:   36,
+															Line:   39,
 														},
 													},
 												},
@@ -2417,14 +2417,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 31,
-															Line:   36,
+															Column: 32,
+															Line:   39,
 														},
 														File:   "opsgenie.flux",
 														Source: "alias",
 														Start: ast.Position{
-															Column: 26,
-															Line:   36,
+															Column: 27,
+															Line:   39,
 														},
 													},
 												},
@@ -2436,14 +2436,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 39,
-														Line:   36,
+														Column: 42,
+														Line:   39,
 													},
 													File:   "opsgenie.flux",
-													Source: "max:512",
+													Source: "max: 512",
 													Start: ast.Position{
-														Column: 32,
-														Line:   36,
+														Column: 34,
+														Line:   39,
 													},
 												},
 											},
@@ -2454,14 +2454,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 35,
-															Line:   36,
+															Column: 37,
+															Line:   39,
 														},
 														File:   "opsgenie.flux",
 														Source: "max",
 														Start: ast.Position{
-															Column: 32,
-															Line:   36,
+															Column: 34,
+															Line:   39,
 														},
 													},
 												},
@@ -2474,14 +2474,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 39,
-															Line:   36,
+															Column: 42,
+															Line:   39,
 														},
 														File:   "opsgenie.flux",
 														Source: "512",
 														Start: ast.Position{
-															Column: 36,
-															Line:   36,
+															Column: 39,
+															Line:   39,
 														},
 													},
 												},
@@ -2493,14 +2493,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 53,
-														Line:   36,
+														Column: 57,
+														Line:   39,
 													},
 													File:   "opsgenie.flux",
 													Source: "defV: message",
 													Start: ast.Position{
-														Column: 40,
-														Line:   36,
+														Column: 44,
+														Line:   39,
 													},
 												},
 											},
@@ -2511,14 +2511,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 44,
-															Line:   36,
+															Column: 48,
+															Line:   39,
 														},
 														File:   "opsgenie.flux",
 														Source: "defV",
 														Start: ast.Position{
-															Column: 40,
-															Line:   36,
+															Column: 44,
+															Line:   39,
 														},
 													},
 												},
@@ -2531,14 +2531,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 53,
-															Line:   36,
+															Column: 57,
+															Line:   39,
 														},
 														File:   "opsgenie.flux",
 														Source: "message",
 														Start: ast.Position{
-															Column: 46,
-															Line:   36,
+															Column: 50,
+															Line:   39,
 														},
 													},
 												},
@@ -2553,14 +2553,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 54,
-												Line:   36,
+												Column: 58,
+												Line:   39,
 											},
 											File:   "opsgenie.flux",
-											Source: "cutEncode(v:alias,max:512,defV: message)",
+											Source: "cutEncode(v: alias, max: 512, defV: message)",
 											Start: ast.Position{
 												Column: 14,
-												Line:   36,
+												Line:   39,
 											},
 										},
 									},
@@ -2571,13 +2571,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   36,
+													Line:   39,
 												},
 												File:   "opsgenie.flux",
 												Source: "cutEncode",
 												Start: ast.Position{
 													Column: 14,
-													Line:   36,
+													Line:   39,
 												},
 											},
 										},
@@ -2593,13 +2593,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   37,
+											Line:   40,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"description\\\": ",
 										Start: ast.Position{
-											Column: 55,
-											Line:   36,
+											Column: 59,
+											Line:   39,
 										},
 									},
 								},
@@ -2610,14 +2610,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 55,
-											Line:   37,
+											Column: 58,
+											Line:   40,
 										},
 										File:   "opsgenie.flux",
-										Source: "${cutEncode(v:description,max:15000)}",
+										Source: "${cutEncode(v: description, max: 15000)}",
 										Start: ast.Position{
 											Column: 18,
-											Line:   37,
+											Line:   40,
 										},
 									},
 								},
@@ -2628,14 +2628,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 53,
-													Line:   37,
+													Column: 56,
+													Line:   40,
 												},
 												File:   "opsgenie.flux",
-												Source: "v:description,max:15000",
+												Source: "v: description, max: 15000",
 												Start: ast.Position{
 													Column: 30,
-													Line:   37,
+													Line:   40,
 												},
 											},
 										},
@@ -2646,14 +2646,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
-														Line:   37,
+														Column: 44,
+														Line:   40,
 													},
 													File:   "opsgenie.flux",
-													Source: "v:description",
+													Source: "v: description",
 													Start: ast.Position{
 														Column: 30,
-														Line:   37,
+														Line:   40,
 													},
 												},
 											},
@@ -2665,13 +2665,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 31,
-															Line:   37,
+															Line:   40,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 30,
-															Line:   37,
+															Line:   40,
 														},
 													},
 												},
@@ -2684,14 +2684,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 43,
-															Line:   37,
+															Column: 44,
+															Line:   40,
 														},
 														File:   "opsgenie.flux",
 														Source: "description",
 														Start: ast.Position{
-															Column: 32,
-															Line:   37,
+															Column: 33,
+															Line:   40,
 														},
 													},
 												},
@@ -2703,14 +2703,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 53,
-														Line:   37,
+														Column: 56,
+														Line:   40,
 													},
 													File:   "opsgenie.flux",
-													Source: "max:15000",
+													Source: "max: 15000",
 													Start: ast.Position{
-														Column: 44,
-														Line:   37,
+														Column: 46,
+														Line:   40,
 													},
 												},
 											},
@@ -2721,14 +2721,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 47,
-															Line:   37,
+															Column: 49,
+															Line:   40,
 														},
 														File:   "opsgenie.flux",
 														Source: "max",
 														Start: ast.Position{
-															Column: 44,
-															Line:   37,
+															Column: 46,
+															Line:   40,
 														},
 													},
 												},
@@ -2741,14 +2741,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 53,
-															Line:   37,
+															Column: 56,
+															Line:   40,
 														},
 														File:   "opsgenie.flux",
 														Source: "15000",
 														Start: ast.Position{
-															Column: 48,
-															Line:   37,
+															Column: 51,
+															Line:   40,
 														},
 													},
 												},
@@ -2763,14 +2763,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 54,
-												Line:   37,
+												Column: 57,
+												Line:   40,
 											},
 											File:   "opsgenie.flux",
-											Source: "cutEncode(v:description,max:15000)",
+											Source: "cutEncode(v: description, max: 15000)",
 											Start: ast.Position{
 												Column: 20,
-												Line:   37,
+												Line:   40,
 											},
 										},
 									},
@@ -2781,13 +2781,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   37,
+													Line:   40,
 												},
 												File:   "opsgenie.flux",
 												Source: "cutEncode",
 												Start: ast.Position{
 													Column: 20,
-													Line:   37,
+													Line:   40,
 												},
 											},
 										},
@@ -2803,13 +2803,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 17,
-											Line:   38,
+											Line:   41,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"responders\\\": ",
 										Start: ast.Position{
-											Column: 55,
-											Line:   37,
+											Column: 58,
+											Line:   40,
 										},
 									},
 								},
@@ -2820,14 +2820,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 50,
-											Line:   38,
+											Column: 51,
+											Line:   41,
 										},
 										File:   "opsgenie.flux",
-										Source: "${respondersToJSON(v:responders)}",
+										Source: "${respondersToJSON(v: responders)}",
 										Start: ast.Position{
 											Column: 17,
-											Line:   38,
+											Line:   41,
 										},
 									},
 								},
@@ -2838,14 +2838,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 48,
-													Line:   38,
+													Column: 49,
+													Line:   41,
 												},
 												File:   "opsgenie.flux",
-												Source: "v:responders",
+												Source: "v: responders",
 												Start: ast.Position{
 													Column: 36,
-													Line:   38,
+													Line:   41,
 												},
 											},
 										},
@@ -2856,14 +2856,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 48,
-														Line:   38,
+														Column: 49,
+														Line:   41,
 													},
 													File:   "opsgenie.flux",
-													Source: "v:responders",
+													Source: "v: responders",
 													Start: ast.Position{
 														Column: 36,
-														Line:   38,
+														Line:   41,
 													},
 												},
 											},
@@ -2875,13 +2875,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 37,
-															Line:   38,
+															Line:   41,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 36,
-															Line:   38,
+															Line:   41,
 														},
 													},
 												},
@@ -2894,14 +2894,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 48,
-															Line:   38,
+															Column: 49,
+															Line:   41,
 														},
 														File:   "opsgenie.flux",
 														Source: "responders",
 														Start: ast.Position{
-															Column: 38,
-															Line:   38,
+															Column: 39,
+															Line:   41,
 														},
 													},
 												},
@@ -2916,14 +2916,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 49,
-												Line:   38,
+												Column: 50,
+												Line:   41,
 											},
 											File:   "opsgenie.flux",
-											Source: "respondersToJSON(v:responders)",
+											Source: "respondersToJSON(v: responders)",
 											Start: ast.Position{
 												Column: 19,
-												Line:   38,
+												Line:   41,
 											},
 										},
 									},
@@ -2934,13 +2934,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   38,
+													Line:   41,
 												},
 												File:   "opsgenie.flux",
 												Source: "respondersToJSON",
 												Start: ast.Position{
 													Column: 19,
-													Line:   38,
+													Line:   41,
 												},
 											},
 										},
@@ -2956,13 +2956,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 16,
-											Line:   39,
+											Line:   42,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"visibleTo\\\": ",
 										Start: ast.Position{
-											Column: 50,
-											Line:   38,
+											Column: 51,
+											Line:   41,
 										},
 									},
 								},
@@ -2973,14 +2973,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
-											Line:   39,
+											Column: 49,
+											Line:   42,
 										},
 										File:   "opsgenie.flux",
-										Source: "${respondersToJSON(v:visibleTo)}",
+										Source: "${respondersToJSON(v: visibleTo)}",
 										Start: ast.Position{
 											Column: 16,
-											Line:   39,
+											Line:   42,
 										},
 									},
 								},
@@ -2991,14 +2991,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 46,
-													Line:   39,
+													Column: 47,
+													Line:   42,
 												},
 												File:   "opsgenie.flux",
-												Source: "v:visibleTo",
+												Source: "v: visibleTo",
 												Start: ast.Position{
 													Column: 35,
-													Line:   39,
+													Line:   42,
 												},
 											},
 										},
@@ -3009,14 +3009,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 46,
-														Line:   39,
+														Column: 47,
+														Line:   42,
 													},
 													File:   "opsgenie.flux",
-													Source: "v:visibleTo",
+													Source: "v: visibleTo",
 													Start: ast.Position{
 														Column: 35,
-														Line:   39,
+														Line:   42,
 													},
 												},
 											},
@@ -3028,13 +3028,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 36,
-															Line:   39,
+															Line:   42,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 35,
-															Line:   39,
+															Line:   42,
 														},
 													},
 												},
@@ -3047,14 +3047,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 46,
-															Line:   39,
+															Column: 47,
+															Line:   42,
 														},
 														File:   "opsgenie.flux",
 														Source: "visibleTo",
 														Start: ast.Position{
-															Column: 37,
-															Line:   39,
+															Column: 38,
+															Line:   42,
 														},
 													},
 												},
@@ -3069,14 +3069,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 47,
-												Line:   39,
+												Column: 48,
+												Line:   42,
 											},
 											File:   "opsgenie.flux",
-											Source: "respondersToJSON(v:visibleTo)",
+											Source: "respondersToJSON(v: visibleTo)",
 											Start: ast.Position{
 												Column: 18,
-												Line:   39,
+												Line:   42,
 											},
 										},
 									},
@@ -3087,13 +3087,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   39,
+													Line:   42,
 												},
 												File:   "opsgenie.flux",
 												Source: "respondersToJSON",
 												Start: ast.Position{
 													Column: 18,
-													Line:   39,
+													Line:   42,
 												},
 											},
 										},
@@ -3109,13 +3109,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   40,
+											Line:   43,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"actions\\\": ",
 										Start: ast.Position{
-											Column: 48,
-											Line:   39,
+											Column: 49,
+											Line:   42,
 										},
 									},
 								},
@@ -3126,14 +3126,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 50,
-											Line:   40,
+											Column: 51,
+											Line:   43,
 										},
 										File:   "opsgenie.flux",
-										Source: "${string(v: json.encode(v:actions))}",
+										Source: "${string(v: json.encode(v: actions))}",
 										Start: ast.Position{
 											Column: 14,
-											Line:   40,
+											Line:   43,
 										},
 									},
 								},
@@ -3144,14 +3144,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 48,
-													Line:   40,
+													Column: 49,
+													Line:   43,
 												},
 												File:   "opsgenie.flux",
-												Source: "v: json.encode(v:actions)",
+												Source: "v: json.encode(v: actions)",
 												Start: ast.Position{
 													Column: 23,
-													Line:   40,
+													Line:   43,
 												},
 											},
 										},
@@ -3162,14 +3162,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 48,
-														Line:   40,
+														Column: 49,
+														Line:   43,
 													},
 													File:   "opsgenie.flux",
-													Source: "v: json.encode(v:actions)",
+													Source: "v: json.encode(v: actions)",
 													Start: ast.Position{
 														Column: 23,
-														Line:   40,
+														Line:   43,
 													},
 												},
 											},
@@ -3181,13 +3181,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 24,
-															Line:   40,
+															Line:   43,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 23,
-															Line:   40,
+															Line:   43,
 														},
 													},
 												},
@@ -3201,14 +3201,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 47,
-																Line:   40,
+																Column: 48,
+																Line:   43,
 															},
 															File:   "opsgenie.flux",
-															Source: "v:actions",
+															Source: "v: actions",
 															Start: ast.Position{
 																Column: 38,
-																Line:   40,
+																Line:   43,
 															},
 														},
 													},
@@ -3219,14 +3219,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 47,
-																	Line:   40,
+																	Column: 48,
+																	Line:   43,
 																},
 																File:   "opsgenie.flux",
-																Source: "v:actions",
+																Source: "v: actions",
 																Start: ast.Position{
 																	Column: 38,
-																	Line:   40,
+																	Line:   43,
 																},
 															},
 														},
@@ -3238,13 +3238,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 39,
-																		Line:   40,
+																		Line:   43,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 38,
-																		Line:   40,
+																		Line:   43,
 																	},
 																},
 															},
@@ -3257,14 +3257,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 47,
-																		Line:   40,
+																		Column: 48,
+																		Line:   43,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "actions",
 																	Start: ast.Position{
-																		Column: 40,
-																		Line:   40,
+																		Column: 41,
+																		Line:   43,
 																	},
 																},
 															},
@@ -3279,14 +3279,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 48,
-															Line:   40,
+															Column: 49,
+															Line:   43,
 														},
 														File:   "opsgenie.flux",
-														Source: "json.encode(v:actions)",
+														Source: "json.encode(v: actions)",
 														Start: ast.Position{
 															Column: 26,
-															Line:   40,
+															Line:   43,
 														},
 													},
 												},
@@ -3297,13 +3297,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   40,
+																Line:   43,
 															},
 															File:   "opsgenie.flux",
 															Source: "json.encode",
 															Start: ast.Position{
 																Column: 26,
-																Line:   40,
+																Line:   43,
 															},
 														},
 													},
@@ -3315,13 +3315,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 30,
-																	Line:   40,
+																	Line:   43,
 																},
 																File:   "opsgenie.flux",
 																Source: "json",
 																Start: ast.Position{
 																	Column: 26,
-																	Line:   40,
+																	Line:   43,
 																},
 															},
 														},
@@ -3334,13 +3334,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
-																	Line:   40,
+																	Line:   43,
 																},
 																File:   "opsgenie.flux",
 																Source: "encode",
 																Start: ast.Position{
 																	Column: 31,
-																	Line:   40,
+																	Line:   43,
 																},
 															},
 														},
@@ -3360,14 +3360,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 49,
-												Line:   40,
+												Column: 50,
+												Line:   43,
 											},
 											File:   "opsgenie.flux",
-											Source: "string(v: json.encode(v:actions))",
+											Source: "string(v: json.encode(v: actions))",
 											Start: ast.Position{
 												Column: 16,
-												Line:   40,
+												Line:   43,
 											},
 										},
 									},
@@ -3378,13 +3378,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 22,
-													Line:   40,
+													Line:   43,
 												},
 												File:   "opsgenie.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 16,
-													Line:   40,
+													Line:   43,
 												},
 											},
 										},
@@ -3400,13 +3400,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 11,
-											Line:   41,
+											Line:   44,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"tags\\\": ",
 										Start: ast.Position{
-											Column: 50,
-											Line:   40,
+											Column: 51,
+											Line:   43,
 										},
 									},
 								},
@@ -3417,14 +3417,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 44,
-											Line:   41,
+											Column: 45,
+											Line:   44,
 										},
 										File:   "opsgenie.flux",
-										Source: "${string(v: json.encode(v:tags))}",
+										Source: "${string(v: json.encode(v: tags))}",
 										Start: ast.Position{
 											Column: 11,
-											Line:   41,
+											Line:   44,
 										},
 									},
 								},
@@ -3435,14 +3435,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 42,
-													Line:   41,
+													Column: 43,
+													Line:   44,
 												},
 												File:   "opsgenie.flux",
-												Source: "v: json.encode(v:tags)",
+												Source: "v: json.encode(v: tags)",
 												Start: ast.Position{
 													Column: 20,
-													Line:   41,
+													Line:   44,
 												},
 											},
 										},
@@ -3453,14 +3453,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 42,
-														Line:   41,
+														Column: 43,
+														Line:   44,
 													},
 													File:   "opsgenie.flux",
-													Source: "v: json.encode(v:tags)",
+													Source: "v: json.encode(v: tags)",
 													Start: ast.Position{
 														Column: 20,
-														Line:   41,
+														Line:   44,
 													},
 												},
 											},
@@ -3472,13 +3472,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 21,
-															Line:   41,
+															Line:   44,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 20,
-															Line:   41,
+															Line:   44,
 														},
 													},
 												},
@@ -3492,14 +3492,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 41,
-																Line:   41,
+																Column: 42,
+																Line:   44,
 															},
 															File:   "opsgenie.flux",
-															Source: "v:tags",
+															Source: "v: tags",
 															Start: ast.Position{
 																Column: 35,
-																Line:   41,
+																Line:   44,
 															},
 														},
 													},
@@ -3510,14 +3510,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 41,
-																	Line:   41,
+																	Column: 42,
+																	Line:   44,
 																},
 																File:   "opsgenie.flux",
-																Source: "v:tags",
+																Source: "v: tags",
 																Start: ast.Position{
 																	Column: 35,
-																	Line:   41,
+																	Line:   44,
 																},
 															},
 														},
@@ -3529,13 +3529,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 36,
-																		Line:   41,
+																		Line:   44,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "v",
 																	Start: ast.Position{
 																		Column: 35,
-																		Line:   41,
+																		Line:   44,
 																	},
 																},
 															},
@@ -3548,14 +3548,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 41,
-																		Line:   41,
+																		Column: 42,
+																		Line:   44,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "tags",
 																	Start: ast.Position{
-																		Column: 37,
-																		Line:   41,
+																		Column: 38,
+																		Line:   44,
 																	},
 																},
 															},
@@ -3570,14 +3570,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 42,
-															Line:   41,
+															Column: 43,
+															Line:   44,
 														},
 														File:   "opsgenie.flux",
-														Source: "json.encode(v:tags)",
+														Source: "json.encode(v: tags)",
 														Start: ast.Position{
 															Column: 23,
-															Line:   41,
+															Line:   44,
 														},
 													},
 												},
@@ -3588,13 +3588,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 34,
-																Line:   41,
+																Line:   44,
 															},
 															File:   "opsgenie.flux",
 															Source: "json.encode",
 															Start: ast.Position{
 																Column: 23,
-																Line:   41,
+																Line:   44,
 															},
 														},
 													},
@@ -3606,13 +3606,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 27,
-																	Line:   41,
+																	Line:   44,
 																},
 																File:   "opsgenie.flux",
 																Source: "json",
 																Start: ast.Position{
 																	Column: 23,
-																	Line:   41,
+																	Line:   44,
 																},
 															},
 														},
@@ -3625,13 +3625,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 34,
-																	Line:   41,
+																	Line:   44,
 																},
 																File:   "opsgenie.flux",
 																Source: "encode",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   41,
+																	Line:   44,
 																},
 															},
 														},
@@ -3651,14 +3651,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 43,
-												Line:   41,
+												Column: 44,
+												Line:   44,
 											},
 											File:   "opsgenie.flux",
-											Source: "string(v: json.encode(v:tags))",
+											Source: "string(v: json.encode(v: tags))",
 											Start: ast.Position{
 												Column: 13,
-												Line:   41,
+												Line:   44,
 											},
 										},
 									},
@@ -3669,13 +3669,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 19,
-													Line:   41,
+													Line:   44,
 												},
 												File:   "opsgenie.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 13,
-													Line:   41,
+													Line:   44,
 												},
 											},
 										},
@@ -3691,13 +3691,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 14,
-											Line:   42,
+											Line:   45,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"details\\\": ",
 										Start: ast.Position{
-											Column: 44,
-											Line:   41,
+											Column: 45,
+											Line:   44,
 										},
 									},
 								},
@@ -3709,13 +3709,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 24,
-											Line:   42,
+											Line:   45,
 										},
 										File:   "opsgenie.flux",
 										Source: "${details}",
 										Start: ast.Position{
 											Column: 14,
-											Line:   42,
+											Line:   45,
 										},
 									},
 								},
@@ -3726,13 +3726,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 23,
-												Line:   42,
+												Line:   45,
 											},
 											File:   "opsgenie.flux",
 											Source: "details",
 											Start: ast.Position{
 												Column: 16,
-												Line:   42,
+												Line:   45,
 											},
 										},
 									},
@@ -3745,13 +3745,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   43,
+											Line:   46,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"entity\\\": ",
 										Start: ast.Position{
 											Column: 24,
-											Line:   42,
+											Line:   45,
 										},
 									},
 								},
@@ -3762,14 +3762,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 45,
-											Line:   43,
+											Column: 46,
+											Line:   46,
 										},
 										File:   "opsgenie.flux",
-										Source: "${cutEncode(v:entity, max: 512)}",
+										Source: "${cutEncode(v: entity, max: 512)}",
 										Start: ast.Position{
 											Column: 13,
-											Line:   43,
+											Line:   46,
 										},
 									},
 								},
@@ -3780,14 +3780,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 43,
-													Line:   43,
+													Column: 44,
+													Line:   46,
 												},
 												File:   "opsgenie.flux",
-												Source: "v:entity, max: 512",
+												Source: "v: entity, max: 512",
 												Start: ast.Position{
 													Column: 25,
-													Line:   43,
+													Line:   46,
 												},
 											},
 										},
@@ -3798,14 +3798,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 33,
-														Line:   43,
+														Column: 34,
+														Line:   46,
 													},
 													File:   "opsgenie.flux",
-													Source: "v:entity",
+													Source: "v: entity",
 													Start: ast.Position{
 														Column: 25,
-														Line:   43,
+														Line:   46,
 													},
 												},
 											},
@@ -3817,13 +3817,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 26,
-															Line:   43,
+															Line:   46,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 25,
-															Line:   43,
+															Line:   46,
 														},
 													},
 												},
@@ -3836,14 +3836,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 33,
-															Line:   43,
+															Column: 34,
+															Line:   46,
 														},
 														File:   "opsgenie.flux",
 														Source: "entity",
 														Start: ast.Position{
-															Column: 27,
-															Line:   43,
+															Column: 28,
+															Line:   46,
 														},
 													},
 												},
@@ -3855,14 +3855,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 43,
-														Line:   43,
+														Column: 44,
+														Line:   46,
 													},
 													File:   "opsgenie.flux",
 													Source: "max: 512",
 													Start: ast.Position{
-														Column: 35,
-														Line:   43,
+														Column: 36,
+														Line:   46,
 													},
 												},
 											},
@@ -3873,14 +3873,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 38,
-															Line:   43,
+															Column: 39,
+															Line:   46,
 														},
 														File:   "opsgenie.flux",
 														Source: "max",
 														Start: ast.Position{
-															Column: 35,
-															Line:   43,
+															Column: 36,
+															Line:   46,
 														},
 													},
 												},
@@ -3893,14 +3893,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 43,
-															Line:   43,
+															Column: 44,
+															Line:   46,
 														},
 														File:   "opsgenie.flux",
 														Source: "512",
 														Start: ast.Position{
-															Column: 40,
-															Line:   43,
+															Column: 41,
+															Line:   46,
 														},
 													},
 												},
@@ -3915,14 +3915,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 44,
-												Line:   43,
+												Column: 45,
+												Line:   46,
 											},
 											File:   "opsgenie.flux",
-											Source: "cutEncode(v:entity, max: 512)",
+											Source: "cutEncode(v: entity, max: 512)",
 											Start: ast.Position{
 												Column: 15,
-												Line:   43,
+												Line:   46,
 											},
 										},
 									},
@@ -3933,13 +3933,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 24,
-													Line:   43,
+													Line:   46,
 												},
 												File:   "opsgenie.flux",
 												Source: "cutEncode",
 												Start: ast.Position{
 													Column: 15,
-													Line:   43,
+													Line:   46,
 												},
 											},
 										},
@@ -3955,13 +3955,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   44,
+											Line:   47,
 										},
 										File:   "opsgenie.flux",
 										Source: ",\n\\\"priority\\\": ",
 										Start: ast.Position{
-											Column: 45,
-											Line:   43,
+											Column: 46,
+											Line:   46,
 										},
 									},
 								},
@@ -3972,14 +3972,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 47,
-											Line:   44,
+											Column: 48,
+											Line:   47,
 										},
 										File:   "opsgenie.flux",
-										Source: "${cutEncode(v:priority, max: 2)}",
+										Source: "${cutEncode(v: priority, max: 2)}",
 										Start: ast.Position{
 											Column: 15,
-											Line:   44,
+											Line:   47,
 										},
 									},
 								},
@@ -3990,14 +3990,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 45,
-													Line:   44,
+													Column: 46,
+													Line:   47,
 												},
 												File:   "opsgenie.flux",
-												Source: "v:priority, max: 2",
+												Source: "v: priority, max: 2",
 												Start: ast.Position{
 													Column: 27,
-													Line:   44,
+													Line:   47,
 												},
 											},
 										},
@@ -4008,14 +4008,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 37,
-														Line:   44,
+														Column: 38,
+														Line:   47,
 													},
 													File:   "opsgenie.flux",
-													Source: "v:priority",
+													Source: "v: priority",
 													Start: ast.Position{
 														Column: 27,
-														Line:   44,
+														Line:   47,
 													},
 												},
 											},
@@ -4027,13 +4027,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 28,
-															Line:   44,
+															Line:   47,
 														},
 														File:   "opsgenie.flux",
 														Source: "v",
 														Start: ast.Position{
 															Column: 27,
-															Line:   44,
+															Line:   47,
 														},
 													},
 												},
@@ -4046,14 +4046,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 37,
-															Line:   44,
+															Column: 38,
+															Line:   47,
 														},
 														File:   "opsgenie.flux",
 														Source: "priority",
 														Start: ast.Position{
-															Column: 29,
-															Line:   44,
+															Column: 30,
+															Line:   47,
 														},
 													},
 												},
@@ -4065,14 +4065,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 45,
-														Line:   44,
+														Column: 46,
+														Line:   47,
 													},
 													File:   "opsgenie.flux",
 													Source: "max: 2",
 													Start: ast.Position{
-														Column: 39,
-														Line:   44,
+														Column: 40,
+														Line:   47,
 													},
 												},
 											},
@@ -4083,14 +4083,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 42,
-															Line:   44,
+															Column: 43,
+															Line:   47,
 														},
 														File:   "opsgenie.flux",
 														Source: "max",
 														Start: ast.Position{
-															Column: 39,
-															Line:   44,
+															Column: 40,
+															Line:   47,
 														},
 													},
 												},
@@ -4103,14 +4103,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 45,
-															Line:   44,
+															Column: 46,
+															Line:   47,
 														},
 														File:   "opsgenie.flux",
 														Source: "2",
 														Start: ast.Position{
-															Column: 44,
-															Line:   44,
+															Column: 45,
+															Line:   47,
 														},
 													},
 												},
@@ -4125,14 +4125,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 46,
-												Line:   44,
+												Column: 47,
+												Line:   47,
 											},
 											File:   "opsgenie.flux",
-											Source: "cutEncode(v:priority, max: 2)",
+											Source: "cutEncode(v: priority, max: 2)",
 											Start: ast.Position{
 												Column: 17,
-												Line:   44,
+												Line:   47,
 											},
 										},
 									},
@@ -4143,13 +4143,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   44,
+													Line:   47,
 												},
 												File:   "opsgenie.flux",
 												Source: "cutEncode",
 												Start: ast.Position{
 													Column: 17,
-													Line:   44,
+													Line:   47,
 												},
 											},
 										},
@@ -4165,13 +4165,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 2,
-											Line:   45,
+											Line:   48,
 										},
 										File:   "opsgenie.flux",
 										Source: "\n}",
 										Start: ast.Position{
-											Column: 47,
-											Line:   44,
+											Column: 48,
+											Line:   47,
 										},
 									},
 								},
@@ -4187,13 +4187,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 70,
-											Line:   46,
+											Line:   50,
 										},
 										File:   "opsgenie.flux",
 										Source: "headers: headers, url: url, data: bytes(v: body)",
 										Start: ast.Position{
 											Column: 22,
-											Line:   46,
+											Line:   50,
 										},
 									},
 								},
@@ -4205,13 +4205,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 38,
-												Line:   46,
+												Line:   50,
 											},
 											File:   "opsgenie.flux",
 											Source: "headers: headers",
 											Start: ast.Position{
 												Column: 22,
-												Line:   46,
+												Line:   50,
 											},
 										},
 									},
@@ -4223,13 +4223,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 29,
-													Line:   46,
+													Line:   50,
 												},
 												File:   "opsgenie.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 22,
-													Line:   46,
+													Line:   50,
 												},
 											},
 										},
@@ -4243,13 +4243,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 38,
-													Line:   46,
+													Line:   50,
 												},
 												File:   "opsgenie.flux",
 												Source: "headers",
 												Start: ast.Position{
 													Column: 31,
-													Line:   46,
+													Line:   50,
 												},
 											},
 										},
@@ -4262,13 +4262,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 48,
-												Line:   46,
+												Line:   50,
 											},
 											File:   "opsgenie.flux",
 											Source: "url: url",
 											Start: ast.Position{
 												Column: 40,
-												Line:   46,
+												Line:   50,
 											},
 										},
 									},
@@ -4280,13 +4280,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 43,
-													Line:   46,
+													Line:   50,
 												},
 												File:   "opsgenie.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 40,
-													Line:   46,
+													Line:   50,
 												},
 											},
 										},
@@ -4300,13 +4300,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 48,
-													Line:   46,
+													Line:   50,
 												},
 												File:   "opsgenie.flux",
 												Source: "url",
 												Start: ast.Position{
 													Column: 45,
-													Line:   46,
+													Line:   50,
 												},
 											},
 										},
@@ -4319,13 +4319,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 70,
-												Line:   46,
+												Line:   50,
 											},
 											File:   "opsgenie.flux",
 											Source: "data: bytes(v: body)",
 											Start: ast.Position{
 												Column: 50,
-												Line:   46,
+												Line:   50,
 											},
 										},
 									},
@@ -4337,13 +4337,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   46,
+													Line:   50,
 												},
 												File:   "opsgenie.flux",
 												Source: "data",
 												Start: ast.Position{
 													Column: 50,
-													Line:   46,
+													Line:   50,
 												},
 											},
 										},
@@ -4358,13 +4358,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 69,
-														Line:   46,
+														Line:   50,
 													},
 													File:   "opsgenie.flux",
 													Source: "v: body",
 													Start: ast.Position{
 														Column: 62,
-														Line:   46,
+														Line:   50,
 													},
 												},
 											},
@@ -4376,13 +4376,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 69,
-															Line:   46,
+															Line:   50,
 														},
 														File:   "opsgenie.flux",
 														Source: "v: body",
 														Start: ast.Position{
 															Column: 62,
-															Line:   46,
+															Line:   50,
 														},
 													},
 												},
@@ -4394,13 +4394,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 63,
-																Line:   46,
+																Line:   50,
 															},
 															File:   "opsgenie.flux",
 															Source: "v",
 															Start: ast.Position{
 																Column: 62,
-																Line:   46,
+																Line:   50,
 															},
 														},
 													},
@@ -4414,13 +4414,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 69,
-																Line:   46,
+																Line:   50,
 															},
 															File:   "opsgenie.flux",
 															Source: "body",
 															Start: ast.Position{
 																Column: 65,
-																Line:   46,
+																Line:   50,
 															},
 														},
 													},
@@ -4436,13 +4436,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 70,
-													Line:   46,
+													Line:   50,
 												},
 												File:   "opsgenie.flux",
 												Source: "bytes(v: body)",
 												Start: ast.Position{
 													Column: 56,
-													Line:   46,
+													Line:   50,
 												},
 											},
 										},
@@ -4453,13 +4453,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
-														Line:   46,
+														Line:   50,
 													},
 													File:   "opsgenie.flux",
 													Source: "bytes",
 													Start: ast.Position{
 														Column: 56,
-														Line:   46,
+														Line:   50,
 													},
 												},
 											},
@@ -4478,13 +4478,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 71,
-										Line:   46,
+										Line:   50,
 									},
 									File:   "opsgenie.flux",
 									Source: "http.post(headers: headers, url: url, data: bytes(v: body))",
 									Start: ast.Position{
 										Column: 12,
-										Line:   46,
+										Line:   50,
 									},
 								},
 							},
@@ -4495,13 +4495,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 21,
-											Line:   46,
+											Line:   50,
 										},
 										File:   "opsgenie.flux",
 										Source: "http.post",
 										Start: ast.Position{
 											Column: 12,
-											Line:   46,
+											Line:   50,
 										},
 									},
 								},
@@ -4513,13 +4513,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 16,
-												Line:   46,
+												Line:   50,
 											},
 											File:   "opsgenie.flux",
 											Source: "http",
 											Start: ast.Position{
 												Column: 12,
-												Line:   46,
+												Line:   50,
 											},
 										},
 									},
@@ -4532,13 +4532,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   46,
+												Line:   50,
 											},
 											File:   "opsgenie.flux",
 											Source: "post",
 											Start: ast.Position{
 												Column: 17,
-												Line:   46,
+												Line:   50,
 											},
 										},
 									},
@@ -4555,13 +4555,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   46,
+									Line:   50,
 								},
 								File:   "opsgenie.flux",
 								Source: "return http.post(headers: headers, url: url, data: bytes(v: body))",
 								Start: ast.Position{
 									Column: 5,
-									Line:   46,
+									Line:   50,
 								},
 							},
 						},
@@ -4577,13 +4577,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "url=\"https://api.opsgenie.com/v2/alerts\"",
 							Start: ast.Position{
 								Column: 14,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4595,13 +4595,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 14,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4615,13 +4615,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"https://api.opsgenie.com/v2/alerts\"",
 								Start: ast.Position{
 									Column: 18,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4634,13 +4634,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 62,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "apiKey",
 							Start: ast.Position{
 								Column: 56,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4652,13 +4652,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 62,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "apiKey",
 								Start: ast.Position{
 									Column: 56,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4673,13 +4673,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 71,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "message",
 							Start: ast.Position{
 								Column: 64,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4691,13 +4691,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 71,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "message",
 								Start: ast.Position{
 									Column: 64,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4712,13 +4712,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 81,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "alias=\"\"",
 							Start: ast.Position{
 								Column: 73,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4730,13 +4730,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 78,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "alias",
 								Start: ast.Position{
 									Column: 73,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4750,13 +4750,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 81,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 79,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4769,13 +4769,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 97,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "description=\"\"",
 							Start: ast.Position{
 								Column: 83,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4787,13 +4787,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 94,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "description",
 								Start: ast.Position{
 									Column: 83,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4807,13 +4807,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 97,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 95,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4826,13 +4826,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 112,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "priority=\"P3\"",
 							Start: ast.Position{
 								Column: 99,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4844,13 +4844,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 107,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "priority",
 								Start: ast.Position{
 									Column: 99,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4864,13 +4864,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 112,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"P3\"",
 								Start: ast.Position{
 									Column: 108,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4883,13 +4883,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 127,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "responders=[]",
 							Start: ast.Position{
 								Column: 114,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4901,13 +4901,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 124,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "responders",
 								Start: ast.Position{
 									Column: 114,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4921,13 +4921,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 127,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "[]",
 								Start: ast.Position{
 									Column: 125,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4942,13 +4942,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 136,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "tags=[]",
 							Start: ast.Position{
 								Column: 129,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -4960,13 +4960,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 133,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "tags",
 								Start: ast.Position{
 									Column: 129,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -4980,13 +4980,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 136,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "[]",
 								Start: ast.Position{
 									Column: 134,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5001,13 +5001,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 147,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "entity=\"\"",
 							Start: ast.Position{
 								Column: 138,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -5019,13 +5019,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 144,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "entity",
 								Start: ast.Position{
 									Column: 138,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5039,13 +5039,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 147,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"\"",
 								Start: ast.Position{
 									Column: 145,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5058,13 +5058,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 159,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "actions=[]",
 							Start: ast.Position{
 								Column: 149,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -5076,13 +5076,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 156,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "actions",
 								Start: ast.Position{
 									Column: 149,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5096,13 +5096,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 159,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "[]",
 								Start: ast.Position{
 									Column: 157,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5117,13 +5117,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 173,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "visibleTo=[]",
 							Start: ast.Position{
 								Column: 161,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -5135,13 +5135,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 170,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "visibleTo",
 								Start: ast.Position{
 									Column: 161,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5155,13 +5155,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 173,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "[]",
 								Start: ast.Position{
 									Column: 171,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5176,13 +5176,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 187,
-								Line:   23,
+								Line:   24,
 							},
 							File:   "opsgenie.flux",
 							Source: "details=\"{}\"",
 							Start: ast.Position{
 								Column: 175,
-								Line:   23,
+								Line:   24,
 							},
 						},
 					},
@@ -5194,13 +5194,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 182,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "details",
 								Start: ast.Position{
 									Column: 175,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5214,13 +5214,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 187,
-									Line:   23,
+									Line:   24,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"{}\"",
 								Start: ast.Position{
 									Column: 183,
-									Line:   23,
+									Line:   24,
 								},
 							},
 						},
@@ -5235,14 +5235,14 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 15,
-						Line:   74,
+						Column: 6,
+						Line:   83,
 					},
 					File:   "opsgenie.flux",
-					Source: "endpoint = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, entity = \"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            })",
+					Source: "endpoint = (url=\"https://api.opsgenie.com/v2/alerts\", apiKey, entity=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 					Start: ast.Position{
 						Column: 1,
-						Line:   55,
+						Line:   59,
 					},
 				},
 			},
@@ -5253,13 +5253,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 9,
-							Line:   55,
+							Line:   59,
 						},
 						File:   "opsgenie.flux",
 						Source: "endpoint",
 						Start: ast.Position{
 							Column: 1,
-							Line:   55,
+							Line:   59,
 						},
 					},
 				},
@@ -5272,14 +5272,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 15,
-							Line:   74,
+							Column: 6,
+							Line:   83,
 						},
 						File:   "opsgenie.flux",
-						Source: "(url=\"https://api.opsgenie.com/v2/alerts\", apiKey, entity = \"\") =>\n    (mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            })",
+						Source: "(url=\"https://api.opsgenie.com/v2/alerts\", apiKey, entity=\"\") => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 						Start: ast.Position{
 							Column: 12,
-							Line:   55,
+							Line:   59,
 						},
 					},
 				},
@@ -5290,14 +5290,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 15,
-								Line:   74,
+								Column: 6,
+								Line:   83,
 							},
 							File:   "opsgenie.flux",
-							Source: "(mapFn) =>\n        (tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            })",
+							Source: "(mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 							Start: ast.Position{
-								Column: 5,
-								Line:   56,
+								Column: 77,
+								Line:   59,
 							},
 						},
 					},
@@ -5308,14 +5308,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
-									Line:   74,
+									Column: 6,
+									Line:   83,
 								},
 								File:   "opsgenie.flux",
-								Source: "(tables=<-) => tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            })",
+								Source: "(tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 								Start: ast.Position{
-									Column: 9,
-									Line:   57,
+									Column: 88,
+									Line:   59,
 								},
 							},
 						},
@@ -5326,14 +5326,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 30,
-											Line:   57,
+											Column: 109,
+											Line:   59,
 										},
 										File:   "opsgenie.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 24,
-											Line:   57,
+											Column: 103,
+											Line:   59,
 										},
 									},
 								},
@@ -5344,14 +5344,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 15,
-										Line:   74,
+										Column: 6,
+										Line:   83,
 									},
 									File:   "opsgenie.flux",
-									Source: "tables\n            |> map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            })",
+									Source: "tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 									Start: ast.Position{
-										Column: 24,
-										Line:   57,
+										Column: 103,
+										Line:   59,
 									},
 								},
 							},
@@ -5362,14 +5362,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 14,
-												Line:   74,
+												Column: 10,
+												Line:   82,
 											},
 											File:   "opsgenie.flux",
-											Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            }",
+											Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        }",
 											Start: ast.Position{
-												Column: 20,
-												Line:   58,
+												Column: 9,
+												Line:   61,
 											},
 										},
 									},
@@ -5380,14 +5380,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 14,
-													Line:   74,
+													Column: 10,
+													Line:   82,
 												},
 												File:   "opsgenie.flux",
-												Source: "fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            }",
+												Source: "fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        }",
 												Start: ast.Position{
-													Column: 20,
-													Line:   58,
+													Column: 9,
+													Line:   61,
 												},
 											},
 										},
@@ -5398,14 +5398,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
-														Line:   58,
+														Column: 11,
+														Line:   61,
 													},
 													File:   "opsgenie.flux",
 													Source: "fn",
 													Start: ast.Position{
-														Column: 20,
-														Line:   58,
+														Column: 9,
+														Line:   61,
 													},
 												},
 											},
@@ -5419,14 +5419,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 14,
-														Line:   74,
+														Column: 10,
+														Line:   82,
 													},
 													File:   "opsgenie.flux",
-													Source: "(r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            }",
+													Source: "(r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        }",
 													Start: ast.Position{
-														Column: 24,
-														Line:   58,
+														Column: 13,
+														Line:   61,
 													},
 												},
 											},
@@ -5436,14 +5436,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 14,
-															Line:   74,
+															Column: 10,
+															Line:   82,
 														},
 														File:   "opsgenie.flux",
-														Source: "{\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            }",
+														Source: "{\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        }",
 														Start: ast.Position{
-															Column: 31,
-															Line:   58,
+															Column: 20,
+															Line:   61,
 														},
 													},
 												},
@@ -5453,14 +5453,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 34,
-																Line:   59,
+																Column: 30,
+																Line:   62,
 															},
 															File:   "opsgenie.flux",
 															Source: "obj = mapFn(r: r)",
 															Start: ast.Position{
-																Column: 17,
-																Line:   59,
+																Column: 13,
+																Line:   62,
 															},
 														},
 													},
@@ -5470,14 +5470,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
-																	Line:   59,
+																	Column: 16,
+																	Line:   62,
 																},
 																File:   "opsgenie.flux",
 																Source: "obj",
 																Start: ast.Position{
-																	Column: 17,
-																	Line:   59,
+																	Column: 13,
+																	Line:   62,
 																},
 															},
 														},
@@ -5490,14 +5490,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 33,
-																		Line:   59,
+																		Column: 29,
+																		Line:   62,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "r: r",
 																	Start: ast.Position{
-																		Column: 29,
-																		Line:   59,
+																		Column: 25,
+																		Line:   62,
 																	},
 																},
 															},
@@ -5508,14 +5508,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 33,
-																			Line:   59,
+																			Column: 29,
+																			Line:   62,
 																		},
 																		File:   "opsgenie.flux",
 																		Source: "r: r",
 																		Start: ast.Position{
-																			Column: 29,
-																			Line:   59,
+																			Column: 25,
+																			Line:   62,
 																		},
 																	},
 																},
@@ -5526,14 +5526,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 30,
-																				Line:   59,
+																				Column: 26,
+																				Line:   62,
 																			},
 																			File:   "opsgenie.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 29,
-																				Line:   59,
+																				Column: 25,
+																				Line:   62,
 																			},
 																		},
 																	},
@@ -5546,14 +5546,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 33,
-																				Line:   59,
+																				Column: 29,
+																				Line:   62,
 																			},
 																			File:   "opsgenie.flux",
 																			Source: "r",
 																			Start: ast.Position{
-																				Column: 32,
-																				Line:   59,
+																				Column: 28,
+																				Line:   62,
 																			},
 																		},
 																	},
@@ -5568,14 +5568,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 34,
-																	Line:   59,
+																	Column: 30,
+																	Line:   62,
 																},
 																File:   "opsgenie.flux",
 																Source: "mapFn(r: r)",
 																Start: ast.Position{
-																	Column: 23,
-																	Line:   59,
+																	Column: 19,
+																	Line:   62,
 																},
 															},
 														},
@@ -5585,14 +5585,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 28,
-																		Line:   59,
+																		Column: 24,
+																		Line:   62,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "mapFn",
 																	Start: ast.Position{
-																		Column: 23,
-																		Line:   59,
+																		Column: 19,
+																		Line:   62,
 																	},
 																},
 															},
@@ -5608,14 +5608,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 26,
-																	Line:   73,
+																	Column: 14,
+																	Line:   81,
 																},
 																File:   "opsgenie.flux",
-																Source: "{r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}",
+																Source: "{r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }",
 																Start: ast.Position{
-																	Column: 24,
-																	Line:   60,
+																	Column: 20,
+																	Line:   64,
 																},
 															},
 														},
@@ -5626,14 +5626,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 25,
-																		Line:   73,
+																		Column: 18,
+																		Line:   80,
 																	},
 																	File:   "opsgenie.flux",
-																	Source: "_sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)",
+																	Source: "_sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                )",
 																	Start: ast.Position{
-																		Column: 32,
-																		Line:   60,
+																		Column: 17,
+																		Line:   65,
 																	},
 																},
 															},
@@ -5644,14 +5644,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 37,
-																			Line:   60,
+																			Column: 22,
+																			Line:   65,
 																		},
 																		File:   "opsgenie.flux",
 																		Source: "_sent",
 																		Start: ast.Position{
-																			Column: 32,
-																			Line:   60,
+																			Column: 17,
+																			Line:   65,
 																		},
 																	},
 																},
@@ -5665,14 +5665,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 24,
-																				Line:   73,
+																				Column: 28,
+																				Line:   79,
 																			},
 																			File:   "opsgenie.flux",
-																			Source: "v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100",
+																			Source: "v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100",
 																			Start: ast.Position{
-																				Column: 46,
-																				Line:   60,
+																				Column: 21,
+																				Line:   66,
 																			},
 																		},
 																	},
@@ -5683,14 +5683,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 24,
-																					Line:   73,
+																					Column: 28,
+																					Line:   79,
 																				},
 																				File:   "opsgenie.flux",
-																				Source: "v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100",
+																				Source: "v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100",
 																				Start: ast.Position{
-																					Column: 46,
-																					Line:   60,
+																					Column: 21,
+																					Line:   66,
 																				},
 																			},
 																		},
@@ -5701,14 +5701,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 47,
-																						Line:   60,
+																						Column: 22,
+																						Line:   66,
 																					},
 																					File:   "opsgenie.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 46,
-																						Line:   60,
+																						Column: 21,
+																						Line:   66,
 																					},
 																				},
 																			},
@@ -5721,14 +5721,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 24,
-																						Line:   73,
+																						Column: 28,
+																						Line:   79,
 																					},
 																					File:   "opsgenie.flux",
-																					Source: "2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100",
+																					Source: "2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100",
 																					Start: ast.Position{
-																						Column: 49,
-																						Line:   60,
+																						Column: 24,
+																						Line:   66,
 																					},
 																				},
 																			},
@@ -5738,14 +5738,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 50,
-																							Line:   60,
+																							Column: 25,
+																							Line:   66,
 																						},
 																						File:   "opsgenie.flux",
 																						Source: "2",
 																						Start: ast.Position{
-																							Column: 49,
-																							Line:   60,
+																							Column: 24,
+																							Line:   66,
 																						},
 																					},
 																				},
@@ -5758,14 +5758,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 24,
-																							Line:   73,
+																							Column: 28,
+																							Line:   79,
 																						},
 																						File:   "opsgenie.flux",
-																						Source: "sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100",
+																						Source: "sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100",
 																						Start: ast.Position{
-																							Column: 54,
-																							Line:   60,
+																							Column: 29,
+																							Line:   66,
 																						},
 																					},
 																				},
@@ -5776,14 +5776,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 41,
-																									Line:   72,
+																									Column: 45,
+																									Line:   78,
 																								},
 																								File:   "opsgenie.flux",
-																								Source: "url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details",
+																								Source: "url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details",
 																								Start: ast.Position{
-																									Column: 21,
-																									Line:   61,
+																									Column: 25,
+																									Line:   67,
 																								},
 																							},
 																						},
@@ -5794,185 +5794,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 29,
-																										Line:   61,
+																										Column: 33,
+																										Line:   67,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "url: url",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   61,
-																									},
-																								},
-																							},
-																							Comma: nil,
-																							Key: &ast.Identifier{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 24,
-																											Line:   61,
-																										},
-																										File:   "opsgenie.flux",
-																										Source: "url",
-																										Start: ast.Position{
-																											Column: 21,
-																											Line:   61,
-																										},
-																									},
-																								},
-																								Name: "url",
-																							},
-																							Separator: nil,
-																							Value: &ast.Identifier{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 29,
-																											Line:   61,
-																										},
-																										File:   "opsgenie.flux",
-																										Source: "url",
-																										Start: ast.Position{
-																											Column: 26,
-																											Line:   61,
-																										},
-																									},
-																								},
-																								Name: "url",
-																							},
-																						}, &ast.Property{
-																							BaseNode: ast.BaseNode{
-																								Comments: nil,
-																								Errors:   nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 35,
-																										Line:   62,
-																									},
-																									File:   "opsgenie.flux",
-																									Source: "apiKey: apiKey",
-																									Start: ast.Position{
-																										Column: 21,
-																										Line:   62,
-																									},
-																								},
-																							},
-																							Comma: nil,
-																							Key: &ast.Identifier{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 27,
-																											Line:   62,
-																										},
-																										File:   "opsgenie.flux",
-																										Source: "apiKey",
-																										Start: ast.Position{
-																											Column: 21,
-																											Line:   62,
-																										},
-																									},
-																								},
-																								Name: "apiKey",
-																							},
-																							Separator: nil,
-																							Value: &ast.Identifier{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 35,
-																											Line:   62,
-																										},
-																										File:   "opsgenie.flux",
-																										Source: "apiKey",
-																										Start: ast.Position{
-																											Column: 29,
-																											Line:   62,
-																										},
-																									},
-																								},
-																								Name: "apiKey",
-																							},
-																						}, &ast.Property{
-																							BaseNode: ast.BaseNode{
-																								Comments: nil,
-																								Errors:   nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 35,
-																										Line:   63,
-																									},
-																									File:   "opsgenie.flux",
-																									Source: "entity: entity",
-																									Start: ast.Position{
-																										Column: 21,
-																										Line:   63,
-																									},
-																								},
-																							},
-																							Comma: nil,
-																							Key: &ast.Identifier{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 27,
-																											Line:   63,
-																										},
-																										File:   "opsgenie.flux",
-																										Source: "entity",
-																										Start: ast.Position{
-																											Column: 21,
-																											Line:   63,
-																										},
-																									},
-																								},
-																								Name: "entity",
-																							},
-																							Separator: nil,
-																							Value: &ast.Identifier{
-																								BaseNode: ast.BaseNode{
-																									Comments: nil,
-																									Errors:   nil,
-																									Loc: &ast.SourceLocation{
-																										End: ast.Position{
-																											Column: 35,
-																											Line:   63,
-																										},
-																										File:   "opsgenie.flux",
-																										Source: "entity",
-																										Start: ast.Position{
-																											Column: 29,
-																											Line:   63,
-																										},
-																									},
-																								},
-																								Name: "entity",
-																							},
-																						}, &ast.Property{
-																							BaseNode: ast.BaseNode{
-																								Comments: nil,
-																								Errors:   nil,
-																								Loc: &ast.SourceLocation{
-																									End: ast.Position{
-																										Column: 41,
-																										Line:   64,
-																									},
-																									File:   "opsgenie.flux",
-																									Source: "message: obj.message",
-																									Start: ast.Position{
-																										Column: 21,
-																										Line:   64,
+																										Column: 25,
+																										Line:   67,
 																									},
 																								},
 																							},
@@ -5984,13 +5813,184 @@ var pkgAST = &ast.Package{
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
 																											Column: 28,
-																											Line:   64,
+																											Line:   67,
+																										},
+																										File:   "opsgenie.flux",
+																										Source: "url",
+																										Start: ast.Position{
+																											Column: 25,
+																											Line:   67,
+																										},
+																									},
+																								},
+																								Name: "url",
+																							},
+																							Separator: nil,
+																							Value: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 33,
+																											Line:   67,
+																										},
+																										File:   "opsgenie.flux",
+																										Source: "url",
+																										Start: ast.Position{
+																											Column: 30,
+																											Line:   67,
+																										},
+																									},
+																								},
+																								Name: "url",
+																							},
+																						}, &ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Comments: nil,
+																								Errors:   nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 39,
+																										Line:   68,
+																									},
+																									File:   "opsgenie.flux",
+																									Source: "apiKey: apiKey",
+																									Start: ast.Position{
+																										Column: 25,
+																										Line:   68,
+																									},
+																								},
+																							},
+																							Comma: nil,
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 31,
+																											Line:   68,
+																										},
+																										File:   "opsgenie.flux",
+																										Source: "apiKey",
+																										Start: ast.Position{
+																											Column: 25,
+																											Line:   68,
+																										},
+																									},
+																								},
+																								Name: "apiKey",
+																							},
+																							Separator: nil,
+																							Value: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 39,
+																											Line:   68,
+																										},
+																										File:   "opsgenie.flux",
+																										Source: "apiKey",
+																										Start: ast.Position{
+																											Column: 33,
+																											Line:   68,
+																										},
+																									},
+																								},
+																								Name: "apiKey",
+																							},
+																						}, &ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Comments: nil,
+																								Errors:   nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 39,
+																										Line:   69,
+																									},
+																									File:   "opsgenie.flux",
+																									Source: "entity: entity",
+																									Start: ast.Position{
+																										Column: 25,
+																										Line:   69,
+																									},
+																								},
+																							},
+																							Comma: nil,
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 31,
+																											Line:   69,
+																										},
+																										File:   "opsgenie.flux",
+																										Source: "entity",
+																										Start: ast.Position{
+																											Column: 25,
+																											Line:   69,
+																										},
+																									},
+																								},
+																								Name: "entity",
+																							},
+																							Separator: nil,
+																							Value: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 39,
+																											Line:   69,
+																										},
+																										File:   "opsgenie.flux",
+																										Source: "entity",
+																										Start: ast.Position{
+																											Column: 33,
+																											Line:   69,
+																										},
+																									},
+																								},
+																								Name: "entity",
+																							},
+																						}, &ast.Property{
+																							BaseNode: ast.BaseNode{
+																								Comments: nil,
+																								Errors:   nil,
+																								Loc: &ast.SourceLocation{
+																									End: ast.Position{
+																										Column: 45,
+																										Line:   70,
+																									},
+																									File:   "opsgenie.flux",
+																									Source: "message: obj.message",
+																									Start: ast.Position{
+																										Column: 25,
+																										Line:   70,
+																									},
+																								},
+																							},
+																							Comma: nil,
+																							Key: &ast.Identifier{
+																								BaseNode: ast.BaseNode{
+																									Comments: nil,
+																									Errors:   nil,
+																									Loc: &ast.SourceLocation{
+																										End: ast.Position{
+																											Column: 32,
+																											Line:   70,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "message",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   64,
+																											Column: 25,
+																											Line:   70,
 																										},
 																									},
 																								},
@@ -6003,14 +6003,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 41,
-																											Line:   64,
+																											Column: 45,
+																											Line:   70,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.message",
 																										Start: ast.Position{
-																											Column: 30,
-																											Line:   64,
+																											Column: 34,
+																											Line:   70,
 																										},
 																									},
 																								},
@@ -6021,14 +6021,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 33,
-																												Line:   64,
+																												Column: 37,
+																												Line:   70,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 30,
-																												Line:   64,
+																												Column: 34,
+																												Line:   70,
 																											},
 																										},
 																									},
@@ -6040,14 +6040,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 41,
-																												Line:   64,
+																												Column: 45,
+																												Line:   70,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "message",
 																											Start: ast.Position{
-																												Column: 34,
-																												Line:   64,
+																												Column: 38,
+																												Line:   70,
 																											},
 																										},
 																									},
@@ -6061,14 +6061,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 37,
-																										Line:   65,
+																										Column: 41,
+																										Line:   71,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "alias: obj.alias",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   65,
+																										Column: 25,
+																										Line:   71,
 																									},
 																								},
 																							},
@@ -6079,14 +6079,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 26,
-																											Line:   65,
+																											Column: 30,
+																											Line:   71,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "alias",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   65,
+																											Column: 25,
+																											Line:   71,
 																										},
 																									},
 																								},
@@ -6099,14 +6099,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 37,
-																											Line:   65,
+																											Column: 41,
+																											Line:   71,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.alias",
 																										Start: ast.Position{
-																											Column: 28,
-																											Line:   65,
+																											Column: 32,
+																											Line:   71,
 																										},
 																									},
 																								},
@@ -6117,14 +6117,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 31,
-																												Line:   65,
+																												Column: 35,
+																												Line:   71,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 28,
-																												Line:   65,
+																												Column: 32,
+																												Line:   71,
 																											},
 																										},
 																									},
@@ -6136,14 +6136,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 37,
-																												Line:   65,
+																												Column: 41,
+																												Line:   71,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "alias",
 																											Start: ast.Position{
-																												Column: 32,
-																												Line:   65,
+																												Column: 36,
+																												Line:   71,
 																											},
 																										},
 																									},
@@ -6157,14 +6157,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 49,
-																										Line:   66,
+																										Column: 53,
+																										Line:   72,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "description: obj.description",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   66,
+																										Column: 25,
+																										Line:   72,
 																									},
 																								},
 																							},
@@ -6175,14 +6175,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 32,
-																											Line:   66,
+																											Column: 36,
+																											Line:   72,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "description",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   66,
+																											Column: 25,
+																											Line:   72,
 																										},
 																									},
 																								},
@@ -6195,14 +6195,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 49,
-																											Line:   66,
+																											Column: 53,
+																											Line:   72,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.description",
 																										Start: ast.Position{
-																											Column: 34,
-																											Line:   66,
+																											Column: 38,
+																											Line:   72,
 																										},
 																									},
 																								},
@@ -6213,14 +6213,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 37,
-																												Line:   66,
+																												Column: 41,
+																												Line:   72,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 34,
-																												Line:   66,
+																												Column: 38,
+																												Line:   72,
 																											},
 																										},
 																									},
@@ -6232,14 +6232,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 49,
-																												Line:   66,
+																												Column: 53,
+																												Line:   72,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "description",
 																											Start: ast.Position{
-																												Column: 38,
-																												Line:   66,
+																												Column: 42,
+																												Line:   72,
 																											},
 																										},
 																									},
@@ -6253,14 +6253,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 43,
-																										Line:   67,
+																										Column: 47,
+																										Line:   73,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "priority: obj.priority",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   67,
+																										Column: 25,
+																										Line:   73,
 																									},
 																								},
 																							},
@@ -6271,14 +6271,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 29,
-																											Line:   67,
+																											Column: 33,
+																											Line:   73,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "priority",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   67,
+																											Column: 25,
+																											Line:   73,
 																										},
 																									},
 																								},
@@ -6291,14 +6291,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 43,
-																											Line:   67,
+																											Column: 47,
+																											Line:   73,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.priority",
 																										Start: ast.Position{
-																											Column: 31,
-																											Line:   67,
+																											Column: 35,
+																											Line:   73,
 																										},
 																									},
 																								},
@@ -6309,14 +6309,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 34,
-																												Line:   67,
+																												Column: 38,
+																												Line:   73,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 31,
-																												Line:   67,
+																												Column: 35,
+																												Line:   73,
 																											},
 																										},
 																									},
@@ -6328,14 +6328,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 43,
-																												Line:   67,
+																												Column: 47,
+																												Line:   73,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "priority",
 																											Start: ast.Position{
-																												Column: 35,
-																												Line:   67,
+																												Column: 39,
+																												Line:   73,
 																											},
 																										},
 																									},
@@ -6349,14 +6349,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 47,
-																										Line:   68,
+																										Column: 51,
+																										Line:   74,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "responders: obj.responders",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   68,
+																										Column: 25,
+																										Line:   74,
 																									},
 																								},
 																							},
@@ -6367,14 +6367,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 31,
-																											Line:   68,
+																											Column: 35,
+																											Line:   74,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "responders",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   68,
+																											Column: 25,
+																											Line:   74,
 																										},
 																									},
 																								},
@@ -6387,14 +6387,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 47,
-																											Line:   68,
+																											Column: 51,
+																											Line:   74,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.responders",
 																										Start: ast.Position{
-																											Column: 33,
-																											Line:   68,
+																											Column: 37,
+																											Line:   74,
 																										},
 																									},
 																								},
@@ -6405,14 +6405,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 36,
-																												Line:   68,
+																												Column: 40,
+																												Line:   74,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 33,
-																												Line:   68,
+																												Column: 37,
+																												Line:   74,
 																											},
 																										},
 																									},
@@ -6424,14 +6424,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 47,
-																												Line:   68,
+																												Column: 51,
+																												Line:   74,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "responders",
 																											Start: ast.Position{
-																												Column: 37,
-																												Line:   68,
+																												Column: 41,
+																												Line:   74,
 																											},
 																										},
 																									},
@@ -6445,14 +6445,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 35,
-																										Line:   69,
+																										Column: 39,
+																										Line:   75,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "tags: obj.tags",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   69,
+																										Column: 25,
+																										Line:   75,
 																									},
 																								},
 																							},
@@ -6463,14 +6463,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 25,
-																											Line:   69,
+																											Column: 29,
+																											Line:   75,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "tags",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   69,
+																											Column: 25,
+																											Line:   75,
 																										},
 																									},
 																								},
@@ -6483,14 +6483,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 35,
-																											Line:   69,
+																											Column: 39,
+																											Line:   75,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.tags",
 																										Start: ast.Position{
-																											Column: 27,
-																											Line:   69,
+																											Column: 31,
+																											Line:   75,
 																										},
 																									},
 																								},
@@ -6501,14 +6501,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 30,
-																												Line:   69,
+																												Column: 34,
+																												Line:   75,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 27,
-																												Line:   69,
+																												Column: 31,
+																												Line:   75,
 																											},
 																										},
 																									},
@@ -6520,14 +6520,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 35,
-																												Line:   69,
+																												Column: 39,
+																												Line:   75,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "tags",
 																											Start: ast.Position{
-																												Column: 31,
-																												Line:   69,
+																												Column: 35,
+																												Line:   75,
 																											},
 																										},
 																									},
@@ -6541,14 +6541,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 41,
-																										Line:   70,
+																										Column: 45,
+																										Line:   76,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "actions: obj.actions",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   70,
+																										Column: 25,
+																										Line:   76,
 																									},
 																								},
 																							},
@@ -6559,14 +6559,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 28,
-																											Line:   70,
+																											Column: 32,
+																											Line:   76,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "actions",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   70,
+																											Column: 25,
+																											Line:   76,
 																										},
 																									},
 																								},
@@ -6579,14 +6579,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 41,
-																											Line:   70,
+																											Column: 45,
+																											Line:   76,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.actions",
 																										Start: ast.Position{
-																											Column: 30,
-																											Line:   70,
+																											Column: 34,
+																											Line:   76,
 																										},
 																									},
 																								},
@@ -6597,14 +6597,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 33,
-																												Line:   70,
+																												Column: 37,
+																												Line:   76,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 30,
-																												Line:   70,
+																												Column: 34,
+																												Line:   76,
 																											},
 																										},
 																									},
@@ -6616,14 +6616,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 41,
-																												Line:   70,
+																												Column: 45,
+																												Line:   76,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "actions",
 																											Start: ast.Position{
-																												Column: 34,
-																												Line:   70,
+																												Column: 38,
+																												Line:   76,
 																											},
 																										},
 																									},
@@ -6637,14 +6637,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 45,
-																										Line:   71,
+																										Column: 49,
+																										Line:   77,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "visibleTo: obj.visibleTo",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   71,
+																										Column: 25,
+																										Line:   77,
 																									},
 																								},
 																							},
@@ -6655,14 +6655,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 30,
-																											Line:   71,
+																											Column: 34,
+																											Line:   77,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "visibleTo",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   71,
+																											Column: 25,
+																											Line:   77,
 																										},
 																									},
 																								},
@@ -6675,14 +6675,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 45,
-																											Line:   71,
+																											Column: 49,
+																											Line:   77,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.visibleTo",
 																										Start: ast.Position{
-																											Column: 32,
-																											Line:   71,
+																											Column: 36,
+																											Line:   77,
 																										},
 																									},
 																								},
@@ -6693,14 +6693,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 35,
-																												Line:   71,
+																												Column: 39,
+																												Line:   77,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 32,
-																												Line:   71,
+																												Column: 36,
+																												Line:   77,
 																											},
 																										},
 																									},
@@ -6712,14 +6712,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 45,
-																												Line:   71,
+																												Column: 49,
+																												Line:   77,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "visibleTo",
 																											Start: ast.Position{
-																												Column: 36,
-																												Line:   71,
+																												Column: 40,
+																												Line:   77,
 																											},
 																										},
 																									},
@@ -6733,14 +6733,14 @@ var pkgAST = &ast.Package{
 																								Errors:   nil,
 																								Loc: &ast.SourceLocation{
 																									End: ast.Position{
-																										Column: 41,
-																										Line:   72,
+																										Column: 45,
+																										Line:   78,
 																									},
 																									File:   "opsgenie.flux",
 																									Source: "details: obj.details",
 																									Start: ast.Position{
-																										Column: 21,
-																										Line:   72,
+																										Column: 25,
+																										Line:   78,
 																									},
 																								},
 																							},
@@ -6751,14 +6751,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 28,
-																											Line:   72,
+																											Column: 32,
+																											Line:   78,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "details",
 																										Start: ast.Position{
-																											Column: 21,
-																											Line:   72,
+																											Column: 25,
+																											Line:   78,
 																										},
 																									},
 																								},
@@ -6771,14 +6771,14 @@ var pkgAST = &ast.Package{
 																									Errors:   nil,
 																									Loc: &ast.SourceLocation{
 																										End: ast.Position{
-																											Column: 41,
-																											Line:   72,
+																											Column: 45,
+																											Line:   78,
 																										},
 																										File:   "opsgenie.flux",
 																										Source: "obj.details",
 																										Start: ast.Position{
-																											Column: 30,
-																											Line:   72,
+																											Column: 34,
+																											Line:   78,
 																										},
 																									},
 																								},
@@ -6789,14 +6789,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 33,
-																												Line:   72,
+																												Column: 37,
+																												Line:   78,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "obj",
 																											Start: ast.Position{
-																												Column: 30,
-																												Line:   72,
+																												Column: 34,
+																												Line:   78,
 																											},
 																										},
 																									},
@@ -6808,14 +6808,14 @@ var pkgAST = &ast.Package{
 																										Errors:   nil,
 																										Loc: &ast.SourceLocation{
 																											End: ast.Position{
-																												Column: 41,
-																												Line:   72,
+																												Column: 45,
+																												Line:   78,
 																											},
 																											File:   "opsgenie.flux",
 																											Source: "details",
 																											Start: ast.Position{
-																												Column: 34,
-																												Line:   72,
+																												Column: 38,
+																												Line:   78,
 																											},
 																										},
 																									},
@@ -6832,14 +6832,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 18,
-																								Line:   73,
+																								Column: 22,
+																								Line:   79,
 																							},
 																							File:   "opsgenie.flux",
-																							Source: "sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                )",
+																							Source: "sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    )",
 																							Start: ast.Position{
-																								Column: 54,
-																								Line:   60,
+																								Column: 29,
+																								Line:   66,
 																							},
 																						},
 																					},
@@ -6849,14 +6849,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 63,
-																									Line:   60,
+																									Column: 38,
+																									Line:   66,
 																								},
 																								File:   "opsgenie.flux",
 																								Source: "sendAlert",
 																								Start: ast.Position{
-																									Column: 54,
-																									Line:   60,
+																									Column: 29,
+																									Line:   66,
 																								},
 																							},
 																						},
@@ -6872,14 +6872,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 24,
-																								Line:   73,
+																								Column: 28,
+																								Line:   79,
 																							},
 																							File:   "opsgenie.flux",
 																							Source: "100",
 																							Start: ast.Position{
-																								Column: 21,
-																								Line:   73,
+																								Column: 25,
+																								Line:   79,
 																							},
 																						},
 																					},
@@ -6896,14 +6896,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 25,
-																			Line:   73,
+																			Column: 18,
+																			Line:   80,
 																		},
 																		File:   "opsgenie.flux",
-																		Source: "string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)",
+																		Source: "string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                )",
 																		Start: ast.Position{
-																			Column: 39,
-																			Line:   60,
+																			Column: 24,
+																			Line:   65,
 																		},
 																	},
 																},
@@ -6913,14 +6913,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 45,
-																				Line:   60,
+																				Column: 30,
+																				Line:   65,
 																			},
 																			File:   "opsgenie.flux",
 																			Source: "string",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   60,
+																				Column: 24,
+																				Line:   65,
 																			},
 																		},
 																	},
@@ -6937,14 +6937,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 26,
-																		Line:   60,
+																		Column: 22,
+																		Line:   64,
 																	},
 																	File:   "opsgenie.flux",
 																	Source: "r",
 																	Start: ast.Position{
-																		Column: 25,
-																		Line:   60,
+																		Column: 21,
+																		Line:   64,
 																	},
 																},
 															},
@@ -6956,14 +6956,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   73,
+																Column: 14,
+																Line:   81,
 															},
 															File:   "opsgenie.flux",
-															Source: "return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}",
+															Source: "return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }",
 															Start: ast.Position{
-																Column: 17,
-																Line:   60,
+																Column: 13,
+																Line:   64,
 															},
 														},
 													},
@@ -6978,14 +6978,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 26,
-															Line:   58,
+															Column: 15,
+															Line:   61,
 														},
 														File:   "opsgenie.flux",
 														Source: "r",
 														Start: ast.Position{
-															Column: 25,
-															Line:   58,
+															Column: 14,
+															Line:   61,
 														},
 													},
 												},
@@ -6996,14 +6996,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 26,
-																Line:   58,
+																Column: 15,
+																Line:   61,
 															},
 															File:   "opsgenie.flux",
 															Source: "r",
 															Start: ast.Position{
-																Column: 25,
-																Line:   58,
+																Column: 14,
+																Line:   61,
 															},
 														},
 													},
@@ -7023,14 +7023,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 15,
-											Line:   74,
+											Column: 6,
+											Line:   83,
 										},
 										File:   "opsgenie.flux",
-										Source: "map(fn: (r) => {\n                obj = mapFn(r: r)\n                return {r with _sent: string(v: 2 == sendAlert(\n                    url: url,\n                    apiKey: apiKey,\n                    entity: entity,\n                    message: obj.message,\n                    alias: obj.alias,\n                    description: obj.description,\n                    priority: obj.priority,\n                    responders: obj.responders,\n                    tags: obj.tags,\n                    actions: obj.actions,\n                    visibleTo: obj.visibleTo,\n                    details: obj.details,\n                ) / 100)}\n            })",
+										Source: "map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        apiKey: apiKey,\n                        entity: entity,\n                        message: obj.message,\n                        alias: obj.alias,\n                        description: obj.description,\n                        priority: obj.priority,\n                        responders: obj.responders,\n                        tags: obj.tags,\n                        actions: obj.actions,\n                        visibleTo: obj.visibleTo,\n                        details: obj.details,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 										Start: ast.Position{
-											Column: 16,
-											Line:   58,
+											Column: 8,
+											Line:   60,
 										},
 									},
 								},
@@ -7040,14 +7040,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 19,
-												Line:   58,
+												Column: 11,
+												Line:   60,
 											},
 											File:   "opsgenie.flux",
 											Source: "map",
 											Start: ast.Position{
-												Column: 16,
-												Line:   58,
+												Column: 8,
+												Line:   60,
 											},
 										},
 									},
@@ -7064,14 +7064,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   57,
+										Column: 98,
+										Line:   59,
 									},
 									File:   "opsgenie.flux",
 									Source: "tables=<-",
 									Start: ast.Position{
-										Column: 10,
-										Line:   57,
+										Column: 89,
+										Line:   59,
 									},
 								},
 							},
@@ -7082,14 +7082,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 16,
-											Line:   57,
+											Column: 95,
+											Line:   59,
 										},
 										File:   "opsgenie.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 10,
-											Line:   57,
+											Column: 89,
+											Line:   59,
 										},
 									},
 								},
@@ -7101,14 +7101,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 19,
-										Line:   57,
+										Column: 98,
+										Line:   59,
 									},
 									File:   "opsgenie.flux",
 									Source: "<-",
 									Start: ast.Position{
-										Column: 17,
-										Line:   57,
+										Column: 96,
+										Line:   59,
 									},
 								},
 							}},
@@ -7122,14 +7122,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   56,
+									Column: 83,
+									Line:   59,
 								},
 								File:   "opsgenie.flux",
 								Source: "mapFn",
 								Start: ast.Position{
-									Column: 6,
-									Line:   56,
+									Column: 78,
+									Line:   59,
 								},
 							},
 						},
@@ -7140,14 +7140,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 11,
-										Line:   56,
+										Column: 83,
+										Line:   59,
 									},
 									File:   "opsgenie.flux",
 									Source: "mapFn",
 									Start: ast.Position{
-										Column: 6,
-										Line:   56,
+										Column: 78,
+										Line:   59,
 									},
 								},
 							},
@@ -7166,13 +7166,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 53,
-								Line:   55,
+								Line:   59,
 							},
 							File:   "opsgenie.flux",
 							Source: "url=\"https://api.opsgenie.com/v2/alerts\"",
 							Start: ast.Position{
 								Column: 13,
-								Line:   55,
+								Line:   59,
 							},
 						},
 					},
@@ -7184,13 +7184,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   55,
+									Line:   59,
 								},
 								File:   "opsgenie.flux",
 								Source: "url",
 								Start: ast.Position{
 									Column: 13,
-									Line:   55,
+									Line:   59,
 								},
 							},
 						},
@@ -7204,13 +7204,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 53,
-									Line:   55,
+									Line:   59,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"https://api.opsgenie.com/v2/alerts\"",
 								Start: ast.Position{
 									Column: 17,
-									Line:   55,
+									Line:   59,
 								},
 							},
 						},
@@ -7223,13 +7223,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 61,
-								Line:   55,
+								Line:   59,
 							},
 							File:   "opsgenie.flux",
 							Source: "apiKey",
 							Start: ast.Position{
 								Column: 55,
-								Line:   55,
+								Line:   59,
 							},
 						},
 					},
@@ -7241,13 +7241,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 61,
-									Line:   55,
+									Line:   59,
 								},
 								File:   "opsgenie.flux",
 								Source: "apiKey",
 								Start: ast.Position{
 									Column: 55,
-									Line:   55,
+									Line:   59,
 								},
 							},
 						},
@@ -7261,14 +7261,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 74,
-								Line:   55,
+								Column: 72,
+								Line:   59,
 							},
 							File:   "opsgenie.flux",
-							Source: "entity = \"\"",
+							Source: "entity=\"\"",
 							Start: ast.Position{
 								Column: 63,
-								Line:   55,
+								Line:   59,
 							},
 						},
 					},
@@ -7280,13 +7280,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 69,
-									Line:   55,
+									Line:   59,
 								},
 								File:   "opsgenie.flux",
 								Source: "entity",
 								Start: ast.Position{
 									Column: 63,
-									Line:   55,
+									Line:   59,
 								},
 							},
 						},
@@ -7299,14 +7299,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 74,
-									Line:   55,
+									Column: 72,
+									Line:   59,
 								},
 								File:   "opsgenie.flux",
 								Source: "\"\"",
 								Start: ast.Position{
-									Column: 72,
-									Line:   55,
+									Column: 70,
+									Line:   59,
 								},
 							},
 						},
@@ -7325,13 +7325,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "opsgenie.flux",
 					Source: "import \"http\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -7342,13 +7342,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "opsgenie.flux",
 						Source: "\"http\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -7362,13 +7362,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 14,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "opsgenie.flux",
 					Source: "import \"json\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -7379,13 +7379,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 14,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "opsgenie.flux",
 						Source: "\"json\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -7399,13 +7399,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 17,
-						Line:   5,
+						Line:   6,
 					},
 					File:   "opsgenie.flux",
 					Source: "import \"strings\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   5,
+						Line:   6,
 					},
 				},
 			},
@@ -7416,13 +7416,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 17,
-							Line:   5,
+							Line:   6,
 						},
 						File:   "opsgenie.flux",
 						Source: "\"strings\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   5,
+							Line:   6,
 						},
 					},
 				},

@@ -1,19 +1,18 @@
-#![allow(missing_docs)]
+//! Substitutions during type inference.
 
 use crate::semantic::types::{MonoType, SubstitutionMap, Tvar};
 
-// A substitution defines a function that takes a monotype as input
-// and returns a monotype as output. The output type is interpreted
-// as being equivalent to the input type.
-//
-// Substitutions are idempotent. Given a substitution s and an input
-// type x, we have s(s(x)) = s(x).
-//
+/// A substitution defines a function that takes a monotype as input
+/// and returns a monotype as output. The output type is interpreted
+/// as being equivalent to the input type.
+///
+/// Substitutions are idempotent. Given a substitution *s* and an input
+/// type *x*, we have *s*(*s*(*x*)) = *s*(*x*).
 #[derive(Debug, PartialEq)]
 pub struct Substitution(SubstitutionMap);
 
-// Derive a substitution from a hash map.
 impl From<SubstitutionMap> for Substitution {
+    /// Derive a substitution from a hash map.
     fn from(values: SubstitutionMap) -> Substitution {
         Substitution(values)
     }
@@ -22,20 +21,21 @@ impl From<SubstitutionMap> for Substitution {
 // The `allow` attribute below is a side effect of the orphan impl rule as
 // well as the implicit_hasher lint. For more info, see
 // https://github.com/rust-lang/rfcs/issues/1856
-
-// Derive a hash map from a substitution.
 #[allow(clippy::implicit_hasher)]
 impl From<Substitution> for SubstitutionMap {
+    /// Derive a hash map from a substitution.
     fn from(sub: Substitution) -> SubstitutionMap {
         sub.0
     }
 }
 
 impl Substitution {
+    /// Return a new empty substitution.
     pub fn empty() -> Substitution {
         Substitution(SubstitutionMap::new())
     }
 
+    /// Apply a substitution to a type variable.
     pub fn apply(&self, tv: Tvar) -> MonoType {
         match self.0.get(&tv) {
             Some(t) => t.clone(),
@@ -43,6 +43,7 @@ impl Substitution {
         }
     }
 
+    /// Merge two substitutions.
     pub fn merge(self, with: Substitution) -> Substitution {
         let applied: SubstitutionMap = self
             .0
@@ -53,8 +54,10 @@ impl Substitution {
     }
 }
 
-// A type is substitutable if a substitution can be applied to it.
+/// A type is `Substitutable` if a substitution can be applied to it.
 pub trait Substitutable {
+    /// Apply a substitution to a type variable.
     fn apply(self, sub: &Substitution) -> Self;
+    /// Get all free type variables in a type.
     fn free_vars(&self) -> Vec<Tvar>;
 }

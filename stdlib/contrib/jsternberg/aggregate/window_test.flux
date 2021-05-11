@@ -1,9 +1,10 @@
 package aggregate_test
 
+
 import "testing"
 import "contrib/jsternberg/aggregate"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #datatype,string,long,dateTime:RFC3339,double,string,string,string,string,string,string
@@ -23,7 +24,6 @@ inData = "
 ,,1,2018-05-22T00:00:40Z,45,used_percent,disk,disk1s1,apfs,host.local,/tmp
 ,,1,2018-05-22T00:00:50Z,45,used_percent,disk,disk1s1,apfs,host.local,/tmp
 "
-
 outData = "
 #datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,string,string,string,string,string,dateTime:RFC3339,dateTime:RFC3339,double,double,double,double,long
 #group,false,false,true,true,true,true,true,true,true,true,false,false,false,false,false,false,false
@@ -34,19 +34,21 @@ outData = "
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/tmp,2018-05-22T00:00:00Z,2018-05-22T00:00:30Z,105,35,35,35,3
 ,,1,2018-05-22T00:00:00Z,2018-05-22T00:01:00Z,used_percent,disk,disk1s1,apfs,host.local,/tmp,2018-05-22T00:00:30Z,2018-05-22T00:01:00Z,135,45,45,45,3
 "
-
 aggregate_window = (table=<-) => table
-	|> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
-	|> aggregate.window(every: 30s, columns: {
-		sum: aggregate.sum(),
-		mean: aggregate.mean(),
-		min: aggregate.min(),
-		max: aggregate.max(),
-		count: aggregate.count(),
-	})
+    |> range(start: 2018-05-22T00:00:00Z, stop: 2018-05-22T00:01:00Z)
+    |> aggregate.window(
+        every: 30s,
+        columns: {
+            sum: aggregate.sum(),
+            mean: aggregate.mean(),
+            min: aggregate.min(),
+            max: aggregate.max(),
+            count: aggregate.count(),
+        },
+    )
 
 test _aggregate_window = () => ({
-	input: testing.loadStorage(csv: inData),
-	want: testing.loadMem(csv: outData),
-	fn: aggregate_window,
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: aggregate_window,
 })

@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 11,
-					Line:   4,
+					Line:   5,
 				},
 				File:   "sql.flux",
-				Source: "package sql\n\nbuiltin from : (driverName: string, dataSourceName: string, query: string) => [A]\nbuiltin to",
+				Source: "package sql\n\n\nbuiltin from : (driverName: string, dataSourceName: string, query: string) => [A]\nbuiltin to",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "sql.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "sql.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 82,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "sql.flux",
 						Source: "(driverName: string, dataSourceName: string, query: string) => [A]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 82,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "sql.flux",
 							Source: "(driverName: string, dataSourceName: string, query: string) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 35,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "sql.flux",
 								Source: "driverName: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 27,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "sql.flux",
 									Source: "driverName",
 									Start: ast.Position{
 										Column: 17,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 35,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 29,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 35,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 29,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -187,13 +187,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 59,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "sql.flux",
 								Source: "dataSourceName: string",
 								Start: ast.Position{
 									Column: 37,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "sql.flux",
 									Source: "dataSourceName",
 									Start: ast.Position{
 										Column: 37,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -224,13 +224,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 59,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 53,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -241,13 +241,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 59,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 53,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -261,13 +261,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 74,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "sql.flux",
 								Source: "query: string",
 								Start: ast.Position{
 									Column: 61,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -279,13 +279,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 66,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "sql.flux",
 									Source: "query",
 									Start: ast.Position{
 										Column: 61,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -298,13 +298,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 74,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 68,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -315,13 +315,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 74,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 68,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -336,13 +336,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 82,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "sql.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 79,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 81,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "sql.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 80,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -370,13 +370,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 81,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "sql.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 80,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -393,13 +393,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 11,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "sql.flux",
 					Source: "builtin to",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -411,13 +411,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "sql.flux",
 						Source: "to",
 						Start: ast.Position{
 							Column: 9,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -429,14 +429,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 112,
-							Line:   4,
+							Column: 9,
+							Line:   11,
 						},
 						File:   "sql.flux",
-						Source: "(<-tables: [A], driverName: string, dataSourceName: string, table: string, ?batchSize: int) => [A]",
+						Source: "(\n    <-tables: [A],\n    driverName: string,\n    dataSourceName: string,\n    table: string,\n    ?batchSize: int,\n) => [A]",
 						Start: ast.Position{
 							Column: 14,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},
@@ -447,14 +447,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 112,
-								Line:   4,
+								Column: 9,
+								Line:   11,
 							},
 							File:   "sql.flux",
-							Source: "(<-tables: [A], driverName: string, dataSourceName: string, table: string, ?batchSize: int) => [A]",
+							Source: "(\n    <-tables: [A],\n    driverName: string,\n    dataSourceName: string,\n    table: string,\n    ?batchSize: int,\n) => [A]",
 							Start: ast.Position{
 								Column: 14,
-								Line:   4,
+								Line:   5,
 							},
 						},
 					},
@@ -464,14 +464,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   4,
+									Column: 18,
+									Line:   6,
 								},
 								File:   "sql.flux",
 								Source: "<-tables: [A]",
 								Start: ast.Position{
-									Column: 15,
-									Line:   4,
+									Column: 5,
+									Line:   6,
 								},
 							},
 						},
@@ -482,14 +482,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 23,
-										Line:   4,
+										Column: 13,
+										Line:   6,
 									},
 									File:   "sql.flux",
 									Source: "tables",
 									Start: ast.Position{
-										Column: 17,
-										Line:   4,
+										Column: 7,
+										Line:   6,
 									},
 								},
 							},
@@ -501,14 +501,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 28,
-										Line:   4,
+										Column: 18,
+										Line:   6,
 									},
 									File:   "sql.flux",
 									Source: "[A]",
 									Start: ast.Position{
-										Column: 25,
-										Line:   4,
+										Column: 15,
+										Line:   6,
 									},
 								},
 							},
@@ -518,14 +518,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 27,
-											Line:   4,
+											Column: 17,
+											Line:   6,
 										},
 										File:   "sql.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 26,
-											Line:   4,
+											Column: 16,
+											Line:   6,
 										},
 									},
 								},
@@ -535,14 +535,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 27,
-												Line:   4,
+												Column: 17,
+												Line:   6,
 											},
 											File:   "sql.flux",
 											Source: "A",
 											Start: ast.Position{
-												Column: 26,
-												Line:   4,
+												Column: 16,
+												Line:   6,
 											},
 										},
 									},
@@ -556,14 +556,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
-									Line:   4,
+									Column: 23,
+									Line:   7,
 								},
 								File:   "sql.flux",
 								Source: "driverName: string",
 								Start: ast.Position{
-									Column: 30,
-									Line:   4,
+									Column: 5,
+									Line:   7,
 								},
 							},
 						},
@@ -574,14 +574,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 40,
-										Line:   4,
+										Column: 15,
+										Line:   7,
 									},
 									File:   "sql.flux",
 									Source: "driverName",
 									Start: ast.Position{
-										Column: 30,
-										Line:   4,
+										Column: 5,
+										Line:   7,
 									},
 								},
 							},
@@ -593,14 +593,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 48,
-										Line:   4,
+										Column: 23,
+										Line:   7,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 42,
-										Line:   4,
+										Column: 17,
+										Line:   7,
 									},
 								},
 							},
@@ -610,14 +610,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
-											Line:   4,
+											Column: 23,
+											Line:   7,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 42,
-											Line:   4,
+											Column: 17,
+											Line:   7,
 										},
 									},
 								},
@@ -630,14 +630,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 72,
-									Line:   4,
+									Column: 27,
+									Line:   8,
 								},
 								File:   "sql.flux",
 								Source: "dataSourceName: string",
 								Start: ast.Position{
-									Column: 50,
-									Line:   4,
+									Column: 5,
+									Line:   8,
 								},
 							},
 						},
@@ -648,14 +648,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 64,
-										Line:   4,
+										Column: 19,
+										Line:   8,
 									},
 									File:   "sql.flux",
 									Source: "dataSourceName",
 									Start: ast.Position{
-										Column: 50,
-										Line:   4,
+										Column: 5,
+										Line:   8,
 									},
 								},
 							},
@@ -667,14 +667,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 72,
-										Line:   4,
+										Column: 27,
+										Line:   8,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 66,
-										Line:   4,
+										Column: 21,
+										Line:   8,
 									},
 								},
 							},
@@ -684,14 +684,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 72,
-											Line:   4,
+											Column: 27,
+											Line:   8,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 66,
-											Line:   4,
+											Column: 21,
+											Line:   8,
 										},
 									},
 								},
@@ -704,14 +704,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 87,
-									Line:   4,
+									Column: 18,
+									Line:   9,
 								},
 								File:   "sql.flux",
 								Source: "table: string",
 								Start: ast.Position{
-									Column: 74,
-									Line:   4,
+									Column: 5,
+									Line:   9,
 								},
 							},
 						},
@@ -722,14 +722,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 79,
-										Line:   4,
+										Column: 10,
+										Line:   9,
 									},
 									File:   "sql.flux",
 									Source: "table",
 									Start: ast.Position{
-										Column: 74,
-										Line:   4,
+										Column: 5,
+										Line:   9,
 									},
 								},
 							},
@@ -741,14 +741,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 87,
-										Line:   4,
+										Column: 18,
+										Line:   9,
 									},
 									File:   "sql.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 81,
-										Line:   4,
+										Column: 12,
+										Line:   9,
 									},
 								},
 							},
@@ -758,14 +758,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 87,
-											Line:   4,
+											Column: 18,
+											Line:   9,
 										},
 										File:   "sql.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 81,
-											Line:   4,
+											Column: 12,
+											Line:   9,
 										},
 									},
 								},
@@ -778,14 +778,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 104,
-									Line:   4,
+									Column: 20,
+									Line:   10,
 								},
 								File:   "sql.flux",
 								Source: "?batchSize: int",
 								Start: ast.Position{
-									Column: 89,
-									Line:   4,
+									Column: 5,
+									Line:   10,
 								},
 							},
 						},
@@ -796,14 +796,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 99,
-										Line:   4,
+										Column: 15,
+										Line:   10,
 									},
 									File:   "sql.flux",
 									Source: "batchSize",
 									Start: ast.Position{
-										Column: 90,
-										Line:   4,
+										Column: 6,
+										Line:   10,
 									},
 								},
 							},
@@ -815,14 +815,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 104,
-										Line:   4,
+										Column: 20,
+										Line:   10,
 									},
 									File:   "sql.flux",
 									Source: "int",
 									Start: ast.Position{
-										Column: 101,
-										Line:   4,
+										Column: 17,
+										Line:   10,
 									},
 								},
 							},
@@ -832,14 +832,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 104,
-											Line:   4,
+											Column: 20,
+											Line:   10,
 										},
 										File:   "sql.flux",
 										Source: "int",
 										Start: ast.Position{
-											Column: 101,
-											Line:   4,
+											Column: 17,
+											Line:   10,
 										},
 									},
 								},
@@ -853,14 +853,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 112,
-									Line:   4,
+									Column: 9,
+									Line:   11,
 								},
 								File:   "sql.flux",
 								Source: "[A]",
 								Start: ast.Position{
-									Column: 109,
-									Line:   4,
+									Column: 6,
+									Line:   11,
 								},
 							},
 						},
@@ -870,14 +870,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 111,
-										Line:   4,
+										Column: 8,
+										Line:   11,
 									},
 									File:   "sql.flux",
 									Source: "A",
 									Start: ast.Position{
-										Column: 110,
-										Line:   4,
+										Column: 7,
+										Line:   11,
 									},
 								},
 							},
@@ -887,14 +887,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 111,
-											Line:   4,
+											Column: 8,
+											Line:   11,
 										},
 										File:   "sql.flux",
 										Source: "A",
 										Start: ast.Position{
-											Column: 110,
-											Line:   4,
+											Column: 7,
+											Line:   11,
 										},
 									},
 								},

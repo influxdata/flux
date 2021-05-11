@@ -23,11 +23,11 @@ var pkgAST = &ast.Package{
 			Errors:   nil,
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
-					Column: 147,
-					Line:   59,
+					Column: 2,
+					Line:   66,
 				},
 				File:   "oee.flux",
-				Source: "package oee\n\nimport \"contrib/tomhollingworth/events\"\nimport \"experimental\"\n\n// computeAPQ computes availability, performance, quality and overall equipment effectiveness (oee).\n// productionEvents - a stream of start/stop events for the production process. Each row contains\n//   a _time and state that indicates start and stop events.\n// partEvents - a stream of part counts. Each row contains cumulative counts where column partCount\n//   represents total number of produced parts and badCount number of parts that did not meet quality standards.\n// runningState - production event or state value that corresponds to equipment running state\n// plannedTime - total time that equipment is expected to produce\n// idealCycleTime - theoretical minimum time to produce one part\ncomputeAPQ = (\n    productionEvents,\n    partEvents,\n    runningState,\n    plannedTime,\n    idealCycleTime\n) => {\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(left: availability, right: totalCount, fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    }))\n    quality = experimental.join(left: badCount, right: totalCount, fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    }))\n\n    return experimental.join(left:performance, right: quality, fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    }))\n}\n\n// APQ computes availability, performance, quality and overall equipment effectiveness (oee).\n// Input tables are expected to have rows with _time, state, partCount and badCount columns, where\n//   state that indicates start and stop events, partCount represents total number\n//   of produced parts and badCount represents number of parts that did not meet quality standards.\n// plannedTime - total time that equipment is expected to produce\n// idealCycleTime - theoretical minimum time to produce one part\nAPQ = (\n    tables=<-,\n    runningState,\n    plannedTime,\n    idealCycleTime\n) =>\n    computeAPQ(productionEvents: tables, partEvents: tables, runningState: runningState, plannedTime: plannedTime, idealCycleTime: idealCycleTime)",
+				Source: "package oee\n\n\nimport \"contrib/tomhollingworth/events\"\nimport \"experimental\"\n\n// computeAPQ computes availability, performance, quality and overall equipment effectiveness (oee).\n// productionEvents - a stream of start/stop events for the production process. Each row contains\n//   a _time and state that indicates start and stop events.\n// partEvents - a stream of part counts. Each row contains cumulative counts where column partCount\n//   represents total number of produced parts and badCount number of parts that did not meet quality standards.\n// runningState - production event or state value that corresponds to equipment running state\n// plannedTime - total time that equipment is expected to produce\n// idealCycleTime - theoretical minimum time to produce one part\ncomputeAPQ = (productionEvents, partEvents, runningState, plannedTime, idealCycleTime) => {\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(\n        left: availability,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        }),\n    )\n    quality = experimental.join(\n        left: badCount,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        }),\n    )\n\n    return experimental.join(\n        left: performance,\n        right: quality,\n        fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        }),\n    )\n}\n\n// APQ computes availability, performance, quality and overall equipment effectiveness (oee).\n// Input tables are expected to have rows with _time, state, partCount and badCount columns, where\n//   state that indicates start and stop events, partCount represents total number\n//   of produced parts and badCount represents number of parts that did not meet quality standards.\n// plannedTime - total time that equipment is expected to produce\n// idealCycleTime - theoretical minimum time to produce one part\nAPQ = (tables=<-, runningState, plannedTime, idealCycleTime) => computeAPQ(\n    productionEvents: tables,\n    partEvents: tables,\n    runningState: runningState,\n    plannedTime: plannedTime,\n    idealCycleTime: idealCycleTime,\n)",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 2,
-						Line:   45,
+						Line:   52,
 					},
 					File:   "oee.flux",
-					Source: "computeAPQ = (\n    productionEvents,\n    partEvents,\n    runningState,\n    plannedTime,\n    idealCycleTime\n) => {\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(left: availability, right: totalCount, fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    }))\n    quality = experimental.join(left: badCount, right: totalCount, fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    }))\n\n    return experimental.join(left:performance, right: quality, fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    }))\n}",
+					Source: "computeAPQ = (productionEvents, partEvents, runningState, plannedTime, idealCycleTime) => {\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(\n        left: availability,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        }),\n    )\n    quality = experimental.join(\n        left: badCount,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        }),\n    )\n\n    return experimental.join(\n        left: performance,\n        right: quality,\n        fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        }),\n    )\n}",
 					Start: ast.Position{
 						Column: 1,
-						Line:   14,
+						Line:   15,
 					},
 				},
 			},
@@ -58,13 +58,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 11,
-							Line:   14,
+							Line:   15,
 						},
 						File:   "oee.flux",
 						Source: "computeAPQ",
 						Start: ast.Position{
 							Column: 1,
-							Line:   14,
+							Line:   15,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 2,
-							Line:   45,
+							Line:   52,
 						},
 						File:   "oee.flux",
-						Source: "(\n    productionEvents,\n    partEvents,\n    runningState,\n    plannedTime,\n    idealCycleTime\n) => {\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(left: availability, right: totalCount, fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    }))\n    quality = experimental.join(left: badCount, right: totalCount, fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    }))\n\n    return experimental.join(left:performance, right: quality, fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    }))\n}",
+						Source: "(productionEvents, partEvents, runningState, plannedTime, idealCycleTime) => {\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(\n        left: availability,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        }),\n    )\n    quality = experimental.join(\n        left: badCount,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        }),\n    )\n\n    return experimental.join(\n        left: performance,\n        right: quality,\n        fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        }),\n    )\n}",
 						Start: ast.Position{
 							Column: 14,
-							Line:   14,
+							Line:   15,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 2,
-								Line:   45,
+								Line:   52,
 							},
 							File:   "oee.flux",
-							Source: "{\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(left: availability, right: totalCount, fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    }))\n    quality = experimental.join(left: badCount, right: totalCount, fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    }))\n\n    return experimental.join(left:performance, right: quality, fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    }))\n}",
+							Source: "{\n    availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}))\n    totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")\n    performance = experimental.join(\n        left: availability,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        }),\n    )\n    quality = experimental.join(\n        left: badCount,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        }),\n    )\n\n    return experimental.join(\n        left: performance,\n        right: quality,\n        fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        }),\n    )\n}",
 							Start: ast.Position{
-								Column: 6,
-								Line:   20,
+								Column: 91,
+								Line:   15,
 							},
 						},
 					},
@@ -111,14 +111,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 122,
-									Line:   25,
+									Column: 120,
+									Line:   20,
 								},
 								File:   "oee.flux",
-								Source: "availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))",
+								Source: "availability = productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}))",
 								Start: ast.Position{
 									Column: 5,
-									Line:   21,
+									Line:   16,
 								},
 							},
 						},
@@ -129,13 +129,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
-										Line:   21,
+										Line:   16,
 									},
 									File:   "oee.flux",
 									Source: "availability",
 									Start: ast.Position{
 										Column: 5,
-										Line:   21,
+										Line:   16,
 									},
 								},
 							},
@@ -152,13 +152,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 36,
-														Line:   21,
+														Line:   16,
 													},
 													File:   "oee.flux",
 													Source: "productionEvents",
 													Start: ast.Position{
 														Column: 20,
-														Line:   21,
+														Line:   16,
 													},
 												},
 											},
@@ -170,13 +170,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 61,
-													Line:   22,
+													Line:   17,
 												},
 												File:   "oee.flux",
 												Source: "productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")",
 												Start: ast.Position{
 													Column: 20,
-													Line:   21,
+													Line:   16,
 												},
 											},
 										},
@@ -188,13 +188,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 60,
-															Line:   22,
+															Line:   17,
 														},
 														File:   "oee.flux",
 														Source: "unit: 1ns, columnName: \"runTime\"",
 														Start: ast.Position{
 															Column: 28,
-															Line:   22,
+															Line:   17,
 														},
 													},
 												},
@@ -206,13 +206,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 37,
-																Line:   22,
+																Line:   17,
 															},
 															File:   "oee.flux",
 															Source: "unit: 1ns",
 															Start: ast.Position{
 																Column: 28,
-																Line:   22,
+																Line:   17,
 															},
 														},
 													},
@@ -224,13 +224,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 32,
-																	Line:   22,
+																	Line:   17,
 																},
 																File:   "oee.flux",
 																Source: "unit",
 																Start: ast.Position{
 																	Column: 28,
-																	Line:   22,
+																	Line:   17,
 																},
 															},
 														},
@@ -244,13 +244,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 37,
-																	Line:   22,
+																	Line:   17,
 																},
 																File:   "oee.flux",
 																Source: "1ns",
 																Start: ast.Position{
 																	Column: 34,
-																	Line:   22,
+																	Line:   17,
 																},
 															},
 														},
@@ -266,13 +266,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 60,
-																Line:   22,
+																Line:   17,
 															},
 															File:   "oee.flux",
 															Source: "columnName: \"runTime\"",
 															Start: ast.Position{
 																Column: 39,
-																Line:   22,
+																Line:   17,
 															},
 														},
 													},
@@ -284,13 +284,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 49,
-																	Line:   22,
+																	Line:   17,
 																},
 																File:   "oee.flux",
 																Source: "columnName",
 																Start: ast.Position{
 																	Column: 39,
-																	Line:   22,
+																	Line:   17,
 																},
 															},
 														},
@@ -304,13 +304,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 60,
-																	Line:   22,
+																	Line:   17,
 																},
 																File:   "oee.flux",
 																Source: "\"runTime\"",
 																Start: ast.Position{
 																	Column: 51,
-																	Line:   22,
+																	Line:   17,
 																},
 															},
 														},
@@ -326,13 +326,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 61,
-														Line:   22,
+														Line:   17,
 													},
 													File:   "oee.flux",
 													Source: "events.duration(unit: 1ns, columnName: \"runTime\")",
 													Start: ast.Position{
 														Column: 12,
-														Line:   22,
+														Line:   17,
 													},
 												},
 											},
@@ -343,13 +343,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 27,
-															Line:   22,
+															Line:   17,
 														},
 														File:   "oee.flux",
 														Source: "events.duration",
 														Start: ast.Position{
 															Column: 12,
-															Line:   22,
+															Line:   17,
 														},
 													},
 												},
@@ -361,13 +361,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 18,
-																Line:   22,
+																Line:   17,
 															},
 															File:   "oee.flux",
 															Source: "events",
 															Start: ast.Position{
 																Column: 12,
-																Line:   22,
+																Line:   17,
 															},
 														},
 													},
@@ -380,13 +380,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 27,
-																Line:   22,
+																Line:   17,
 															},
 															File:   "oee.flux",
 															Source: "duration",
 															Start: ast.Position{
 																Column: 19,
-																Line:   22,
+																Line:   17,
 															},
 														},
 													},
@@ -404,13 +404,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 54,
-												Line:   23,
+												Line:   18,
 											},
 											File:   "oee.flux",
 											Source: "productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)",
 											Start: ast.Position{
 												Column: 20,
-												Line:   21,
+												Line:   16,
 											},
 										},
 									},
@@ -422,13 +422,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 53,
-														Line:   23,
+														Line:   18,
 													},
 													File:   "oee.flux",
 													Source: "fn: (r) => r.state == runningState",
 													Start: ast.Position{
 														Column: 19,
-														Line:   23,
+														Line:   18,
 													},
 												},
 											},
@@ -440,13 +440,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 53,
-															Line:   23,
+															Line:   18,
 														},
 														File:   "oee.flux",
 														Source: "fn: (r) => r.state == runningState",
 														Start: ast.Position{
 															Column: 19,
-															Line:   23,
+															Line:   18,
 														},
 													},
 												},
@@ -458,13 +458,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 21,
-																Line:   23,
+																Line:   18,
 															},
 															File:   "oee.flux",
 															Source: "fn",
 															Start: ast.Position{
 																Column: 19,
-																Line:   23,
+																Line:   18,
 															},
 														},
 													},
@@ -479,13 +479,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 53,
-																Line:   23,
+																Line:   18,
 															},
 															File:   "oee.flux",
 															Source: "(r) => r.state == runningState",
 															Start: ast.Position{
 																Column: 23,
-																Line:   23,
+																Line:   18,
 															},
 														},
 													},
@@ -496,13 +496,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 53,
-																	Line:   23,
+																	Line:   18,
 																},
 																File:   "oee.flux",
 																Source: "r.state == runningState",
 																Start: ast.Position{
 																	Column: 30,
-																	Line:   23,
+																	Line:   18,
 																},
 															},
 														},
@@ -513,13 +513,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 37,
-																		Line:   23,
+																		Line:   18,
 																	},
 																	File:   "oee.flux",
 																	Source: "r.state",
 																	Start: ast.Position{
 																		Column: 30,
-																		Line:   23,
+																		Line:   18,
 																	},
 																},
 															},
@@ -531,13 +531,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 31,
-																			Line:   23,
+																			Line:   18,
 																		},
 																		File:   "oee.flux",
 																		Source: "r",
 																		Start: ast.Position{
 																			Column: 30,
-																			Line:   23,
+																			Line:   18,
 																		},
 																	},
 																},
@@ -550,13 +550,13 @@ var pkgAST = &ast.Package{
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
 																			Column: 37,
-																			Line:   23,
+																			Line:   18,
 																		},
 																		File:   "oee.flux",
 																		Source: "state",
 																		Start: ast.Position{
 																			Column: 32,
-																			Line:   23,
+																			Line:   18,
 																		},
 																	},
 																},
@@ -572,13 +572,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 53,
-																		Line:   23,
+																		Line:   18,
 																	},
 																	File:   "oee.flux",
 																	Source: "runningState",
 																	Start: ast.Position{
 																		Column: 41,
-																		Line:   23,
+																		Line:   18,
 																	},
 																},
 															},
@@ -593,13 +593,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 25,
-																	Line:   23,
+																	Line:   18,
 																},
 																File:   "oee.flux",
 																Source: "r",
 																Start: ast.Position{
 																	Column: 24,
-																	Line:   23,
+																	Line:   18,
 																},
 															},
 														},
@@ -611,13 +611,13 @@ var pkgAST = &ast.Package{
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
 																		Column: 25,
-																		Line:   23,
+																		Line:   18,
 																	},
 																	File:   "oee.flux",
 																	Source: "r",
 																	Start: ast.Position{
 																		Column: 24,
-																		Line:   23,
+																		Line:   18,
 																	},
 																},
 															},
@@ -638,13 +638,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 54,
-													Line:   23,
+													Line:   18,
 												},
 												File:   "oee.flux",
 												Source: "filter(fn: (r) => r.state == runningState)",
 												Start: ast.Position{
 													Column: 12,
-													Line:   23,
+													Line:   18,
 												},
 											},
 										},
@@ -655,13 +655,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   23,
+														Line:   18,
 													},
 													File:   "oee.flux",
 													Source: "filter",
 													Start: ast.Position{
 														Column: 12,
-														Line:   23,
+														Line:   18,
 													},
 												},
 											},
@@ -677,13 +677,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 34,
-											Line:   24,
+											Line:   19,
 										},
 										File:   "oee.flux",
 										Source: "productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")",
 										Start: ast.Position{
 											Column: 20,
-											Line:   21,
+											Line:   16,
 										},
 									},
 								},
@@ -695,13 +695,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   24,
+													Line:   19,
 												},
 												File:   "oee.flux",
 												Source: "column: \"runTime\"",
 												Start: ast.Position{
 													Column: 16,
-													Line:   24,
+													Line:   19,
 												},
 											},
 										},
@@ -713,13 +713,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 33,
-														Line:   24,
+														Line:   19,
 													},
 													File:   "oee.flux",
 													Source: "column: \"runTime\"",
 													Start: ast.Position{
 														Column: 16,
-														Line:   24,
+														Line:   19,
 													},
 												},
 											},
@@ -731,13 +731,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   24,
+															Line:   19,
 														},
 														File:   "oee.flux",
 														Source: "column",
 														Start: ast.Position{
 															Column: 16,
-															Line:   24,
+															Line:   19,
 														},
 													},
 												},
@@ -751,13 +751,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 33,
-															Line:   24,
+															Line:   19,
 														},
 														File:   "oee.flux",
 														Source: "\"runTime\"",
 														Start: ast.Position{
 															Column: 24,
-															Line:   24,
+															Line:   19,
 														},
 													},
 												},
@@ -773,13 +773,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 34,
-												Line:   24,
+												Line:   19,
 											},
 											File:   "oee.flux",
 											Source: "sum(column: \"runTime\")",
 											Start: ast.Position{
 												Column: 12,
-												Line:   24,
+												Line:   19,
 											},
 										},
 									},
@@ -790,13 +790,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   24,
+													Line:   19,
 												},
 												File:   "oee.flux",
 												Source: "sum",
 												Start: ast.Position{
 													Column: 12,
-													Line:   24,
+													Line:   19,
 												},
 											},
 										},
@@ -811,14 +811,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 122,
-										Line:   25,
+										Column: 120,
+										Line:   20,
 									},
 									File:   "oee.flux",
-									Source: "productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))",
+									Source: "productionEvents\n        |> events.duration(unit: 1ns, columnName: \"runTime\")\n        |> filter(fn: (r) => r.state == runningState)\n        |> sum(column: \"runTime\")\n        |> map(fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}))",
 									Start: ast.Position{
 										Column: 20,
-										Line:   21,
+										Line:   16,
 									},
 								},
 							},
@@ -829,14 +829,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 121,
-												Line:   25,
+												Column: 119,
+												Line:   20,
 											},
 											File:   "oee.flux",
-											Source: "fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) })",
+											Source: "fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))})",
 											Start: ast.Position{
 												Column: 16,
-												Line:   25,
+												Line:   20,
 											},
 										},
 									},
@@ -847,14 +847,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 121,
-													Line:   25,
+													Column: 119,
+													Line:   20,
 												},
 												File:   "oee.flux",
-												Source: "fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) })",
+												Source: "fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))})",
 												Start: ast.Position{
 													Column: 16,
-													Line:   25,
+													Line:   20,
 												},
 											},
 										},
@@ -866,13 +866,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 18,
-														Line:   25,
+														Line:   20,
 													},
 													File:   "oee.flux",
 													Source: "fn",
 													Start: ast.Position{
 														Column: 16,
-														Line:   25,
+														Line:   20,
 													},
 												},
 											},
@@ -886,14 +886,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 121,
-														Line:   25,
+														Column: 119,
+														Line:   20,
 													},
 													File:   "oee.flux",
-													Source: "(r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) })",
+													Source: "(r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))})",
 													Start: ast.Position{
 														Column: 20,
-														Line:   25,
+														Line:   20,
 													},
 												},
 											},
@@ -903,14 +903,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 121,
-															Line:   25,
+															Column: 119,
+															Line:   20,
 														},
 														File:   "oee.flux",
-														Source: "({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) })",
+														Source: "({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))})",
 														Start: ast.Position{
 															Column: 27,
-															Line:   25,
+															Line:   20,
 														},
 													},
 												},
@@ -920,14 +920,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 120,
-																Line:   25,
+																Column: 118,
+																Line:   20,
 															},
 															File:   "oee.flux",
-															Source: "{ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }",
+															Source: "{r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}",
 															Start: ast.Position{
 																Column: 28,
-																Line:   25,
+																Line:   20,
 															},
 														},
 													},
@@ -938,14 +938,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 51,
-																	Line:   25,
+																	Column: 50,
+																	Line:   20,
 																},
 																File:   "oee.flux",
 																Source: "_time: r._stop",
 																Start: ast.Position{
-																	Column: 37,
-																	Line:   25,
+																	Column: 36,
+																	Line:   20,
 																},
 															},
 														},
@@ -956,14 +956,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 42,
-																		Line:   25,
+																		Column: 41,
+																		Line:   20,
 																	},
 																	File:   "oee.flux",
 																	Source: "_time",
 																	Start: ast.Position{
-																		Column: 37,
-																		Line:   25,
+																		Column: 36,
+																		Line:   20,
 																	},
 																},
 															},
@@ -976,14 +976,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 51,
-																		Line:   25,
+																		Column: 50,
+																		Line:   20,
 																	},
 																	File:   "oee.flux",
 																	Source: "r._stop",
 																	Start: ast.Position{
-																		Column: 44,
-																		Line:   25,
+																		Column: 43,
+																		Line:   20,
 																	},
 																},
 															},
@@ -994,14 +994,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 45,
-																			Line:   25,
+																			Column: 44,
+																			Line:   20,
 																		},
 																		File:   "oee.flux",
 																		Source: "r",
 																		Start: ast.Position{
-																			Column: 44,
-																			Line:   25,
+																			Column: 43,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1013,14 +1013,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 51,
-																			Line:   25,
+																			Column: 50,
+																			Line:   20,
 																		},
 																		File:   "oee.flux",
 																		Source: "_stop",
 																		Start: ast.Position{
-																			Column: 46,
-																			Line:   25,
+																			Column: 45,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1034,14 +1034,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 118,
-																	Line:   25,
+																	Column: 117,
+																	Line:   20,
 																},
 																File:   "oee.flux",
 																Source: "availability: float(v: r.runTime) / float(v: int(v: plannedTime))",
 																Start: ast.Position{
-																	Column: 53,
-																	Line:   25,
+																	Column: 52,
+																	Line:   20,
 																},
 															},
 														},
@@ -1052,14 +1052,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 65,
-																		Line:   25,
+																		Column: 64,
+																		Line:   20,
 																	},
 																	File:   "oee.flux",
 																	Source: "availability",
 																	Start: ast.Position{
-																		Column: 53,
-																		Line:   25,
+																		Column: 52,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1072,14 +1072,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 118,
-																		Line:   25,
+																		Column: 117,
+																		Line:   20,
 																	},
 																	File:   "oee.flux",
 																	Source: "float(v: r.runTime) / float(v: int(v: plannedTime))",
 																	Start: ast.Position{
-																		Column: 67,
-																		Line:   25,
+																		Column: 66,
+																		Line:   20,
 																	},
 																},
 															},
@@ -1090,14 +1090,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 85,
-																				Line:   25,
+																				Column: 84,
+																				Line:   20,
 																			},
 																			File:   "oee.flux",
 																			Source: "v: r.runTime",
 																			Start: ast.Position{
-																				Column: 73,
-																				Line:   25,
+																				Column: 72,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1108,14 +1108,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 85,
-																					Line:   25,
+																					Column: 84,
+																					Line:   20,
 																				},
 																				File:   "oee.flux",
 																				Source: "v: r.runTime",
 																				Start: ast.Position{
-																					Column: 73,
-																					Line:   25,
+																					Column: 72,
+																					Line:   20,
 																				},
 																			},
 																		},
@@ -1126,14 +1126,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 74,
-																						Line:   25,
+																						Column: 73,
+																						Line:   20,
 																					},
 																					File:   "oee.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 73,
-																						Line:   25,
+																						Column: 72,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1146,14 +1146,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 85,
-																						Line:   25,
+																						Column: 84,
+																						Line:   20,
 																					},
 																					File:   "oee.flux",
 																					Source: "r.runTime",
 																					Start: ast.Position{
-																						Column: 76,
-																						Line:   25,
+																						Column: 75,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1164,14 +1164,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 77,
-																							Line:   25,
+																							Column: 76,
+																							Line:   20,
 																						},
 																						File:   "oee.flux",
 																						Source: "r",
 																						Start: ast.Position{
-																							Column: 76,
-																							Line:   25,
+																							Column: 75,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1183,14 +1183,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 85,
-																							Line:   25,
+																							Column: 84,
+																							Line:   20,
 																						},
 																						File:   "oee.flux",
 																						Source: "runTime",
 																						Start: ast.Position{
-																							Column: 78,
-																							Line:   25,
+																							Column: 77,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1207,14 +1207,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 86,
-																			Line:   25,
+																			Column: 85,
+																			Line:   20,
 																		},
 																		File:   "oee.flux",
 																		Source: "float(v: r.runTime)",
 																		Start: ast.Position{
-																			Column: 67,
-																			Line:   25,
+																			Column: 66,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1224,14 +1224,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 72,
-																				Line:   25,
+																				Column: 71,
+																				Line:   20,
 																			},
 																			File:   "oee.flux",
 																			Source: "float",
 																			Start: ast.Position{
-																				Column: 67,
-																				Line:   25,
+																				Column: 66,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1248,14 +1248,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 117,
-																				Line:   25,
+																				Column: 116,
+																				Line:   20,
 																			},
 																			File:   "oee.flux",
 																			Source: "v: int(v: plannedTime)",
 																			Start: ast.Position{
-																				Column: 95,
-																				Line:   25,
+																				Column: 94,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1266,14 +1266,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 117,
-																					Line:   25,
+																					Column: 116,
+																					Line:   20,
 																				},
 																				File:   "oee.flux",
 																				Source: "v: int(v: plannedTime)",
 																				Start: ast.Position{
-																					Column: 95,
-																					Line:   25,
+																					Column: 94,
+																					Line:   20,
 																				},
 																			},
 																		},
@@ -1284,14 +1284,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 96,
-																						Line:   25,
+																						Column: 95,
+																						Line:   20,
 																					},
 																					File:   "oee.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 95,
-																						Line:   25,
+																						Column: 94,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1305,14 +1305,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 116,
-																							Line:   25,
+																							Column: 115,
+																							Line:   20,
 																						},
 																						File:   "oee.flux",
 																						Source: "v: plannedTime",
 																						Start: ast.Position{
-																							Column: 102,
-																							Line:   25,
+																							Column: 101,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1323,14 +1323,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 116,
-																								Line:   25,
+																								Column: 115,
+																								Line:   20,
 																							},
 																							File:   "oee.flux",
 																							Source: "v: plannedTime",
 																							Start: ast.Position{
-																								Column: 102,
-																								Line:   25,
+																								Column: 101,
+																								Line:   20,
 																							},
 																						},
 																					},
@@ -1341,14 +1341,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 103,
-																									Line:   25,
+																									Column: 102,
+																									Line:   20,
 																								},
 																								File:   "oee.flux",
 																								Source: "v",
 																								Start: ast.Position{
-																									Column: 102,
-																									Line:   25,
+																									Column: 101,
+																									Line:   20,
 																								},
 																							},
 																						},
@@ -1361,14 +1361,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 116,
-																									Line:   25,
+																									Column: 115,
+																									Line:   20,
 																								},
 																								File:   "oee.flux",
 																								Source: "plannedTime",
 																								Start: ast.Position{
-																									Column: 105,
-																									Line:   25,
+																									Column: 104,
+																									Line:   20,
 																								},
 																							},
 																						},
@@ -1383,14 +1383,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 117,
-																						Line:   25,
+																						Column: 116,
+																						Line:   20,
 																					},
 																					File:   "oee.flux",
 																					Source: "int(v: plannedTime)",
 																					Start: ast.Position{
-																						Column: 98,
-																						Line:   25,
+																						Column: 97,
+																						Line:   20,
 																					},
 																				},
 																			},
@@ -1400,14 +1400,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 101,
-																							Line:   25,
+																							Column: 100,
+																							Line:   20,
 																						},
 																						File:   "oee.flux",
 																						Source: "int",
 																						Start: ast.Position{
-																							Column: 98,
-																							Line:   25,
+																							Column: 97,
+																							Line:   20,
 																						},
 																					},
 																				},
@@ -1425,14 +1425,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 118,
-																			Line:   25,
+																			Column: 117,
+																			Line:   20,
 																		},
 																		File:   "oee.flux",
 																		Source: "float(v: int(v: plannedTime))",
 																		Start: ast.Position{
-																			Column: 89,
-																			Line:   25,
+																			Column: 88,
+																			Line:   20,
 																		},
 																	},
 																},
@@ -1442,14 +1442,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 94,
-																				Line:   25,
+																				Column: 93,
+																				Line:   20,
 																			},
 																			File:   "oee.flux",
 																			Source: "float",
 																			Start: ast.Position{
-																				Column: 89,
-																				Line:   25,
+																				Column: 88,
+																				Line:   20,
 																			},
 																		},
 																	},
@@ -1467,14 +1467,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 31,
-																	Line:   25,
+																	Column: 30,
+																	Line:   20,
 																},
 																File:   "oee.flux",
 																Source: "r",
 																Start: ast.Position{
-																	Column: 30,
-																	Line:   25,
+																	Column: 29,
+																	Line:   20,
 																},
 															},
 														},
@@ -1492,13 +1492,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   25,
+															Line:   20,
 														},
 														File:   "oee.flux",
 														Source: "r",
 														Start: ast.Position{
 															Column: 21,
-															Line:   25,
+															Line:   20,
 														},
 													},
 												},
@@ -1510,13 +1510,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 22,
-																Line:   25,
+																Line:   20,
 															},
 															File:   "oee.flux",
 															Source: "r",
 															Start: ast.Position{
 																Column: 21,
-																Line:   25,
+																Line:   20,
 															},
 														},
 													},
@@ -1536,14 +1536,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 122,
-											Line:   25,
+											Column: 120,
+											Line:   20,
 										},
 										File:   "oee.flux",
-										Source: "map(fn: (r) => ({ r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime)) }))",
+										Source: "map(fn: (r) => ({r with _time: r._stop, availability: float(v: r.runTime) / float(v: int(v: plannedTime))}))",
 										Start: ast.Position{
 											Column: 12,
-											Line:   25,
+											Line:   20,
 										},
 									},
 								},
@@ -1554,13 +1554,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   25,
+												Line:   20,
 											},
 											File:   "oee.flux",
 											Source: "map",
 											Start: ast.Position{
 												Column: 12,
-												Line:   25,
+												Line:   20,
 											},
 										},
 									},
@@ -1577,13 +1577,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   29,
+									Line:   24,
 								},
 								File:   "oee.flux",
 								Source: "totalCount = partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")",
 								Start: ast.Position{
 									Column: 5,
-									Line:   26,
+									Line:   21,
 								},
 							},
 						},
@@ -1594,13 +1594,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   26,
+										Line:   21,
 									},
 									File:   "oee.flux",
 									Source: "totalCount",
 									Start: ast.Position{
 										Column: 5,
-										Line:   26,
+										Line:   21,
 									},
 								},
 							},
@@ -1616,13 +1616,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   26,
+													Line:   21,
 												},
 												File:   "oee.flux",
 												Source: "partEvents",
 												Start: ast.Position{
 													Column: 18,
-													Line:   26,
+													Line:   21,
 												},
 											},
 										},
@@ -1634,13 +1634,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 65,
-												Line:   27,
+												Line:   22,
 											},
 											File:   "oee.flux",
 											Source: "partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)",
 											Start: ast.Position{
 												Column: 18,
-												Line:   26,
+												Line:   21,
 											},
 										},
 									},
@@ -1652,13 +1652,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 64,
-														Line:   27,
+														Line:   22,
 													},
 													File:   "oee.flux",
 													Source: "columns: [\"partCount\"], nonNegative: true",
 													Start: ast.Position{
 														Column: 23,
-														Line:   27,
+														Line:   22,
 													},
 												},
 											},
@@ -1670,13 +1670,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 45,
-															Line:   27,
+															Line:   22,
 														},
 														File:   "oee.flux",
 														Source: "columns: [\"partCount\"]",
 														Start: ast.Position{
 															Column: 23,
-															Line:   27,
+															Line:   22,
 														},
 													},
 												},
@@ -1688,13 +1688,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   27,
+																Line:   22,
 															},
 															File:   "oee.flux",
 															Source: "columns",
 															Start: ast.Position{
 																Column: 23,
-																Line:   27,
+																Line:   22,
 															},
 														},
 													},
@@ -1708,13 +1708,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 45,
-																Line:   27,
+																Line:   22,
 															},
 															File:   "oee.flux",
 															Source: "[\"partCount\"]",
 															Start: ast.Position{
 																Column: 32,
-																Line:   27,
+																Line:   22,
 															},
 														},
 													},
@@ -1725,13 +1725,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 44,
-																	Line:   27,
+																	Line:   22,
 																},
 																File:   "oee.flux",
 																Source: "\"partCount\"",
 																Start: ast.Position{
 																	Column: 33,
-																	Line:   27,
+																	Line:   22,
 																},
 															},
 														},
@@ -1747,13 +1747,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 64,
-															Line:   27,
+															Line:   22,
 														},
 														File:   "oee.flux",
 														Source: "nonNegative: true",
 														Start: ast.Position{
 															Column: 47,
-															Line:   27,
+															Line:   22,
 														},
 													},
 												},
@@ -1765,13 +1765,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 58,
-																Line:   27,
+																Line:   22,
 															},
 															File:   "oee.flux",
 															Source: "nonNegative",
 															Start: ast.Position{
 																Column: 47,
-																Line:   27,
+																Line:   22,
 															},
 														},
 													},
@@ -1785,13 +1785,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 64,
-																Line:   27,
+																Line:   22,
 															},
 															File:   "oee.flux",
 															Source: "true",
 															Start: ast.Position{
 																Column: 60,
-																Line:   27,
+																Line:   22,
 															},
 														},
 													},
@@ -1807,13 +1807,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   27,
+													Line:   22,
 												},
 												File:   "oee.flux",
 												Source: "difference(columns: [\"partCount\"], nonNegative: true)",
 												Start: ast.Position{
 													Column: 12,
-													Line:   27,
+													Line:   22,
 												},
 											},
 										},
@@ -1824,13 +1824,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   27,
+														Line:   22,
 													},
 													File:   "oee.flux",
 													Source: "difference",
 													Start: ast.Position{
 														Column: 12,
-														Line:   27,
+														Line:   22,
 													},
 												},
 											},
@@ -1846,13 +1846,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 36,
-											Line:   28,
+											Line:   23,
 										},
 										File:   "oee.flux",
 										Source: "partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")",
 										Start: ast.Position{
 											Column: 18,
-											Line:   26,
+											Line:   21,
 										},
 									},
 								},
@@ -1864,13 +1864,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 35,
-													Line:   28,
+													Line:   23,
 												},
 												File:   "oee.flux",
 												Source: "column: \"partCount\"",
 												Start: ast.Position{
 													Column: 16,
-													Line:   28,
+													Line:   23,
 												},
 											},
 										},
@@ -1882,13 +1882,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 35,
-														Line:   28,
+														Line:   23,
 													},
 													File:   "oee.flux",
 													Source: "column: \"partCount\"",
 													Start: ast.Position{
 														Column: 16,
-														Line:   28,
+														Line:   23,
 													},
 												},
 											},
@@ -1900,13 +1900,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   28,
+															Line:   23,
 														},
 														File:   "oee.flux",
 														Source: "column",
 														Start: ast.Position{
 															Column: 16,
-															Line:   28,
+															Line:   23,
 														},
 													},
 												},
@@ -1920,13 +1920,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 35,
-															Line:   28,
+															Line:   23,
 														},
 														File:   "oee.flux",
 														Source: "\"partCount\"",
 														Start: ast.Position{
 															Column: 24,
-															Line:   28,
+															Line:   23,
 														},
 													},
 												},
@@ -1942,13 +1942,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   28,
+												Line:   23,
 											},
 											File:   "oee.flux",
 											Source: "sum(column: \"partCount\")",
 											Start: ast.Position{
 												Column: 12,
-												Line:   28,
+												Line:   23,
 											},
 										},
 									},
@@ -1959,13 +1959,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   28,
+													Line:   23,
 												},
 												File:   "oee.flux",
 												Source: "sum",
 												Start: ast.Position{
 													Column: 12,
-													Line:   28,
+													Line:   23,
 												},
 											},
 										},
@@ -1981,13 +1981,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   29,
+										Line:   24,
 									},
 									File:   "oee.flux",
 									Source: "partEvents\n        |> difference(columns: [\"partCount\"], nonNegative: true)\n        |> sum(column: \"partCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")",
 									Start: ast.Position{
 										Column: 18,
-										Line:   26,
+										Line:   21,
 									},
 								},
 							},
@@ -1999,13 +1999,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 50,
-												Line:   29,
+												Line:   24,
 											},
 											File:   "oee.flux",
 											Source: "column: \"_stop\", as: \"_time\"",
 											Start: ast.Position{
 												Column: 22,
-												Line:   29,
+												Line:   24,
 											},
 										},
 									},
@@ -2017,13 +2017,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
-													Line:   29,
+													Line:   24,
 												},
 												File:   "oee.flux",
 												Source: "column: \"_stop\"",
 												Start: ast.Position{
 													Column: 22,
-													Line:   29,
+													Line:   24,
 												},
 											},
 										},
@@ -2035,13 +2035,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 28,
-														Line:   29,
+														Line:   24,
 													},
 													File:   "oee.flux",
 													Source: "column",
 													Start: ast.Position{
 														Column: 22,
-														Line:   29,
+														Line:   24,
 													},
 												},
 											},
@@ -2055,13 +2055,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 37,
-														Line:   29,
+														Line:   24,
 													},
 													File:   "oee.flux",
 													Source: "\"_stop\"",
 													Start: ast.Position{
 														Column: 30,
-														Line:   29,
+														Line:   24,
 													},
 												},
 											},
@@ -2074,13 +2074,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 50,
-													Line:   29,
+													Line:   24,
 												},
 												File:   "oee.flux",
 												Source: "as: \"_time\"",
 												Start: ast.Position{
 													Column: 39,
-													Line:   29,
+													Line:   24,
 												},
 											},
 										},
@@ -2092,13 +2092,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
-														Line:   29,
+														Line:   24,
 													},
 													File:   "oee.flux",
 													Source: "as",
 													Start: ast.Position{
 														Column: 39,
-														Line:   29,
+														Line:   24,
 													},
 												},
 											},
@@ -2112,13 +2112,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 50,
-														Line:   29,
+														Line:   24,
 													},
 													File:   "oee.flux",
 													Source: "\"_time\"",
 													Start: ast.Position{
 														Column: 43,
-														Line:   29,
+														Line:   24,
 													},
 												},
 											},
@@ -2134,13 +2134,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 51,
-											Line:   29,
+											Line:   24,
 										},
 										File:   "oee.flux",
 										Source: "duplicate(column: \"_stop\", as: \"_time\")",
 										Start: ast.Position{
 											Column: 12,
-											Line:   29,
+											Line:   24,
 										},
 									},
 								},
@@ -2151,13 +2151,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   29,
+												Line:   24,
 											},
 											File:   "oee.flux",
 											Source: "duplicate",
 											Start: ast.Position{
 												Column: 12,
-												Line:   29,
+												Line:   24,
 											},
 										},
 									},
@@ -2174,13 +2174,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 51,
-									Line:   33,
+									Line:   28,
 								},
 								File:   "oee.flux",
 								Source: "badCount = partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")",
 								Start: ast.Position{
 									Column: 5,
-									Line:   30,
+									Line:   25,
 								},
 							},
 						},
@@ -2191,13 +2191,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   30,
+										Line:   25,
 									},
 									File:   "oee.flux",
 									Source: "badCount",
 									Start: ast.Position{
 										Column: 5,
-										Line:   30,
+										Line:   25,
 									},
 								},
 							},
@@ -2213,13 +2213,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 26,
-													Line:   30,
+													Line:   25,
 												},
 												File:   "oee.flux",
 												Source: "partEvents",
 												Start: ast.Position{
 													Column: 16,
-													Line:   30,
+													Line:   25,
 												},
 											},
 										},
@@ -2231,13 +2231,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 64,
-												Line:   31,
+												Line:   26,
 											},
 											File:   "oee.flux",
 											Source: "partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)",
 											Start: ast.Position{
 												Column: 16,
-												Line:   30,
+												Line:   25,
 											},
 										},
 									},
@@ -2249,13 +2249,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 63,
-														Line:   31,
+														Line:   26,
 													},
 													File:   "oee.flux",
 													Source: "columns: [\"badCount\"], nonNegative: true",
 													Start: ast.Position{
 														Column: 23,
-														Line:   31,
+														Line:   26,
 													},
 												},
 											},
@@ -2267,13 +2267,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 44,
-															Line:   31,
+															Line:   26,
 														},
 														File:   "oee.flux",
 														Source: "columns: [\"badCount\"]",
 														Start: ast.Position{
 															Column: 23,
-															Line:   31,
+															Line:   26,
 														},
 													},
 												},
@@ -2285,13 +2285,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 30,
-																Line:   31,
+																Line:   26,
 															},
 															File:   "oee.flux",
 															Source: "columns",
 															Start: ast.Position{
 																Column: 23,
-																Line:   31,
+																Line:   26,
 															},
 														},
 													},
@@ -2305,13 +2305,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 44,
-																Line:   31,
+																Line:   26,
 															},
 															File:   "oee.flux",
 															Source: "[\"badCount\"]",
 															Start: ast.Position{
 																Column: 32,
-																Line:   31,
+																Line:   26,
 															},
 														},
 													},
@@ -2322,13 +2322,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 43,
-																	Line:   31,
+																	Line:   26,
 																},
 																File:   "oee.flux",
 																Source: "\"badCount\"",
 																Start: ast.Position{
 																	Column: 33,
-																	Line:   31,
+																	Line:   26,
 																},
 															},
 														},
@@ -2344,13 +2344,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 63,
-															Line:   31,
+															Line:   26,
 														},
 														File:   "oee.flux",
 														Source: "nonNegative: true",
 														Start: ast.Position{
 															Column: 46,
-															Line:   31,
+															Line:   26,
 														},
 													},
 												},
@@ -2362,13 +2362,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 57,
-																Line:   31,
+																Line:   26,
 															},
 															File:   "oee.flux",
 															Source: "nonNegative",
 															Start: ast.Position{
 																Column: 46,
-																Line:   31,
+																Line:   26,
 															},
 														},
 													},
@@ -2382,13 +2382,13 @@ var pkgAST = &ast.Package{
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
 																Column: 63,
-																Line:   31,
+																Line:   26,
 															},
 															File:   "oee.flux",
 															Source: "true",
 															Start: ast.Position{
 																Column: 59,
-																Line:   31,
+																Line:   26,
 															},
 														},
 													},
@@ -2404,13 +2404,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 64,
-													Line:   31,
+													Line:   26,
 												},
 												File:   "oee.flux",
 												Source: "difference(columns: [\"badCount\"], nonNegative: true)",
 												Start: ast.Position{
 													Column: 12,
-													Line:   31,
+													Line:   26,
 												},
 											},
 										},
@@ -2421,13 +2421,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 22,
-														Line:   31,
+														Line:   26,
 													},
 													File:   "oee.flux",
 													Source: "difference",
 													Start: ast.Position{
 														Column: 12,
-														Line:   31,
+														Line:   26,
 													},
 												},
 											},
@@ -2443,13 +2443,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 35,
-											Line:   32,
+											Line:   27,
 										},
 										File:   "oee.flux",
 										Source: "partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")",
 										Start: ast.Position{
 											Column: 16,
-											Line:   30,
+											Line:   25,
 										},
 									},
 								},
@@ -2461,13 +2461,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 34,
-													Line:   32,
+													Line:   27,
 												},
 												File:   "oee.flux",
 												Source: "column: \"badCount\"",
 												Start: ast.Position{
 													Column: 16,
-													Line:   32,
+													Line:   27,
 												},
 											},
 										},
@@ -2479,13 +2479,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 34,
-														Line:   32,
+														Line:   27,
 													},
 													File:   "oee.flux",
 													Source: "column: \"badCount\"",
 													Start: ast.Position{
 														Column: 16,
-														Line:   32,
+														Line:   27,
 													},
 												},
 											},
@@ -2497,13 +2497,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 22,
-															Line:   32,
+															Line:   27,
 														},
 														File:   "oee.flux",
 														Source: "column",
 														Start: ast.Position{
 															Column: 16,
-															Line:   32,
+															Line:   27,
 														},
 													},
 												},
@@ -2517,13 +2517,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 34,
-															Line:   32,
+															Line:   27,
 														},
 														File:   "oee.flux",
 														Source: "\"badCount\"",
 														Start: ast.Position{
 															Column: 24,
-															Line:   32,
+															Line:   27,
 														},
 													},
 												},
@@ -2539,13 +2539,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 35,
-												Line:   32,
+												Line:   27,
 											},
 											File:   "oee.flux",
 											Source: "sum(column: \"badCount\")",
 											Start: ast.Position{
 												Column: 12,
-												Line:   32,
+												Line:   27,
 											},
 										},
 									},
@@ -2556,13 +2556,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   32,
+													Line:   27,
 												},
 												File:   "oee.flux",
 												Source: "sum",
 												Start: ast.Position{
 													Column: 12,
-													Line:   32,
+													Line:   27,
 												},
 											},
 										},
@@ -2578,13 +2578,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 51,
-										Line:   33,
+										Line:   28,
 									},
 									File:   "oee.flux",
 									Source: "partEvents\n        |> difference(columns: [\"badCount\"], nonNegative: true)\n        |> sum(column: \"badCount\")\n        |> duplicate(column: \"_stop\", as: \"_time\")",
 									Start: ast.Position{
 										Column: 16,
-										Line:   30,
+										Line:   25,
 									},
 								},
 							},
@@ -2596,13 +2596,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 50,
-												Line:   33,
+												Line:   28,
 											},
 											File:   "oee.flux",
 											Source: "column: \"_stop\", as: \"_time\"",
 											Start: ast.Position{
 												Column: 22,
-												Line:   33,
+												Line:   28,
 											},
 										},
 									},
@@ -2614,13 +2614,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 37,
-													Line:   33,
+													Line:   28,
 												},
 												File:   "oee.flux",
 												Source: "column: \"_stop\"",
 												Start: ast.Position{
 													Column: 22,
-													Line:   33,
+													Line:   28,
 												},
 											},
 										},
@@ -2632,13 +2632,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 28,
-														Line:   33,
+														Line:   28,
 													},
 													File:   "oee.flux",
 													Source: "column",
 													Start: ast.Position{
 														Column: 22,
-														Line:   33,
+														Line:   28,
 													},
 												},
 											},
@@ -2652,13 +2652,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 37,
-														Line:   33,
+														Line:   28,
 													},
 													File:   "oee.flux",
 													Source: "\"_stop\"",
 													Start: ast.Position{
 														Column: 30,
-														Line:   33,
+														Line:   28,
 													},
 												},
 											},
@@ -2671,13 +2671,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 50,
-													Line:   33,
+													Line:   28,
 												},
 												File:   "oee.flux",
 												Source: "as: \"_time\"",
 												Start: ast.Position{
 													Column: 39,
-													Line:   33,
+													Line:   28,
 												},
 											},
 										},
@@ -2689,13 +2689,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
-														Line:   33,
+														Line:   28,
 													},
 													File:   "oee.flux",
 													Source: "as",
 													Start: ast.Position{
 														Column: 39,
-														Line:   33,
+														Line:   28,
 													},
 												},
 											},
@@ -2709,13 +2709,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 50,
-														Line:   33,
+														Line:   28,
 													},
 													File:   "oee.flux",
 													Source: "\"_time\"",
 													Start: ast.Position{
 														Column: 43,
-														Line:   33,
+														Line:   28,
 													},
 												},
 											},
@@ -2731,13 +2731,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 51,
-											Line:   33,
+											Line:   28,
 										},
 										File:   "oee.flux",
 										Source: "duplicate(column: \"_stop\", as: \"_time\")",
 										Start: ast.Position{
 											Column: 12,
-											Line:   33,
+											Line:   28,
 										},
 									},
 								},
@@ -2748,13 +2748,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 21,
-												Line:   33,
+												Line:   28,
 											},
 											File:   "oee.flux",
 											Source: "duplicate",
 											Start: ast.Position{
 												Column: 12,
-												Line:   33,
+												Line:   28,
 											},
 										},
 									},
@@ -2770,14 +2770,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
-									Line:   36,
+									Column: 6,
+									Line:   35,
 								},
 								File:   "oee.flux",
-								Source: "performance = experimental.join(left: availability, right: totalCount, fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    }))",
+								Source: "performance = experimental.join(\n        left: availability,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        }),\n    )",
 								Start: ast.Position{
 									Column: 5,
-									Line:   34,
+									Line:   29,
 								},
 							},
 						},
@@ -2788,13 +2788,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 16,
-										Line:   34,
+										Line:   29,
 									},
 									File:   "oee.flux",
 									Source: "performance",
 									Start: ast.Position{
 										Column: 5,
-										Line:   34,
+										Line:   29,
 									},
 								},
 							},
@@ -2807,14 +2807,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 7,
-											Line:   36,
+											Column: 11,
+											Line:   34,
 										},
 										File:   "oee.flux",
-										Source: "left: availability, right: totalCount, fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    })",
+										Source: "left: availability,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        })",
 										Start: ast.Position{
-											Column: 37,
-											Line:   34,
+											Column: 9,
+											Line:   30,
 										},
 									},
 								},
@@ -2825,14 +2825,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 55,
-												Line:   34,
+												Column: 27,
+												Line:   30,
 											},
 											File:   "oee.flux",
 											Source: "left: availability",
 											Start: ast.Position{
-												Column: 37,
-												Line:   34,
+												Column: 9,
+												Line:   30,
 											},
 										},
 									},
@@ -2843,14 +2843,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 41,
-													Line:   34,
+													Column: 13,
+													Line:   30,
 												},
 												File:   "oee.flux",
 												Source: "left",
 												Start: ast.Position{
-													Column: 37,
-													Line:   34,
+													Column: 9,
+													Line:   30,
 												},
 											},
 										},
@@ -2863,14 +2863,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 55,
-													Line:   34,
+													Column: 27,
+													Line:   30,
 												},
 												File:   "oee.flux",
 												Source: "availability",
 												Start: ast.Position{
-													Column: 43,
-													Line:   34,
+													Column: 15,
+													Line:   30,
 												},
 											},
 										},
@@ -2882,14 +2882,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 74,
-												Line:   34,
+												Column: 26,
+												Line:   31,
 											},
 											File:   "oee.flux",
 											Source: "right: totalCount",
 											Start: ast.Position{
-												Column: 57,
-												Line:   34,
+												Column: 9,
+												Line:   31,
 											},
 										},
 									},
@@ -2900,14 +2900,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 62,
-													Line:   34,
+													Column: 14,
+													Line:   31,
 												},
 												File:   "oee.flux",
 												Source: "right",
 												Start: ast.Position{
-													Column: 57,
-													Line:   34,
+													Column: 9,
+													Line:   31,
 												},
 											},
 										},
@@ -2920,14 +2920,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 74,
-													Line:   34,
+													Column: 26,
+													Line:   31,
 												},
 												File:   "oee.flux",
 												Source: "totalCount",
 												Start: ast.Position{
-													Column: 64,
-													Line:   34,
+													Column: 16,
+													Line:   31,
 												},
 											},
 										},
@@ -2939,14 +2939,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   36,
+												Column: 11,
+												Line:   34,
 											},
 											File:   "oee.flux",
-											Source: "fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    })",
+											Source: "fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        })",
 											Start: ast.Position{
-												Column: 76,
-												Line:   34,
+												Column: 9,
+												Line:   32,
 											},
 										},
 									},
@@ -2957,14 +2957,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 78,
-													Line:   34,
+													Column: 11,
+													Line:   32,
 												},
 												File:   "oee.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 76,
-													Line:   34,
+													Column: 9,
+													Line:   32,
 												},
 											},
 										},
@@ -2978,14 +2978,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 7,
-													Line:   36,
+													Column: 11,
+													Line:   34,
 												},
 												File:   "oee.flux",
-												Source: "(left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    })",
+												Source: "(left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        })",
 												Start: ast.Position{
-													Column: 80,
-													Line:   34,
+													Column: 13,
+													Line:   32,
 												},
 											},
 										},
@@ -2995,14 +2995,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 7,
-														Line:   36,
+														Column: 11,
+														Line:   34,
 													},
 													File:   "oee.flux",
-													Source: "({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    })",
+													Source: "({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        })",
 													Start: ast.Position{
-														Column: 97,
-														Line:   34,
+														Column: 30,
+														Line:   32,
 													},
 												},
 											},
@@ -3012,14 +3012,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 6,
-															Line:   36,
+															Column: 10,
+															Line:   34,
 														},
 														File:   "oee.flux",
-														Source: "{left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    }",
+														Source: "{left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        }",
 														Start: ast.Position{
-															Column: 98,
-															Line:   34,
+															Column: 31,
+															Line:   32,
 														},
 													},
 												},
@@ -3030,14 +3030,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 107,
-																Line:   35,
+																Column: 111,
+																Line:   33,
 															},
 															File:   "oee.flux",
 															Source: "performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)",
 															Start: ast.Position{
-																Column: 9,
-																Line:   35,
+																Column: 13,
+																Line:   33,
 															},
 														},
 													},
@@ -3048,14 +3048,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 20,
-																	Line:   35,
+																	Column: 24,
+																	Line:   33,
 																},
 																File:   "oee.flux",
 																Source: "performance",
 																Start: ast.Position{
-																	Column: 9,
-																	Line:   35,
+																	Column: 13,
+																	Line:   33,
 																},
 															},
 														},
@@ -3068,14 +3068,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 107,
-																	Line:   35,
+																	Column: 111,
+																	Line:   33,
 																},
 																File:   "oee.flux",
 																Source: "float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)",
 																Start: ast.Position{
-																	Column: 22,
-																	Line:   35,
+																	Column: 26,
+																	Line:   33,
 																},
 															},
 														},
@@ -3085,14 +3085,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 82,
-																		Line:   35,
+																		Column: 86,
+																		Line:   33,
 																	},
 																	File:   "oee.flux",
 																	Source: "float(v: right.partCount) * float(v: int(v: idealCycleTime))",
 																	Start: ast.Position{
-																		Column: 22,
-																		Line:   35,
+																		Column: 26,
+																		Line:   33,
 																	},
 																},
 															},
@@ -3103,14 +3103,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 46,
-																				Line:   35,
+																				Column: 50,
+																				Line:   33,
 																			},
 																			File:   "oee.flux",
 																			Source: "v: right.partCount",
 																			Start: ast.Position{
-																				Column: 28,
-																				Line:   35,
+																				Column: 32,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -3121,14 +3121,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 46,
-																					Line:   35,
+																					Column: 50,
+																					Line:   33,
 																				},
 																				File:   "oee.flux",
 																				Source: "v: right.partCount",
 																				Start: ast.Position{
-																					Column: 28,
-																					Line:   35,
+																					Column: 32,
+																					Line:   33,
 																				},
 																			},
 																		},
@@ -3139,14 +3139,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 29,
-																						Line:   35,
+																						Column: 33,
+																						Line:   33,
 																					},
 																					File:   "oee.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 28,
-																						Line:   35,
+																						Column: 32,
+																						Line:   33,
 																					},
 																				},
 																			},
@@ -3159,14 +3159,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 46,
-																						Line:   35,
+																						Column: 50,
+																						Line:   33,
 																					},
 																					File:   "oee.flux",
 																					Source: "right.partCount",
 																					Start: ast.Position{
-																						Column: 31,
-																						Line:   35,
+																						Column: 35,
+																						Line:   33,
 																					},
 																				},
 																			},
@@ -3177,14 +3177,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 36,
-																							Line:   35,
+																							Column: 40,
+																							Line:   33,
 																						},
 																						File:   "oee.flux",
 																						Source: "right",
 																						Start: ast.Position{
-																							Column: 31,
-																							Line:   35,
+																							Column: 35,
+																							Line:   33,
 																						},
 																					},
 																				},
@@ -3196,14 +3196,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 46,
-																							Line:   35,
+																							Column: 50,
+																							Line:   33,
 																						},
 																						File:   "oee.flux",
 																						Source: "partCount",
 																						Start: ast.Position{
-																							Column: 37,
-																							Line:   35,
+																							Column: 41,
+																							Line:   33,
 																						},
 																					},
 																				},
@@ -3220,14 +3220,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 47,
-																			Line:   35,
+																			Column: 51,
+																			Line:   33,
 																		},
 																		File:   "oee.flux",
 																		Source: "float(v: right.partCount)",
 																		Start: ast.Position{
-																			Column: 22,
-																			Line:   35,
+																			Column: 26,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -3237,14 +3237,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 27,
-																				Line:   35,
+																				Column: 31,
+																				Line:   33,
 																			},
 																			File:   "oee.flux",
 																			Source: "float",
 																			Start: ast.Position{
-																				Column: 22,
-																				Line:   35,
+																				Column: 26,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -3261,14 +3261,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 81,
-																				Line:   35,
+																				Column: 85,
+																				Line:   33,
 																			},
 																			File:   "oee.flux",
 																			Source: "v: int(v: idealCycleTime)",
 																			Start: ast.Position{
-																				Column: 56,
-																				Line:   35,
+																				Column: 60,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -3279,14 +3279,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 81,
-																					Line:   35,
+																					Column: 85,
+																					Line:   33,
 																				},
 																				File:   "oee.flux",
 																				Source: "v: int(v: idealCycleTime)",
 																				Start: ast.Position{
-																					Column: 56,
-																					Line:   35,
+																					Column: 60,
+																					Line:   33,
 																				},
 																			},
 																		},
@@ -3297,14 +3297,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 57,
-																						Line:   35,
+																						Column: 61,
+																						Line:   33,
 																					},
 																					File:   "oee.flux",
 																					Source: "v",
 																					Start: ast.Position{
-																						Column: 56,
-																						Line:   35,
+																						Column: 60,
+																						Line:   33,
 																					},
 																				},
 																			},
@@ -3318,14 +3318,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 80,
-																							Line:   35,
+																							Column: 84,
+																							Line:   33,
 																						},
 																						File:   "oee.flux",
 																						Source: "v: idealCycleTime",
 																						Start: ast.Position{
-																							Column: 63,
-																							Line:   35,
+																							Column: 67,
+																							Line:   33,
 																						},
 																					},
 																				},
@@ -3336,14 +3336,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 80,
-																								Line:   35,
+																								Column: 84,
+																								Line:   33,
 																							},
 																							File:   "oee.flux",
 																							Source: "v: idealCycleTime",
 																							Start: ast.Position{
-																								Column: 63,
-																								Line:   35,
+																								Column: 67,
+																								Line:   33,
 																							},
 																						},
 																					},
@@ -3354,14 +3354,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 64,
-																									Line:   35,
+																									Column: 68,
+																									Line:   33,
 																								},
 																								File:   "oee.flux",
 																								Source: "v",
 																								Start: ast.Position{
-																									Column: 63,
-																									Line:   35,
+																									Column: 67,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -3374,14 +3374,14 @@ var pkgAST = &ast.Package{
 																							Errors:   nil,
 																							Loc: &ast.SourceLocation{
 																								End: ast.Position{
-																									Column: 80,
-																									Line:   35,
+																									Column: 84,
+																									Line:   33,
 																								},
 																								File:   "oee.flux",
 																								Source: "idealCycleTime",
 																								Start: ast.Position{
-																									Column: 66,
-																									Line:   35,
+																									Column: 70,
+																									Line:   33,
 																								},
 																							},
 																						},
@@ -3396,14 +3396,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 81,
-																						Line:   35,
+																						Column: 85,
+																						Line:   33,
 																					},
 																					File:   "oee.flux",
 																					Source: "int(v: idealCycleTime)",
 																					Start: ast.Position{
-																						Column: 59,
-																						Line:   35,
+																						Column: 63,
+																						Line:   33,
 																					},
 																				},
 																			},
@@ -3413,14 +3413,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 62,
-																							Line:   35,
+																							Column: 66,
+																							Line:   33,
 																						},
 																						File:   "oee.flux",
 																						Source: "int",
 																						Start: ast.Position{
-																							Column: 59,
-																							Line:   35,
+																							Column: 63,
+																							Line:   33,
 																						},
 																					},
 																				},
@@ -3438,14 +3438,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 82,
-																			Line:   35,
+																			Column: 86,
+																			Line:   33,
 																		},
 																		File:   "oee.flux",
 																		Source: "float(v: int(v: idealCycleTime))",
 																		Start: ast.Position{
-																			Column: 50,
-																			Line:   35,
+																			Column: 54,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -3455,14 +3455,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 55,
-																				Line:   35,
+																				Column: 59,
+																				Line:   33,
 																			},
 																			File:   "oee.flux",
 																			Source: "float",
 																			Start: ast.Position{
-																				Column: 50,
-																				Line:   35,
+																				Column: 54,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -3480,14 +3480,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 106,
-																			Line:   35,
+																			Column: 110,
+																			Line:   33,
 																		},
 																		File:   "oee.flux",
 																		Source: "v: left.runTime",
 																		Start: ast.Position{
-																			Column: 91,
-																			Line:   35,
+																			Column: 95,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -3498,14 +3498,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 106,
-																				Line:   35,
+																				Column: 110,
+																				Line:   33,
 																			},
 																			File:   "oee.flux",
 																			Source: "v: left.runTime",
 																			Start: ast.Position{
-																				Column: 91,
-																				Line:   35,
+																				Column: 95,
+																				Line:   33,
 																			},
 																		},
 																	},
@@ -3516,14 +3516,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 92,
-																					Line:   35,
+																					Column: 96,
+																					Line:   33,
 																				},
 																				File:   "oee.flux",
 																				Source: "v",
 																				Start: ast.Position{
-																					Column: 91,
-																					Line:   35,
+																					Column: 95,
+																					Line:   33,
 																				},
 																			},
 																		},
@@ -3536,14 +3536,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 106,
-																					Line:   35,
+																					Column: 110,
+																					Line:   33,
 																				},
 																				File:   "oee.flux",
 																				Source: "left.runTime",
 																				Start: ast.Position{
-																					Column: 94,
-																					Line:   35,
+																					Column: 98,
+																					Line:   33,
 																				},
 																			},
 																		},
@@ -3554,14 +3554,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 98,
-																						Line:   35,
+																						Column: 102,
+																						Line:   33,
 																					},
 																					File:   "oee.flux",
 																					Source: "left",
 																					Start: ast.Position{
-																						Column: 94,
-																						Line:   35,
+																						Column: 98,
+																						Line:   33,
 																					},
 																				},
 																			},
@@ -3573,14 +3573,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 106,
-																						Line:   35,
+																						Column: 110,
+																						Line:   33,
 																					},
 																					File:   "oee.flux",
 																					Source: "runTime",
 																					Start: ast.Position{
-																						Column: 99,
-																						Line:   35,
+																						Column: 103,
+																						Line:   33,
 																					},
 																				},
 																			},
@@ -3597,14 +3597,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 107,
-																		Line:   35,
+																		Column: 111,
+																		Line:   33,
 																	},
 																	File:   "oee.flux",
 																	Source: "float(v: left.runTime)",
 																	Start: ast.Position{
-																		Column: 85,
-																		Line:   35,
+																		Column: 89,
+																		Line:   33,
 																	},
 																},
 															},
@@ -3614,14 +3614,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 90,
-																			Line:   35,
+																			Column: 94,
+																			Line:   33,
 																		},
 																		File:   "oee.flux",
 																		Source: "float",
 																		Start: ast.Position{
-																			Column: 85,
-																			Line:   35,
+																			Column: 89,
+																			Line:   33,
 																		},
 																	},
 																},
@@ -3639,14 +3639,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 103,
-																Line:   34,
+																Column: 36,
+																Line:   32,
 															},
 															File:   "oee.flux",
 															Source: "left",
 															Start: ast.Position{
-																Column: 99,
-																Line:   34,
+																Column: 32,
+																Line:   32,
 															},
 														},
 													},
@@ -3663,14 +3663,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 85,
-														Line:   34,
+														Column: 18,
+														Line:   32,
 													},
 													File:   "oee.flux",
 													Source: "left",
 													Start: ast.Position{
-														Column: 81,
-														Line:   34,
+														Column: 14,
+														Line:   32,
 													},
 												},
 											},
@@ -3681,14 +3681,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 85,
-															Line:   34,
+															Column: 18,
+															Line:   32,
 														},
 														File:   "oee.flux",
 														Source: "left",
 														Start: ast.Position{
-															Column: 81,
-															Line:   34,
+															Column: 14,
+															Line:   32,
 														},
 													},
 												},
@@ -3702,14 +3702,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 92,
-														Line:   34,
+														Column: 25,
+														Line:   32,
 													},
 													File:   "oee.flux",
 													Source: "right",
 													Start: ast.Position{
-														Column: 87,
-														Line:   34,
+														Column: 20,
+														Line:   32,
 													},
 												},
 											},
@@ -3720,14 +3720,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 92,
-															Line:   34,
+															Column: 25,
+															Line:   32,
 														},
 														File:   "oee.flux",
 														Source: "right",
 														Start: ast.Position{
-															Column: 87,
-															Line:   34,
+															Column: 20,
+															Line:   32,
 														},
 													},
 												},
@@ -3747,14 +3747,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 8,
-										Line:   36,
+										Column: 6,
+										Line:   35,
 									},
 									File:   "oee.flux",
-									Source: "experimental.join(left: availability, right: totalCount, fn: (left, right) => ({left with\n        performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime)\n    }))",
+									Source: "experimental.join(\n        left: availability,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            performance: float(v: right.partCount) * float(v: int(v: idealCycleTime)) / float(v: left.runTime),\n        }),\n    )",
 									Start: ast.Position{
 										Column: 19,
-										Line:   34,
+										Line:   29,
 									},
 								},
 							},
@@ -3765,13 +3765,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 36,
-											Line:   34,
+											Line:   29,
 										},
 										File:   "oee.flux",
 										Source: "experimental.join",
 										Start: ast.Position{
 											Column: 19,
-											Line:   34,
+											Line:   29,
 										},
 									},
 								},
@@ -3783,13 +3783,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 31,
-												Line:   34,
+												Line:   29,
 											},
 											File:   "oee.flux",
 											Source: "experimental",
 											Start: ast.Position{
 												Column: 19,
-												Line:   34,
+												Line:   29,
 											},
 										},
 									},
@@ -3802,13 +3802,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 36,
-												Line:   34,
+												Line:   29,
 											},
 											File:   "oee.flux",
 											Source: "join",
 											Start: ast.Position{
 												Column: 32,
-												Line:   34,
+												Line:   29,
 											},
 										},
 									},
@@ -3825,14 +3825,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
-									Line:   39,
+									Column: 6,
+									Line:   42,
 								},
 								File:   "oee.flux",
-								Source: "quality = experimental.join(left: badCount, right: totalCount, fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    }))",
+								Source: "quality = experimental.join(\n        left: badCount,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        }),\n    )",
 								Start: ast.Position{
 									Column: 5,
-									Line:   37,
+									Line:   36,
 								},
 							},
 						},
@@ -3843,13 +3843,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   37,
+										Line:   36,
 									},
 									File:   "oee.flux",
 									Source: "quality",
 									Start: ast.Position{
 										Column: 5,
-										Line:   37,
+										Line:   36,
 									},
 								},
 							},
@@ -3862,13 +3862,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 7,
-											Line:   39,
+											Column: 11,
+											Line:   41,
 										},
 										File:   "oee.flux",
-										Source: "left: badCount, right: totalCount, fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    })",
+										Source: "left: badCount,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        })",
 										Start: ast.Position{
-											Column: 33,
+											Column: 9,
 											Line:   37,
 										},
 									},
@@ -3880,13 +3880,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 47,
+												Column: 23,
 												Line:   37,
 											},
 											File:   "oee.flux",
 											Source: "left: badCount",
 											Start: ast.Position{
-												Column: 33,
+												Column: 9,
 												Line:   37,
 											},
 										},
@@ -3898,13 +3898,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 37,
+													Column: 13,
 													Line:   37,
 												},
 												File:   "oee.flux",
 												Source: "left",
 												Start: ast.Position{
-													Column: 33,
+													Column: 9,
 													Line:   37,
 												},
 											},
@@ -3918,13 +3918,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 47,
+													Column: 23,
 													Line:   37,
 												},
 												File:   "oee.flux",
 												Source: "badCount",
 												Start: ast.Position{
-													Column: 39,
+													Column: 15,
 													Line:   37,
 												},
 											},
@@ -3937,14 +3937,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 66,
-												Line:   37,
+												Column: 26,
+												Line:   38,
 											},
 											File:   "oee.flux",
 											Source: "right: totalCount",
 											Start: ast.Position{
-												Column: 49,
-												Line:   37,
+												Column: 9,
+												Line:   38,
 											},
 										},
 									},
@@ -3955,14 +3955,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 54,
-													Line:   37,
+													Column: 14,
+													Line:   38,
 												},
 												File:   "oee.flux",
 												Source: "right",
 												Start: ast.Position{
-													Column: 49,
-													Line:   37,
+													Column: 9,
+													Line:   38,
 												},
 											},
 										},
@@ -3975,14 +3975,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 66,
-													Line:   37,
+													Column: 26,
+													Line:   38,
 												},
 												File:   "oee.flux",
 												Source: "totalCount",
 												Start: ast.Position{
-													Column: 56,
-													Line:   37,
+													Column: 16,
+													Line:   38,
 												},
 											},
 										},
@@ -3994,14 +3994,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   39,
+												Column: 11,
+												Line:   41,
 											},
 											File:   "oee.flux",
-											Source: "fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    })",
+											Source: "fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        })",
 											Start: ast.Position{
-												Column: 68,
-												Line:   37,
+												Column: 9,
+												Line:   39,
 											},
 										},
 									},
@@ -4012,14 +4012,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 70,
-													Line:   37,
+													Column: 11,
+													Line:   39,
 												},
 												File:   "oee.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 68,
-													Line:   37,
+													Column: 9,
+													Line:   39,
 												},
 											},
 										},
@@ -4033,14 +4033,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 7,
-													Line:   39,
+													Column: 11,
+													Line:   41,
 												},
 												File:   "oee.flux",
-												Source: "(left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    })",
+												Source: "(left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        })",
 												Start: ast.Position{
-													Column: 72,
-													Line:   37,
+													Column: 13,
+													Line:   39,
 												},
 											},
 										},
@@ -4050,14 +4050,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 7,
-														Line:   39,
+														Column: 11,
+														Line:   41,
 													},
 													File:   "oee.flux",
-													Source: "({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    })",
+													Source: "({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        })",
 													Start: ast.Position{
-														Column: 89,
-														Line:   37,
+														Column: 30,
+														Line:   39,
 													},
 												},
 											},
@@ -4067,14 +4067,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 6,
-															Line:   39,
+															Column: 10,
+															Line:   41,
 														},
 														File:   "oee.flux",
-														Source: "{left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    }",
+														Source: "{left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        }",
 														Start: ast.Position{
-															Column: 90,
-															Line:   37,
+															Column: 31,
+															Line:   39,
 														},
 													},
 												},
@@ -4085,14 +4085,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 102,
-																Line:   38,
+																Column: 103,
+																Line:   40,
 															},
 															File:   "oee.flux",
-															Source: "quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)",
+															Source: "quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount)",
 															Start: ast.Position{
 																Column: 13,
-																Line:   38,
+																Line:   40,
 															},
 														},
 													},
@@ -4104,13 +4104,13 @@ var pkgAST = &ast.Package{
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
 																	Column: 20,
-																	Line:   38,
+																	Line:   40,
 																},
 																File:   "oee.flux",
 																Source: "quality",
 																Start: ast.Position{
 																	Column: 13,
-																	Line:   38,
+																	Line:   40,
 																},
 															},
 														},
@@ -4123,14 +4123,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 102,
-																	Line:   38,
+																	Column: 103,
+																	Line:   40,
 																},
 																File:   "oee.flux",
-																Source: "(float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)",
+																Source: "(float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount)",
 																Start: ast.Position{
 																	Column: 22,
-																	Line:   38,
+																	Line:   40,
 																},
 															},
 														},
@@ -4140,14 +4140,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 74,
-																		Line:   38,
+																		Column: 75,
+																		Line:   40,
 																	},
 																	File:   "oee.flux",
-																	Source: "(float(v: right.partCount) - float(v:left.badCount))",
+																	Source: "(float(v: right.partCount) - float(v: left.badCount))",
 																	Start: ast.Position{
 																		Column: 22,
-																		Line:   38,
+																		Line:   40,
 																	},
 																},
 															},
@@ -4157,14 +4157,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 73,
-																			Line:   38,
+																			Column: 74,
+																			Line:   40,
 																		},
 																		File:   "oee.flux",
-																		Source: "float(v: right.partCount) - float(v:left.badCount)",
+																		Source: "float(v: right.partCount) - float(v: left.badCount)",
 																		Start: ast.Position{
 																			Column: 23,
-																			Line:   38,
+																			Line:   40,
 																		},
 																	},
 																},
@@ -4176,13 +4176,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 47,
-																					Line:   38,
+																					Line:   40,
 																				},
 																				File:   "oee.flux",
 																				Source: "v: right.partCount",
 																				Start: ast.Position{
 																					Column: 29,
-																					Line:   38,
+																					Line:   40,
 																				},
 																			},
 																		},
@@ -4194,13 +4194,13 @@ var pkgAST = &ast.Package{
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
 																						Column: 47,
-																						Line:   38,
+																						Line:   40,
 																					},
 																					File:   "oee.flux",
 																					Source: "v: right.partCount",
 																					Start: ast.Position{
 																						Column: 29,
-																						Line:   38,
+																						Line:   40,
 																					},
 																				},
 																			},
@@ -4212,13 +4212,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 30,
-																							Line:   38,
+																							Line:   40,
 																						},
 																						File:   "oee.flux",
 																						Source: "v",
 																						Start: ast.Position{
 																							Column: 29,
-																							Line:   38,
+																							Line:   40,
 																						},
 																					},
 																				},
@@ -4232,13 +4232,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 47,
-																							Line:   38,
+																							Line:   40,
 																						},
 																						File:   "oee.flux",
 																						Source: "right.partCount",
 																						Start: ast.Position{
 																							Column: 32,
-																							Line:   38,
+																							Line:   40,
 																						},
 																					},
 																				},
@@ -4250,13 +4250,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 37,
-																								Line:   38,
+																								Line:   40,
 																							},
 																							File:   "oee.flux",
 																							Source: "right",
 																							Start: ast.Position{
 																								Column: 32,
-																								Line:   38,
+																								Line:   40,
 																							},
 																						},
 																					},
@@ -4269,13 +4269,13 @@ var pkgAST = &ast.Package{
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
 																								Column: 47,
-																								Line:   38,
+																								Line:   40,
 																							},
 																							File:   "oee.flux",
 																							Source: "partCount",
 																							Start: ast.Position{
 																								Column: 38,
-																								Line:   38,
+																								Line:   40,
 																							},
 																						},
 																					},
@@ -4293,13 +4293,13 @@ var pkgAST = &ast.Package{
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
 																				Column: 48,
-																				Line:   38,
+																				Line:   40,
 																			},
 																			File:   "oee.flux",
 																			Source: "float(v: right.partCount)",
 																			Start: ast.Position{
 																				Column: 23,
-																				Line:   38,
+																				Line:   40,
 																			},
 																		},
 																	},
@@ -4310,13 +4310,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 28,
-																					Line:   38,
+																					Line:   40,
 																				},
 																				File:   "oee.flux",
 																				Source: "float",
 																				Start: ast.Position{
 																					Column: 23,
-																					Line:   38,
+																					Line:   40,
 																				},
 																			},
 																		},
@@ -4333,14 +4333,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 72,
-																					Line:   38,
+																					Column: 73,
+																					Line:   40,
 																				},
 																				File:   "oee.flux",
-																				Source: "v:left.badCount",
+																				Source: "v: left.badCount",
 																				Start: ast.Position{
 																					Column: 57,
-																					Line:   38,
+																					Line:   40,
 																				},
 																			},
 																		},
@@ -4351,14 +4351,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 72,
-																						Line:   38,
+																						Column: 73,
+																						Line:   40,
 																					},
 																					File:   "oee.flux",
-																					Source: "v:left.badCount",
+																					Source: "v: left.badCount",
 																					Start: ast.Position{
 																						Column: 57,
-																						Line:   38,
+																						Line:   40,
 																					},
 																				},
 																			},
@@ -4370,13 +4370,13 @@ var pkgAST = &ast.Package{
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
 																							Column: 58,
-																							Line:   38,
+																							Line:   40,
 																						},
 																						File:   "oee.flux",
 																						Source: "v",
 																						Start: ast.Position{
 																							Column: 57,
-																							Line:   38,
+																							Line:   40,
 																						},
 																					},
 																				},
@@ -4389,14 +4389,14 @@ var pkgAST = &ast.Package{
 																					Errors:   nil,
 																					Loc: &ast.SourceLocation{
 																						End: ast.Position{
-																							Column: 72,
-																							Line:   38,
+																							Column: 73,
+																							Line:   40,
 																						},
 																						File:   "oee.flux",
 																						Source: "left.badCount",
 																						Start: ast.Position{
-																							Column: 59,
-																							Line:   38,
+																							Column: 60,
+																							Line:   40,
 																						},
 																					},
 																				},
@@ -4407,14 +4407,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 63,
-																								Line:   38,
+																								Column: 64,
+																								Line:   40,
 																							},
 																							File:   "oee.flux",
 																							Source: "left",
 																							Start: ast.Position{
-																								Column: 59,
-																								Line:   38,
+																								Column: 60,
+																								Line:   40,
 																							},
 																						},
 																					},
@@ -4426,14 +4426,14 @@ var pkgAST = &ast.Package{
 																						Errors:   nil,
 																						Loc: &ast.SourceLocation{
 																							End: ast.Position{
-																								Column: 72,
-																								Line:   38,
+																								Column: 73,
+																								Line:   40,
 																							},
 																							File:   "oee.flux",
 																							Source: "badCount",
 																							Start: ast.Position{
-																								Column: 64,
-																								Line:   38,
+																								Column: 65,
+																								Line:   40,
 																							},
 																						},
 																					},
@@ -4450,14 +4450,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 73,
-																				Line:   38,
+																				Column: 74,
+																				Line:   40,
 																			},
 																			File:   "oee.flux",
-																			Source: "float(v:left.badCount)",
+																			Source: "float(v: left.badCount)",
 																			Start: ast.Position{
 																				Column: 51,
-																				Line:   38,
+																				Line:   40,
 																			},
 																		},
 																	},
@@ -4468,13 +4468,13 @@ var pkgAST = &ast.Package{
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
 																					Column: 56,
-																					Line:   38,
+																					Line:   40,
 																				},
 																				File:   "oee.flux",
 																				Source: "float",
 																				Start: ast.Position{
 																					Column: 51,
-																					Line:   38,
+																					Line:   40,
 																				},
 																			},
 																		},
@@ -4495,14 +4495,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 101,
-																			Line:   38,
+																			Column: 102,
+																			Line:   40,
 																		},
 																		File:   "oee.flux",
 																		Source: "v: right.partCount",
 																		Start: ast.Position{
-																			Column: 83,
-																			Line:   38,
+																			Column: 84,
+																			Line:   40,
 																		},
 																	},
 																},
@@ -4513,14 +4513,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 101,
-																				Line:   38,
+																				Column: 102,
+																				Line:   40,
 																			},
 																			File:   "oee.flux",
 																			Source: "v: right.partCount",
 																			Start: ast.Position{
-																				Column: 83,
-																				Line:   38,
+																				Column: 84,
+																				Line:   40,
 																			},
 																		},
 																	},
@@ -4531,14 +4531,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 84,
-																					Line:   38,
+																					Column: 85,
+																					Line:   40,
 																				},
 																				File:   "oee.flux",
 																				Source: "v",
 																				Start: ast.Position{
-																					Column: 83,
-																					Line:   38,
+																					Column: 84,
+																					Line:   40,
 																				},
 																			},
 																		},
@@ -4551,14 +4551,14 @@ var pkgAST = &ast.Package{
 																			Errors:   nil,
 																			Loc: &ast.SourceLocation{
 																				End: ast.Position{
-																					Column: 101,
-																					Line:   38,
+																					Column: 102,
+																					Line:   40,
 																				},
 																				File:   "oee.flux",
 																				Source: "right.partCount",
 																				Start: ast.Position{
-																					Column: 86,
-																					Line:   38,
+																					Column: 87,
+																					Line:   40,
 																				},
 																			},
 																		},
@@ -4569,14 +4569,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 91,
-																						Line:   38,
+																						Column: 92,
+																						Line:   40,
 																					},
 																					File:   "oee.flux",
 																					Source: "right",
 																					Start: ast.Position{
-																						Column: 86,
-																						Line:   38,
+																						Column: 87,
+																						Line:   40,
 																					},
 																				},
 																			},
@@ -4588,14 +4588,14 @@ var pkgAST = &ast.Package{
 																				Errors:   nil,
 																				Loc: &ast.SourceLocation{
 																					End: ast.Position{
-																						Column: 101,
-																						Line:   38,
+																						Column: 102,
+																						Line:   40,
 																					},
 																					File:   "oee.flux",
 																					Source: "partCount",
 																					Start: ast.Position{
-																						Column: 92,
-																						Line:   38,
+																						Column: 93,
+																						Line:   40,
 																					},
 																				},
 																			},
@@ -4612,14 +4612,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 102,
-																		Line:   38,
+																		Column: 103,
+																		Line:   40,
 																	},
 																	File:   "oee.flux",
 																	Source: "float(v: right.partCount)",
 																	Start: ast.Position{
-																		Column: 77,
-																		Line:   38,
+																		Column: 78,
+																		Line:   40,
 																	},
 																},
 															},
@@ -4629,14 +4629,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 82,
-																			Line:   38,
+																			Column: 83,
+																			Line:   40,
 																		},
 																		File:   "oee.flux",
 																		Source: "float",
 																		Start: ast.Position{
-																			Column: 77,
-																			Line:   38,
+																			Column: 78,
+																			Line:   40,
 																		},
 																	},
 																},
@@ -4654,14 +4654,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 95,
-																Line:   37,
+																Column: 36,
+																Line:   39,
 															},
 															File:   "oee.flux",
 															Source: "left",
 															Start: ast.Position{
-																Column: 91,
-																Line:   37,
+																Column: 32,
+																Line:   39,
 															},
 														},
 													},
@@ -4678,14 +4678,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 77,
-														Line:   37,
+														Column: 18,
+														Line:   39,
 													},
 													File:   "oee.flux",
 													Source: "left",
 													Start: ast.Position{
-														Column: 73,
-														Line:   37,
+														Column: 14,
+														Line:   39,
 													},
 												},
 											},
@@ -4696,14 +4696,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 77,
-															Line:   37,
+															Column: 18,
+															Line:   39,
 														},
 														File:   "oee.flux",
 														Source: "left",
 														Start: ast.Position{
-															Column: 73,
-															Line:   37,
+															Column: 14,
+															Line:   39,
 														},
 													},
 												},
@@ -4717,14 +4717,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 84,
-														Line:   37,
+														Column: 25,
+														Line:   39,
 													},
 													File:   "oee.flux",
 													Source: "right",
 													Start: ast.Position{
-														Column: 79,
-														Line:   37,
+														Column: 20,
+														Line:   39,
 													},
 												},
 											},
@@ -4735,14 +4735,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 84,
-															Line:   37,
+															Column: 25,
+															Line:   39,
 														},
 														File:   "oee.flux",
 														Source: "right",
 														Start: ast.Position{
-															Column: 79,
-															Line:   37,
+															Column: 20,
+															Line:   39,
 														},
 													},
 												},
@@ -4762,14 +4762,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 8,
-										Line:   39,
+										Column: 6,
+										Line:   42,
 									},
 									File:   "oee.flux",
-									Source: "experimental.join(left: badCount, right: totalCount, fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v:left.badCount)) / float(v: right.partCount)\n    }))",
+									Source: "experimental.join(\n        left: badCount,\n        right: totalCount,\n        fn: (left, right) => ({left with\n            quality: (float(v: right.partCount) - float(v: left.badCount)) / float(v: right.partCount),\n        }),\n    )",
 									Start: ast.Position{
 										Column: 15,
-										Line:   37,
+										Line:   36,
 									},
 								},
 							},
@@ -4780,13 +4780,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 32,
-											Line:   37,
+											Line:   36,
 										},
 										File:   "oee.flux",
 										Source: "experimental.join",
 										Start: ast.Position{
 											Column: 15,
-											Line:   37,
+											Line:   36,
 										},
 									},
 								},
@@ -4798,13 +4798,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   37,
+												Line:   36,
 											},
 											File:   "oee.flux",
 											Source: "experimental",
 											Start: ast.Position{
 												Column: 15,
-												Line:   37,
+												Line:   36,
 											},
 										},
 									},
@@ -4817,13 +4817,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 32,
-												Line:   37,
+												Line:   36,
 											},
 											File:   "oee.flux",
 											Source: "join",
 											Start: ast.Position{
 												Column: 28,
-												Line:   37,
+												Line:   36,
 											},
 										},
 									},
@@ -4842,14 +4842,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 7,
-											Line:   44,
+											Column: 11,
+											Line:   50,
 										},
 										File:   "oee.flux",
-										Source: "left:performance, right: quality, fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    })",
+										Source: "left: performance,\n        right: quality,\n        fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        })",
 										Start: ast.Position{
-											Column: 30,
-											Line:   41,
+											Column: 9,
+											Line:   45,
 										},
 									},
 								},
@@ -4860,14 +4860,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 46,
-												Line:   41,
+												Column: 26,
+												Line:   45,
 											},
 											File:   "oee.flux",
-											Source: "left:performance",
+											Source: "left: performance",
 											Start: ast.Position{
-												Column: 30,
-												Line:   41,
+												Column: 9,
+												Line:   45,
 											},
 										},
 									},
@@ -4878,14 +4878,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 34,
-													Line:   41,
+													Column: 13,
+													Line:   45,
 												},
 												File:   "oee.flux",
 												Source: "left",
 												Start: ast.Position{
-													Column: 30,
-													Line:   41,
+													Column: 9,
+													Line:   45,
 												},
 											},
 										},
@@ -4898,14 +4898,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 46,
-													Line:   41,
+													Column: 26,
+													Line:   45,
 												},
 												File:   "oee.flux",
 												Source: "performance",
 												Start: ast.Position{
-													Column: 35,
-													Line:   41,
+													Column: 15,
+													Line:   45,
 												},
 											},
 										},
@@ -4917,14 +4917,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 62,
-												Line:   41,
+												Column: 23,
+												Line:   46,
 											},
 											File:   "oee.flux",
 											Source: "right: quality",
 											Start: ast.Position{
-												Column: 48,
-												Line:   41,
+												Column: 9,
+												Line:   46,
 											},
 										},
 									},
@@ -4935,14 +4935,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 53,
-													Line:   41,
+													Column: 14,
+													Line:   46,
 												},
 												File:   "oee.flux",
 												Source: "right",
 												Start: ast.Position{
-													Column: 48,
-													Line:   41,
+													Column: 9,
+													Line:   46,
 												},
 											},
 										},
@@ -4955,14 +4955,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 62,
-													Line:   41,
+													Column: 23,
+													Line:   46,
 												},
 												File:   "oee.flux",
 												Source: "quality",
 												Start: ast.Position{
-													Column: 55,
-													Line:   41,
+													Column: 16,
+													Line:   46,
 												},
 											},
 										},
@@ -4974,14 +4974,14 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 7,
-												Line:   44,
+												Column: 11,
+												Line:   50,
 											},
 											File:   "oee.flux",
-											Source: "fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    })",
+											Source: "fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        })",
 											Start: ast.Position{
-												Column: 64,
-												Line:   41,
+												Column: 9,
+												Line:   47,
 											},
 										},
 									},
@@ -4992,14 +4992,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 66,
-													Line:   41,
+													Column: 11,
+													Line:   47,
 												},
 												File:   "oee.flux",
 												Source: "fn",
 												Start: ast.Position{
-													Column: 64,
-													Line:   41,
+													Column: 9,
+													Line:   47,
 												},
 											},
 										},
@@ -5013,14 +5013,14 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 7,
-													Line:   44,
+													Column: 11,
+													Line:   50,
 												},
 												File:   "oee.flux",
-												Source: "(left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    })",
+												Source: "(left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        })",
 												Start: ast.Position{
-													Column: 68,
-													Line:   41,
+													Column: 13,
+													Line:   47,
 												},
 											},
 										},
@@ -5030,14 +5030,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 7,
-														Line:   44,
+														Column: 11,
+														Line:   50,
 													},
 													File:   "oee.flux",
-													Source: "({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    })",
+													Source: "({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        })",
 													Start: ast.Position{
-														Column: 85,
-														Line:   41,
+														Column: 30,
+														Line:   47,
 													},
 												},
 											},
@@ -5047,14 +5047,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 6,
-															Line:   44,
+															Column: 10,
+															Line:   50,
 														},
 														File:   "oee.flux",
-														Source: "{left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    }",
+														Source: "{left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        }",
 														Start: ast.Position{
-															Column: 86,
-															Line:   41,
+															Column: 31,
+															Line:   47,
 														},
 													},
 												},
@@ -5065,14 +5065,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 31,
-																Line:   42,
+																Column: 35,
+																Line:   48,
 															},
 															File:   "oee.flux",
 															Source: "quality: right.quality",
 															Start: ast.Position{
-																Column: 9,
-																Line:   42,
+																Column: 13,
+																Line:   48,
 															},
 														},
 													},
@@ -5083,14 +5083,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 16,
-																	Line:   42,
+																	Column: 20,
+																	Line:   48,
 																},
 																File:   "oee.flux",
 																Source: "quality",
 																Start: ast.Position{
-																	Column: 9,
-																	Line:   42,
+																	Column: 13,
+																	Line:   48,
 																},
 															},
 														},
@@ -5103,14 +5103,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 31,
-																	Line:   42,
+																	Column: 35,
+																	Line:   48,
 																},
 																File:   "oee.flux",
 																Source: "right.quality",
 																Start: ast.Position{
-																	Column: 18,
-																	Line:   42,
+																	Column: 22,
+																	Line:   48,
 																},
 															},
 														},
@@ -5121,14 +5121,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 23,
-																		Line:   42,
+																		Column: 27,
+																		Line:   48,
 																	},
 																	File:   "oee.flux",
 																	Source: "right",
 																	Start: ast.Position{
-																		Column: 18,
-																		Line:   42,
+																		Column: 22,
+																		Line:   48,
 																	},
 																},
 															},
@@ -5140,14 +5140,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 31,
-																		Line:   42,
+																		Column: 35,
+																		Line:   48,
 																	},
 																	File:   "oee.flux",
 																	Source: "quality",
 																	Start: ast.Position{
-																		Column: 24,
-																		Line:   42,
+																		Column: 28,
+																		Line:   48,
 																	},
 																},
 															},
@@ -5161,14 +5161,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 66,
-																Line:   43,
+																Column: 70,
+																Line:   49,
 															},
 															File:   "oee.flux",
 															Source: "oee: left.availability * left.performance * right.quality",
 															Start: ast.Position{
-																Column: 9,
-																Line:   43,
+																Column: 13,
+																Line:   49,
 															},
 														},
 													},
@@ -5179,14 +5179,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 12,
-																	Line:   43,
+																	Column: 16,
+																	Line:   49,
 																},
 																File:   "oee.flux",
 																Source: "oee",
 																Start: ast.Position{
-																	Column: 9,
-																	Line:   43,
+																	Column: 13,
+																	Line:   49,
 																},
 															},
 														},
@@ -5199,14 +5199,14 @@ var pkgAST = &ast.Package{
 															Errors:   nil,
 															Loc: &ast.SourceLocation{
 																End: ast.Position{
-																	Column: 66,
-																	Line:   43,
+																	Column: 70,
+																	Line:   49,
 																},
 																File:   "oee.flux",
 																Source: "left.availability * left.performance * right.quality",
 																Start: ast.Position{
-																	Column: 14,
-																	Line:   43,
+																	Column: 18,
+																	Line:   49,
 																},
 															},
 														},
@@ -5216,14 +5216,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 50,
-																		Line:   43,
+																		Column: 54,
+																		Line:   49,
 																	},
 																	File:   "oee.flux",
 																	Source: "left.availability * left.performance",
 																	Start: ast.Position{
-																		Column: 14,
-																		Line:   43,
+																		Column: 18,
+																		Line:   49,
 																	},
 																},
 															},
@@ -5233,14 +5233,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 31,
-																			Line:   43,
+																			Column: 35,
+																			Line:   49,
 																		},
 																		File:   "oee.flux",
 																		Source: "left.availability",
 																		Start: ast.Position{
-																			Column: 14,
-																			Line:   43,
+																			Column: 18,
+																			Line:   49,
 																		},
 																	},
 																},
@@ -5251,14 +5251,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 18,
-																				Line:   43,
+																				Column: 22,
+																				Line:   49,
 																			},
 																			File:   "oee.flux",
 																			Source: "left",
 																			Start: ast.Position{
-																				Column: 14,
-																				Line:   43,
+																				Column: 18,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -5270,14 +5270,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 31,
-																				Line:   43,
+																				Column: 35,
+																				Line:   49,
 																			},
 																			File:   "oee.flux",
 																			Source: "availability",
 																			Start: ast.Position{
-																				Column: 19,
-																				Line:   43,
+																				Column: 23,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -5292,14 +5292,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 50,
-																			Line:   43,
+																			Column: 54,
+																			Line:   49,
 																		},
 																		File:   "oee.flux",
 																		Source: "left.performance",
 																		Start: ast.Position{
-																			Column: 34,
-																			Line:   43,
+																			Column: 38,
+																			Line:   49,
 																		},
 																	},
 																},
@@ -5310,14 +5310,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 38,
-																				Line:   43,
+																				Column: 42,
+																				Line:   49,
 																			},
 																			File:   "oee.flux",
 																			Source: "left",
 																			Start: ast.Position{
-																				Column: 34,
-																				Line:   43,
+																				Column: 38,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -5329,14 +5329,14 @@ var pkgAST = &ast.Package{
 																		Errors:   nil,
 																		Loc: &ast.SourceLocation{
 																			End: ast.Position{
-																				Column: 50,
-																				Line:   43,
+																				Column: 54,
+																				Line:   49,
 																			},
 																			File:   "oee.flux",
 																			Source: "performance",
 																			Start: ast.Position{
-																				Column: 39,
-																				Line:   43,
+																				Column: 43,
+																				Line:   49,
 																			},
 																		},
 																	},
@@ -5352,14 +5352,14 @@ var pkgAST = &ast.Package{
 																Errors:   nil,
 																Loc: &ast.SourceLocation{
 																	End: ast.Position{
-																		Column: 66,
-																		Line:   43,
+																		Column: 70,
+																		Line:   49,
 																	},
 																	File:   "oee.flux",
 																	Source: "right.quality",
 																	Start: ast.Position{
-																		Column: 53,
-																		Line:   43,
+																		Column: 57,
+																		Line:   49,
 																	},
 																},
 															},
@@ -5370,14 +5370,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 58,
-																			Line:   43,
+																			Column: 62,
+																			Line:   49,
 																		},
 																		File:   "oee.flux",
 																		Source: "right",
 																		Start: ast.Position{
-																			Column: 53,
-																			Line:   43,
+																			Column: 57,
+																			Line:   49,
 																		},
 																	},
 																},
@@ -5389,14 +5389,14 @@ var pkgAST = &ast.Package{
 																	Errors:   nil,
 																	Loc: &ast.SourceLocation{
 																		End: ast.Position{
-																			Column: 66,
-																			Line:   43,
+																			Column: 70,
+																			Line:   49,
 																		},
 																		File:   "oee.flux",
 																		Source: "quality",
 																		Start: ast.Position{
-																			Column: 59,
-																			Line:   43,
+																			Column: 63,
+																			Line:   49,
 																		},
 																	},
 																},
@@ -5413,14 +5413,14 @@ var pkgAST = &ast.Package{
 														Errors:   nil,
 														Loc: &ast.SourceLocation{
 															End: ast.Position{
-																Column: 91,
-																Line:   41,
+																Column: 36,
+																Line:   47,
 															},
 															File:   "oee.flux",
 															Source: "left",
 															Start: ast.Position{
-																Column: 87,
-																Line:   41,
+																Column: 32,
+																Line:   47,
 															},
 														},
 													},
@@ -5437,14 +5437,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 73,
-														Line:   41,
+														Column: 18,
+														Line:   47,
 													},
 													File:   "oee.flux",
 													Source: "left",
 													Start: ast.Position{
-														Column: 69,
-														Line:   41,
+														Column: 14,
+														Line:   47,
 													},
 												},
 											},
@@ -5455,14 +5455,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 73,
-															Line:   41,
+															Column: 18,
+															Line:   47,
 														},
 														File:   "oee.flux",
 														Source: "left",
 														Start: ast.Position{
-															Column: 69,
-															Line:   41,
+															Column: 14,
+															Line:   47,
 														},
 													},
 												},
@@ -5476,14 +5476,14 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 80,
-														Line:   41,
+														Column: 25,
+														Line:   47,
 													},
 													File:   "oee.flux",
 													Source: "right",
 													Start: ast.Position{
-														Column: 75,
-														Line:   41,
+														Column: 20,
+														Line:   47,
 													},
 												},
 											},
@@ -5494,14 +5494,14 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 80,
-															Line:   41,
+															Column: 25,
+															Line:   47,
 														},
 														File:   "oee.flux",
 														Source: "right",
 														Start: ast.Position{
-															Column: 75,
-															Line:   41,
+															Column: 20,
+															Line:   47,
 														},
 													},
 												},
@@ -5521,14 +5521,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 8,
-										Line:   44,
+										Column: 6,
+										Line:   51,
 									},
 									File:   "oee.flux",
-									Source: "experimental.join(left:performance, right: quality, fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    }))",
+									Source: "experimental.join(\n        left: performance,\n        right: quality,\n        fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        }),\n    )",
 									Start: ast.Position{
 										Column: 12,
-										Line:   41,
+										Line:   44,
 									},
 								},
 							},
@@ -5539,13 +5539,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 29,
-											Line:   41,
+											Line:   44,
 										},
 										File:   "oee.flux",
 										Source: "experimental.join",
 										Start: ast.Position{
 											Column: 12,
-											Line:   41,
+											Line:   44,
 										},
 									},
 								},
@@ -5557,13 +5557,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 24,
-												Line:   41,
+												Line:   44,
 											},
 											File:   "oee.flux",
 											Source: "experimental",
 											Start: ast.Position{
 												Column: 12,
-												Line:   41,
+												Line:   44,
 											},
 										},
 									},
@@ -5576,13 +5576,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 29,
-												Line:   41,
+												Line:   44,
 											},
 											File:   "oee.flux",
 											Source: "join",
 											Start: ast.Position{
 												Column: 25,
-												Line:   41,
+												Line:   44,
 											},
 										},
 									},
@@ -5598,14 +5598,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 8,
-									Line:   44,
+									Column: 6,
+									Line:   51,
 								},
 								File:   "oee.flux",
-								Source: "return experimental.join(left:performance, right: quality, fn: (left, right) => ({left with\n        quality: right.quality,\n        oee: left.availability * left.performance * right.quality\n    }))",
+								Source: "return experimental.join(\n        left: performance,\n        right: quality,\n        fn: (left, right) => ({left with\n            quality: right.quality,\n            oee: left.availability * left.performance * right.quality,\n        }),\n    )",
 								Start: ast.Position{
 									Column: 5,
-									Line:   41,
+									Line:   44,
 								},
 							},
 						},
@@ -5620,13 +5620,13 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 21,
+								Column: 31,
 								Line:   15,
 							},
 							File:   "oee.flux",
 							Source: "productionEvents",
 							Start: ast.Position{
-								Column: 5,
+								Column: 15,
 								Line:   15,
 							},
 						},
@@ -5638,13 +5638,13 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 21,
+									Column: 31,
 									Line:   15,
 								},
 								File:   "oee.flux",
 								Source: "productionEvents",
 								Start: ast.Position{
-									Column: 5,
+									Column: 15,
 									Line:   15,
 								},
 							},
@@ -5659,14 +5659,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 15,
-								Line:   16,
+								Column: 43,
+								Line:   15,
 							},
 							File:   "oee.flux",
 							Source: "partEvents",
 							Start: ast.Position{
-								Column: 5,
-								Line:   16,
+								Column: 33,
+								Line:   15,
 							},
 						},
 					},
@@ -5677,14 +5677,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
-									Line:   16,
+									Column: 43,
+									Line:   15,
 								},
 								File:   "oee.flux",
 								Source: "partEvents",
 								Start: ast.Position{
-									Column: 5,
-									Line:   16,
+									Column: 33,
+									Line:   15,
 								},
 							},
 						},
@@ -5698,14 +5698,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 17,
-								Line:   17,
+								Column: 57,
+								Line:   15,
 							},
 							File:   "oee.flux",
 							Source: "runningState",
 							Start: ast.Position{
-								Column: 5,
-								Line:   17,
+								Column: 45,
+								Line:   15,
 							},
 						},
 					},
@@ -5716,14 +5716,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   17,
+									Column: 57,
+									Line:   15,
 								},
 								File:   "oee.flux",
 								Source: "runningState",
 								Start: ast.Position{
-									Column: 5,
-									Line:   17,
+									Column: 45,
+									Line:   15,
 								},
 							},
 						},
@@ -5737,14 +5737,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
-								Line:   18,
+								Column: 70,
+								Line:   15,
 							},
 							File:   "oee.flux",
 							Source: "plannedTime",
 							Start: ast.Position{
-								Column: 5,
-								Line:   18,
+								Column: 59,
+								Line:   15,
 							},
 						},
 					},
@@ -5755,14 +5755,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
-									Line:   18,
+									Column: 70,
+									Line:   15,
 								},
 								File:   "oee.flux",
 								Source: "plannedTime",
 								Start: ast.Position{
-									Column: 5,
-									Line:   18,
+									Column: 59,
+									Line:   15,
 								},
 							},
 						},
@@ -5776,14 +5776,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 19,
-								Line:   19,
+								Column: 86,
+								Line:   15,
 							},
 							File:   "oee.flux",
 							Source: "idealCycleTime",
 							Start: ast.Position{
-								Column: 5,
-								Line:   19,
+								Column: 72,
+								Line:   15,
 							},
 						},
 					},
@@ -5794,14 +5794,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
-									Line:   19,
+									Column: 86,
+									Line:   15,
 								},
 								File:   "oee.flux",
 								Source: "idealCycleTime",
 								Start: ast.Position{
-									Column: 5,
-									Line:   19,
+									Column: 72,
+									Line:   15,
 								},
 							},
 						},
@@ -5818,14 +5818,14 @@ var pkgAST = &ast.Package{
 				Errors:   nil,
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
-						Column: 147,
-						Line:   59,
+						Column: 2,
+						Line:   66,
 					},
 					File:   "oee.flux",
-					Source: "APQ = (\n    tables=<-,\n    runningState,\n    plannedTime,\n    idealCycleTime\n) =>\n    computeAPQ(productionEvents: tables, partEvents: tables, runningState: runningState, plannedTime: plannedTime, idealCycleTime: idealCycleTime)",
+					Source: "APQ = (tables=<-, runningState, plannedTime, idealCycleTime) => computeAPQ(\n    productionEvents: tables,\n    partEvents: tables,\n    runningState: runningState,\n    plannedTime: plannedTime,\n    idealCycleTime: idealCycleTime,\n)",
 					Start: ast.Position{
 						Column: 1,
-						Line:   53,
+						Line:   60,
 					},
 				},
 			},
@@ -5836,13 +5836,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 4,
-							Line:   53,
+							Line:   60,
 						},
 						File:   "oee.flux",
 						Source: "APQ",
 						Start: ast.Position{
 							Column: 1,
-							Line:   53,
+							Line:   60,
 						},
 					},
 				},
@@ -5855,14 +5855,14 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 147,
-							Line:   59,
+							Column: 2,
+							Line:   66,
 						},
 						File:   "oee.flux",
-						Source: "(\n    tables=<-,\n    runningState,\n    plannedTime,\n    idealCycleTime\n) =>\n    computeAPQ(productionEvents: tables, partEvents: tables, runningState: runningState, plannedTime: plannedTime, idealCycleTime: idealCycleTime)",
+						Source: "(tables=<-, runningState, plannedTime, idealCycleTime) => computeAPQ(\n    productionEvents: tables,\n    partEvents: tables,\n    runningState: runningState,\n    plannedTime: plannedTime,\n    idealCycleTime: idealCycleTime,\n)",
 						Start: ast.Position{
 							Column: 7,
-							Line:   53,
+							Line:   60,
 						},
 					},
 				},
@@ -5873,14 +5873,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 146,
-									Line:   59,
+									Column: 35,
+									Line:   65,
 								},
 								File:   "oee.flux",
-								Source: "productionEvents: tables, partEvents: tables, runningState: runningState, plannedTime: plannedTime, idealCycleTime: idealCycleTime",
+								Source: "productionEvents: tables,\n    partEvents: tables,\n    runningState: runningState,\n    plannedTime: plannedTime,\n    idealCycleTime: idealCycleTime",
 								Start: ast.Position{
-									Column: 16,
-									Line:   59,
+									Column: 5,
+									Line:   61,
 								},
 							},
 						},
@@ -5891,14 +5891,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 40,
-										Line:   59,
+										Column: 29,
+										Line:   61,
 									},
 									File:   "oee.flux",
 									Source: "productionEvents: tables",
 									Start: ast.Position{
-										Column: 16,
-										Line:   59,
+										Column: 5,
+										Line:   61,
 									},
 								},
 							},
@@ -5909,14 +5909,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 32,
-											Line:   59,
+											Column: 21,
+											Line:   61,
 										},
 										File:   "oee.flux",
 										Source: "productionEvents",
 										Start: ast.Position{
-											Column: 16,
-											Line:   59,
+											Column: 5,
+											Line:   61,
 										},
 									},
 								},
@@ -5929,14 +5929,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 40,
-											Line:   59,
+											Column: 29,
+											Line:   61,
 										},
 										File:   "oee.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 34,
-											Line:   59,
+											Column: 23,
+											Line:   61,
 										},
 									},
 								},
@@ -5948,14 +5948,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 60,
-										Line:   59,
+										Column: 23,
+										Line:   62,
 									},
 									File:   "oee.flux",
 									Source: "partEvents: tables",
 									Start: ast.Position{
-										Column: 42,
-										Line:   59,
+										Column: 5,
+										Line:   62,
 									},
 								},
 							},
@@ -5966,14 +5966,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 52,
-											Line:   59,
+											Column: 15,
+											Line:   62,
 										},
 										File:   "oee.flux",
 										Source: "partEvents",
 										Start: ast.Position{
-											Column: 42,
-											Line:   59,
+											Column: 5,
+											Line:   62,
 										},
 									},
 								},
@@ -5986,14 +5986,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 60,
-											Line:   59,
+											Column: 23,
+											Line:   62,
 										},
 										File:   "oee.flux",
 										Source: "tables",
 										Start: ast.Position{
-											Column: 54,
-											Line:   59,
+											Column: 17,
+											Line:   62,
 										},
 									},
 								},
@@ -6005,14 +6005,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 88,
-										Line:   59,
+										Column: 31,
+										Line:   63,
 									},
 									File:   "oee.flux",
 									Source: "runningState: runningState",
 									Start: ast.Position{
-										Column: 62,
-										Line:   59,
+										Column: 5,
+										Line:   63,
 									},
 								},
 							},
@@ -6023,14 +6023,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 74,
-											Line:   59,
+											Column: 17,
+											Line:   63,
 										},
 										File:   "oee.flux",
 										Source: "runningState",
 										Start: ast.Position{
-											Column: 62,
-											Line:   59,
+											Column: 5,
+											Line:   63,
 										},
 									},
 								},
@@ -6043,14 +6043,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 88,
-											Line:   59,
+											Column: 31,
+											Line:   63,
 										},
 										File:   "oee.flux",
 										Source: "runningState",
 										Start: ast.Position{
-											Column: 76,
-											Line:   59,
+											Column: 19,
+											Line:   63,
 										},
 									},
 								},
@@ -6062,14 +6062,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 114,
-										Line:   59,
+										Column: 29,
+										Line:   64,
 									},
 									File:   "oee.flux",
 									Source: "plannedTime: plannedTime",
 									Start: ast.Position{
-										Column: 90,
-										Line:   59,
+										Column: 5,
+										Line:   64,
 									},
 								},
 							},
@@ -6080,14 +6080,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 101,
-											Line:   59,
+											Column: 16,
+											Line:   64,
 										},
 										File:   "oee.flux",
 										Source: "plannedTime",
 										Start: ast.Position{
-											Column: 90,
-											Line:   59,
+											Column: 5,
+											Line:   64,
 										},
 									},
 								},
@@ -6100,14 +6100,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 114,
-											Line:   59,
+											Column: 29,
+											Line:   64,
 										},
 										File:   "oee.flux",
 										Source: "plannedTime",
 										Start: ast.Position{
-											Column: 103,
-											Line:   59,
+											Column: 18,
+											Line:   64,
 										},
 									},
 								},
@@ -6119,14 +6119,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 146,
-										Line:   59,
+										Column: 35,
+										Line:   65,
 									},
 									File:   "oee.flux",
 									Source: "idealCycleTime: idealCycleTime",
 									Start: ast.Position{
-										Column: 116,
-										Line:   59,
+										Column: 5,
+										Line:   65,
 									},
 								},
 							},
@@ -6137,14 +6137,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 130,
-											Line:   59,
+											Column: 19,
+											Line:   65,
 										},
 										File:   "oee.flux",
 										Source: "idealCycleTime",
 										Start: ast.Position{
-											Column: 116,
-											Line:   59,
+											Column: 5,
+											Line:   65,
 										},
 									},
 								},
@@ -6157,14 +6157,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 146,
-											Line:   59,
+											Column: 35,
+											Line:   65,
 										},
 										File:   "oee.flux",
 										Source: "idealCycleTime",
 										Start: ast.Position{
-											Column: 132,
-											Line:   59,
+											Column: 21,
+											Line:   65,
 										},
 									},
 								},
@@ -6179,14 +6179,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 147,
-								Line:   59,
+								Column: 2,
+								Line:   66,
 							},
 							File:   "oee.flux",
-							Source: "computeAPQ(productionEvents: tables, partEvents: tables, runningState: runningState, plannedTime: plannedTime, idealCycleTime: idealCycleTime)",
+							Source: "computeAPQ(\n    productionEvents: tables,\n    partEvents: tables,\n    runningState: runningState,\n    plannedTime: plannedTime,\n    idealCycleTime: idealCycleTime,\n)",
 							Start: ast.Position{
-								Column: 5,
-								Line:   59,
+								Column: 65,
+								Line:   60,
 							},
 						},
 					},
@@ -6196,14 +6196,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 15,
-									Line:   59,
+									Column: 75,
+									Line:   60,
 								},
 								File:   "oee.flux",
 								Source: "computeAPQ",
 								Start: ast.Position{
-									Column: 5,
-									Line:   59,
+									Column: 65,
+									Line:   60,
 								},
 							},
 						},
@@ -6219,14 +6219,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
-								Line:   54,
+								Column: 17,
+								Line:   60,
 							},
 							File:   "oee.flux",
 							Source: "tables=<-",
 							Start: ast.Position{
-								Column: 5,
-								Line:   54,
+								Column: 8,
+								Line:   60,
 							},
 						},
 					},
@@ -6237,14 +6237,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 11,
-									Line:   54,
+									Column: 14,
+									Line:   60,
 								},
 								File:   "oee.flux",
 								Source: "tables",
 								Start: ast.Position{
-									Column: 5,
-									Line:   54,
+									Column: 8,
+									Line:   60,
 								},
 							},
 						},
@@ -6256,14 +6256,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 14,
-								Line:   54,
+								Column: 17,
+								Line:   60,
 							},
 							File:   "oee.flux",
 							Source: "<-",
 							Start: ast.Position{
-								Column: 12,
-								Line:   54,
+								Column: 15,
+								Line:   60,
 							},
 						},
 					}},
@@ -6273,14 +6273,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 17,
-								Line:   55,
+								Column: 31,
+								Line:   60,
 							},
 							File:   "oee.flux",
 							Source: "runningState",
 							Start: ast.Position{
-								Column: 5,
-								Line:   55,
+								Column: 19,
+								Line:   60,
 							},
 						},
 					},
@@ -6291,14 +6291,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   55,
+									Column: 31,
+									Line:   60,
 								},
 								File:   "oee.flux",
 								Source: "runningState",
 								Start: ast.Position{
-									Column: 5,
-									Line:   55,
+									Column: 19,
+									Line:   60,
 								},
 							},
 						},
@@ -6312,14 +6312,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 16,
-								Line:   56,
+								Column: 44,
+								Line:   60,
 							},
 							File:   "oee.flux",
 							Source: "plannedTime",
 							Start: ast.Position{
-								Column: 5,
-								Line:   56,
+								Column: 33,
+								Line:   60,
 							},
 						},
 					},
@@ -6330,14 +6330,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 16,
-									Line:   56,
+									Column: 44,
+									Line:   60,
 								},
 								File:   "oee.flux",
 								Source: "plannedTime",
 								Start: ast.Position{
-									Column: 5,
-									Line:   56,
+									Column: 33,
+									Line:   60,
 								},
 							},
 						},
@@ -6351,14 +6351,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 19,
-								Line:   57,
+								Column: 60,
+								Line:   60,
 							},
 							File:   "oee.flux",
 							Source: "idealCycleTime",
 							Start: ast.Position{
-								Column: 5,
-								Line:   57,
+								Column: 46,
+								Line:   60,
 							},
 						},
 					},
@@ -6369,14 +6369,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 19,
-									Line:   57,
+									Column: 60,
+									Line:   60,
 								},
 								File:   "oee.flux",
 								Source: "idealCycleTime",
 								Start: ast.Position{
-									Column: 5,
-									Line:   57,
+									Column: 46,
+									Line:   60,
 								},
 							},
 						},
@@ -6397,13 +6397,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 40,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "oee.flux",
 					Source: "import \"contrib/tomhollingworth/events\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -6414,13 +6414,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 40,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "oee.flux",
 						Source: "\"contrib/tomhollingworth/events\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -6434,13 +6434,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 22,
-						Line:   4,
+						Line:   5,
 					},
 					File:   "oee.flux",
 					Source: "import \"experimental\"",
 					Start: ast.Position{
 						Column: 1,
-						Line:   4,
+						Line:   5,
 					},
 				},
 			},
@@ -6451,13 +6451,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 22,
-							Line:   4,
+							Line:   5,
 						},
 						File:   "oee.flux",
 						Source: "\"experimental\"",
 						Start: ast.Position{
 							Column: 8,
-							Line:   4,
+							Line:   5,
 						},
 					},
 				},

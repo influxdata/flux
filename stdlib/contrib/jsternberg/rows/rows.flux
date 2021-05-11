@@ -1,5 +1,6 @@
 package rows
 
+
 // map will map each of the rows to a new value.
 // The function will be invoked for each row and the
 // return value will be used as the values in the output

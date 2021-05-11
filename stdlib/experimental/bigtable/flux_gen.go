@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   3,
+					Line:   4,
 				},
 				File:   "bigtable.flux",
-				Source: "package bigtable\n\nbuiltin from",
+				Source: "package bigtable\n\n\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "bigtable.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "bigtable.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 104,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "bigtable.flux",
 						Source: "(token: string, project: string, instance: string, table: string) => [T] where T: Record",
 						Start: ast.Position{
 							Column: 16,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -95,13 +95,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 104,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "bigtable.flux",
 							Source: "T: Record",
 							Start: ast.Position{
 								Column: 95,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -112,13 +112,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 104,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "bigtable.flux",
 								Source: "Record",
 								Start: ast.Position{
 									Column: 98,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 96,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "bigtable.flux",
 								Source: "T",
 								Start: ast.Position{
 									Column: 95,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -151,13 +151,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 88,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "bigtable.flux",
 							Source: "(token: string, project: string, instance: string, table: string) => [T]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -168,13 +168,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 30,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "bigtable.flux",
 								Source: "token: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -186,13 +186,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "token",
 									Start: ast.Position{
 										Column: 17,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 30,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 24,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -222,13 +222,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 30,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "bigtable.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 24,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -242,13 +242,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 47,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "bigtable.flux",
 								Source: "project: string",
 								Start: ast.Position{
 									Column: 32,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -260,13 +260,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 39,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "project",
 									Start: ast.Position{
 										Column: 32,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -279,13 +279,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 41,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -296,13 +296,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 47,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "bigtable.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 41,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -316,13 +316,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 65,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "bigtable.flux",
 								Source: "instance: string",
 								Start: ast.Position{
 									Column: 49,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -334,13 +334,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 57,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "instance",
 									Start: ast.Position{
 										Column: 49,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -353,13 +353,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 65,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 59,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -370,13 +370,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 65,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "bigtable.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 59,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -390,13 +390,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 80,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "bigtable.flux",
 								Source: "table: string",
 								Start: ast.Position{
 									Column: 67,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -408,13 +408,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 72,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "table",
 									Start: ast.Position{
 										Column: 67,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -427,13 +427,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 80,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 74,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -444,13 +444,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 80,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "bigtable.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 74,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -465,13 +465,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 88,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "bigtable.flux",
 								Source: "[T]",
 								Start: ast.Position{
 									Column: 85,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -482,13 +482,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 87,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "bigtable.flux",
 									Source: "T",
 									Start: ast.Position{
 										Column: 86,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -499,13 +499,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 87,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "bigtable.flux",
 										Source: "T",
 										Start: ast.Position{
 											Column: 86,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},

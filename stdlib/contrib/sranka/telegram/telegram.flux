@@ -1,5 +1,6 @@
 package telegram
 
+
 import "http"
 import "json"
 
@@ -24,11 +25,11 @@ message = (url=defaultURL, token, channel, text, parseMode=defaultParseMode, dis
         disable_web_page_preview: disableWebPagePreview,
         disable_notification: silent,
     }
-
     headers = {
         "Content-Type": "application/json; charset=utf-8",
     }
-    enc = json.encode(v:data)
+    enc = json.encode(v: data)
+
     return http.post(headers: headers, url: url + token + "/sendMessage", data: enc)
 }
 
@@ -39,18 +40,23 @@ message = (url=defaultURL, token, channel, text, parseMode=defaultParseMode, dis
 // `disableWebPagePreview` - bool - Disables preview of web links in the sent messages when "true". Defaults to "false"
 // The returned factory function accepts a `mapFn` parameter.
 // The `mapFn` must return an object with `channel`, `text`, and `silent`, as defined in the `message` function arguments.
-endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) =>
-    (mapFn) =>
-        (tables=<-) => tables
-            |> map(fn: (r) => {
-                obj = mapFn(r: r)
-                return {r with _sent: string(v: 2 == message(
-                    url: url,
-                    token: token,
-                    channel: obj.channel,
-                    text: obj.text,
-                    parseMode: parseMode,
-                    disableWebPagePreview: disableWebPagePreview, 
-                    silent: obj.silent,
-                ) / 100)}
-            })
+endpoint = (url=defaultURL, token, parseMode=defaultParseMode, disableWebPagePreview=defaultDisableWebPagePreview) => (mapFn) => (tables=<-) => tables
+    |> map(
+        fn: (r) => {
+            obj = mapFn(r: r)
+
+            return {r with
+                _sent: string(
+                    v: 2 == message(
+                        url: url,
+                        token: token,
+                        channel: obj.channel,
+                        text: obj.text,
+                        parseMode: parseMode,
+                        disableWebPagePreview: disableWebPagePreview,
+                        silent: obj.silent,
+                    ) / 100,
+                ),
+            }
+        },
+    )

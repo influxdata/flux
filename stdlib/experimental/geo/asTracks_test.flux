@@ -1,9 +1,10 @@
 package geo_test
 
+
 import "experimental/geo"
 import "testing"
 
-option now = () => (2030-01-01T00:00:00Z)
+option now = () => 2030-01-01T00:00:00Z
 
 inData = "
 #group,false,false,false,false,true,true,true,true,true
@@ -123,7 +124,6 @@ inData = "
 ,result,table,_time,_value,s2_cell_id,_field,_measurement,_pt,id
 ,,17,2019-11-20T10:18:00Z,1574245037,89e82d4,tid,bikes,end,vehicleA
 "
-
 outData = "
 #group,false,false,false,false,false,false,true,false,true,false
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double,long,double
@@ -159,12 +159,10 @@ outData = "
 ,,2,2019-11-10T21:17:46Z,89c258c,bikes,via,vehicleB,40.762418,1573420560,-73.965579
 ,,2,2019-11-10T21:17:47Z,89c258c,bikes,end,vehicleB,40.762424,1573420560,-73.965583
 "
-
-t_asTracks = (table=<-) =>
-  table
+t_asTracks = (table=<-) => table
     |> range(start: 2019-11-01T00:00:00Z)
     |> geo.toRows()
     |> geo.asTracks()
     |> drop(columns: ["_start", "_stop"])
-test _asTracks = () =>
-	({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})
+
+test _asTracks = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_asTracks})

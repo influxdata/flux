@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 13,
-					Line:   3,
+					Line:   4,
 				},
 				File:   "socket.flux",
-				Source: "package socket\n\nbuiltin from",
+				Source: "package socket\n\n\nbuiltin from",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -41,13 +41,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 13,
-						Line:   3,
+						Line:   4,
 					},
 					File:   "socket.flux",
 					Source: "builtin from",
 					Start: ast.Position{
 						Column: 1,
-						Line:   3,
+						Line:   4,
 					},
 				},
 			},
@@ -59,13 +59,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 13,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "socket.flux",
 						Source: "from",
 						Start: ast.Position{
 							Column: 9,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -78,13 +78,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 54,
-							Line:   3,
+							Line:   4,
 						},
 						File:   "socket.flux",
 						Source: "(url: string, ?decoder: string) => [A]",
 						Start: ast.Position{
 							Column: 16,
-							Line:   3,
+							Line:   4,
 						},
 					},
 				},
@@ -96,13 +96,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 54,
-								Line:   3,
+								Line:   4,
 							},
 							File:   "socket.flux",
 							Source: "(url: string, ?decoder: string) => [A]",
 							Start: ast.Position{
 								Column: 16,
-								Line:   3,
+								Line:   4,
 							},
 						},
 					},
@@ -113,13 +113,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 28,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "socket.flux",
 								Source: "url: string",
 								Start: ast.Position{
 									Column: 17,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -131,13 +131,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "socket.flux",
 									Source: "url",
 									Start: ast.Position{
 										Column: 17,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -150,13 +150,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 28,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "socket.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 22,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -167,13 +167,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "socket.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 22,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -187,13 +187,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 46,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "socket.flux",
 								Source: "?decoder: string",
 								Start: ast.Position{
 									Column: 30,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -205,13 +205,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 38,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "socket.flux",
 									Source: "decoder",
 									Start: ast.Position{
 										Column: 31,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -224,13 +224,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 46,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "socket.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 40,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -241,13 +241,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "socket.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 40,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},
@@ -262,13 +262,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 54,
-									Line:   3,
+									Line:   4,
 								},
 								File:   "socket.flux",
 								Source: "[A]",
 								Start: ast.Position{
 									Column: 51,
-									Line:   3,
+									Line:   4,
 								},
 							},
 						},
@@ -279,13 +279,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 53,
-										Line:   3,
+										Line:   4,
 									},
 									File:   "socket.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 52,
-										Line:   3,
+										Line:   4,
 									},
 								},
 							},
@@ -296,13 +296,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 53,
-											Line:   3,
+											Line:   4,
 										},
 										File:   "socket.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 52,
-											Line:   3,
+											Line:   4,
 										},
 									},
 								},

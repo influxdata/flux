@@ -1,12 +1,13 @@
 package tickscript_test
 
+
 import "testing"
 import "csv"
 import "contrib/bonitoo-io/tickscript"
 import "influxdata/influxdb/monitor"
 import "influxdata/influxdb/schema"
 
-option now = () => (2020-11-25T14:05:30Z)
+option now = () => 2020-11-25T14:05:30Z
 
 // overwrite as buckets are not avail in Flux tests
 option monitor.write = (tables=<-) => tables
@@ -24,7 +25,6 @@ inData = "
 ,,0,2020-11-25T14:05:07.768317097Z,8.33716449678206,kafka_message_in_rate,testm,kafka07,ft
 ,,0,2020-11-25T14:05:08.868317091Z,1.33716449678206,kafka_message_in_rate,testm,kafka07,ft
 "
-
 outData = "
 #group,false,false,false,true,true,true,true,false,true,false,true,false,true,false,true
 #datatype,string,long,double,string,string,string,string,string,string,long,string,string,string,string,string
@@ -37,22 +37,20 @@ outData = "
 ,,1,26.33716449678206,rate-check,Rate Check,crit,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: crit - 26.33716449678206,testm,1606313106696061106,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft
 ,,2,8.33716449678206,rate-check,Rate Check,warn,statuses,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert: warn - 8.33716449678206,testm,1606313107768317097,custom,some detail: myrealm=ft,kafka07,Realm: ft - Hostname: kafka07 / Metric: kafka_message_in_rate threshold alert,ft
 "
-
 check = {
-  _check_id: "rate-check",
-  _check_name: "Rate Check",
-  _type: "custom", // tickscript?
-  tags: {},
+    _check_id: "rate-check",
+    _check_name: "Rate Check",
+    // tickscript?
+    _type: "custom",
+    tags: {},
 }
-
 metric_type = "kafka_message_in_rate"
 tier = "ft"
 h_threshold = 10
 w_threshold = 5
-l_threshold = .002
-
+l_threshold = 0.002
 tickscript_alert = (table=<-) => table
-	|> range(start: 2020-11-25T14:05:00Z)
+    |> range(start: 2020-11-25T14:05:00Z)
     |> filter(fn: (r) => r._field == metric_type and r.realm == tier)
     |> schema.fieldsAsCols()
     |> tickscript.select(column: metric_type, as: "KafkaMsgRate")
@@ -60,15 +58,15 @@ tickscript_alert = (table=<-) => table
     |> tickscript.alert(
         check: check,
         id: (r) => "Realm: ${r.realm} - Hostname: ${r.host} / Metric: ${metric_type} threshold alert",
-        message: (r) => "${r.id}: ${r._level} - ${string(v:r.KafkaMsgRate)}",
+        message: (r) => "${r.id}: ${r._level} - ${string(v: r.KafkaMsgRate)}",
         details: (r) => "some detail: myrealm=${r.realm}",
         crit: (r) => r.KafkaMsgRate > h_threshold or r.KafkaMsgRate < l_threshold,
-        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold
+        warn: (r) => r.KafkaMsgRate > w_threshold or r.KafkaMsgRate < l_threshold,
     )
     |> drop(columns: ["_time"])
 
 test _tickscript_alert = () => ({
-	input: testing.loadStorage(csv: inData),
-	want: testing.loadMem(csv: outData),
-	fn: tickscript_alert,
+    input: testing.loadStorage(csv: inData),
+    want: testing.loadMem(csv: outData),
+    fn: tickscript_alert,
 })

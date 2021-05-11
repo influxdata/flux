@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! Walking the semantic graph.
 
 mod _walk;
 mod walk_mut;
