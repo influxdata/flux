@@ -721,19 +721,22 @@ impl Dictionary {
     }
 }
 
-/// `Record` is an extensible record type.
+/// An extensible record type.
 ///
-/// A row is either `Empty`, meaning it has no properties,
-/// or it is an extension of a row.
+/// A record is either `Empty`, meaning it has no properties,
+/// or it is an extension of a record.
 ///
-/// A row may extend what is referred to as a row
-/// variable. A row variable is a type variable that
+/// A record may extend what is referred to as a *record
+/// variable*. A record variable is a type variable that
 /// represents an unknown record type.
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type")]
-#[allow(missing_docs)]
 pub enum Record {
+    /// A record that has no properties.
     Empty,
+    /// Extension of a record.
+    ///
+    /// `tail` is the record variable.
     Extension { head: Property, tail: MonoType },
 }
 
