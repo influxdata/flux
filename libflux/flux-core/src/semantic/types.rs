@@ -1,4 +1,4 @@
-#![allow(missing_docs)]
+//! Semantic representations of types.
 
 use crate::semantic::fresh::{Fresh, Fresher};
 use crate::semantic::sub::{Substitutable, Substitution};
@@ -13,20 +13,27 @@ use std::{
 
 /// For use in generics where the specific type of map is not mentioned.
 pub type SemanticMap<K, V> = BTreeMap<K, V>;
+#[allow(missing_docs)]
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
+/// A type scheme that quantifies the free variables of a monotype.
 #[derive(Debug, Clone)]
 pub struct PolyType {
+    /// List of the free variables within the monotypes.
     pub vars: Vec<Tvar>,
+    /// The list of kind constraints on any of the free variables.
     pub cons: TvarKinds,
+    /// The underlying monotype.
     pub expr: MonoType,
 }
 
+/// Map of identifier to a polytype that preserves a sorted order when iterating.
 pub type PolyTypeMap = SemanticMap<String, PolyType>;
+/// Nested map of polytypes that preserves a sorted order when iterating
 pub type PolyTypeMapMap = SemanticMap<String, SemanticMap<String, PolyType>>;
 
-#[macro_export]
 /// Alias the maplit literal construction macro so we can specify the type here.
+#[macro_export]
 macro_rules! semantic_map {
     ( $($x:tt)* ) => ( maplit::btreemap!( $($x)* ) );
 }
@@ -120,25 +127,34 @@ impl PolyType {
             .collect::<Vec<_>>()
             .join(" + ")
     }
+    /// Produces a `PolyType` where the type variables have been normalized to start at 0
+    /// (i.e. A), instead of whatever type variables are present in the orginal.
+    ///
+    /// Useful for pretty printing the type in error messages.
     pub fn normal(&self) -> PolyType {
         self.clone()
             .fresh(&mut Fresher::from(0), &mut TvarMap::new())
     }
 }
 
-pub fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> {
+/// Helper function that concatenates two vectors into a single vector while removing duplicates.
+pub(crate) fn union<T: PartialEq>(mut vars: Vec<T>, mut with: Vec<T>) -> Vec<T> {
     with.retain(|tv| !vars.contains(tv));
     vars.append(&mut with);
     vars
 }
 
-pub fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
+/// Helper function that removes all elements in `vars` from `from`.
+pub(crate) fn minus<T: PartialEq>(vars: &[T], mut from: Vec<T>) -> Vec<T> {
     from.retain(|tv| !vars.contains(tv));
     from
 }
 
-#[derive(Debug, PartialEq)]
 /// Errors that can be returned during type inference.
+/// (Note that these error messages are read by end users.
+/// This should be kept in mind when returning one of these errors.)
+#[derive(Debug, PartialEq)]
+#[allow(missing_docs)]
 pub enum Error {
     CannotUnify {
         exp: MonoType,
@@ -215,8 +231,9 @@ impl fmt::Display for Error {
     }
 }
 
-/// `Kind` represents a class or family of types.
+/// Represents a constraint on a type variable to a specific kind (*i.e.*, a type class).
 #[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash)]
+#[allow(missing_docs)]
 pub enum Kind {
     Addable,
     Subtractable,
@@ -244,8 +261,10 @@ impl cmp::PartialOrd for Kind {
     }
 }
 
-/// MonoType represents a specific named type.
+/// Represents a Flux type. The type may be unknown, represented as a type variable,
+/// or may be a known concrete type.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
+#[allow(missing_docs)]
 pub enum MonoType {
     #[display(fmt = "bool")]
     Bool,
@@ -277,8 +296,11 @@ pub enum MonoType {
     Fun(Box<Function>),
 }
 
+/// An ordered map of string identifiers to monotypes.
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
+#[allow(missing_docs)]
 pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
+#[allow(missing_docs)]
 type RefMonoTypeVecMap<'a> = HashMap<&'a String, Vec<&'a MonoType>>;
 
 impl Substitutable for MonoType {
@@ -348,6 +370,10 @@ impl From<Record> for MonoType {
 }
 
 impl MonoType {
+    /// Performs unification on the type with another type.
+    /// If successful, results in a solution to the unification problem,
+    /// in the form of a substitution. If there is no solution to the
+    /// unification problem then unification fails and an error is reported.
     pub fn unify(
         self, // self represents the expected type
         actual: Self,
@@ -374,6 +400,7 @@ impl MonoType {
         }
     }
 
+    /// Validates that the current type meets the constraints of the specified kind.
     pub fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match self {
             MonoType::Bool => match with {
@@ -501,9 +528,11 @@ impl MonoType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize)]
 pub struct Tvar(pub u64);
 
-/// TvarKinds is a map from type variables to their constraining kinds.
+/// A map from type variables to their constraining kinds.
 pub type TvarKinds = SemanticMap<Tvar, Vec<Kind>>;
+#[allow(missing_docs)]
 pub type TvarMap = SemanticMap<Tvar, Tvar>;
+#[allow(missing_docs)]
 pub type SubstitutionMap = SemanticMap<Tvar, MonoType>;
 
 impl fmt::Display for Tvar {
@@ -603,7 +632,7 @@ impl Tvar {
     }
 }
 
-/// `Array` is a homogeneous list type.
+/// A homogeneous list type.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "[{}]", _0)]
 pub struct Array(pub MonoType);
@@ -649,7 +678,7 @@ impl Array {
     }
 }
 
-/// `Dictionary` is a key-value data structure.
+/// A key-value data structure.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "[{}:{}]", key, val)]
 pub struct Dictionary {
@@ -698,20 +727,26 @@ impl Dictionary {
     }
 }
 
-/// `Record` is an extensible record type.
+/// An extensible record type.
 ///
-/// A row is either `Empty`, meaning it has no properties,
-/// or it is an extension of a row.
+/// A record is either `Empty`, meaning it has no properties,
+/// or it is an extension of a record.
 ///
-/// A row may extend what is referred to as a row
-/// variable. A row variable is a type variable that
+/// A record may extend what is referred to as a *record
+/// variable*. A record variable is a type variable that
 /// represents an unknown record type.
-///
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type")]
 pub enum Record {
+    /// A record that has no properties.
     Empty,
-    Extension { head: Property, tail: MonoType },
+    /// Extension of a record.
+    Extension {
+        /// The [`Property`] that extends the record type.
+        head: Property,
+        /// `tail` is the record variable.
+        tail: MonoType,
+    },
 }
 
 impl fmt::Display for Record {
@@ -991,6 +1026,7 @@ fn apply_then_unify(
 /// A key-value pair representing a property type in a record.
 #[derive(Debug, Display, Clone, PartialEq, Serialize)]
 #[display(fmt = "{}:{}", k, v)]
+#[allow(missing_docs)]
 pub struct Property {
     pub k: String,
     pub v: MonoType,
@@ -1014,12 +1050,11 @@ impl MaxTvar for Property {
     }
 }
 
-/// `Function` represents a function type.
+/// Represents a function type.
 ///
 /// A function type is defined by a set of required arguments,
 /// a set of optional arguments, an optional pipe argument, and
 /// a required return type.
-///
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Function {
     /// Required arguments to a function.
@@ -1321,6 +1356,7 @@ impl Function {
 
 /// Trait for returning the maximum type variable of a type.
 pub trait MaxTvar {
+    /// Return the maximum type variable of a type.
     fn max_tvar(&self) -> Tvar;
 }
 
