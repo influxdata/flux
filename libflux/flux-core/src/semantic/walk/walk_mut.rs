@@ -1,13 +1,12 @@
-#![allow(missing_docs)]
-
 use crate::ast::SourceLocation;
 use crate::semantic::nodes::*;
 use crate::semantic::types::MonoType;
 use std::fmt;
 
-/// NodeMut represents any structure that can appear in the semantic graph.
+/// Represents any structure that can appear in the semantic graph.
 /// It also enables mutability of the wrapped semantic node.
 #[derive(Debug)]
+#[allow(missing_docs)]
 pub enum NodeMut<'a> {
     Package(&'a mut Package),
     File(&'a mut File),
@@ -108,6 +107,7 @@ impl<'a> fmt::Display for NodeMut<'a> {
     }
 }
 impl<'a> NodeMut<'a> {
+    /// Returns the source location of a semantic graph node.
     pub fn loc(&self) -> &SourceLocation {
         match self {
             NodeMut::Package(n) => &n.loc,
@@ -151,6 +151,8 @@ impl<'a> NodeMut<'a> {
             NodeMut::MemberAssgn(n) => &n.loc,
         }
     }
+
+    /// Returns the type of a semantic graph node.
     pub fn type_of(&self) -> Option<MonoType> {
         match self {
             NodeMut::IdentifierExpr(n) => Some(Expression::Identifier((*n).clone()).type_of()),
@@ -183,6 +185,8 @@ impl<'a> NodeMut<'a> {
             _ => None,
         }
     }
+
+    #[allow(missing_docs)]
     pub fn set_loc(&mut self, loc: SourceLocation) {
         match self {
             NodeMut::Package(ref mut n) => n.loc = loc,
@@ -280,13 +284,13 @@ impl<'a> NodeMut<'a> {
     }
 }
 
-/// VisitorMut is used by `walk_mut` to recursively visit a semantic graph and mutate it.
-/// The trait makes it possible to mutate both the Visitor and the Nodes while visiting.
-/// One can implement VisitorMut or use a `FnMut(NodeMut)`.
+/// Used by [`walk_mut`] to recursively visit a semantic graph and mutate it.
+/// The trait makes it possible to mutate both the visitor and the nodes while visiting.
+/// One can implement `VisitorMut` or use a `FnMut(NodeMut)`.
 ///
 /// # Examples
 ///
-/// A Visitor that mutate node types:
+/// A visitor that mutates node types:
 ///
 /// ```
 /// use fluxcore::semantic::walk::{NodeMut, VisitorMut};
@@ -319,16 +323,16 @@ impl<'a> NodeMut<'a> {
 /// }
 /// ```
 pub trait VisitorMut: Sized {
-    /// Visit is called for a node.
-    /// When the VisitorMut is used in function `walk_mut`, the boolean value returned
-    /// is used to continue (true) or stop (false) walking.
+    /// `visit` is called for a node.
+    /// When the `VisitorMut` is used in [`walk_mut`], the boolean value returned
+    /// is used to continue walking (`true`) or stop (`false`).
     fn visit(&mut self, node: &mut NodeMut) -> bool;
-    /// Done is called for a node once it has been visited along with all of its children.
+    /// `done` is called for a node once it has been visited along with all of its children.
     /// The default is to do nothing.
     fn done(&mut self, _: &mut NodeMut) {}
 }
 
-/// `walk_mut` recursively visits children of a node given a VisitorMut.
+/// Recursively visits children of a node given a [`VisitorMut`].
 /// Nodes are visited in depth-first order.
 pub fn walk_mut<T>(v: &mut T, mut node: &mut NodeMut)
 where
