@@ -16,20 +16,20 @@ pub type SemanticMap<K, V> = BTreeMap<K, V>;
 #[allow(missing_docs)]
 pub type SemanticMapIter<'a, K, V> = std::collections::btree_map::Iter<'a, K, V>;
 
-/// A polytype.
+/// A type scheme that quantifies the free variables of a monotype.
 #[derive(Debug, Clone)]
 pub struct PolyType {
-    /// Type variables.
+    /// List of the free variables within the monotypes.
     pub vars: Vec<Tvar>,
-    /// Kinds of type variables.
+    /// The list of kind constraints on any of the free variables.
     pub cons: TvarKinds,
-    /// Monotype.
+    /// The underlying monotype.
     pub expr: MonoType,
 }
 
-#[allow(missing_docs)]
+/// Map of identifier to a polytype that preserves a sorted order when iterating.
 pub type PolyTypeMap = SemanticMap<String, PolyType>;
-#[allow(missing_docs)]
+/// Nested map of polytypes that preserves a sorted order when iterating
 pub type PolyTypeMapMap = SemanticMap<String, SemanticMap<String, PolyType>>;
 
 /// Alias the maplit literal construction macro so we can specify the type here.
@@ -293,7 +293,7 @@ pub enum MonoType {
     Fun(Box<Function>),
 }
 
-#[allow(missing_docs)]
+/// Ordered map of string identifiers to monotypes.
 pub type MonoTypeMap = SemanticMap<String, MonoType>;
 #[allow(missing_docs)]
 pub type MonoTypeVecMap = SemanticMap<String, Vec<MonoType>>;
@@ -367,7 +367,10 @@ impl From<Record> for MonoType {
 }
 
 impl MonoType {
-    #[allow(missing_docs)]
+    /// Performs unification on the type with another type.
+    /// If successful, results in a solution to the unification problem,
+    /// in the form of a substitution. If there is no solution to the
+    /// unification problem then unification fails and an error is reported.
     pub fn unify(
         self, // self represents the expected type
         actual: Self,
@@ -394,7 +397,7 @@ impl MonoType {
         }
     }
 
-    #[allow(missing_docs)]
+    /// Validates that the current type meets the constraints of the specified kind.
     pub fn constrain(self, with: Kind, cons: &mut TvarKinds) -> Result<Substitution, Error> {
         match self {
             MonoType::Bool => match with {
