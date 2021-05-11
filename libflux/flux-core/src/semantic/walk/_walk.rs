@@ -4,7 +4,7 @@ use crate::semantic::types::MonoType;
 use std::fmt;
 use std::rc::Rc;
 
-/// Node represents any structure that can appear in the semantic graph.
+/// Represents any structure that can appear in the semantic graph.
 #[derive(Debug)]
 #[allow(missing_docs)]
 pub enum Node<'a> {
@@ -238,12 +238,12 @@ impl<'a> Node<'a> {
     }
 }
 
-/// `Visitor` is used by `walk` to recursively visit a semantic graph.
+/// Used by [`walk`] to recursively visit a semantic graph.
 /// One can implement `Visitor` or use a `FnMut(Node)`.
 ///
-/// # Examples
+/// ## Example
 ///
-/// Print out the nodes of a semantic graph:
+/// Print out the nodes of a semantic graph
 ///
 /// ```
 /// use fluxcore::ast;
@@ -262,7 +262,9 @@ impl<'a> Node<'a> {
 /// );
 /// ```
 ///
-/// A "scoped" Visitor that errors if finds more than one addition operation in the same scope:
+/// ## Example
+///
+/// A "scoped" visitor that errors if finds more than one addition operation in the same scope:
 ///
 /// ```
 /// use fluxcore::ast::Operator::AdditionOperator;
@@ -315,11 +317,10 @@ impl<'a> Node<'a> {
 /// ```
 pub trait Visitor<'a>: Sized {
     /// `visit` is called for a node.
-    /// When the `Visitor` is used in function [`walk`], the boolean value returned
-    /// is used to continue (`true`) or stop (`false`) walking.
+    /// When the `Visitor` is used in [`walk`], the boolean value returned
+    /// is used to continue walking (`true`) or stop (`false`).
     fn visit(&mut self, node: Rc<Node<'a>>) -> bool;
     /// `done` is called for a node once it has been visited along with all of its children.
-    ///
     /// The default is to do nothing.
     fn done(&mut self, _: Rc<Node<'a>>) {}
 }

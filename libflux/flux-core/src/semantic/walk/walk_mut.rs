@@ -284,13 +284,13 @@ impl<'a> NodeMut<'a> {
     }
 }
 
-/// `VisitorMut` is used by [`walk_mut`] to recursively visit a semantic graph and mutate it.
-/// The trait makes it possible to mutate both the Visitor and the Nodes while visiting.
-/// One can implement VisitorMut or use a `FnMut(NodeMut)`.
+/// Used by [`walk_mut`] to recursively visit a semantic graph and mutate it.
+/// The trait makes it possible to mutate both the visitor and the nodes while visiting.
+/// One can implement `VisitorMut` or use a `FnMut(NodeMut)`.
 ///
 /// # Examples
 ///
-/// A Visitor that mutate node types:
+/// A visitor that mutates node types:
 ///
 /// ```
 /// use fluxcore::semantic::walk::{NodeMut, VisitorMut};
@@ -323,11 +323,11 @@ impl<'a> NodeMut<'a> {
 /// }
 /// ```
 pub trait VisitorMut: Sized {
-    /// Visit is called for a node.
-    /// When the VisitorMut is used in function `walk_mut`, the boolean value returned
-    /// is used to continue (true) or stop (false) walking.
+    /// `visit` is called for a node.
+    /// When the `VisitorMut` is used in [`walk_mut`], the boolean value returned
+    /// is used to continue walking (`true`) or stop (`false`).
     fn visit(&mut self, node: &mut NodeMut) -> bool;
-    /// Done is called for a node once it has been visited along with all of its children.
+    /// `done` is called for a node once it has been visited along with all of its children.
     /// The default is to do nothing.
     fn done(&mut self, _: &mut NodeMut) {}
 }
