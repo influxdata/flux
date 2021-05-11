@@ -18,6 +18,8 @@ import (
 // required to execute a flux script.
 var Default = &runtime{}
 
+const panicNotFinalized = "builtins not finalized (you may be missing an `import _ \"github.com/influxdata/idpe/fluxinit/static\"` statement)"
+
 // runtime contains the flux runtime for interpreting and
 // executing queries.
 type runtime struct {
@@ -107,7 +109,7 @@ func (r *runtime) registerPackageValue(pkgpath, name string, value values.Value,
 
 func (r *runtime) Prelude() values.Scope {
 	if !r.finalized {
-		panic("builtins not finalized")
+		panic(panicNotFinalized)
 	}
 	importer := r.Stdlib()
 	scope, err := r.newScopeFor("main", importer)
@@ -175,7 +177,7 @@ func (r *runtime) newScopeFor(pkgpath string, imp interpreter.Importer) (values.
 
 func (r *runtime) Stdlib() interpreter.Importer {
 	if !r.finalized {
-		panic("builtins not finalized")
+		panic(panicNotFinalized)
 	}
 	return &importer{r: r}
 }
