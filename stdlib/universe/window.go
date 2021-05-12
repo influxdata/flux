@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/interval"
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/values"
@@ -181,29 +182,28 @@ func createWindowTransformation(id execute.DatasetID, mode execute.AccumulationM
 	cache := execute.NewTableBuilderCache(a.Allocator())
 	d := execute.NewDataset(id, mode, cache)
 
-	if a.StreamContext().Bounds() == nil {
+	bounds := a.StreamContext().Bounds()
+	if bounds == nil {
 		const docURL = "https://v2.docs.influxdata.com/v2.0/reference/flux/stdlib/built-in/transformations/window/#nil-bounds-passed-to-window"
 		return nil, nil, errors.New(codes.Invalid, "nil bounds passed to window; use range to set the window range").
 			WithDocURL(docURL)
 	}
 
-	bounds := execute.Bounds{
-		Start: a.StreamContext().Bounds().Start,
-		Stop:  a.StreamContext().Bounds().Stop,
-	}
+	newBounds := interval.NewBounds(bounds.Start, bounds.Stop)
 
-	w, err := execute.NewWindow(
+	w, err := interval.NewWindow(
 		s.Window.Every,
 		s.Window.Period,
 		s.Window.Offset,
 	)
+
 	if err != nil {
 		return nil, nil, err
 	}
 	t := NewFixedWindowTransformation(
 		d,
 		cache,
-		bounds,
+		newBounds,
 		w,
 		s.TimeColumn,
 		s.StartColumn,
@@ -217,9 +217,9 @@ type fixedWindowTransformation struct {
 	execute.ExecutionNode
 	d         execute.Dataset
 	cache     execute.TableBuilderCache
-	w         execute.Window
-	bounds    execute.Bounds
-	allBounds []execute.Bounds
+	w         interval.Window
+	bounds    interval.Bounds
+	allBounds []interval.Bounds
 
 	timeCol,
 	startCol,
@@ -230,8 +230,8 @@ type fixedWindowTransformation struct {
 func NewFixedWindowTransformation(
 	d execute.Dataset,
 	cache execute.TableBuilderCache,
-	bounds execute.Bounds,
-	w execute.Window,
+	bounds interval.Bounds,
+	w interval.Window,
 	timeCol,
 	startCol,
 	stopCol string,
@@ -349,11 +349,11 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 				for j, c := range builder.Cols() {
 					switch c.Label {
 					case t.startCol:
-						if err := builder.AppendTime(startColIdx, bnds.Start); err != nil {
+						if err := builder.AppendTime(startColIdx, bnds.Start()); err != nil {
 							return err
 						}
 					case t.stopCol:
-						if err := builder.AppendTime(stopColIdx, bnds.Stop); err != nil {
+						if err := builder.AppendTime(stopColIdx, bnds.Stop()); err != nil {
 							return err
 						}
 					default:
@@ -368,16 +368,16 @@ func (t *fixedWindowTransformation) Process(id execute.DatasetID, tbl flux.Table
 	})
 }
 
-func (t *fixedWindowTransformation) newWindowGroupKey(tbl flux.Table, keyCols []flux.ColMeta, bnds execute.Bounds, keyColMap []int) flux.GroupKey {
+func (t *fixedWindowTransformation) newWindowGroupKey(tbl flux.Table, keyCols []flux.ColMeta, bnds interval.Bounds, keyColMap []int) flux.GroupKey {
 	cols := make([]flux.ColMeta, len(keyCols))
 	vs := make([]values.Value, len(keyCols))
 	for j, c := range keyCols {
 		cols[j] = c
 		switch c.Label {
 		case t.startCol:
-			vs[j] = values.NewTime(bnds.Start)
+			vs[j] = values.NewTime(bnds.Start())
 		case t.stopCol:
-			vs[j] = values.NewTime(bnds.Stop)
+			vs[j] = values.NewTime(bnds.Stop())
 		default:
 			vs[j] = tbl.Key().Value(keyColMap[j])
 		}
@@ -385,29 +385,28 @@ func (t *fixedWindowTransformation) newWindowGroupKey(tbl flux.Table, keyCols []
 	return execute.NewGroupKey(cols, vs)
 }
 
-func (t *fixedWindowTransformation) clipBounds(bs []execute.Bounds) {
+func (t *fixedWindowTransformation) clipBounds(bs []interval.Bounds) {
 	for i := range bs {
 		bs[i] = t.bounds.Intersect(bs[i])
 	}
 }
 
-func (t *fixedWindowTransformation) getWindowBounds(tm execute.Time) []execute.Bounds {
-	if t.w.Every == infinityVar.Duration() {
-		return []execute.Bounds{t.bounds}
+func (t *fixedWindowTransformation) getWindowBounds(tm execute.Time) []interval.Bounds {
+	if t.w.Every() == infinityVar.Duration() {
+		return []interval.Bounds{t.bounds}
 	}
-	bs := t.w.GetOverlappingBounds(execute.Bounds{Start: tm, Stop: tm + 1})
+	bs := t.w.GetOverlappingBounds(tm, tm+1)
 	t.clipBounds(bs)
 	return bs
 }
 
 func (t *fixedWindowTransformation) generateWindowsWithinBounds() {
-	if t.w.Every == infinityVar.Duration() {
-		t.allBounds = []execute.Bounds{
-			{Start: execute.MinTime, Stop: execute.MaxTime},
-		}
+	if t.w.Every() == infinityVar.Duration() {
+		bounds := interval.NewBounds(interval.MinTime, interval.MaxTime)
+		t.allBounds = []interval.Bounds{bounds}
 		return
 	}
-	bs := t.w.GetOverlappingBounds(t.bounds)
+	bs := t.w.GetOverlappingBounds(t.bounds.Start(), t.bounds.Stop())
 	t.clipBounds(bs)
 	t.allBounds = bs
 }

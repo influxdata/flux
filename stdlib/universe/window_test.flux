@@ -1,46 +1,44 @@
 package universe_test
 
 
+import "array"
 import "testing"
 
-option now = () => 2030-01-01T00:00:00Z
+input = () => array.from(
+    rows: [
+        {_time: 2018-05-22T19:53:00Z, _measurement: "diskio", _field: "io_time", host: "host.local", name: "disk0", _value: 15204688},
+        {_time: 2018-05-22T19:53:03Z, _measurement: "diskio", _field: "io_time", host: "host.local", name: "disk0", _value: 15204894},
+        {_time: 2018-05-22T19:53:06Z, _measurement: "diskio", _field: "io_time", host: "host.local", name: "disk0", _value: 15205102},
+        {_time: 2018-05-22T19:53:09Z, _measurement: "diskio", _field: "io_time", host: "host.local", name: "disk0", _value: 15205226},
+        {_time: 2018-05-22T19:53:12Z, _measurement: "diskio", _field: "io_time", host: "host.local", name: "disk0", _value: 15205499},
+        {_time: 2018-05-22T19:53:15Z, _measurement: "diskio", _field: "io_time", host: "host.local", name: "disk0", _value: 15205755},
+        {_time: 2018-05-22T19:53:18Z, _measurement: "diskio", _field: "io_time", host: "host.local", name: "disk0", _value: 16205923},
+    ],
+)
+    |> group(columns: ["_measurement", "_field", "host", "name"])
+    |> testing.load()
+    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:53:30Z)
 
-inData = "
-#datatype,string,long,dateTime:RFC3339,long,string,string,string,string
-#group,false,false,false,false,true,true,true,true
-#default,_result,,,,,,,
-,result,table,_time,_value,_field,_measurement,host,name
-,,0,2018-05-22T19:53:26Z,15204688,io_time,diskio,host.local,disk0
-,,0,2018-05-22T19:53:36Z,15204894,io_time,diskio,host.local,disk0
-,,0,2018-05-22T19:53:46Z,15205102,io_time,diskio,host.local,disk0
-,,0,2018-05-22T19:53:56Z,15205226,io_time,diskio,host.local,disk0
-,,0,2018-05-22T19:54:06Z,15205499,io_time,diskio,host.local,disk0
-,,0,2018-05-22T19:54:16Z,15205755,io_time,diskio,host.local,disk0
-,,1,2018-05-22T19:53:26Z,648,io_time,diskio,host.local,disk2
-,,1,2018-05-22T19:53:36Z,648,io_time,diskio,host.local,disk2
-,,1,2018-05-22T19:53:46Z,648,io_time,diskio,host.local,disk2
-,,1,2018-05-22T19:53:56Z,648,io_time,diskio,host.local,disk2
-,,1,2018-05-22T19:54:06Z,648,io_time,diskio,host.local,disk2
-,,1,2018-05-22T19:54:16Z,648,io_time,diskio,host.local,disk2
-"
-outData = "
-#datatype,string,long,dateTime:RFC3339,dateTime:RFC3339,string,dateTime:RFC3339,double
-#group,false,false,true,true,true,false,false
-#default,_result,,,,,,
-,result,table,_start,_stop,_measurement,_time,_value
-,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:53:26Z,7602668
-,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:53:36Z,7602771
-,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:53:46Z,7602875
-,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:53:56Z,7602937
-,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:54:06Z,7603073.5
-,,0,2018-05-22T19:53:00Z,2018-05-22T19:55:00Z,diskio,2018-05-22T19:54:16Z,7603201.5
-"
-t_window = (table=<-) => table
-    |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
-    |> group(columns: ["_measurement"])
-    |> window(every: 1s)
-    |> mean()
-    |> duplicate(column: "_start", as: "_time")
-    |> window(every: inf)
+testcase window_period_gaps {
+    want = array.from(
+        rows: [
+            {_time: 2018-05-22T19:53:00Z, _measurement: "diskio", _field: "io_time", _start: 2018-05-22T19:53:00Z, _stop: 2018-05-22T19:53:05Z, host: "host.local", name: "disk0", _value: 15204688},
+            {_time: 2018-05-22T19:53:03Z, _measurement: "diskio", _field: "io_time", _start: 2018-05-22T19:53:00Z, _stop: 2018-05-22T19:53:05Z, host: "host.local", name: "disk0", _value: 15204894},
+            {_time: 2018-05-22T19:53:12Z, _measurement: "diskio", _field: "io_time", _start: 2018-05-22T19:53:10Z, _stop: 2018-05-22T19:53:15Z, host: "host.local", name: "disk0", _value: 15205499},
+        ],
+    )
+        |> group(
+            columns: [
+                "_measurement",
+                "_field",
+                "_start",
+                "_stop",
+                "host",
+                "name",
+            ],
+        )
+    got = input()
+        |> window(every: 10s, period: 5s)
 
-test _window = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_window})
+    testing.diff(got, want) |> yield()
+}
