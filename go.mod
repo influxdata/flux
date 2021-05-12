@@ -51,6 +51,7 @@ require (
 	github.com/snowflakedb/gosnowflake v1.3.4
 	github.com/spf13/cobra v0.0.3
 	github.com/uber/athenadriver v1.1.4
+	github.com/vertica/vertica-sql-go v1.1.1
 	go.uber.org/zap v1.14.0
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344

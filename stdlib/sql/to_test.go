@@ -335,6 +335,15 @@ func TestToSql_NewTransformation(t *testing.T) {
 				},
 				WantErr: "connection refused",
 			}, {
+				Name: "ok vertica",
+				Spec: &fsql.ToSQLProcedureSpec{
+					Spec: &fsql.ToSQLOpSpec{
+						DriverName:     "vertica",
+						DataSourceName: "vertica://dbadmin:password@localhost:5433/VMart",
+					},
+				},
+				WantErr: "connection refused",
+			}, {
 				Name: "ok hdb",
 				Spec: &fsql.ToSQLProcedureSpec{
 					Spec: &fsql.ToSQLOpSpec{
