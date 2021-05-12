@@ -9,6 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/adal v0.8.3
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/DATA-DOG/go-sqlmock v1.4.1
+	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/SAP/go-hdb v0.14.1
 	github.com/andreyvit/diff v0.0.0-20170406064948-c7f18ee00883
 	github.com/apache/arrow/go/arrow v0.0.0-20200923215132-ac86123a3f01
@@ -25,7 +26,7 @@ require (
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
 	github.com/google/flatbuffers v1.11.0
-	github.com/google/go-cmp v0.4.0
+	github.com/google/go-cmp v0.5.4
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
@@ -39,7 +40,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/mattn/go-tty v0.0.0-20180907095812-13ff1204f104 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1
-	github.com/opentracing/opentracing-go v1.0.2
+	github.com/opentracing/opentracing-go v1.2.0
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/pkg/browser v0.0.0-20180916011732-0a3d74bf9ce4 // indirect
 	github.com/pkg/errors v0.9.1
@@ -51,10 +52,12 @@ require (
 	github.com/snowflakedb/gosnowflake v1.3.4
 	github.com/spf13/cobra v0.0.3
 	github.com/uber/athenadriver v1.1.4
+	github.com/uber/jaeger-client-go v2.28.0+incompatible
+	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	go.uber.org/zap v1.14.0
 	golang.org/x/exp v0.0.0-20200224162631-6cc2880d07d6
 	golang.org/x/net v0.0.0-20200625001655-4c5254603344
 	golang.org/x/tools v0.0.0-20200721032237-77f530d86f9a
-	gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca
+	gonum.org/v1/gonum v0.8.2
 	google.golang.org/api v0.17.0
 )

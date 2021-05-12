@@ -13,6 +13,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/internal/spec"
 	"github.com/influxdata/flux/interpreter"
+	"github.com/influxdata/flux/jaeger"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/metadata"
 	"github.com/influxdata/flux/plan"
@@ -291,6 +292,11 @@ func (p *Program) Start(ctx context.Context, alloc *memory.Allocator) (flux.Quer
 	if execute.HaveExecutionDependencies(ctx) {
 		deps := execute.GetExecutionDependencies(ctx)
 		q.stats.Metadata.AddAll(deps.Metadata)
+	}
+
+	if traceID, sampled, found := jaeger.InfoFromSpan(s); found {
+		q.stats.Metadata.Add("tracing/id", traceID)
+		q.stats.Metadata.Add("tracing/sampled", sampled)
 	}
 
 	q.stats.Metadata.Add("flux/query-plan",
