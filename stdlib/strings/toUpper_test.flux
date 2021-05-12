@@ -32,8 +32,6 @@ outData = "
 "
 t_string_toUpper = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> map(
-        fn: (r) => ({r with _value: strings.toUpper(v: r._value)}),
-    )
+    |> map(fn: (r) => ({r with _value: strings.toUpper(v: r._value)}))
 
 test _string_toUpper = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_toUpper})

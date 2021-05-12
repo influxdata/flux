@@ -32,4 +32,5 @@ test _map = () => ({input: testing.loadStorage(csv: inData), want: testing.loadM
 // Equivalent TICKscript query:
 // stream 
 //  |eval(lambda: 2 * _value)
- //.as('_newValue')
+//.as('_newValue')
+

@@ -49,8 +49,6 @@ _field
 drop_referenced = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
     |> drop(columns: ["_field"])
-    |> filter(
-        fn: (r) => r._field == "usage_guest",
-    )
+    |> filter(fn: (r) => r._field == "usage_guest")
 
 test _drop_referenced = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: drop_referenced})

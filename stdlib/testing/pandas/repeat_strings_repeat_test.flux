@@ -32,8 +32,6 @@ outData = "
 "
 t_string_partition = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> map(
-        fn: (r) => ({r with _value: strings.repeat(v: r._value, i: 2)}),
-    )
+    |> map(fn: (r) => ({r with _value: strings.repeat(v: r._value, i: 2)}))
 
 test _string_partition = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_partition})

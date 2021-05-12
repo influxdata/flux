@@ -2193,9 +2193,7 @@ outData = "
 "
 _f = (table=<-) => table
     |> range(start: 2019-08-01T11:00:00Z, stop: 2019-08-01T14:00:00Z)
-    |> filter(
-        fn: (r) => r.org_id == "038b7a85ca099000" and r._measurement == "storage_usage_org_bytes" and r._field == "gauge",
-    )
+    |> filter(fn: (r) => r.org_id == "038b7a85ca099000" and r._measurement == "storage_usage_org_bytes" and r._field == "gauge")
     |> aggregateWindow(every: 1h, fn: mean)
     |> fill(column: "_value", value: 0.0)
     |> group(columns: ["_time"])

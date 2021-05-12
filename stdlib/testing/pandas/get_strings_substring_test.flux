@@ -32,8 +32,6 @@ outData = "
 "
 t_string_subset = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> map(
-        fn: (r) => ({r with _value: strings.substring(v: r._value, start: 0, end: 1)}),
-    )
+    |> map(fn: (r) => ({r with _value: strings.substring(v: r._value, start: 0, end: 1)}))
 
 test _string_subset = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_subset})

@@ -55,14 +55,16 @@ outData = "
 "
 t_keep = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> keep(columns: [
-        "non_existent",
-        "_time",
-        "_value",
-        "_field",
-        "_measurement",
-        "old",
-        "host",
-    ])
+    |> keep(
+        columns: [
+            "non_existent",
+            "_time",
+            "_value",
+            "_field",
+            "_measurement",
+            "old",
+            "host",
+        ],
+    )
 
 test _keep_non_existent = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_keep})

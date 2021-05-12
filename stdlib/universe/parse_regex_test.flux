@@ -34,9 +34,7 @@ outData = "
 filterRegex = /inodes*/
 t_parse_regex = (table=<-) => table
     |> range(start: 2018-05-20T19:53:26Z)
-    |> filter(
-        fn: (r) => r._field =~ filterRegex,
-    )
+    |> filter(fn: (r) => r._field =~ filterRegex)
     |> max()
 
 test _parse_regex = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_parse_regex})

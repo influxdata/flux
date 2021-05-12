@@ -11,4 +11,5 @@ builtin to : (
     ?timeColumn: string,
     ?tagColumns: [string],
     ?valueColumns: [string],
-) => [A] where A: Record
+) => [A] where
+    A: Record

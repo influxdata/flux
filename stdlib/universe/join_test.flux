@@ -43,16 +43,12 @@ t_join = (table=<-) => {
     left = table
         |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
         |> drop(columns: ["_start", "_stop"])
-        |> filter(
-            fn: (r) => r.user == "user1",
-        )
+        |> filter(fn: (r) => r.user == "user1")
         |> group(columns: ["user"])
     right = table
         |> range(start: 2018-05-22T19:53:00Z, stop: 2018-05-22T19:55:00Z)
         |> drop(columns: ["_start", "_stop"])
-        |> filter(
-            fn: (r) => r.user == "user2",
-        )
+        |> filter(fn: (r) => r.user == "user2")
         |> group(columns: ["_measurement", "_field"])
 
     return join(tables: {left: left, right: right}, on: ["_time", "_measurement", "_field"])

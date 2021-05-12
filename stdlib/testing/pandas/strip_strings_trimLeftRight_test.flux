@@ -32,8 +32,6 @@ outData = "
 "
 t_string_lstrip = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> map(
-        fn: (r) => ({r with _value: strings.trimRight(v: strings.trimLeft(v: r._value, cutset: " "), cutset: " ")}),
-    )
+    |> map(fn: (r) => ({r with _value: strings.trimRight(v: strings.trimLeft(v: r._value, cutset: " "), cutset: " ")}))
 
 test _string_lstrip = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_string_lstrip})
