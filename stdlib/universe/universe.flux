@@ -381,3 +381,6 @@ toUInt = (tables=<-) => tables |> map(fn: (r) => ({r with _value: uint(v: r._val
 toFloat = (tables=<-) => tables |> map(fn: (r) => ({r with _value: float(v: r._value)}))
 toBool = (tables=<-) => tables |> map(fn: (r) => ({r with _value: bool(v: r._value)}))
 toTime = (tables=<-) => tables |> map(fn: (r) => ({r with _value: time(v: r._value)}))
+
+// today returns the now() timestamp truncated to the day unit
+today = () => date.truncate(t: now(), unit: 1d)

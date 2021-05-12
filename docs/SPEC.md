@@ -1226,6 +1226,14 @@ Examples:
 The builtin function `systemTime` returns the current system time.
 All calls to `systemTime` within a single evaluation of a Flux script return the same time.
 
+### Today
+`today()` returns the `now()` timestamp truncated to the day unit.
+
+Example:
+   
+    option now = 2021-01-01T12:43:21Z    
+    today() // Returns 2021-01-01T00:00:00Z
+
 ### FixedZone
 
 FixedZone creates a location based on a fixed time offset from UTC.
