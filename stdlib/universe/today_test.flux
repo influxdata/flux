@@ -13,11 +13,11 @@ inData = "
 ,,0,2018-05-22T19:53:26Z,0,usage_guest,cpu,cpu-total,host.local
 "
 outData = "
-#datatype,string,long,string,string,dateTime:RFC3339,double,string,string,dateTime:RFC3339
-#group,false,false,true,true,false,false,true,true,false
-#default,_result,,,,,,,,
-,result,table,_field,_measurement,_time,_value,cpu,host,today
-,,0,usage_guest,cpu,2018-05-22T19:53:26Z,0,cpu-total,host.local,2030-01-01T00:00:00Z
+#datatype,string,long,string,string,dateTime:RFC3339,dateTime:RFC3339,dateTime:RFC3339,double,string,string,dateTime:RFC3339
+#group,false,false,true,true,false,true,true,false,true,true,false
+#default,_result,,,,,,,,,,
+,result,table,_field,_measurement,_time,_start,_stop,_value,cpu,host,today
+,,0,usage_guest,cpu,2018-05-22T19:53:26Z,2018-05-22T19:53:26Z,2030-01-01T12:00:00Z,0,cpu-total,host.local,2030-01-01T00:00:00Z
 "
 t_today = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
