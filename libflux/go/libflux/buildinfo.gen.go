@@ -581,7 +581,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/to_test.flux":                                                  "c45971c7cfe763a97cde6bed71f6dbc67ef815b4ce2aadc73cdc9740e330e22c",
 	"stdlib/universe/to_time_test.flux":                                             "feb5c2a60238118e9e8ffe6b3fe24b06a629a7e11974451506eeb2be0582929b",
 	"stdlib/universe/to_uint_test.flux":                                             "a7ce5d2ab41629af0f3785d6100e5bca3ec2411b91bd271cce03ef8169d5ece8",
-	"stdlib/universe/today_test.flux":                                               "25b884dd6da35f6c711e50b00b92ff2c2ab58a781a4e052c9b3f5427e6b5529e",
+	"stdlib/universe/today_test.flux":                                               "514c988f2d4452c2130f11be734fcb29c8b8242f260c62039324476376d58ee4",
 	"stdlib/universe/top_test.flux":                                                 "396222f5e5dacb217c7adbb81cc25656f6da2993fed2f258b24aaffdb1346e1a",
 	"stdlib/universe/triple_exponential_derivative_test.flux":                       "37f08c4e9c5017d360ac45671296cb7a0d12cfec19cf3b78bb53a2837ed13e7c",
 	"stdlib/universe/triple_exponential_moving_average_test.flux":                   "334cd641d2bb409d843c1647f50fdfce60912a0e1c90f87415d2531c8c52111f",
