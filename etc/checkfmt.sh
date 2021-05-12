@@ -36,4 +36,14 @@ if [[ -n "$FMT_OUT" ]]; then
     HAS_FMT_ERR=1
 fi
 
+cd ..
+export PATH=$PATH:.
+FMT_OUT="$(flux fmt -c stdlib)"
+if [[ -n "$FMT_OUT" ]]; then
+    echo 'Commit includes flux files that are not fluxfmt-ed' && \
+    echo 'run "make fmt"' && \
+    echo ''
+    HAS_FMT_ERR=1
+fi
+
 exit "$HAS_FMT_ERR"
