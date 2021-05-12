@@ -25,16 +25,12 @@ testcase string_trim {
             {_time: 2018-05-22T19:53:36Z, _value:  "leading", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.trimSpace(v: r._value)}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.trimSpace(v: r._value)}))
 
     testing.diff(got: got, want: want)
 }
@@ -57,16 +53,12 @@ testcase string_toUpper {
             {_time: 2018-05-22T19:53:36Z, _value: "LOLLERCASE", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.toUpper(v: r._value)}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.toUpper(v: r._value)}))
 
     testing.diff(got: got, want: want)
 }
@@ -89,16 +81,12 @@ testcase string_toLower {
             {_time: 2018-05-22T19:53:36Z, _value: "lollercase", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.toLower(v: r._value)}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.toLower(v: r._value)}))
 
     testing.diff(got: got, want: want)
 }
@@ -119,16 +107,12 @@ testcase string_title {
             {_time: 2018-05-22T19:53:26Z, _value: "The Little Blue Truck", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.title(v: r._value)}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.title(v: r._value)}))
 
     testing.diff(got: got, want: want)
 }
@@ -149,16 +133,12 @@ testcase string_substring {
             {_time: 2018-05-22T19:53:26Z, _value: "Morning Glory", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.substring(v: r._value, start: 18, end: 31)}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.substring(v: r._value, start: 18, end: 31)}))
 
     testing.diff(got: got, want: want)
 }
@@ -179,16 +159,12 @@ testcase string_replaceAll {
             {_time: 2018-05-22T19:53:26Z, _value: "This is fine. Everything is fine.", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.replaceAll(v: r._value, t: "sucks", u: "is fine")}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.replaceAll(v: r._value, t: "sucks", u: "is fine")}))
 
     testing.diff(got: got, want: want)
 }
@@ -209,16 +185,12 @@ testcase string_replace {
             {_time: 2018-05-22T19:53:26Z, _value: "This is fine. Everything sucks.", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
 
     testing.diff(got: got, want: want)
 }
@@ -239,22 +211,14 @@ testcase string_replace_twice {
             {_time: 2018-05-22T19:53:26Z, _value: "This is fine. Everything is a-okay.", _field: "_field", _measurement: "_measurement"},
         ],
     )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
-        |> map(
-            fn: (r) => ({r with _value: r._value}),
-        )
+        |> map(fn: (r) => ({r with _value: r._value}))
+        |> map(fn: (r) => ({r with _value: r._value}))
     got = input
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}),
-        )
-        |> map(
-            fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is a-okay", i: 1)}),
-        )
+        |> map(fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
+        |> map(fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is a-okay", i: 1)}))
 
     testing.diff(got: got, want: want)
 }
@@ -277,9 +241,7 @@ testcase string_length {
         |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
-        |> map(
-            fn: (r) => ({r with len: strings.strlen(v: r._value)}),
-        )
+        |> map(fn: (r) => ({r with len: strings.strlen(v: r._value)}))
 
     testing.diff(got: got, want: want)
 }

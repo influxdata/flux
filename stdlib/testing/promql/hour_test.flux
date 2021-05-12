@@ -34,8 +34,6 @@ t_promqlHour = (table=<-) => table
     |> range(start: 1980-01-01T00:00:00Z)
     |> drop(columns: ["_start", "_stop"])
     |> promql.timestamp()
-    |> map(
-        fn: (r) => ({r with _value: promql.promqlHour(timestamp: r._value)}),
-    )
+    |> map(fn: (r) => ({r with _value: promql.promqlHour(timestamp: r._value)}))
 
 test _promqlHour = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlHour})

@@ -31,9 +31,7 @@ outData = "
 "
 t_difference_panic = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> filter(
-        fn: (r) => r._field == "no_exist",
-    )
+    |> filter(fn: (r) => r._field == "no_exist")
     |> difference()
 
 test _difference_panic = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_difference_panic})

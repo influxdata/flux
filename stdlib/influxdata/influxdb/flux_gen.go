@@ -24,10 +24,10 @@ var pkgAST = &ast.Package{
 			Loc: &ast.SourceLocation{
 				End: ast.Position{
 					Column: 20,
-					Line:   36,
+					Line:   43,
 				},
 				File:   "influxdb.flux",
-				Source: "package influxdb\n\n\nbuiltin from : (\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{B with _measurement: string, _field: string, _time: time, _value: A}]\nbuiltin to : (\n    <-tables: [A],\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n    ?timeColumn: string,\n    ?measurementColumn: string,\n    ?tagColumns: [string],\n    ?fieldFn: (r: A) => B,\n) => [A] where A: Record, B: Record\nbuiltin buckets : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}]\n\n// cardinality will return the cardinality of data for a given bucket.\n// If a predicate is specified, then the cardinality only includes series\n// that match the predicate.\nbuiltin cardinality",
+				Source: "package influxdb\n\n\nbuiltin from : (\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{B with _measurement: string, _field: string, _time: time, _value: A}]\nbuiltin to : (\n    <-tables: [A],\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n    ?timeColumn: string,\n    ?measurementColumn: string,\n    ?tagColumns: [string],\n    ?fieldFn: (r: A) => B,\n) => [A] where\n    A: Record,\n    B: Record\nbuiltin buckets : (\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}]\n\n// cardinality will return the cardinality of data for a given bucket.\n// If a predicate is specified, then the cardinality only includes series\n// that match the predicate.\nbuiltin cardinality",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -944,11 +944,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 36,
-							Line:   24,
+							Column: 14,
+							Line:   26,
 						},
 						File:   "influxdb.flux",
-						Source: "(\n    <-tables: [A],\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n    ?timeColumn: string,\n    ?measurementColumn: string,\n    ?tagColumns: [string],\n    ?fieldFn: (r: A) => B,\n) => [A] where A: Record, B: Record",
+						Source: "(\n    <-tables: [A],\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n    ?timeColumn: string,\n    ?measurementColumn: string,\n    ?tagColumns: [string],\n    ?fieldFn: (r: A) => B,\n) => [A] where\n    A: Record,\n    B: Record",
 						Start: ast.Position{
 							Column: 14,
 							Line:   12,
@@ -961,14 +961,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 25,
-								Line:   24,
+								Column: 14,
+								Line:   25,
 							},
 							File:   "influxdb.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 16,
-								Line:   24,
+								Column: 5,
+								Line:   25,
 							},
 						},
 					},
@@ -978,14 +978,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   24,
+									Column: 14,
+									Line:   25,
 								},
 								File:   "influxdb.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 19,
-									Line:   24,
+									Column: 8,
+									Line:   25,
 								},
 							},
 						},
@@ -997,14 +997,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   24,
+									Column: 6,
+									Line:   25,
 								},
 								File:   "influxdb.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 16,
-									Line:   24,
+									Column: 5,
+									Line:   25,
 								},
 							},
 						},
@@ -1016,14 +1016,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 36,
-								Line:   24,
+								Column: 14,
+								Line:   26,
 							},
 							File:   "influxdb.flux",
 							Source: "B: Record",
 							Start: ast.Position{
-								Column: 27,
-								Line:   24,
+								Column: 5,
+								Line:   26,
 							},
 						},
 					},
@@ -1033,14 +1033,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 36,
-									Line:   24,
+									Column: 14,
+									Line:   26,
 								},
 								File:   "influxdb.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 30,
-									Line:   24,
+									Column: 8,
+									Line:   26,
 								},
 							},
 						},
@@ -1052,14 +1052,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 28,
-									Line:   24,
+									Column: 6,
+									Line:   26,
 								},
 								File:   "influxdb.flux",
 								Source: "B",
 								Start: ast.Position{
-									Column: 27,
-									Line:   24,
+									Column: 5,
+									Line:   26,
 								},
 							},
 						},
@@ -2091,13 +2091,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 16,
-						Line:   25,
+						Line:   27,
 					},
 					File:   "influxdb.flux",
 					Source: "builtin buckets",
 					Start: ast.Position{
 						Column: 1,
-						Line:   25,
+						Line:   27,
 					},
 				},
 			},
@@ -2109,13 +2109,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   25,
+							Line:   27,
 						},
 						File:   "influxdb.flux",
 						Source: "buckets",
 						Start: ast.Position{
 							Column: 9,
-							Line:   25,
+							Line:   27,
 						},
 					},
 				},
@@ -2128,13 +2128,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 3,
-							Line:   31,
+							Line:   38,
 						},
 						File:   "influxdb.flux",
-						Source: "(?org: string, ?orgID: string, ?host: string, ?token: string) => [{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}]",
+						Source: "(\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}]",
 						Start: ast.Position{
 							Column: 19,
-							Line:   25,
+							Line:   27,
 						},
 					},
 				},
@@ -2146,13 +2146,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 3,
-								Line:   31,
+								Line:   38,
 							},
 							File:   "influxdb.flux",
-							Source: "(?org: string, ?orgID: string, ?host: string, ?token: string) => [{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}]",
+							Source: "(\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n) => [{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}]",
 							Start: ast.Position{
 								Column: 19,
-								Line:   25,
+								Line:   27,
 							},
 						},
 					},
@@ -2162,14 +2162,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 32,
-									Line:   25,
+									Column: 17,
+									Line:   28,
 								},
 								File:   "influxdb.flux",
 								Source: "?org: string",
 								Start: ast.Position{
-									Column: 20,
-									Line:   25,
+									Column: 5,
+									Line:   28,
 								},
 							},
 						},
@@ -2180,14 +2180,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 24,
-										Line:   25,
+										Column: 9,
+										Line:   28,
 									},
 									File:   "influxdb.flux",
 									Source: "org",
 									Start: ast.Position{
-										Column: 21,
-										Line:   25,
+										Column: 6,
+										Line:   28,
 									},
 								},
 							},
@@ -2199,14 +2199,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 32,
-										Line:   25,
+										Column: 17,
+										Line:   28,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 26,
-										Line:   25,
+										Column: 11,
+										Line:   28,
 									},
 								},
 							},
@@ -2216,14 +2216,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 32,
-											Line:   25,
+											Column: 17,
+											Line:   28,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 26,
-											Line:   25,
+											Column: 11,
+											Line:   28,
 										},
 									},
 								},
@@ -2236,14 +2236,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 48,
-									Line:   25,
+									Column: 19,
+									Line:   29,
 								},
 								File:   "influxdb.flux",
 								Source: "?orgID: string",
 								Start: ast.Position{
-									Column: 34,
-									Line:   25,
+									Column: 5,
+									Line:   29,
 								},
 							},
 						},
@@ -2254,14 +2254,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 40,
-										Line:   25,
+										Column: 11,
+										Line:   29,
 									},
 									File:   "influxdb.flux",
 									Source: "orgID",
 									Start: ast.Position{
-										Column: 35,
-										Line:   25,
+										Column: 6,
+										Line:   29,
 									},
 								},
 							},
@@ -2273,14 +2273,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 48,
-										Line:   25,
+										Column: 19,
+										Line:   29,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 42,
-										Line:   25,
+										Column: 13,
+										Line:   29,
 									},
 								},
 							},
@@ -2290,14 +2290,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 48,
-											Line:   25,
+											Column: 19,
+											Line:   29,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 42,
-											Line:   25,
+											Column: 13,
+											Line:   29,
 										},
 									},
 								},
@@ -2310,14 +2310,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 63,
-									Line:   25,
+									Column: 18,
+									Line:   30,
 								},
 								File:   "influxdb.flux",
 								Source: "?host: string",
 								Start: ast.Position{
-									Column: 50,
-									Line:   25,
+									Column: 5,
+									Line:   30,
 								},
 							},
 						},
@@ -2328,14 +2328,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 55,
-										Line:   25,
+										Column: 10,
+										Line:   30,
 									},
 									File:   "influxdb.flux",
 									Source: "host",
 									Start: ast.Position{
-										Column: 51,
-										Line:   25,
+										Column: 6,
+										Line:   30,
 									},
 								},
 							},
@@ -2347,14 +2347,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 63,
-										Line:   25,
+										Column: 18,
+										Line:   30,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 57,
-										Line:   25,
+										Column: 12,
+										Line:   30,
 									},
 								},
 							},
@@ -2364,14 +2364,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 63,
-											Line:   25,
+											Column: 18,
+											Line:   30,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 57,
-											Line:   25,
+											Column: 12,
+											Line:   30,
 										},
 									},
 								},
@@ -2384,14 +2384,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 79,
-									Line:   25,
+									Column: 19,
+									Line:   31,
 								},
 								File:   "influxdb.flux",
 								Source: "?token: string",
 								Start: ast.Position{
-									Column: 65,
-									Line:   25,
+									Column: 5,
+									Line:   31,
 								},
 							},
 						},
@@ -2402,14 +2402,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 71,
-										Line:   25,
+										Column: 11,
+										Line:   31,
 									},
 									File:   "influxdb.flux",
 									Source: "token",
 									Start: ast.Position{
-										Column: 66,
-										Line:   25,
+										Column: 6,
+										Line:   31,
 									},
 								},
 							},
@@ -2421,14 +2421,14 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 79,
-										Line:   25,
+										Column: 19,
+										Line:   31,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
-										Column: 73,
-										Line:   25,
+										Column: 13,
+										Line:   31,
 									},
 								},
 							},
@@ -2438,14 +2438,14 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 79,
-											Line:   25,
+											Column: 19,
+											Line:   31,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
-											Column: 73,
-											Line:   25,
+											Column: 13,
+											Line:   31,
 										},
 									},
 								},
@@ -2460,13 +2460,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 3,
-									Line:   31,
+									Line:   38,
 								},
 								File:   "influxdb.flux",
 								Source: "[{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}]",
 								Start: ast.Position{
-									Column: 84,
-									Line:   25,
+									Column: 6,
+									Line:   32,
 								},
 							},
 						},
@@ -2477,13 +2477,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 2,
-										Line:   31,
+										Line:   38,
 									},
 									File:   "influxdb.flux",
 									Source: "{\n    name: string,\n    id: string,\n    organizationID: string,\n    retentionPolicy: string,\n    retentionPeriod: int,\n}",
 									Start: ast.Position{
-										Column: 85,
-										Line:   25,
+										Column: 7,
+										Line:   32,
 									},
 								},
 							},
@@ -2494,13 +2494,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 17,
-											Line:   26,
+											Line:   33,
 										},
 										File:   "influxdb.flux",
 										Source: "name: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   26,
+											Line:   33,
 										},
 									},
 								},
@@ -2511,13 +2511,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 9,
-												Line:   26,
+												Line:   33,
 											},
 											File:   "influxdb.flux",
 											Source: "name",
 											Start: ast.Position{
 												Column: 5,
-												Line:   26,
+												Line:   33,
 											},
 										},
 									},
@@ -2530,13 +2530,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 17,
-												Line:   26,
+												Line:   33,
 											},
 											File:   "influxdb.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 11,
-												Line:   26,
+												Line:   33,
 											},
 										},
 									},
@@ -2547,13 +2547,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 17,
-													Line:   26,
+													Line:   33,
 												},
 												File:   "influxdb.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 11,
-													Line:   26,
+													Line:   33,
 												},
 											},
 										},
@@ -2567,13 +2567,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 15,
-											Line:   27,
+											Line:   34,
 										},
 										File:   "influxdb.flux",
 										Source: "id: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   27,
+											Line:   34,
 										},
 									},
 								},
@@ -2584,13 +2584,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 7,
-												Line:   27,
+												Line:   34,
 											},
 											File:   "influxdb.flux",
 											Source: "id",
 											Start: ast.Position{
 												Column: 5,
-												Line:   27,
+												Line:   34,
 											},
 										},
 									},
@@ -2603,13 +2603,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 15,
-												Line:   27,
+												Line:   34,
 											},
 											File:   "influxdb.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 9,
-												Line:   27,
+												Line:   34,
 											},
 										},
 									},
@@ -2620,13 +2620,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 15,
-													Line:   27,
+													Line:   34,
 												},
 												File:   "influxdb.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 9,
-													Line:   27,
+													Line:   34,
 												},
 											},
 										},
@@ -2640,13 +2640,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 27,
-											Line:   28,
+											Line:   35,
 										},
 										File:   "influxdb.flux",
 										Source: "organizationID: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   28,
+											Line:   35,
 										},
 									},
 								},
@@ -2657,13 +2657,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   28,
+												Line:   35,
 											},
 											File:   "influxdb.flux",
 											Source: "organizationID",
 											Start: ast.Position{
 												Column: 5,
-												Line:   28,
+												Line:   35,
 											},
 										},
 									},
@@ -2676,13 +2676,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   28,
+												Line:   35,
 											},
 											File:   "influxdb.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 21,
-												Line:   28,
+												Line:   35,
 											},
 										},
 									},
@@ -2693,13 +2693,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 27,
-													Line:   28,
+													Line:   35,
 												},
 												File:   "influxdb.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 21,
-													Line:   28,
+													Line:   35,
 												},
 											},
 										},
@@ -2713,13 +2713,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 28,
-											Line:   29,
+											Line:   36,
 										},
 										File:   "influxdb.flux",
 										Source: "retentionPolicy: string",
 										Start: ast.Position{
 											Column: 5,
-											Line:   29,
+											Line:   36,
 										},
 									},
 								},
@@ -2730,13 +2730,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   29,
+												Line:   36,
 											},
 											File:   "influxdb.flux",
 											Source: "retentionPolicy",
 											Start: ast.Position{
 												Column: 5,
-												Line:   29,
+												Line:   36,
 											},
 										},
 									},
@@ -2749,13 +2749,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 28,
-												Line:   29,
+												Line:   36,
 											},
 											File:   "influxdb.flux",
 											Source: "string",
 											Start: ast.Position{
 												Column: 22,
-												Line:   29,
+												Line:   36,
 											},
 										},
 									},
@@ -2766,13 +2766,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 28,
-													Line:   29,
+													Line:   36,
 												},
 												File:   "influxdb.flux",
 												Source: "string",
 												Start: ast.Position{
 													Column: 22,
-													Line:   29,
+													Line:   36,
 												},
 											},
 										},
@@ -2786,13 +2786,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 25,
-											Line:   30,
+											Line:   37,
 										},
 										File:   "influxdb.flux",
 										Source: "retentionPeriod: int",
 										Start: ast.Position{
 											Column: 5,
-											Line:   30,
+											Line:   37,
 										},
 									},
 								},
@@ -2803,13 +2803,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   30,
+												Line:   37,
 											},
 											File:   "influxdb.flux",
 											Source: "retentionPeriod",
 											Start: ast.Position{
 												Column: 5,
-												Line:   30,
+												Line:   37,
 											},
 										},
 									},
@@ -2822,13 +2822,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 25,
-												Line:   30,
+												Line:   37,
 											},
 											File:   "influxdb.flux",
 											Source: "int",
 											Start: ast.Position{
 												Column: 22,
-												Line:   30,
+												Line:   37,
 											},
 										},
 									},
@@ -2839,13 +2839,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 25,
-													Line:   30,
+													Line:   37,
 												},
 												File:   "influxdb.flux",
 												Source: "int",
 												Start: ast.Position{
 													Column: 22,
-													Line:   30,
+													Line:   37,
 												},
 											},
 										},
@@ -2865,13 +2865,13 @@ var pkgAST = &ast.Package{
 				Loc: &ast.SourceLocation{
 					End: ast.Position{
 						Column: 20,
-						Line:   36,
+						Line:   43,
 					},
 					File:   "influxdb.flux",
 					Source: "builtin cardinality",
 					Start: ast.Position{
 						Column: 1,
-						Line:   36,
+						Line:   43,
 					},
 				},
 			},
@@ -2883,13 +2883,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 20,
-							Line:   36,
+							Line:   43,
 						},
 						File:   "influxdb.flux",
 						Source: "cardinality",
 						Start: ast.Position{
 							Column: 9,
-							Line:   36,
+							Line:   43,
 						},
 					},
 				},
@@ -2902,13 +2902,13 @@ var pkgAST = &ast.Package{
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
 							Column: 16,
-							Line:   48,
+							Line:   55,
 						},
 						File:   "influxdb.flux",
 						Source: "(\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n    start: A,\n    ?stop: B,\n    ?predicate: (r: {T with _measurement: string, _field: string, _value: S}) => bool,\n) => [{_start: time, _stop: time, _value: int}] where\n    A: Timeable,\n    B: Timeable",
 						Start: ast.Position{
 							Column: 23,
-							Line:   36,
+							Line:   43,
 						},
 					},
 				},
@@ -2919,13 +2919,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   47,
+								Line:   54,
 							},
 							File:   "influxdb.flux",
 							Source: "A: Timeable",
 							Start: ast.Position{
 								Column: 5,
-								Line:   47,
+								Line:   54,
 							},
 						},
 					},
@@ -2936,13 +2936,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   47,
+									Line:   54,
 								},
 								File:   "influxdb.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 8,
-									Line:   47,
+									Line:   54,
 								},
 							},
 						},
@@ -2955,13 +2955,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   47,
+									Line:   54,
 								},
 								File:   "influxdb.flux",
 								Source: "A",
 								Start: ast.Position{
 									Column: 5,
-									Line:   47,
+									Line:   54,
 								},
 							},
 						},
@@ -2974,13 +2974,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 16,
-								Line:   48,
+								Line:   55,
 							},
 							File:   "influxdb.flux",
 							Source: "B: Timeable",
 							Start: ast.Position{
 								Column: 5,
-								Line:   48,
+								Line:   55,
 							},
 						},
 					},
@@ -2991,13 +2991,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 16,
-									Line:   48,
+									Line:   55,
 								},
 								File:   "influxdb.flux",
 								Source: "Timeable",
 								Start: ast.Position{
 									Column: 8,
-									Line:   48,
+									Line:   55,
 								},
 							},
 						},
@@ -3010,13 +3010,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 6,
-									Line:   48,
+									Line:   55,
 								},
 								File:   "influxdb.flux",
 								Source: "B",
 								Start: ast.Position{
 									Column: 5,
-									Line:   48,
+									Line:   55,
 								},
 							},
 						},
@@ -3030,13 +3030,13 @@ var pkgAST = &ast.Package{
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
 								Column: 48,
-								Line:   46,
+								Line:   53,
 							},
 							File:   "influxdb.flux",
 							Source: "(\n    ?bucket: string,\n    ?bucketID: string,\n    ?org: string,\n    ?orgID: string,\n    ?host: string,\n    ?token: string,\n    start: A,\n    ?stop: B,\n    ?predicate: (r: {T with _measurement: string, _field: string, _value: S}) => bool,\n) => [{_start: time, _stop: time, _value: int}]",
 							Start: ast.Position{
 								Column: 23,
-								Line:   36,
+								Line:   43,
 							},
 						},
 					},
@@ -3047,13 +3047,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 20,
-									Line:   37,
+									Line:   44,
 								},
 								File:   "influxdb.flux",
 								Source: "?bucket: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   37,
+									Line:   44,
 								},
 							},
 						},
@@ -3065,13 +3065,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 12,
-										Line:   37,
+										Line:   44,
 									},
 									File:   "influxdb.flux",
 									Source: "bucket",
 									Start: ast.Position{
 										Column: 6,
-										Line:   37,
+										Line:   44,
 									},
 								},
 							},
@@ -3084,13 +3084,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 20,
-										Line:   37,
+										Line:   44,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 14,
-										Line:   37,
+										Line:   44,
 									},
 								},
 							},
@@ -3101,13 +3101,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   37,
+											Line:   44,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 14,
-											Line:   37,
+											Line:   44,
 										},
 									},
 								},
@@ -3121,13 +3121,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 22,
-									Line:   38,
+									Line:   45,
 								},
 								File:   "influxdb.flux",
 								Source: "?bucketID: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   38,
+									Line:   45,
 								},
 							},
 						},
@@ -3139,13 +3139,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 14,
-										Line:   38,
+										Line:   45,
 									},
 									File:   "influxdb.flux",
 									Source: "bucketID",
 									Start: ast.Position{
 										Column: 6,
-										Line:   38,
+										Line:   45,
 									},
 								},
 							},
@@ -3158,13 +3158,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 22,
-										Line:   38,
+										Line:   45,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 16,
-										Line:   38,
+										Line:   45,
 									},
 								},
 							},
@@ -3175,13 +3175,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 22,
-											Line:   38,
+											Line:   45,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 16,
-											Line:   38,
+											Line:   45,
 										},
 									},
 								},
@@ -3195,13 +3195,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 17,
-									Line:   39,
+									Line:   46,
 								},
 								File:   "influxdb.flux",
 								Source: "?org: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   39,
+									Line:   46,
 								},
 							},
 						},
@@ -3213,13 +3213,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 9,
-										Line:   39,
+										Line:   46,
 									},
 									File:   "influxdb.flux",
 									Source: "org",
 									Start: ast.Position{
 										Column: 6,
-										Line:   39,
+										Line:   46,
 									},
 								},
 							},
@@ -3232,13 +3232,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 17,
-										Line:   39,
+										Line:   46,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 11,
-										Line:   39,
+										Line:   46,
 									},
 								},
 							},
@@ -3249,13 +3249,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 17,
-											Line:   39,
+											Line:   46,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 11,
-											Line:   39,
+											Line:   46,
 										},
 									},
 								},
@@ -3269,13 +3269,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   40,
+									Line:   47,
 								},
 								File:   "influxdb.flux",
 								Source: "?orgID: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   40,
+									Line:   47,
 								},
 							},
 						},
@@ -3287,13 +3287,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   40,
+										Line:   47,
 									},
 									File:   "influxdb.flux",
 									Source: "orgID",
 									Start: ast.Position{
 										Column: 6,
-										Line:   40,
+										Line:   47,
 									},
 								},
 							},
@@ -3306,13 +3306,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   40,
+										Line:   47,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 13,
-										Line:   40,
+										Line:   47,
 									},
 								},
 							},
@@ -3323,13 +3323,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   40,
+											Line:   47,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 13,
-											Line:   40,
+											Line:   47,
 										},
 									},
 								},
@@ -3343,13 +3343,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 18,
-									Line:   41,
+									Line:   48,
 								},
 								File:   "influxdb.flux",
 								Source: "?host: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   41,
+									Line:   48,
 								},
 							},
 						},
@@ -3361,13 +3361,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   41,
+										Line:   48,
 									},
 									File:   "influxdb.flux",
 									Source: "host",
 									Start: ast.Position{
 										Column: 6,
-										Line:   41,
+										Line:   48,
 									},
 								},
 							},
@@ -3380,13 +3380,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 18,
-										Line:   41,
+										Line:   48,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 12,
-										Line:   41,
+										Line:   48,
 									},
 								},
 							},
@@ -3397,13 +3397,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 18,
-											Line:   41,
+											Line:   48,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 12,
-											Line:   41,
+											Line:   48,
 										},
 									},
 								},
@@ -3417,13 +3417,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 19,
-									Line:   42,
+									Line:   49,
 								},
 								File:   "influxdb.flux",
 								Source: "?token: string",
 								Start: ast.Position{
 									Column: 5,
-									Line:   42,
+									Line:   49,
 								},
 							},
 						},
@@ -3435,13 +3435,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 11,
-										Line:   42,
+										Line:   49,
 									},
 									File:   "influxdb.flux",
 									Source: "token",
 									Start: ast.Position{
 										Column: 6,
-										Line:   42,
+										Line:   49,
 									},
 								},
 							},
@@ -3454,13 +3454,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 19,
-										Line:   42,
+										Line:   49,
 									},
 									File:   "influxdb.flux",
 									Source: "string",
 									Start: ast.Position{
 										Column: 13,
-										Line:   42,
+										Line:   49,
 									},
 								},
 							},
@@ -3471,13 +3471,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 19,
-											Line:   42,
+											Line:   49,
 										},
 										File:   "influxdb.flux",
 										Source: "string",
 										Start: ast.Position{
 											Column: 13,
-											Line:   42,
+											Line:   49,
 										},
 									},
 								},
@@ -3491,13 +3491,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   43,
+									Line:   50,
 								},
 								File:   "influxdb.flux",
 								Source: "start: A",
 								Start: ast.Position{
 									Column: 5,
-									Line:   43,
+									Line:   50,
 								},
 							},
 						},
@@ -3509,13 +3509,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   43,
+										Line:   50,
 									},
 									File:   "influxdb.flux",
 									Source: "start",
 									Start: ast.Position{
 										Column: 5,
-										Line:   43,
+										Line:   50,
 									},
 								},
 							},
@@ -3528,13 +3528,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   43,
+										Line:   50,
 									},
 									File:   "influxdb.flux",
 									Source: "A",
 									Start: ast.Position{
 										Column: 12,
-										Line:   43,
+										Line:   50,
 									},
 								},
 							},
@@ -3545,13 +3545,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   43,
+											Line:   50,
 										},
 										File:   "influxdb.flux",
 										Source: "A",
 										Start: ast.Position{
 											Column: 12,
-											Line:   43,
+											Line:   50,
 										},
 									},
 								},
@@ -3565,13 +3565,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 13,
-									Line:   44,
+									Line:   51,
 								},
 								File:   "influxdb.flux",
 								Source: "?stop: B",
 								Start: ast.Position{
 									Column: 5,
-									Line:   44,
+									Line:   51,
 								},
 							},
 						},
@@ -3583,13 +3583,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 10,
-										Line:   44,
+										Line:   51,
 									},
 									File:   "influxdb.flux",
 									Source: "stop",
 									Start: ast.Position{
 										Column: 6,
-										Line:   44,
+										Line:   51,
 									},
 								},
 							},
@@ -3602,13 +3602,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 13,
-										Line:   44,
+										Line:   51,
 									},
 									File:   "influxdb.flux",
 									Source: "B",
 									Start: ast.Position{
 										Column: 12,
-										Line:   44,
+										Line:   51,
 									},
 								},
 							},
@@ -3619,13 +3619,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 13,
-											Line:   44,
+											Line:   51,
 										},
 										File:   "influxdb.flux",
 										Source: "B",
 										Start: ast.Position{
 											Column: 12,
-											Line:   44,
+											Line:   51,
 										},
 									},
 								},
@@ -3639,13 +3639,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 86,
-									Line:   45,
+									Line:   52,
 								},
 								File:   "influxdb.flux",
 								Source: "?predicate: (r: {T with _measurement: string, _field: string, _value: S}) => bool",
 								Start: ast.Position{
 									Column: 5,
-									Line:   45,
+									Line:   52,
 								},
 							},
 						},
@@ -3657,13 +3657,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 15,
-										Line:   45,
+										Line:   52,
 									},
 									File:   "influxdb.flux",
 									Source: "predicate",
 									Start: ast.Position{
 										Column: 6,
-										Line:   45,
+										Line:   52,
 									},
 								},
 							},
@@ -3676,13 +3676,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 86,
-										Line:   45,
+										Line:   52,
 									},
 									File:   "influxdb.flux",
 									Source: "(r: {T with _measurement: string, _field: string, _value: S}) => bool",
 									Start: ast.Position{
 										Column: 17,
-										Line:   45,
+										Line:   52,
 									},
 								},
 							},
@@ -3693,13 +3693,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 77,
-											Line:   45,
+											Line:   52,
 										},
 										File:   "influxdb.flux",
 										Source: "r: {T with _measurement: string, _field: string, _value: S}",
 										Start: ast.Position{
 											Column: 18,
-											Line:   45,
+											Line:   52,
 										},
 									},
 								},
@@ -3711,13 +3711,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 19,
-												Line:   45,
+												Line:   52,
 											},
 											File:   "influxdb.flux",
 											Source: "r",
 											Start: ast.Position{
 												Column: 18,
-												Line:   45,
+												Line:   52,
 											},
 										},
 									},
@@ -3730,13 +3730,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 77,
-												Line:   45,
+												Line:   52,
 											},
 											File:   "influxdb.flux",
 											Source: "{T with _measurement: string, _field: string, _value: S}",
 											Start: ast.Position{
 												Column: 21,
-												Line:   45,
+												Line:   52,
 											},
 										},
 									},
@@ -3747,13 +3747,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 49,
-													Line:   45,
+													Line:   52,
 												},
 												File:   "influxdb.flux",
 												Source: "_measurement: string",
 												Start: ast.Position{
 													Column: 29,
-													Line:   45,
+													Line:   52,
 												},
 											},
 										},
@@ -3764,13 +3764,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 41,
-														Line:   45,
+														Line:   52,
 													},
 													File:   "influxdb.flux",
 													Source: "_measurement",
 													Start: ast.Position{
 														Column: 29,
-														Line:   45,
+														Line:   52,
 													},
 												},
 											},
@@ -3783,13 +3783,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 49,
-														Line:   45,
+														Line:   52,
 													},
 													File:   "influxdb.flux",
 													Source: "string",
 													Start: ast.Position{
 														Column: 43,
-														Line:   45,
+														Line:   52,
 													},
 												},
 											},
@@ -3800,13 +3800,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 49,
-															Line:   45,
+															Line:   52,
 														},
 														File:   "influxdb.flux",
 														Source: "string",
 														Start: ast.Position{
 															Column: 43,
-															Line:   45,
+															Line:   52,
 														},
 													},
 												},
@@ -3820,13 +3820,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 65,
-													Line:   45,
+													Line:   52,
 												},
 												File:   "influxdb.flux",
 												Source: "_field: string",
 												Start: ast.Position{
 													Column: 51,
-													Line:   45,
+													Line:   52,
 												},
 											},
 										},
@@ -3837,13 +3837,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 57,
-														Line:   45,
+														Line:   52,
 													},
 													File:   "influxdb.flux",
 													Source: "_field",
 													Start: ast.Position{
 														Column: 51,
-														Line:   45,
+														Line:   52,
 													},
 												},
 											},
@@ -3856,13 +3856,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 65,
-														Line:   45,
+														Line:   52,
 													},
 													File:   "influxdb.flux",
 													Source: "string",
 													Start: ast.Position{
 														Column: 59,
-														Line:   45,
+														Line:   52,
 													},
 												},
 											},
@@ -3873,13 +3873,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 65,
-															Line:   45,
+															Line:   52,
 														},
 														File:   "influxdb.flux",
 														Source: "string",
 														Start: ast.Position{
 															Column: 59,
-															Line:   45,
+															Line:   52,
 														},
 													},
 												},
@@ -3893,13 +3893,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 76,
-													Line:   45,
+													Line:   52,
 												},
 												File:   "influxdb.flux",
 												Source: "_value: S",
 												Start: ast.Position{
 													Column: 67,
-													Line:   45,
+													Line:   52,
 												},
 											},
 										},
@@ -3910,13 +3910,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 73,
-														Line:   45,
+														Line:   52,
 													},
 													File:   "influxdb.flux",
 													Source: "_value",
 													Start: ast.Position{
 														Column: 67,
-														Line:   45,
+														Line:   52,
 													},
 												},
 											},
@@ -3929,13 +3929,13 @@ var pkgAST = &ast.Package{
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
 														Column: 76,
-														Line:   45,
+														Line:   52,
 													},
 													File:   "influxdb.flux",
 													Source: "S",
 													Start: ast.Position{
 														Column: 75,
-														Line:   45,
+														Line:   52,
 													},
 												},
 											},
@@ -3946,13 +3946,13 @@ var pkgAST = &ast.Package{
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
 															Column: 76,
-															Line:   45,
+															Line:   52,
 														},
 														File:   "influxdb.flux",
 														Source: "S",
 														Start: ast.Position{
 															Column: 75,
-															Line:   45,
+															Line:   52,
 														},
 													},
 												},
@@ -3967,13 +3967,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 23,
-													Line:   45,
+													Line:   52,
 												},
 												File:   "influxdb.flux",
 												Source: "T",
 												Start: ast.Position{
 													Column: 22,
-													Line:   45,
+													Line:   52,
 												},
 											},
 										},
@@ -3988,13 +3988,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 86,
-											Line:   45,
+											Line:   52,
 										},
 										File:   "influxdb.flux",
 										Source: "bool",
 										Start: ast.Position{
 											Column: 82,
-											Line:   45,
+											Line:   52,
 										},
 									},
 								},
@@ -4005,13 +4005,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 86,
-												Line:   45,
+												Line:   52,
 											},
 											File:   "influxdb.flux",
 											Source: "bool",
 											Start: ast.Position{
 												Column: 82,
-												Line:   45,
+												Line:   52,
 											},
 										},
 									},
@@ -4027,13 +4027,13 @@ var pkgAST = &ast.Package{
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
 									Column: 48,
-									Line:   46,
+									Line:   53,
 								},
 								File:   "influxdb.flux",
 								Source: "[{_start: time, _stop: time, _value: int}]",
 								Start: ast.Position{
 									Column: 6,
-									Line:   46,
+									Line:   53,
 								},
 							},
 						},
@@ -4044,13 +4044,13 @@ var pkgAST = &ast.Package{
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
 										Column: 47,
-										Line:   46,
+										Line:   53,
 									},
 									File:   "influxdb.flux",
 									Source: "{_start: time, _stop: time, _value: int}",
 									Start: ast.Position{
 										Column: 7,
-										Line:   46,
+										Line:   53,
 									},
 								},
 							},
@@ -4061,13 +4061,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 20,
-											Line:   46,
+											Line:   53,
 										},
 										File:   "influxdb.flux",
 										Source: "_start: time",
 										Start: ast.Position{
 											Column: 8,
-											Line:   46,
+											Line:   53,
 										},
 									},
 								},
@@ -4078,13 +4078,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 14,
-												Line:   46,
+												Line:   53,
 											},
 											File:   "influxdb.flux",
 											Source: "_start",
 											Start: ast.Position{
 												Column: 8,
-												Line:   46,
+												Line:   53,
 											},
 										},
 									},
@@ -4097,13 +4097,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 20,
-												Line:   46,
+												Line:   53,
 											},
 											File:   "influxdb.flux",
 											Source: "time",
 											Start: ast.Position{
 												Column: 16,
-												Line:   46,
+												Line:   53,
 											},
 										},
 									},
@@ -4114,13 +4114,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 20,
-													Line:   46,
+													Line:   53,
 												},
 												File:   "influxdb.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 16,
-													Line:   46,
+													Line:   53,
 												},
 											},
 										},
@@ -4134,13 +4134,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 33,
-											Line:   46,
+											Line:   53,
 										},
 										File:   "influxdb.flux",
 										Source: "_stop: time",
 										Start: ast.Position{
 											Column: 22,
-											Line:   46,
+											Line:   53,
 										},
 									},
 								},
@@ -4151,13 +4151,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 27,
-												Line:   46,
+												Line:   53,
 											},
 											File:   "influxdb.flux",
 											Source: "_stop",
 											Start: ast.Position{
 												Column: 22,
-												Line:   46,
+												Line:   53,
 											},
 										},
 									},
@@ -4170,13 +4170,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 33,
-												Line:   46,
+												Line:   53,
 											},
 											File:   "influxdb.flux",
 											Source: "time",
 											Start: ast.Position{
 												Column: 29,
-												Line:   46,
+												Line:   53,
 											},
 										},
 									},
@@ -4187,13 +4187,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 33,
-													Line:   46,
+													Line:   53,
 												},
 												File:   "influxdb.flux",
 												Source: "time",
 												Start: ast.Position{
 													Column: 29,
-													Line:   46,
+													Line:   53,
 												},
 											},
 										},
@@ -4207,13 +4207,13 @@ var pkgAST = &ast.Package{
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
 											Column: 46,
-											Line:   46,
+											Line:   53,
 										},
 										File:   "influxdb.flux",
 										Source: "_value: int",
 										Start: ast.Position{
 											Column: 35,
-											Line:   46,
+											Line:   53,
 										},
 									},
 								},
@@ -4224,13 +4224,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 41,
-												Line:   46,
+												Line:   53,
 											},
 											File:   "influxdb.flux",
 											Source: "_value",
 											Start: ast.Position{
 												Column: 35,
-												Line:   46,
+												Line:   53,
 											},
 										},
 									},
@@ -4243,13 +4243,13 @@ var pkgAST = &ast.Package{
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
 												Column: 46,
-												Line:   46,
+												Line:   53,
 											},
 											File:   "influxdb.flux",
 											Source: "int",
 											Start: ast.Position{
 												Column: 43,
-												Line:   46,
+												Line:   53,
 											},
 										},
 									},
@@ -4260,13 +4260,13 @@ var pkgAST = &ast.Package{
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
 													Column: 46,
-													Line:   46,
+													Line:   53,
 												},
 												File:   "influxdb.flux",
 												Source: "int",
 												Start: ast.Position{
 													Column: 43,
-													Line:   46,
+													Line:   53,
 												},
 											},
 										},

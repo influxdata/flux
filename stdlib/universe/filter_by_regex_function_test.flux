@@ -36,9 +36,7 @@ outData = "
 "
 regexFunc = (table=<-, regLiteral) => table
     |> range(start: 2018-05-20T19:53:26Z)
-    |> filter(
-        fn: (r) => r._field =~ regLiteral,
-    )
+    |> filter(fn: (r) => r._field =~ regLiteral)
     |> max()
 t_filter_by_regex_function = (table=<-) => table
     |> regexFunc(regLiteral: /io.*/)

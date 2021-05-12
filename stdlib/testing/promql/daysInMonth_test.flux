@@ -34,8 +34,6 @@ t_promqlDaysInMonth = (table=<-) => table
     |> range(start: 1980-01-01T00:00:00Z)
     |> drop(columns: ["_start", "_stop"])
     |> promql.timestamp()
-    |> map(
-        fn: (r) => ({r with _value: promql.promqlDaysInMonth(timestamp: r._value)}),
-    )
+    |> map(fn: (r) => ({r with _value: promql.promqlDaysInMonth(timestamp: r._value)}))
 
 test _promqlDaysInMonth = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_promqlDaysInMonth})

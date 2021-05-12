@@ -1,5 +1,6 @@
 package debug_test
 
+
 import "array"
 import "testing"
 import "internal/debug"
@@ -27,7 +28,6 @@ inData = "
 ,,1,iZquGj,ucyoZ,2018-12-18T20:53:13Z,68
 ,,1,iZquGj,ucyoZ,2018-12-18T20:53:23Z,49
 "
-
 input = () => testing.loadStorage(csv: inData)
     |> range(start: 2018-12-18T20:00:00Z, stop: 2018-12-18T21:00:00Z)
     |> drop(columns: ["_start", "_stop"])
@@ -35,11 +35,12 @@ input = () => testing.loadStorage(csv: inData)
 testcase slurp {
     got = input() |> debug.slurp()
     want = testing.loadMem(csv: inData)
+
     testing.diff(got, want) |> yield()
 }
-
 testcase sink {
     got = input() |> debug.sink()
     want = testing.loadMem(csv: inData) |> filter(fn: (r) => false)
+
     testing.diff(got, want) |> yield()
 }

@@ -160,11 +160,14 @@ else
             _message: messageFn(r: r),
         }),
     )
-    |> experimental.group(mode: "extend", columns: [
-        "_source_measurement",
-        "_type",
-        "_check_id",
-        "_check_name",
-        "_level",
-    ])
+    |> experimental.group(
+        mode: "extend",
+        columns: [
+            "_source_measurement",
+            "_type",
+            "_check_id",
+            "_check_name",
+            "_level",
+        ],
+    )
     |> write()

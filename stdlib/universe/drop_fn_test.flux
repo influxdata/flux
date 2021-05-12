@@ -55,8 +55,6 @@ outData = "
 "
 t_drop = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> drop(
-        fn: (column) => column =~ /dropme*/,
-    )
+    |> drop(fn: (column) => column =~ /dropme*/)
 
 test _drop_fn = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_drop})

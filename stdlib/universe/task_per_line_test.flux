@@ -59,27 +59,26 @@ outData = "
 fn = (table=<-) => {
     supl = table
         |> range(start: 2018-10-02T17:55:11.520461Z)
-        |> filter(
-            fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000",
-        )
+        |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
         |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> group(columns: ["runID"])
     main = table
         |> range(start: 2018-10-02T17:55:11.520461Z)
-        |> filter(
-            fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000",
-        )
+        |> filter(fn: (r) => r._measurement == "records" and r.taskID == "02bac3c8f0f37000")
         |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
         |> pivot(rowKey: ["runID"], columnKey: ["status"], valueColumn: "_time")
 
-    return join(tables: {main: main, supl: supl}, on: [
-        "_start",
-        "_stop",
-        "orgID",
-        "taskID",
-        "runID",
-        "_measurement",
-    ])
+    return join(
+        tables: {main: main, supl: supl},
+        on: [
+            "_start",
+            "_stop",
+            "orgID",
+            "taskID",
+            "runID",
+            "_measurement",
+        ],
+    )
 }
 
 test task_per_line = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: fn})

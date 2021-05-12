@@ -53,11 +53,7 @@ outData = "
 "
 t_rename = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> rename(
-        fn: (column) => column,
-    )
-    |> drop(
-        fn: (column) => column == "_start" or column == "_stop",
-    )
+    |> rename(fn: (column) => column)
+    |> drop(fn: (column) => column == "_start" or column == "_stop")
 
 test _rename_fn = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_rename})

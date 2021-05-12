@@ -21,8 +21,15 @@ builtin to : (
     ?measurementColumn: string,
     ?tagColumns: [string],
     ?fieldFn: (r: A) => B,
-) => [A] where A: Record, B: Record
-builtin buckets : (?org: string, ?orgID: string, ?host: string, ?token: string) => [{
+) => [A] where
+    A: Record,
+    B: Record
+builtin buckets : (
+    ?org: string,
+    ?orgID: string,
+    ?host: string,
+    ?token: string,
+) => [{
     name: string,
     id: string,
     organizationID: string,

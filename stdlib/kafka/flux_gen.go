@@ -77,11 +77,11 @@ var pkgAST = &ast.Package{
 					Errors:   nil,
 					Loc: &ast.SourceLocation{
 						End: ast.Position{
-							Column: 25,
-							Line:   14,
+							Column: 14,
+							Line:   15,
 						},
 						File:   "kafka.flux",
-						Source: "(\n    <-tables: [A],\n    brokers: [string],\n    topic: string,\n    ?balancer: string,\n    ?name: string,\n    ?nameColumn: string,\n    ?timeColumn: string,\n    ?tagColumns: [string],\n    ?valueColumns: [string],\n) => [A] where A: Record",
+						Source: "(\n    <-tables: [A],\n    brokers: [string],\n    topic: string,\n    ?balancer: string,\n    ?name: string,\n    ?nameColumn: string,\n    ?timeColumn: string,\n    ?tagColumns: [string],\n    ?valueColumns: [string],\n) => [A] where\n    A: Record",
 						Start: ast.Position{
 							Column: 14,
 							Line:   4,
@@ -94,14 +94,14 @@ var pkgAST = &ast.Package{
 						Errors:   nil,
 						Loc: &ast.SourceLocation{
 							End: ast.Position{
-								Column: 25,
-								Line:   14,
+								Column: 14,
+								Line:   15,
 							},
 							File:   "kafka.flux",
 							Source: "A: Record",
 							Start: ast.Position{
-								Column: 16,
-								Line:   14,
+								Column: 5,
+								Line:   15,
 							},
 						},
 					},
@@ -111,14 +111,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 25,
-									Line:   14,
+									Column: 14,
+									Line:   15,
 								},
 								File:   "kafka.flux",
 								Source: "Record",
 								Start: ast.Position{
-									Column: 19,
-									Line:   14,
+									Column: 8,
+									Line:   15,
 								},
 							},
 						},
@@ -130,14 +130,14 @@ var pkgAST = &ast.Package{
 							Errors:   nil,
 							Loc: &ast.SourceLocation{
 								End: ast.Position{
-									Column: 17,
-									Line:   14,
+									Column: 6,
+									Line:   15,
 								},
 								File:   "kafka.flux",
 								Source: "A",
 								Start: ast.Position{
-									Column: 16,
-									Line:   14,
+									Column: 5,
+									Line:   15,
 								},
 							},
 						},

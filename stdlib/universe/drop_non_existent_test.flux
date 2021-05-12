@@ -55,12 +55,14 @@ outData = "
 "
 t_drop = (table=<-) => table
     |> range(start: 2018-05-22T19:53:26Z)
-    |> drop(columns: [
-        "non_existent",
-        "dropme1",
-        "dropme2",
-        "_start",
-        "_stop",
-    ])
+    |> drop(
+        columns: [
+            "non_existent",
+            "dropme1",
+            "dropme2",
+            "_start",
+            "_stop",
+        ],
+    )
 
 test _drop_non_existent = () => ({input: testing.loadStorage(csv: inData), want: testing.loadMem(csv: outData), fn: t_drop})
