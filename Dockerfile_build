@@ -118,7 +118,7 @@ USER $UNAME
 ENV HOME=/home/$UNAME
 
 # The latest stable rust version
-ENV RUST_LATEST_VERSION=1.51.0
+ENV RUST_LATEST_VERSION=1.52.0
 
 # Install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
