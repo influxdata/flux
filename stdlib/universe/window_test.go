@@ -87,7 +87,7 @@ func TestWindowOperation_Marshaling(t *testing.T) {
 func TestFixedWindow_PassThrough(t *testing.T) {
 	w, _ := interval.NewWindow(values.ConvertDurationNsecs(time.Minute), values.ConvertDurationNsecs(time.Minute), values.MakeDuration(0, 0, false))
 	executetest.TransformationPassThroughTestHelper(t, func(d execute.Dataset, c execute.TableBuilderCache) execute.Transformation {
-		fw := universe.NewIntervalFixedWindowTransformation(
+		fw := universe.NewFixedWindowTransformation(
 			d,
 			c,
 			interval.Bounds{},
@@ -845,7 +845,7 @@ func TestFixedWindow_Process(t *testing.T) {
 			if err != nil {
 				t.Fatalf("unexpected error while creating window: %s", err)
 			}
-			fw := universe.NewIntervalFixedWindowTransformation(
+			fw := universe.NewFixedWindowTransformation(
 				d,
 				c,
 				tc.bounds,
