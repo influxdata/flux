@@ -24,7 +24,7 @@ alert = (check, id=(r) => "${r._check_id}", details=(r) => "", message=(r) => "T
         (tables=<-) => tables
             |> set(key: "_topic", value: topic)
             |> experimental.group(mode: "extend", columns: ["_topic"])
-else
+    else
         (tables=<-) => tables
 
     return tables
@@ -49,7 +49,7 @@ else
 }
 
 // deadman is a helper function similar to TICKscript deadman.
-deadman = (check, measurement, threshold=0, id=(r) => "${r._check_id}", message=(r) => "Deadman Check: ${r._check_name} is: " + (if r.dead then "dead" else "alive"), topic="", tables=<-) => {
+deadman = (check, measurement, threshold=0, id=(r) => "${r._check_id}", message=(r) => "Deadman Check: ${r._check_name} is: " + if r.dead then "dead" else "alive", topic="", tables=<-) => {
     // In order to detect empty stream (without tables), we concatenate input with dummy stream and count the result,
     // because count() returns nothing for empty stream. If the input stream is empty, then dummy stream with empty
     // table is used as input for actual threshold check in order to get 0.
@@ -72,7 +72,7 @@ deadman = (check, measurement, threshold=0, id=(r) => "${r._check_id}", message=
                 |> drop(columns: ["unknown"])
                 // need empty table
                 |> limit(n: 0)
-else
+        else
             tables
 
     return _tables

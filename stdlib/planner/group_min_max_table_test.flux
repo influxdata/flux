@@ -128,9 +128,9 @@ testcase group_max_table {
 }
 testcase group_no_agg_table {
     result = testing.loadStorage(csv: inData)
-    |> range(start: 2019-11-25T00:00:00Z)
-    |> group(columns: ["t0"])
-    |> drop(columns: ["_start", "_stop"])
+        |> range(start: 2019-11-25T00:00:00Z)
+        |> group(columns: ["t0"])
+        |> drop(columns: ["_start", "_stop"])
     out_no_agg_table = "
 #datatype,string,long,dateTime:RFC3339,string,string,string,string,double
 #group,false,false,false,false,false,true,false,false
@@ -209,6 +209,6 @@ testcase group_no_agg_table {
 ,,2,2019-11-25T00:01:40Z,m0,f0,a-2,b-1,7.0
 ,,2,2019-11-25T00:01:50Z,m0,f0,a-2,b-1,8.0
 "
+
     testing.diff(got: result, want: testing.loadMem(csv: out_no_agg_table)) |> yield()
 }
-

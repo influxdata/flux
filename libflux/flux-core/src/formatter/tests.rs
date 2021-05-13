@@ -7,7 +7,11 @@ use pretty_assertions::assert_eq;
 
 fn assert_unchanged(script: &str) {
     let output = format(script).unwrap();
-    assert_eq!(script, output);
+    assert_eq!(
+        script, output,
+        "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
+        script, output
+    );
 }
 
 fn assert_format(script: &str, expected: &str) {
@@ -1023,5 +1027,63 @@ fn temp_indent() {
     // c is special
     c: "special",
 )"#,
+    );
+}
+#[test]
+fn else_indentation() {
+    assert_unchanged(
+        "tables
+    |> map(
+        fn: (r) => ({r with
+            level_value: if r._level == levelCrit then
+                4
+            else if r._level == levelWarn then
+                3
+            else if r._level == levelInfo then
+                2
+            else if r._level == levelOK then
+                1
+            else
+                0,
+            foo: bar,
+        //Check indent on this test
+        }),
+    //Seems correct running this test
+    )",
+    );
+    assert_unchanged(
+        "tables
+    |> map(
+        fn: (r) => ({r with
+            level_value: if r._level == levelCrit then
+                4
+            else if r._level == levelWarn then
+                3
+            else if r._level == levelInfo then
+                2
+            else if r._level == levelOK then
+                1
+            else
+                0,
+        }),
+    )",
+    );
+    assert_unchanged(
+        "if x then
+    y
+else if g then
+    7
+else if x then
+    9
+else if z then
+    42
+else if g then
+    7
+else if x then
+    9
+else if z then
+    42
+else
+    z",
     );
 }

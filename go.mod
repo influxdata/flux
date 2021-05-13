@@ -30,7 +30,7 @@ require (
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/influxdata/line-protocol v0.0.0-20180522152040-32c6aa80de5e
-	github.com/influxdata/pkg-config v0.2.6
+	github.com/influxdata/pkg-config v0.2.7
 	github.com/influxdata/promql/v2 v2.12.0
 	github.com/influxdata/tdigest v0.0.2-0.20210216194612-fc98d27c9e8b
 	github.com/lib/pq v1.0.0
