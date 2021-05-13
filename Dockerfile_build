@@ -126,7 +126,7 @@ ENV OUR_RUSTUP_SHA="427614d934032ae48a218136dc9e2aad30979575fadf1c53940676ceb3ca
 RUN curl --proto '=https' --tlsv1.2 -sSf \
     https://raw.githubusercontent.com/rust-lang/rustup/${RUSTUP_LATEST_VERSION}/rustup-init.sh -O && \
     echo "${OUR_RUSTUP_SHA} rustup-init.sh" | sha256sum --check -- && \
-    sh -s rustup-init.sh --default-toolchain "$RUST_LATEST_VERSION" -y
+    sh rustup-init.sh --default-toolchain "$RUST_LATEST_VERSION" -y
 ENV PATH="$HOME/.cargo/bin:${PATH}"
 RUN rustup component add rustfmt clippy --toolchain $RUST_LATEST_VERSION
 
