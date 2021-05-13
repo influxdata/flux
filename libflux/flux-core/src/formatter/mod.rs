@@ -1254,7 +1254,6 @@ impl<'a> Operator<'a> {
                 ast::Operator::NotOperator => 7,
                 ast::Operator::ExistsOperator => 7,
                 ast::Operator::InvalidOperator => 0,
-                ast::Operator::ConditionalOperator => 10,
             };
         }
         match self.l_op.unwrap() {
