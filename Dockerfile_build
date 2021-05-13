@@ -117,15 +117,16 @@ RUN useradd -m -u $UID -g $UNAME -s /bin/bash $UNAME
 USER $UNAME
 ENV HOME=/home/$UNAME
 
-# The latest stable rust version
+# The latest stable Rust version
 ENV RUST_LATEST_VERSION=1.52.0
 ENV RUSTUP_LATEST_VERSION=1.24.1
 
 # Download, verify, and run rustup script
 ENV OUR_RUSTUP_SHA="427614d934032ae48a218136dc9e2aad30979575fadf1c53940676ceb3ca0561"
 RUN curl --proto '=https' --tlsv1.2 -sSf \
-    https://raw.githubusercontent.com/rust-lang/rustup/${RUSTUP_LATEST_VERSION}/rustup-init.sh -O && \
-    echo "${OUR_RUSTUP_SHA} rustup-init.sh" | sha256sum --check -- && \
+      https://raw.githubusercontent.com/rust-lang/rustup/${RUSTUP_LATEST_VERSION}/rustup-init.sh -O && \
+    echo "${OUR_RUSTUP_SHA} rustup-init.sh" | sha256sum --check -- \
+      || { echo "checksum problem!"; exit 1; } && \
     sh rustup-init.sh --default-toolchain "$RUST_LATEST_VERSION" -y
 ENV PATH="$HOME/.cargo/bin:${PATH}"
 RUN rustup component add rustfmt clippy --toolchain $RUST_LATEST_VERSION
