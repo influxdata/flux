@@ -292,7 +292,7 @@ pub fn convert_polytype(
             }
         }
     }
-    Ok(types::PolyType { expr, cons, vars })
+    Ok(types::PolyType { vars, cons, expr })
 }
 
 fn convert_test_statement(stmt: ast::TestStmt, fresher: &mut Fresher) -> Result<TestStmt> {

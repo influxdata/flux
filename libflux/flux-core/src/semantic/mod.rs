@@ -27,9 +27,7 @@ use crate::parser::parse_string;
 use crate::semantic::convert::convert_with;
 use crate::semantic::env::Environment;
 use crate::semantic::fresh::Fresher;
-// This needs to be public so libstd can access it.
-// Once we merge libstd and flux this can be made private again.
-pub use crate::semantic::import::Importer;
+use crate::semantic::import::Importer;
 use derive_more::Display;
 
 /// An error in semantic analysis.

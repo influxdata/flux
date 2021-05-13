@@ -366,12 +366,12 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     &mut v.builder,
                     &fbsemantic::ConditionalExpressionArgs {
                         loc,
-                        test,
                         test_type,
-                        alternate,
+                        test,
                         alternate_type,
-                        consequent,
+                        alternate,
                         consequent_type,
+                        consequent,
                     },
                 );
                 v.expr_stack.push((
@@ -707,8 +707,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     &mut v.builder,
                     &fbsemantic::ReturnStatementArgs {
                         loc,
-                        argument,
                         argument_type,
+                        argument,
                     },
                 );
                 v.stmts.push((
@@ -723,8 +723,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     &mut v.builder,
                     &fbsemantic::ExpressionStatementArgs {
                         loc,
-                        expression,
                         expression_type,
+                        expression,
                     },
                 );
                 v.stmts.push((
@@ -810,8 +810,8 @@ impl<'a> semantic::walk::Visitor<'_> for SerializingVisitor<'a> {
                     &mut v.builder,
                     &fbsemantic::OptionStatementArgs {
                         loc,
-                        assignment,
                         assignment_type,
+                        assignment,
                     },
                 );
                 v.stmts

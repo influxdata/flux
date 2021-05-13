@@ -440,8 +440,8 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     &fbast::UnaryExpressionArgs {
                         base_node,
                         operator,
-                        argument,
                         argument_type,
+                        argument,
                     },
                 );
                 v.expr_stack
@@ -476,8 +476,8 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     &mut v.builder,
                     &fbast::CallExpressionArgs {
                         base_node,
-                        callee,
                         callee_type,
+                        callee,
                         arguments,
                     },
                 );
@@ -570,9 +570,9 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                     &mut v.builder,
                     &fbast::BadExpressionArgs {
                         base_node,
+                        text,
                         expression_type,
                         expression,
-                        text,
                     },
                 );
                 v.expr_stack
@@ -737,7 +737,7 @@ impl<'a> ast::walk::Visitor<'a> for SerializingVisitor<'a> {
                 let name = v.pop_expr_with_kind(fbast::Expression::Identifier);
                 v.package_clause = Some(fbast::PackageClause::create(
                     &mut v.builder,
-                    &fbast::PackageClauseArgs { name, base_node },
+                    &fbast::PackageClauseArgs { base_node, name },
                 ));
             }
             walk::Node::File(f) => {

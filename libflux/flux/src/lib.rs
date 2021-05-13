@@ -286,10 +286,7 @@ pub unsafe extern "C" fn flux_merge_ast_pkgs(
     let out_pkg = &mut *out_pkg;
     let in_pkg = &mut *in_pkg;
 
-    match merge_packages(out_pkg, in_pkg) {
-        None => None,
-        Some(err) => Some(err.into()),
-    }
+    merge_packages(out_pkg, in_pkg).map(|err| err.into())
 }
 
 /// merge_packages takes an input package and an output package, checks that the package

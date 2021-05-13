@@ -474,10 +474,10 @@ fn build_dict<'a>(
     fb::Dict::create(
         builder,
         &fb::DictArgs {
-            k,
-            v,
             k_type,
+            k,
             v_type,
+            v,
         },
     )
 }
@@ -513,10 +513,7 @@ fn build_record<'a>(
     };
     let props = build_vec(props, builder, build_prop);
     let props = builder.create_vector(props.as_slice());
-    let extends = match extends {
-        None => None,
-        Some(tv) => Some(build_var(builder, tv)),
-    };
+    let extends = extends.map(|typevar| build_var(builder, typevar));
     fb::Record::create(
         builder,
         &fb::RecordArgs {
