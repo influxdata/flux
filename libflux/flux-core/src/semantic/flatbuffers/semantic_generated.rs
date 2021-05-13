@@ -521,11 +521,10 @@ pub mod fbsemantic {
         RegexpMatchOperator = 18,
         NotRegexpMatchOperator = 19,
         InvalidOperator = 20,
-        ConditionalOperator = 21,
     }
 
     const ENUM_MIN_OPERATOR: i8 = 0;
-    const ENUM_MAX_OPERATOR: i8 = 21;
+    const ENUM_MAX_OPERATOR: i8 = 20;
 
     impl<'a> flatbuffers::Follow<'a> for Operator {
         type Inner = Self;
@@ -559,7 +558,7 @@ pub mod fbsemantic {
     }
 
     #[allow(non_camel_case_types)]
-    const ENUM_VALUES_OPERATOR: [Operator; 22] = [
+    const ENUM_VALUES_OPERATOR: [Operator; 21] = [
         Operator::MultiplicationOperator,
         Operator::DivisionOperator,
         Operator::ModuloOperator,
@@ -581,11 +580,10 @@ pub mod fbsemantic {
         Operator::RegexpMatchOperator,
         Operator::NotRegexpMatchOperator,
         Operator::InvalidOperator,
-        Operator::ConditionalOperator,
     ];
 
     #[allow(non_camel_case_types)]
-    const ENUM_NAMES_OPERATOR: [&'static str; 22] = [
+    const ENUM_NAMES_OPERATOR: [&'static str; 21] = [
         "MultiplicationOperator",
         "DivisionOperator",
         "ModuloOperator",
@@ -607,7 +605,6 @@ pub mod fbsemantic {
         "RegexpMatchOperator",
         "NotRegexpMatchOperator",
         "InvalidOperator",
-        "ConditionalOperator",
     ];
 
     pub fn enum_name_operator(e: Operator) -> &'static str {

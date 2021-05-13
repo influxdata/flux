@@ -925,7 +925,6 @@ fn ast_operator(fb_op: fbast::Operator) -> ast::Operator {
         fbast::Operator::RegexpMatchOperator => ast::Operator::RegexpMatchOperator,
         fbast::Operator::NotRegexpMatchOperator => ast::Operator::NotRegexpMatchOperator,
         fbast::Operator::InvalidOperator => ast::Operator::InvalidOperator,
-        fbast::Operator::ConditionalOperator => ast::Operator::ConditionalOperator,
     }
 }
 

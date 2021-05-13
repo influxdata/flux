@@ -1107,7 +1107,6 @@ fn fb_operator(o: &ast::Operator) -> fbsemantic::Operator {
         ast::Operator::RegexpMatchOperator => fbsemantic::Operator::RegexpMatchOperator,
         ast::Operator::NotRegexpMatchOperator => fbsemantic::Operator::NotRegexpMatchOperator,
         ast::Operator::InvalidOperator => fbsemantic::Operator::InvalidOperator,
-        ast::Operator::ConditionalOperator => fbsemantic::Operator::ConditionalOperator,
     }
 }
 
