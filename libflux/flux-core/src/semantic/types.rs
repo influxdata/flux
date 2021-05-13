@@ -1133,10 +1133,7 @@ impl<T: Substitutable> Substitutable for SemanticMap<String, T> {
 
 impl<T: Substitutable> Substitutable for Option<T> {
     fn apply(self, sub: &Substitution) -> Self {
-        match self {
-            Some(t) => Some(t.apply(sub)),
-            None => None,
-        }
+        self.map(|t| t.apply(sub))
     }
     fn free_vars(&self) -> Vec<Tvar> {
         match self {

@@ -1553,8 +1553,8 @@ impl Parser {
                 let rbrack = end.comments;
                 Expression::Dict(Box::new(DictExpr {
                     base,
-                    elements,
                     lbrack,
+                    elements,
                     rbrack,
                 }))
             }
@@ -1567,8 +1567,8 @@ impl Parser {
                 let rbrack = end.comments;
                 Expression::Array(Box::new(ArrayExpr {
                     base,
-                    elements,
                     lbrack,
+                    elements,
                     rbrack,
                 }))
             }

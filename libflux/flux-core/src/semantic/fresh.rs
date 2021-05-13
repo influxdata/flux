@@ -46,10 +46,7 @@ impl<T: Fresh> Fresh for Vec<T> {
 
 impl<T: Fresh> Fresh for Option<T> {
     fn fresh(self, f: &mut Fresher, sub: &mut TvarMap) -> Self {
-        match self {
-            None => None,
-            Some(t) => Some(t.fresh(f, sub)),
-        }
+        self.map(|t| t.fresh(f, sub))
     }
 }
 

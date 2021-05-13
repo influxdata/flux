@@ -61,10 +61,7 @@ impl Substitutable for Environment {
 
 impl Importer for Environment {
     fn import(&self, name: &str) -> Option<PolyType> {
-        match self.lookup(name) {
-            Some(pty) => Some(pty.clone()),
-            None => None,
-        }
+        self.lookup(name).cloned()
     }
 }
 

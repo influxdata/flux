@@ -10,10 +10,7 @@ pub trait Importer {
 
 impl Importer for PolyTypeMap {
     fn import(&self, name: &str) -> Option<PolyType> {
-        match self.get(name) {
-            Some(pty) => Some(pty.clone()),
-            None => None,
-        }
+        self.get(name).cloned()
     }
 }
 
