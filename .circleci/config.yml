@@ -25,11 +25,11 @@ jobs:
             - flux-rust-{{ .Branch }}-                # Matches a new commit on an existing branch.
             - flux-rust-                              # Matches a new branch.
       # Run tests
+      - run: make checkgenerate
       - run: make checkfmt
       - run: make checktidy
       - run: make vet
       - run: GOGC=50 make staticcheck
-      - run: make checkgenerate
       - run: make libflux-wasm
       - run: make test GO_TEST_FLAGS='-coverprofile=coverage.txt -covermode=atomic'
       - save_cache:
