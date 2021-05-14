@@ -28,7 +28,6 @@ const ToKind = "to"
 func init() {
 	toSignature := runtime.MustLookupBuiltinType("influxdata/influxdb", "to")
 	runtime.RegisterPackageValue("influxdata/influxdb", ToKind, flux.MustValue(flux.FunctionValueWithSideEffect(ToKind, createToOpSpec, toSignature)))
-	flux.RegisterOpSpec(ToKind, func() flux.OperationSpec { return &ToOpSpec{} })
 	plan.RegisterProcedureSpecWithSideEffect(ToKind, newToProcedure, ToKind)
 	execute.RegisterTransformation(ToKind, createToTransformation)
 }
@@ -59,18 +58,6 @@ func createToTransformation(id execute.DatasetID, mode execute.AccumulationMode,
 	return t, d, nil
 }
 
-// WriterProvider is a type which provides PointsWriter types
-// for a supplied authorizer, org ID and bucket ID
-type WriterProvider interface {
-	WriterFor(ctx context.Context, org NameOrID, bucket NameOrID) (PointsWriter, error)
-}
-
-// PointsWriter is a write on which points can be written in batches
-type PointsWriter interface {
-	Write(...lp.Metric) (int, error)
-	Close() error
-}
-
 // ToTransformation is the transformation for the `to` flux function.
 type ToTransformation struct {
 	execute.ExecutionNode
@@ -82,8 +69,7 @@ type ToTransformation struct {
 	cache              execute.TableBuilderCache
 	spec               *ToOpSpec
 	implicitTagColumns bool
-	deps               influxdb.Provider
-	writer             influxdb.PointsWriter
+	writer             influxdb.Writer
 	span               opentracing.Span
 }
 
@@ -131,7 +117,6 @@ func NewToTransformation(ctx context.Context, d execute.Dataset, cache execute.T
 		cache:              cache,
 		spec:               spec.Spec,
 		implicitTagColumns: spec.Spec.TagColumns == nil,
-		deps:               deps,
 		writer:             writer,
 		span:               span,
 	}, nil
@@ -247,7 +232,7 @@ func writeTableToAPI(ctx context.Context, t *ToTransformation, tbl flux.Table) (
 
 	outer:
 		for i := 0; i < er.Len(); i++ {
-			metric := &RowMetric{
+			metric := &rowMetric{
 				Tags: make([]*lp.Tag, 0, len(spec.TagColumns)),
 			}
 
@@ -592,28 +577,28 @@ func (ToOpSpec) Kind() flux.OperationKind {
 	return ToKind
 }
 
-// RowMetric is a Metric
-type RowMetric struct {
+// rowMetric is a Metric
+type rowMetric struct {
 	NameStr string
 	Tags    []*lp.Tag
 	Fields  []*lp.Field
 	TS      time.Time
 }
 
-func (r RowMetric) Time() time.Time {
+func (r rowMetric) Time() time.Time {
 	return r.TS
 }
 
-func (r RowMetric) Name() string {
+func (r rowMetric) Name() string {
 	return r.NameStr
 }
 
-func (r RowMetric) TagList() []*lp.Tag {
+func (r rowMetric) TagList() []*lp.Tag {
 	return r.Tags
 }
 
-func (r RowMetric) FieldList() []*lp.Field {
+func (r rowMetric) FieldList() []*lp.Field {
 	return r.Fields
 }
 
-var _ lp.Metric = &RowMetric{}
+var _ lp.Metric = &rowMetric{}

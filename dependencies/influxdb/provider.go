@@ -2,6 +2,7 @@ package influxdb
 
 import (
 	"context"
+	"io"
 
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
@@ -96,7 +97,7 @@ type Provider interface {
 	// WriterFor will construct a Writer using the given configuration parameters.
 	// If the parameters are their zero values, appropriate defaults may be used
 	// or an error may be returned if the implementation does not have a default.
-	WriterFor(ctx context.Context, conf Config) (PointsWriter, error)
+	WriterFor(ctx context.Context, conf Config) (Writer, error)
 }
 
 // Reader reads tables from an influxdb instance.
@@ -107,9 +108,9 @@ type Reader interface {
 }
 
 // PointsWriter is a write on which points can be written in batches
-type PointsWriter interface {
+type Writer interface {
+	io.Closer
 	Write(...protocol.Metric) error
-	Close() error
 }
 
 // UnimplementedProvider provides default implementations for a Provider.
@@ -127,7 +128,7 @@ func (u UnimplementedProvider) SeriesCardinalityReaderFor(ctx context.Context, c
 	return nil, errors.New(codes.Unimplemented, "influxdb series cardinality reader has not been implemented")
 }
 
-func (u UnimplementedProvider) WriterFor(ctx context.Context, conf Config) (PointsWriter, error) {
+func (u UnimplementedProvider) WriterFor(ctx context.Context, conf Config) (Writer, error) {
 	return nil, errors.New(codes.Unimplemented, "influxdb writer has not been implemented")
 }
 
@@ -147,4 +148,11 @@ func (n NameOrID) IsValid() bool {
 // IsZero will return true if neither the id nor name are set.
 func (n NameOrID) IsZero() bool {
 	return n.ID == "" && n.Name == ""
+}
+
+func (n NameOrID) IdOrElseName() string {
+	if n.ID != "" {
+		return n.ID
+	}
+	return n.Name
 }

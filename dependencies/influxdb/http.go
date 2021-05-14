@@ -68,19 +68,14 @@ func (h HttpProvider) SeriesCardinalityReaderFor(ctx context.Context, conf Confi
 	}, nil
 }
 
-func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (PointsWriter, error) {
+func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error) {
 	httpClient, err := h.clientFor(ctx, conf)
 	if err != nil {
 		return nil, err
 	}
-	idThenName := func(n NameOrID) string {
-		if n.ID != "" {
-			return n.ID
-		}
-		return n.Name
-	}
+
 	service := NewService(httpClient.Config.Host, httpClient.Config.Token, httpClient.Client)
-	writer := api.NewWriteAPI(idThenName(httpClient.Config.Org), idThenName(httpClient.Config.Bucket), service, write.DefaultOptions())
+	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrElseName(), httpClient.Config.Bucket.IdOrElseName(), service, write.DefaultOptions())
 
 	return httpWriter{
 		writer: writer,
@@ -468,7 +463,7 @@ type httpWriter struct {
 	writer *api.WriteAPIImpl
 }
 
-var _ PointsWriter = &httpWriter{}
+var _ Writer = httpWriter{}
 
 func (h httpWriter) Write(metric ...protocol.Metric) error {
 	// TODO: deal with async errors
