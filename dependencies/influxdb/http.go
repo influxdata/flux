@@ -472,7 +472,7 @@ func (h httpWriter) Write(metric ...protocol.Metric) error {
 	for i := range metric {
 		buf.Truncate(0)
 		enc.Encode(metric[i])
-		h.writer.WriteRecord(string(buf.Bytes()))
+		h.writer.WriteRecord(buf.String())
 	}
 	return nil
 }
