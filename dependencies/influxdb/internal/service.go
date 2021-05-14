@@ -1,5 +1,6 @@
-// TODO: copied from "github.com/influxdata/influxdb-client-go/v2/api/http", contribute back changes instead
-package influxdb
+package internal
+
+// TODO: Remove this when https://github.com/influxdata/influxdb-client-go/pull/256 is merged
 
 import (
 	"context"

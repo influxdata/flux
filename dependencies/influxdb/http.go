@@ -18,6 +18,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/http"
+	"github.com/influxdata/flux/dependencies/influxdb/internal"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -74,7 +75,7 @@ func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error
 		return nil, err
 	}
 
-	service := NewService(httpClient.Config.Host, httpClient.Config.Token, httpClient.Client)
+	service := internal.NewService(httpClient.Config.Host, httpClient.Config.Token, httpClient.Client)
 	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrElseName(), httpClient.Config.Bucket.IdOrElseName(), service, write.DefaultOptions())
 
 	return httpWriter{
