@@ -18,7 +18,7 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/memory"
 	"github.com/influxdata/flux/plan"
-	"gonum.org/v1/gonum/floats"
+	"gonum.org/v1/gonum/floats/scalar"
 )
 
 // Two floating point values are considered
@@ -39,12 +39,12 @@ var floatOptions = cmp.Options{
 	}, cmp.Comparer(func(x, y float64) bool {
 		// If sufficiently close, then move on.
 		// This avoids situations close to zero.
-		if floats.EqualWithinAbs(x, y, tol) {
+		if scalar.EqualWithinAbs(x, y, tol) {
 			return true
 		}
 		// If not sufficiently close, both floats
 		// must be within ulp steps of each other.
-		if !floats.EqualWithinULP(x, y, ulp) {
+		if !scalar.EqualWithinULP(x, y, ulp) {
 			return false
 		}
 		return true
