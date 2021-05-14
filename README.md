@@ -16,7 +16,7 @@ The specification contains many examples to start learning Flux.
 
 Building Flux requires the following:
 
-* Go 1.12 or greater with module support enabled
+* Go 1.16 or greater with module support enabled
 * Latest stable version of Rust and Cargo (can be installed with [rustup](https://rustup.rs/))
 * Clang
 
