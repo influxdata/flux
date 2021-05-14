@@ -81,6 +81,7 @@ cleangenerate:
 fmt: $(SOURCES_NO_VENDOR)
 	go fmt ./...
 	cd libflux; $(CARGO) fmt
+	./flux fmt -w ./stdlib
 
 checkfmt:
 	./etc/checkfmt.sh

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/influxdata/flux/libflux/go/libflux"
 	"github.com/spf13/cobra"
@@ -20,10 +21,14 @@ var fmtCmd = &cobra.Command{
 }
 
 var writeResultToSource bool
+var analyzeCurrentDirectory bool
 
 func init() {
 	rootCmd.AddCommand(fmtCmd)
+	fmtCmd.SilenceUsage = true
+	fmtCmd.SilenceErrors = true
 	fmtCmd.Flags().BoolVarP(&writeResultToSource, "write-result-to-source", "w", false, "write result to (source) file instead of stdout")
+	fmtCmd.Flags().BoolVarP(&analyzeCurrentDirectory, "analyze-current-directory", "c", false, "analyze the current <directory | file> and report if file(s) are not formatted")
 }
 
 func formatFile(cmd *cobra.Command, args []string) error {
@@ -51,25 +56,32 @@ func format(script string) error {
 	if err != nil {
 		return err
 	}
-
-	ast := libflux.ParseString(string(fromFile))
+	curFileStr := strings.TrimSpace(string(fromFile))
+	ast := libflux.ParseString(curFileStr)
 	defer ast.Free()
 	if err := ast.GetError(); err != nil {
 		return fmt.Errorf("parse error: %s, %s", script, err)
 
 	}
 
-	formatStr, err := ast.Format()
+	formattedStr, err := ast.Format()
 	if err != nil {
 		return fmt.Errorf("failed to format the query: %s, %v", script, err)
 	}
 
+	if analyzeCurrentDirectory {
+		if curFileStr != formattedStr {
+			return fmt.Errorf("flux file(s) are not fluxfmt-ed, run \"make fmt\"")
+		}
+		return nil
+	}
+
 	if writeResultToSource {
-		if string(fromFile) != formatStr {
-			return updateScript(script, formatStr)
+		if curFileStr != formattedStr {
+			return updateScript(script, formattedStr)
 		}
 	} else {
-		fmt.Println(formatStr)
+		fmt.Println(formattedStr)
 	}
 
 	return nil
