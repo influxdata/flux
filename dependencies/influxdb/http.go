@@ -21,6 +21,9 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
+	protocol "github.com/influxdata/line-protocol"
 )
 
 // HttpProvider is an implementation of the Provider that
@@ -62,6 +65,25 @@ func (h HttpProvider) SeriesCardinalityReaderFor(ctx context.Context, conf Confi
 		HttpClient:   c,
 		Bounds:       bounds,
 		PredicateSet: predicateSet,
+	}, nil
+}
+
+func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (PointsWriter, error) {
+	httpClient, err := h.clientFor(ctx, conf)
+	if err != nil {
+		return nil, err
+	}
+	idThenName := func(n NameOrID) string {
+		if n.ID != "" {
+			return n.ID
+		}
+		return n.Name
+	}
+	service := NewService(httpClient.Config.Host, httpClient.Config.Token, httpClient.Client)
+	writer := api.NewWriteAPI(idThenName(httpClient.Config.Org), idThenName(httpClient.Config.Bucket), service, write.DefaultOptions())
+
+	return httpWriter{
+		writer: writer,
 	}, nil
 }
 
@@ -440,4 +462,28 @@ func (h seriesCardinalityHttpReader) Read(ctx context.Context, f func(flux.Table
 		},
 	}
 	return h.Query(ctx, f, &file, h.Bounds.Now, mem)
+}
+
+type httpWriter struct {
+	writer *api.WriteAPIImpl
+}
+
+var _ PointsWriter = &httpWriter{}
+
+func (h httpWriter) Write(metric ...protocol.Metric) error {
+	// TODO: deal with async errors
+	buf := new(bytes.Buffer)
+	enc := protocol.NewEncoder(buf)
+	for i := range metric {
+		buf.Truncate(0)
+		enc.Encode(metric[i])
+		h.writer.WriteRecord(string(buf.Bytes()))
+	}
+	return nil
+}
+
+func (h httpWriter) Close() error {
+	h.writer.Flush()
+	h.writer.Close()
+	return nil
 }

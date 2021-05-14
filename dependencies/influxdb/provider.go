@@ -8,6 +8,7 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
+	protocol "github.com/influxdata/line-protocol"
 )
 
 type key int
@@ -91,6 +92,11 @@ type Provider interface {
 	// SeriesCardinalityReaderFor will return a Reader
 	// for the SeriesCardinality operation.
 	SeriesCardinalityReaderFor(ctx context.Context, conf Config, bounds flux.Bounds, predicateSet PredicateSet) (Reader, error)
+
+	// WriterFor will construct a Writer using the given configuration parameters.
+	// If the parameters are their zero values, appropriate defaults may be used
+	// or an error may be returned if the implementation does not have a default.
+	WriterFor(ctx context.Context, conf Config) (PointsWriter, error)
 }
 
 // Reader reads tables from an influxdb instance.
@@ -98,6 +104,12 @@ type Reader interface {
 	// Read will produce flux.Table values using the memory.Allocator
 	// and it will pass those tables to the given function.
 	Read(ctx context.Context, f func(flux.Table) error, mem memory.Allocator) error
+}
+
+// PointsWriter is a write on which points can be written in batches
+type PointsWriter interface {
+	Write(...protocol.Metric) error
+	Close() error
 }
 
 // UnimplementedProvider provides default implementations for a Provider.
@@ -113,6 +125,10 @@ func (u UnimplementedProvider) ReaderFor(ctx context.Context, conf Config, bound
 
 func (u UnimplementedProvider) SeriesCardinalityReaderFor(ctx context.Context, conf Config, bounds flux.Bounds, predicateSet PredicateSet) (Reader, error) {
 	return nil, errors.New(codes.Unimplemented, "influxdb series cardinality reader has not been implemented")
+}
+
+func (u UnimplementedProvider) WriterFor(ctx context.Context, conf Config) (PointsWriter, error) {
+	return nil, errors.New(codes.Unimplemented, "influxdb writer has not been implemented")
 }
 
 // NameOrID signifies the name of an organization/bucket
