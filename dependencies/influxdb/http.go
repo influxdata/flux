@@ -78,9 +78,7 @@ func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error
 	service := internal.NewService(httpClient.Config.Host, httpClient.Config.Token, httpClient.Client)
 	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrElseName(), httpClient.Config.Bucket.IdOrElseName(), service, write.DefaultOptions())
 
-	return httpWriter{
-		writer: writer,
-	}, nil
+	return NewHttpWriter(writer)
 }
 
 func (h HttpProvider) clientFor(ctx context.Context, conf Config) (*HttpClient, error) {
@@ -461,13 +459,34 @@ func (h seriesCardinalityHttpReader) Read(ctx context.Context, f func(flux.Table
 }
 
 type httpWriter struct {
-	writer *api.WriteAPIImpl
+	writer      *api.WriteAPIImpl
+	errChan     <-chan error
+	latestError chan error
 }
 
-var _ Writer = httpWriter{}
+func NewHttpWriter(writer *api.WriteAPIImpl) (*httpWriter, error) {
+	w := &httpWriter{
+		writer:      writer,
+		errChan:     writer.Errors(),
+		latestError: make(chan error, 1),
+	}
+	go func() {
+		for err := range w.errChan {
+			if err != nil {
+				select {
+				case w.latestError <- err:
+				default:
+				}
+			}
+		}
+		close(w.latestError)
+	}()
+	return w, nil
+}
 
-func (h httpWriter) Write(metric ...protocol.Metric) error {
-	// TODO: deal with async errors
+var _ Writer = &httpWriter{}
+
+func (h *httpWriter) Write(metric ...protocol.Metric) error {
 	buf := new(bytes.Buffer)
 	enc := protocol.NewEncoder(buf)
 	for i := range metric {
@@ -475,11 +494,22 @@ func (h httpWriter) Write(metric ...protocol.Metric) error {
 		enc.Encode(metric[i])
 		h.writer.WriteRecord(buf.String())
 	}
+	h.writer.Flush()
+	select {
+	case err := <-h.latestError:
+		return err
+	default:
+	}
 	return nil
 }
 
-func (h httpWriter) Close() error {
+func (h *httpWriter) Close() error {
 	h.writer.Flush()
 	h.writer.Close()
-	return nil
+	var err error
+	// This ensures latestError is closed which ensures errChan is closed
+	for e := range h.latestError {
+		err = e
+	}
+	return err
 }
