@@ -107,7 +107,7 @@ type Reader interface {
 	Read(ctx context.Context, f func(flux.Table) error, mem memory.Allocator) error
 }
 
-// PointsWriter is a write on which points can be written in batches
+// Writer is a write on which points can be written in batches.
 type Writer interface {
 	io.Closer
 	Write(...protocol.Metric) error
@@ -150,7 +150,8 @@ func (n NameOrID) IsZero() bool {
 	return n.ID == "" && n.Name == ""
 }
 
-func (n NameOrID) IdOrElseName() string {
+// IdOrName returns the ID if set, otherwise it returns the Name
+func (n NameOrID) IdOrName() string {
 	if n.ID != "" {
 		return n.ID
 	}

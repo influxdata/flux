@@ -76,9 +76,9 @@ func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error
 	}
 
 	service := internal.NewService(httpClient.Config.Host, httpClient.Config.Token, httpClient.Client)
-	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrElseName(), httpClient.Config.Bucket.IdOrElseName(), service, write.DefaultOptions())
+	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrName(), httpClient.Config.Bucket.IdOrName(), service, write.DefaultOptions())
 
-	return NewHttpWriter(writer)
+	return newHttpWriter(writer)
 }
 
 func (h HttpProvider) clientFor(ctx context.Context, conf Config) (*HttpClient, error) {
@@ -464,7 +464,7 @@ type httpWriter struct {
 	latestError chan error
 }
 
-func NewHttpWriter(writer *api.WriteAPIImpl) (*httpWriter, error) {
+func newHttpWriter(writer *api.WriteAPIImpl) (*httpWriter, error) {
 	w := &httpWriter{
 		writer:      writer,
 		errChan:     writer.Errors(),
@@ -486,15 +486,20 @@ func NewHttpWriter(writer *api.WriteAPIImpl) (*httpWriter, error) {
 
 var _ Writer = &httpWriter{}
 
+// Write sends points asynchronously to the underlying write api.
+// Errors are returned only on a best-effort basis.
 func (h *httpWriter) Write(metric ...protocol.Metric) error {
 	buf := new(bytes.Buffer)
 	enc := protocol.NewEncoder(buf)
 	for i := range metric {
 		buf.Truncate(0)
-		enc.Encode(metric[i])
+		_, err := enc.Encode(metric[i])
+		if err != nil {
+			h.writer.Flush()
+			return err
+		}
 		h.writer.WriteRecord(buf.String())
 	}
-	h.writer.Flush()
 	select {
 	case err := <-h.latestError:
 		return err

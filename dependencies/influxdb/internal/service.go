@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"strconv"
 
-	http2 "github.com/influxdata/influxdb-client-go/v2/api/http"
+	apihttp "github.com/influxdata/influxdb-client-go/v2/api/http"
 )
 
 type RequestDoer interface {
@@ -28,7 +28,7 @@ type service struct {
 }
 
 // NewService creates instance of http Service with given parameters
-func NewService(serverURL, authorization string, roundTripper RequestDoer) http2.Service {
+func NewService(serverURL, authorization string, roundTripper RequestDoer) apihttp.Service {
 	apiURL, err := url.Parse(serverURL)
 	serverAPIURL := serverURL
 	if err == nil {
@@ -61,22 +61,22 @@ func (s *service) Authorization() string {
 	return s.authorization
 }
 
-func (s *service) DoPostRequest(ctx context.Context, url string, body io.Reader, requestCallback http2.RequestCallback, responseCallback http2.ResponseCallback) *http2.Error {
+func (s *service) DoPostRequest(ctx context.Context, url string, body io.Reader, requestCallback apihttp.RequestCallback, responseCallback apihttp.ResponseCallback) *apihttp.Error {
 	return s.doHTTPRequestWithURL(ctx, http.MethodPost, url, body, requestCallback, responseCallback)
 }
 
-func (s *service) doHTTPRequestWithURL(ctx context.Context, method, url string, body io.Reader, requestCallback http2.RequestCallback, responseCallback http2.ResponseCallback) *http2.Error {
+func (s *service) doHTTPRequestWithURL(ctx context.Context, method, url string, body io.Reader, requestCallback apihttp.RequestCallback, responseCallback apihttp.ResponseCallback) *apihttp.Error {
 	req, err := http.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
-		return http2.NewError(err)
+		return apihttp.NewError(err)
 	}
 	return s.DoHTTPRequest(req, requestCallback, responseCallback)
 }
 
-func (s *service) DoHTTPRequest(req *http.Request, requestCallback http2.RequestCallback, responseCallback http2.ResponseCallback) *http2.Error {
+func (s *service) DoHTTPRequest(req *http.Request, requestCallback apihttp.RequestCallback, responseCallback apihttp.ResponseCallback) *apihttp.Error {
 	resp, err := s.DoHTTPRequestWithResponse(req, requestCallback)
 	if err != nil {
-		return http2.NewError(err)
+		return apihttp.NewError(err)
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
@@ -85,13 +85,13 @@ func (s *service) DoHTTPRequest(req *http.Request, requestCallback http2.Request
 	if responseCallback != nil {
 		err := responseCallback(resp)
 		if err != nil {
-			return http2.NewError(err)
+			return apihttp.NewError(err)
 		}
 	}
 	return nil
 }
 
-func (s *service) DoHTTPRequestWithResponse(req *http.Request, requestCallback http2.RequestCallback) (*http.Response, error) {
+func (s *service) DoHTTPRequestWithResponse(req *http.Request, requestCallback apihttp.RequestCallback) (*http.Response, error) {
 	if len(s.authorization) > 0 {
 		req.Header.Set("Authorization", s.authorization)
 	}
@@ -101,7 +101,7 @@ func (s *service) DoHTTPRequestWithResponse(req *http.Request, requestCallback h
 	return s.client.Do(req)
 }
 
-func (s *service) parseHTTPError(r *http.Response) *http2.Error {
+func (s *service) parseHTTPError(r *http.Response) *apihttp.Error {
 	// successful status code range
 	if r.StatusCode >= 200 && r.StatusCode < 300 {
 		return nil
@@ -112,7 +112,7 @@ func (s *service) parseHTTPError(r *http.Response) *http2.Error {
 		_ = r.Body.Close()
 	}()
 
-	perror := http2.NewError(nil)
+	perror := apihttp.NewError(nil)
 	perror.StatusCode = r.StatusCode
 
 	if v := r.Header.Get("Retry-After"); v != "" {

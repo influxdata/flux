@@ -16,7 +16,6 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
-	"github.com/influxdata/flux/stdlib/kafka"
 	"github.com/influxdata/flux/values"
 	lp "github.com/influxdata/line-protocol"
 	"github.com/opentracing/opentracing-go"
@@ -472,12 +471,6 @@ func newToProcedure(qs flux.OperationSpec, a plan.Administration) (plan.Procedur
 	return &ToProcedureSpec{Spec: spec}, nil
 }
 
-// argsReader is an interface for OperationSpec that have the same method to read args.
-type argsReader interface {
-	flux.OperationSpec
-	ReadArgs(args flux.Arguments) error
-}
-
 // ReadArgs reads the args from flux.Arguments into the op spec
 func (o *ToOpSpec) ReadArgs(args flux.Arguments) error {
 	var err error
@@ -542,30 +535,7 @@ func createToOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operation
 	if err := a.AddParentFromArgs(args); err != nil {
 		return nil, err
 	}
-
-	_, httpOK, err := args.GetString("url")
-	if err != nil {
-		return nil, err
-	}
-
-	_, kafkaOK, err := args.GetString("brokers")
-	if err != nil {
-		return nil, err
-	}
-
-	var s argsReader
-
-	switch {
-	case httpOK && kafkaOK:
-		return nil, &flux.Error{
-			Code: codes.Invalid,
-			Msg:  "specify at most one of url, brokers in the same `to` function",
-		}
-	case kafkaOK:
-		s = &kafka.ToKafkaOpSpec{}
-	default:
-		s = &ToOpSpec{}
-	}
+	s := &ToOpSpec{}
 	if err := s.ReadArgs(args); err != nil {
 		return nil, err
 	}
