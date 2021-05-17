@@ -3,8 +3,10 @@ package compiler_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/compiler"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
@@ -40,7 +42,7 @@ func TestCompileAndEval(t *testing.T) {
 			want: values.NewString("n = 2"),
 		},
 		{
-			name: "interpolated string expression error",
+			name: "interpolated string expression with int",
 			fn:   `(r) => "n = ${r.n}"`,
 			inType: semantic.NewObjectType([]semantic.PropertyType{
 				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
@@ -49,10 +51,40 @@ func TestCompileAndEval(t *testing.T) {
 			}),
 			input: values.NewObjectWithValues(map[string]values.Value{
 				"r": values.NewObjectWithValues(map[string]values.Value{
-					"n": values.NewInt(10),
+					"n": values.NewInt(2),
 				}),
 			}),
-			wantCompileErr: true,
+			want: values.NewString("n = 2"),
+		},
+		{
+			name: "interpolated string expression with duration type",
+			fn:   `(r) => "n = ${r.n}"`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("n"), Value: semantic.BasicDuration},
+				})},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"n": values.NewDuration(flux.ConvertDuration(time.Minute)),
+				}),
+			}),
+			want: values.NewString("n = 1m"),
+		},
+		{
+			name: "interpolated string expression error",
+			fn:   `(r) => "n = ${r.n}"`,
+			inType: semantic.NewObjectType([]semantic.PropertyType{
+				{Key: []byte("r"), Value: semantic.NewObjectType([]semantic.PropertyType{
+					{Key: []byte("n"), Value: semantic.BasicBytes},
+				})},
+			}),
+			input: values.NewObjectWithValues(map[string]values.Value{
+				"r": values.NewObjectWithValues(map[string]values.Value{
+					"n": values.NewBytes([]byte("abc")),
+				}),
+			}),
+			wantEvalErr: true,
 		},
 		{
 			name: "interpolated string expression null",
