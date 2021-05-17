@@ -742,7 +742,7 @@ func TestTo_Process(t *testing.T) {
 				wantTables = make([]*executetest.Table, 0, len(tc.data))
 			)
 			writer := &pointsWriter{}
-			provider := mock.MockProvider{
+			provider := mock.InfluxDBProvider{
 				WriterForFn: func(ctx context.Context, conf influxdb2.Config) (influxdb2.Writer, error) {
 					return writer, nil
 				},

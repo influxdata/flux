@@ -6,13 +6,13 @@ import (
 	"github.com/influxdata/flux/dependencies/influxdb"
 )
 
-type MockProvider struct {
+type InfluxDBProvider struct {
 	influxdb.UnimplementedProvider
 	WriterForFn func(ctx context.Context, conf influxdb.Config) (influxdb.Writer, error)
 }
 
-var _ influxdb.Provider = &MockProvider{}
+var _ influxdb.Provider = &InfluxDBProvider{}
 
-func (m MockProvider) WriterFor(ctx context.Context, conf influxdb.Config) (influxdb.Writer, error) {
+func (m InfluxDBProvider) WriterFor(ctx context.Context, conf influxdb.Config) (influxdb.Writer, error) {
 	return m.WriterForFn(ctx, conf)
 }
