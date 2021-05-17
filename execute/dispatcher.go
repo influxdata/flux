@@ -107,14 +107,22 @@ func (d *poolDispatcher) setErr(err error) {
 
 //Stop the dispatcher.
 func (d *poolDispatcher) Stop() error {
+	// Check if this is the first time invoking this method.
+	d.mu.Lock()
+	if !d.closed {
+		// If not, mark the dispatcher as closed and signal to the current
+		// workers that they should stop processing more work.
+		d.closed = true
+		close(d.closing)
+	}
+	d.mu.Unlock()
+
+	// Wait for the existing workers to finish.
+	d.wg.Wait()
+
+	// Grab the error from within a lock.
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	if d.closed {
-		return d.err
-	}
-	d.closed = true
-	close(d.closing)
-	d.wg.Wait()
 	return d.err
 }
 
