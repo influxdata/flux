@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/apache/arrow/go/arrow/memory"
@@ -498,7 +499,7 @@ func (h *httpWriter) Write(metric ...protocol.Metric) error {
 			h.writer.Flush()
 			return err
 		}
-		h.writer.WriteRecord(buf.String())
+		h.writer.WriteRecord(strings.TrimRight(buf.String(), "\n"))
 	}
 	select {
 	case err := <-h.latestError:

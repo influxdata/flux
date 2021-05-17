@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -16,6 +15,7 @@ import (
 	"github.com/influxdata/flux/plan"
 	"github.com/influxdata/flux/runtime"
 	"github.com/influxdata/flux/semantic"
+	"github.com/influxdata/flux/stdlib/influxdata/influxdb/internal"
 	"github.com/influxdata/flux/values"
 	lp "github.com/influxdata/line-protocol"
 	"github.com/opentracing/opentracing-go"
@@ -231,7 +231,7 @@ func writeTableToAPI(ctx context.Context, t *ToTransformation, tbl flux.Table) (
 
 	outer:
 		for i := 0; i < er.Len(); i++ {
-			metric := &rowMetric{
+			metric := &internal.RowMetric{
 				Tags: make([]*lp.Tag, 0, len(spec.TagColumns)),
 			}
 
@@ -546,29 +546,3 @@ func createToOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operation
 func (ToOpSpec) Kind() flux.OperationKind {
 	return ToKind
 }
-
-// rowMetric is a Metric
-type rowMetric struct {
-	NameStr string
-	Tags    []*lp.Tag
-	Fields  []*lp.Field
-	TS      time.Time
-}
-
-func (r rowMetric) Time() time.Time {
-	return r.TS
-}
-
-func (r rowMetric) Name() string {
-	return r.NameStr
-}
-
-func (r rowMetric) TagList() []*lp.Tag {
-	return r.Tags
-}
-
-func (r rowMetric) FieldList() []*lp.Field {
-	return r.Fields
-}
-
-var _ lp.Metric = &rowMetric{}
