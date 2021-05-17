@@ -2,14 +2,12 @@ package influxdb
 
 import (
 	"context"
-	"io"
 
 	"github.com/apache/arrow/go/arrow/memory"
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
-	protocol "github.com/influxdata/line-protocol"
 )
 
 type key int
@@ -93,11 +91,6 @@ type Provider interface {
 	// SeriesCardinalityReaderFor will return a Reader
 	// for the SeriesCardinality operation.
 	SeriesCardinalityReaderFor(ctx context.Context, conf Config, bounds flux.Bounds, predicateSet PredicateSet) (Reader, error)
-
-	// WriterFor will construct a Writer using the given configuration parameters.
-	// If the parameters are their zero values, appropriate defaults may be used
-	// or an error may be returned if the implementation does not have a default.
-	WriterFor(ctx context.Context, conf Config) (Writer, error)
 }
 
 // Reader reads tables from an influxdb instance.
@@ -105,12 +98,6 @@ type Reader interface {
 	// Read will produce flux.Table values using the memory.Allocator
 	// and it will pass those tables to the given function.
 	Read(ctx context.Context, f func(flux.Table) error, mem memory.Allocator) error
-}
-
-// Writer is a write on which points can be written in batches.
-type Writer interface {
-	io.Closer
-	Write(...protocol.Metric) error
 }
 
 // UnimplementedProvider provides default implementations for a Provider.
@@ -126,10 +113,6 @@ func (u UnimplementedProvider) ReaderFor(ctx context.Context, conf Config, bound
 
 func (u UnimplementedProvider) SeriesCardinalityReaderFor(ctx context.Context, conf Config, bounds flux.Bounds, predicateSet PredicateSet) (Reader, error) {
 	return nil, errors.New(codes.Unimplemented, "influxdb series cardinality reader has not been implemented")
-}
-
-func (u UnimplementedProvider) WriterFor(ctx context.Context, conf Config) (Writer, error) {
-	return nil, errors.New(codes.Unimplemented, "influxdb writer has not been implemented")
 }
 
 // NameOrID signifies the name of an organization/bucket
@@ -148,12 +131,4 @@ func (n NameOrID) IsValid() bool {
 // IsZero will return true if neither the id nor name are set.
 func (n NameOrID) IsZero() bool {
 	return n.ID == "" && n.Name == ""
-}
-
-// IdOrName returns the ID if set, otherwise it returns the Name
-func (n NameOrID) IdOrName() string {
-	if n.ID != "" {
-		return n.ID
-	}
-	return n.Name
 }
