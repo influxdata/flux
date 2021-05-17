@@ -312,7 +312,7 @@ var sourceHashes = map[string]string{
 	"stdlib/strings/replaceAll_test.flux":                                           "fbb65aec9062a94055fef4b1ebf33f7f0c2a2f9e49dbe989d7449bf912a6a077",
 	"stdlib/strings/replace_test.flux":                                              "0d6ac7f9327b222c25857d2d9aa20c642fbee6ddae0ee8b2e4554e141d696638",
 	"stdlib/strings/strings.flux":                                                   "ab6dbaede523f7f80dc389f2d9270bfd8641d527c1aaabe8a3949961cfe4a8d9",
-	"stdlib/strings/strings_test.flux":                                              "593b0039e54dffe99d5e181ad574087f69c4eb46cf119f2bfac903d2552aaa3b",
+	"stdlib/strings/strings_test.flux":                                              "70877c4213943cb2dc7bd67bdc1d16588533308be3a18def2930e0d3cb1c75ec",
 	"stdlib/strings/subset_test.flux":                                               "1e0c4988dba3547e22aa42ad4f28b57984e65f88133d2256be42750b2c7eefd5",
 	"stdlib/strings/substring_test.flux":                                            "273bc2a58219a0d5cdefa2ee4ff63aed49590e107bd664fd9f4919394fb5eebd",
 	"stdlib/strings/title_test.flux":                                                "c435a1b035e3d772b53d0917262e70a54c8a6276f6750f0341d49e6631dbcdc8",

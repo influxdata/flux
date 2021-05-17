@@ -27,7 +27,6 @@ testcase string_trim {
     )
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.trimSpace(v: r._value)}))
@@ -55,7 +54,6 @@ testcase string_toUpper {
     )
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.toUpper(v: r._value)}))
@@ -83,7 +81,6 @@ testcase string_toLower {
     )
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.toLower(v: r._value)}))
@@ -109,7 +106,6 @@ testcase string_title {
     )
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.title(v: r._value)}))
@@ -135,7 +131,6 @@ testcase string_substring {
     )
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.substring(v: r._value, start: 18, end: 31)}))
@@ -161,7 +156,6 @@ testcase string_replaceAll {
     )
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.replaceAll(v: r._value, t: "sucks", u: "is fine")}))
@@ -187,7 +181,6 @@ testcase string_replace {
     )
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
@@ -214,7 +207,6 @@ testcase string_replace_twice {
         |> map(fn: (r) => ({r with _value: r._value}))
         |> map(fn: (r) => ({r with _value: r._value}))
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with _value: strings.replace(v: r._value, t: "sucks", u: "is fine", i: 1)}))
@@ -238,7 +230,6 @@ testcase string_length {
         ],
     )
     got = input
-        |> testing.load()
         |> range(start: 2018-05-22T19:53:26Z)
         |> drop(columns: ["_start", "_stop"])
         |> map(fn: (r) => ({r with len: strings.strlen(v: r._value)}))
