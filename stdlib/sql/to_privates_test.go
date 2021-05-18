@@ -191,11 +191,12 @@ func TestPostgresTranslation(t *testing.T) {
 
 func TestMysqlTranslation(t *testing.T) {
 	mysqlTypeTranslations := map[string]flux.ColType{
-		"FLOAT":       flux.TFloat,
-		"BIGINT":      flux.TInt,
-		"TEXT(16383)": flux.TString,
-		"DATETIME":    flux.TTime,
-		"BOOL":        flux.TBool,
+		"FLOAT":           flux.TFloat,
+		"BIGINT":          flux.TInt,
+		"BIGINT UNSIGNED": flux.TUInt,
+		"TEXT(16383)":     flux.TString,
+		"DATETIME":        flux.TTime,
+		"BOOL":            flux.TBool,
 	}
 
 	columnLabel := "apples"

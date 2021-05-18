@@ -5,9 +5,9 @@ go 1.12
 require (
 	cloud.google.com/go v0.52.0
 	cloud.google.com/go/bigtable v1.3.0
-	github.com/Azure/go-autorest/autorest v0.10.1
-	github.com/Azure/go-autorest/autorest/adal v0.8.3
-	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
+	github.com/Azure/go-autorest/autorest v0.11.5
+	github.com/Azure/go-autorest/autorest/adal v0.9.4
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.1
 	github.com/DATA-DOG/go-sqlmock v1.4.1
 	github.com/HdrHistogram/hdrhistogram-go v1.1.0 // indirect
 	github.com/SAP/go-hdb v0.14.1

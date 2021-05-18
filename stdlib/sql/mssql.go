@@ -173,7 +173,7 @@ func MssqlColumnTranslateFunc() translationFunc {
 	return func(f flux.ColType, colName string) (string, error) {
 		s, found := fluxToSQLServer[f]
 		if !found {
-			return "", errors.Newf(codes.Internal, "SQLServer does not support column type %s", f.String())
+			return "", errors.Newf(codes.Invalid, "SQLServer does not support column type %s", f.String())
 		}
 		return colName + " " + s, nil
 	}

@@ -178,11 +178,6 @@ func NewToSQLTransformation(d execute.Dataset, deps flux.Dependencies, cache exe
 	}, nil
 }
 
-type idxType struct {
-	Idx  int
-	Type flux.ColType
-}
-
 func (t *ToSQLTransformation) Process(id execute.DatasetID, tbl flux.Table) (err error) {
 	colNames, valStrings, valArgs, err := CreateInsertComponents(t, tbl)
 	if err != nil {
@@ -287,22 +282,20 @@ func supportsTx(driverName string) bool {
 }
 
 func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []string, valStringArray [][]string, valArgsArray [][]interface{}, err error) {
+	driverName := t.spec.Spec.DriverName
+	// the following allows driver-specific type errors (of which there can be MANY) to be returned, rather than the default of invalid type
+	translateColumn, err := getTranslationFunc(driverName)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	cols := tbl.Cols()
 	batchSize := correctBatchSize(t.spec.Spec.BatchSize, len(cols))
 
-	labels := make(map[string]idxType, len(cols))
 	var questionMarks, newSQLTableCols []string
-	for i, col := range cols {
-		labels[col.Label] = idxType{Idx: i, Type: col.Type}
+	for _, col := range cols {
 		questionMarks = append(questionMarks, "?")
 		colNames = append(colNames, col.Label)
-		driverName := t.spec.Spec.DriverName
-		// the following allows driver-specific type errors (of which there can be MANY) to be returned, rather than the default of invalid type
-		translateColumn, err := getTranslationFunc(driverName)
-		if err != nil {
-			return nil, nil, nil, err
-		}
-
 		switch col.Type {
 		case flux.TFloat, flux.TInt, flux.TUInt, flux.TString, flux.TBool, flux.TTime:
 			// each type is handled within the function - precise mapping is handled within each driver's implementation
