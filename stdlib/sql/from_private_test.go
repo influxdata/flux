@@ -90,6 +90,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 			},
 			ErrMsg: "",
 		}, {
+			Name: "ok oracle",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "oracle",
+				DataSourceName: "user/password@//localhost:1521/xe",
+				Query:          "",
+			},
+			ErrMsg: "",
+		}, {
 			Name: "invalid driver",
 			Spec: &FromSQLProcedureSpec{
 				DriverName:     "voltdb",
@@ -131,6 +139,14 @@ func TestFromSqlUrlValidation(t *testing.T) {
 				Query:          "",
 			},
 			ErrMsg: "invalid prefix",
+		}, {
+			Name: "invalid oracle",
+			Spec: &FromSQLProcedureSpec{
+				DriverName:     "oracle",
+				DataSourceName: "user/password@127.0.0.1:1521/orcl",
+				Query:          "",
+			},
+			ErrMsg: "invalid connection string",
 		}, {
 			Name: "invalid sqlmock",
 			Spec: &FromSQLProcedureSpec{

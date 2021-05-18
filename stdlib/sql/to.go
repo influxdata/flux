@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
@@ -277,6 +278,8 @@ func getTranslationFunc(driverName string) (func() translationFunc, error) {
 		return BigQueryColumnTranslateFunc, nil
 	case "hdb":
 		return HdbColumnTranslateFunc, nil
+	case "oracle":
+		return OracleColumnTranslateFunc, nil
 	default:
 		return nil, errors.Newf(codes.Internal, "invalid driverName: %s", driverName)
 	}
@@ -344,6 +347,12 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 				q = fmt.Sprintf("CREATE TABLE %s (%s)", hdbEscapeName(t.spec.Spec.Table, true), strings.Join(newSQLTableCols, ","))
 				q = hdbAddIfNotExist(t.spec.Spec.Table, q)
 				// SAP HANA does not support INSERT/UPDATE batching via a single SQL command
+				batchSize = 1
+			} else if t.spec.Spec.DriverName == "oracle" { // Oracle does not support IF NOT EXIST
+				// wrap CREATE TABLE statement with Oracle-specific "if not exists" SQL block check
+				q = fmt.Sprintf("CREATE TABLE %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
+				q = oracleAddIfNotExist(t.spec.Spec.Table, q)
+				// Oracle has different way to insert multiple rows (INSERT ALL) so disable standard batching
 				batchSize = 1
 			} else {
 				q = fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s)", t.spec.Spec.Table, strings.Join(newSQLTableCols, ","))
@@ -426,16 +435,24 @@ func CreateInsertComponents(t *ToSQLTransformation, tbl flux.Table) (colNames []
 func ExecuteQueries(tx *sql.Tx, s *ToSQLOpSpec, colNames []string, valueStrings *[]string, valueArgs *[]interface{}) (err error) {
 	concatValueStrings := strings.Join(*valueStrings, ",")
 
-	// PostgreSQL uses $n instead of ? for placeholders
-	if s.DriverName == "postgres" {
+	// handle db-specific augmentations
+	if s.DriverName == "postgres" { // PostgreSQL uses $n instead of ? for placeholders
 		for pqCounter := 1; strings.Contains(concatValueStrings, "?"); pqCounter++ {
 			concatValueStrings = strings.Replace(concatValueStrings, "?", fmt.Sprintf("$%v", pqCounter), 1)
 		}
-	}
-	// SQLServer uses @p instead of ? for placeholders
-	if isMssqlDriver(s.DriverName) {
+	} else if isMssqlDriver(s.DriverName) { // SQLServer uses @p instead of ? for placeholders
 		for pqCounter := 1; strings.Contains(concatValueStrings, "?"); pqCounter++ {
 			concatValueStrings = strings.Replace(concatValueStrings, "?", fmt.Sprintf("@p%v", pqCounter), 1)
+		}
+	} else if s.DriverName == "oracle" { // Oracle uses :v instead of ? for placeholders
+		for pqCounter := 1; strings.Contains(concatValueStrings, "?"); pqCounter++ {
+			concatValueStrings = strings.Replace(concatValueStrings, "?", fmt.Sprintf(":%v", pqCounter), 1)
+		}
+		// workaround for not losing fractional seconds and time zone alteration (driver issue, see Notes in oracle.go)
+		for i, v := range *valueArgs {
+			if t, ok := v.(time.Time); ok {
+				(*valueArgs)[i] = t.Format(time.RFC3339Nano)
+			}
 		}
 	}
 
