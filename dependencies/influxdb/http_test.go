@@ -114,7 +114,7 @@ disk,id=/dev/sdb usage_disk=45,log="disk message" 1510876800000000004
 				RequestValidator: func(req *http.Request) error {
 					url := req.URL
 					values := url.Query()
-					if val, exp := req.Header.Get("Authorization"), "mytoken"; val != exp {
+					if val, exp := req.Header.Get("Authorization"), "Token mytoken"; val != exp {
 						return fmt.Errorf("token does not match, expected %s, got %s", exp, val)
 					}
 					if val, exp := values.Get("bucket"), "mybucket"; val != exp {
