@@ -29,11 +29,11 @@ levelUnknown = "unknown"
 _stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
     toLevelFilter = if toLevel == "any" then
         (r) => r._level != fromLevel and exists r._level
-else
+    else
         (r) => r._level == toLevel
     fromLevelFilter = if fromLevel == "any" then
         (r) => r._level != toLevel and exists r._level
-else
+    else
         (r) => r._level == fromLevel
 
     return tables
@@ -41,9 +41,9 @@ else
             fn: (r) => ({r with
                 level_value: if toLevelFilter(r: r) then
                     1
-else if fromLevelFilter(r: r) then
+                else if fromLevelFilter(r: r) then
                     0
-else
+                else
                     -10,
             }),
         )
@@ -69,13 +69,13 @@ stateChangesOnly = (tables=<-) => {
             fn: (r) => ({r with
                 level_value: if r._level == levelCrit then
                     4
-else if r._level == levelWarn then
+                else if r._level == levelWarn then
                     3
-else if r._level == levelInfo then
+                else if r._level == levelInfo then
                     2
-else if r._level == levelOK then
+                else if r._level == levelOK then
                     1
-else
+                else
                     0,
             }),
         )
@@ -96,7 +96,7 @@ else
 stateChanges = (fromLevel="any", toLevel="any", tables=<-) => {
     return if fromLevel == "any" and toLevel == "any" then
         tables |> stateChangesOnly()
-else
+    else
         tables |> _stateChanges(fromLevel: fromLevel, toLevel: toLevel)
 }
 
@@ -143,13 +143,13 @@ check = (tables=<-, data, messageFn, crit=(r) => false, warn=(r) => false, info=
             _check_name: data._check_name,
             _level: if crit(r: r) then
                 levelCrit
-else if warn(r: r) then
+            else if warn(r: r) then
                 levelWarn
-else if info(r: r) then
+            else if info(r: r) then
                 levelInfo
-else if ok(r: r) then
+            else if ok(r: r) then
                 levelOK
-else
+            else
                 levelUnknown,
             _source_timestamp: int(v: r._time),
             _time: now(),

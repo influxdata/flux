@@ -79,7 +79,7 @@ _detectLevel = (tables=<-) => {
         |> getRecord(idx: 0)
     _level = if exists _r0 then
         getLevel(token: _r0.s2_cell_id)
-else
+    else
         666
 
     return _level
@@ -102,9 +102,9 @@ shapeData = (tables=<-, latField, lonField, level) => tables
         fn: (r) => ({r with
             _field: if r._field == latField then
                 "lat"
-else if r._field == lonField then
+            else if r._field == lonField then
                 "lon"
-else
+            else
                 r._field,
         }),
     )
@@ -129,7 +129,7 @@ gridFilter = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel
     _s2cellIDLevel = if s2cellIDLevel == -1 then
         tables
             |> _detectLevel()
-else
+    else
         s2cellIDLevel
     _grid = getGrid(
         region: region,
@@ -144,7 +144,7 @@ else
         |> filter(
             fn: (r) => if _grid.level == _s2cellIDLevel then
                 contains(value: r.s2_cell_id, set: _grid.set)
-else
+            else
                 contains(value: s2CellIDToken(token: r.s2_cell_id, level: _grid.level), set: _grid.set),
         )
 }
@@ -171,7 +171,7 @@ filterRows = (tables=<-, region, minSize=24, maxSize=-1, level=-1, s2cellIDLevel
                 level: level,
                 s2cellIDLevel: s2cellIDLevel,
             )
-else
+    else
         tables
             |> gridFilter(
                 region: region,
@@ -184,7 +184,7 @@ else
     _result = if strict then
         _rows
             |> strictFilter(region)
-else
+    else
         _rows
 
     return _result
@@ -200,12 +200,12 @@ groupByArea = (tables=<-, newColumn, level, s2cellIDLevel=-1) => {
     _s2cellIDLevel = if s2cellIDLevel == -1 then
         tables
             |> _detectLevel()
-else
+    else
         s2cellIDLevel
     _prepared = if level == _s2cellIDLevel then
         tables
             |> duplicate(column: "s2_cell_id", as: newColumn)
-else
+    else
         tables
             |> map(
                 fn: (r) => ({r with

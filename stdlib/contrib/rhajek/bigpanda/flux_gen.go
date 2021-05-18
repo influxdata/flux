@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   69,
 				},
 				File:   "bigpanda.flux",
-				Source: "package bigpanda\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\noption defaultUrl = \"https://api.bigpanda.io/data/v2/alerts\"\noption defaultTokenPrefix = \"Bearer\"\n\n// `statusFromLevel` turns a level from the status object into a BigPanda status\n// `level` - string - levels on status objects can be one of the following ok,info,warn,crit,unknown\n// BigPanda accepts one of ok,critical,warning,acknowledged.\nstatusFromLevel = (level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\nelse if lvl == \"crit\" then\n        \"critical\"\nelse if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"\n\n    return sev\n}\n\n// `sendAlert` sends a single alert to BigPanda as described in https://docs.bigpanda.io/reference#alerts API. \n// `token` - string - BigPanda authorization Bearer token\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `appKey` - string - BigPanda App Key.\n// `status` - string - Status of the BigPanda alert. One of ok, critical, warning, acknowledged.\n// `rec` - record - additional data appended to alert\nsendAlert = (url, token, appKey, status, rec) => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": defaultTokenPrefix + \" \" + token,\n    }\n    data = {rec with app_key: appKey, status: status}\n\n    return http.post(headers: headers, url: url, data: json.encode(v: data))\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send alert to BigPanda for each table row.\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `token` - string - BigPanda authorization Bearer token\n// `appKey` - string - BigPanda App Key.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and appKey).\nendpoint = (url=defaultUrl, token, appKey) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        appKey: appKey,\n                        token: token,\n                        status: obj.status,\n                        rec: obj,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
+				Source: "package bigpanda\n\n\nimport \"http\"\nimport \"json\"\nimport \"strings\"\n\noption defaultUrl = \"https://api.bigpanda.io/data/v2/alerts\"\noption defaultTokenPrefix = \"Bearer\"\n\n// `statusFromLevel` turns a level from the status object into a BigPanda status\n// `level` - string - levels on status objects can be one of the following ok,info,warn,crit,unknown\n// BigPanda accepts one of ok,critical,warning,acknowledged.\nstatusFromLevel = (level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"\n\n    return sev\n}\n\n// `sendAlert` sends a single alert to BigPanda as described in https://docs.bigpanda.io/reference#alerts API. \n// `token` - string - BigPanda authorization Bearer token\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `appKey` - string - BigPanda App Key.\n// `status` - string - Status of the BigPanda alert. One of ok, critical, warning, acknowledged.\n// `rec` - record - additional data appended to alert\nsendAlert = (url, token, appKey, status, rec) => {\n    headers = {\n        \"Content-Type\": \"application/json; charset=utf-8\",\n        \"Authorization\": defaultTokenPrefix + \" \" + token,\n    }\n    data = {rec with app_key: appKey, status: status}\n\n    return http.post(headers: headers, url: url, data: json.encode(v: data))\n}\n\n// `endpoint` creates a factory function that creates a target function for pipeline `|>` to send alert to BigPanda for each table row.\n// `url` - string - base URL of [BigPanda API](https://docs.bigpanda.io/reference#alerts).\n// `token` - string - BigPanda authorization Bearer token\n// `appKey` - string - BigPanda App Key.\n// The returned factory function accepts a `mapFn` parameter.\n// The `mapFn` must return an object with all properties defined in the `sendAlert` function arguments (except url, apiKey and appKey).\nendpoint = (url=defaultUrl, token, appKey) => (mapFn) => (tables=<-) => tables\n    |> map(\n        fn: (r) => {\n            obj = mapFn(r: r)\n\n            return {r with\n                _sent: string(\n                    v: 2 == sendAlert(\n                        url: url,\n                        appKey: appKey,\n                        token: token,\n                        status: obj.status,\n                        rec: obj,\n                    ) / 100,\n                ),\n            }\n        },\n    )",
 				Start: ast.Position{
 					Column: 1,
 					Line:   1,
@@ -190,7 +190,7 @@ var pkgAST = &ast.Package{
 						Line:   28,
 					},
 					File:   "bigpanda.flux",
-					Source: "statusFromLevel = (level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\nelse if lvl == \"crit\" then\n        \"critical\"\nelse if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"\n\n    return sev\n}",
+					Source: "statusFromLevel = (level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"\n\n    return sev\n}",
 					Start: ast.Position{
 						Column: 1,
 						Line:   14,
@@ -227,7 +227,7 @@ var pkgAST = &ast.Package{
 							Line:   28,
 						},
 						File:   "bigpanda.flux",
-						Source: "(level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\nelse if lvl == \"crit\" then\n        \"critical\"\nelse if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"\n\n    return sev\n}",
+						Source: "(level) => {\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"\n\n    return sev\n}",
 						Start: ast.Position{
 							Column: 19,
 							Line:   14,
@@ -244,7 +244,7 @@ var pkgAST = &ast.Package{
 								Line:   28,
 							},
 							File:   "bigpanda.flux",
-							Source: "{\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\nelse if lvl == \"crit\" then\n        \"critical\"\nelse if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"\n\n    return sev\n}",
+							Source: "{\n    lvl = strings.toLower(v: level)\n    sev = if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"\n\n    return sev\n}",
 							Start: ast.Position{
 								Column: 30,
 								Line:   14,
@@ -454,7 +454,7 @@ var pkgAST = &ast.Package{
 									Line:   25,
 								},
 								File:   "bigpanda.flux",
-								Source: "sev = if lvl == \"warn\" then\n        \"warning\"\nelse if lvl == \"crit\" then\n        \"critical\"\nelse if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"",
+								Source: "sev = if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"",
 								Start: ast.Position{
 									Column: 5,
 									Line:   16,
@@ -512,9 +512,9 @@ var pkgAST = &ast.Package{
 													Line:   25,
 												},
 												File:   "bigpanda.flux",
-												Source: "if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"",
+												Source: "if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"",
 												Start: ast.Position{
-													Column: 6,
+													Column: 10,
 													Line:   22,
 												},
 											},
@@ -544,13 +544,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 20,
+														Column: 24,
 														Line:   22,
 													},
 													File:   "bigpanda.flux",
 													Source: "lvl == \"ok\"",
 													Start: ast.Position{
-														Column: 9,
+														Column: 13,
 														Line:   22,
 													},
 												},
@@ -561,13 +561,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 12,
+															Column: 16,
 															Line:   22,
 														},
 														File:   "bigpanda.flux",
 														Source: "lvl",
 														Start: ast.Position{
-															Column: 9,
+															Column: 13,
 															Line:   22,
 														},
 													},
@@ -581,13 +581,13 @@ var pkgAST = &ast.Package{
 													Errors:   nil,
 													Loc: &ast.SourceLocation{
 														End: ast.Position{
-															Column: 20,
+															Column: 24,
 															Line:   22,
 														},
 														File:   "bigpanda.flux",
 														Source: "\"ok\"",
 														Start: ast.Position{
-															Column: 16,
+															Column: 20,
 															Line:   22,
 														},
 													},
@@ -608,9 +608,9 @@ var pkgAST = &ast.Package{
 												Line:   25,
 											},
 											File:   "bigpanda.flux",
-											Source: "if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"",
+											Source: "if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"",
 											Start: ast.Position{
-												Column: 6,
+												Column: 10,
 												Line:   20,
 											},
 										},
@@ -640,13 +640,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 22,
+													Column: 26,
 													Line:   20,
 												},
 												File:   "bigpanda.flux",
 												Source: "lvl == \"info\"",
 												Start: ast.Position{
-													Column: 9,
+													Column: 13,
 													Line:   20,
 												},
 											},
@@ -657,13 +657,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 12,
+														Column: 16,
 														Line:   20,
 													},
 													File:   "bigpanda.flux",
 													Source: "lvl",
 													Start: ast.Position{
-														Column: 9,
+														Column: 13,
 														Line:   20,
 													},
 												},
@@ -677,13 +677,13 @@ var pkgAST = &ast.Package{
 												Errors:   nil,
 												Loc: &ast.SourceLocation{
 													End: ast.Position{
-														Column: 22,
+														Column: 26,
 														Line:   20,
 													},
 													File:   "bigpanda.flux",
 													Source: "\"info\"",
 													Start: ast.Position{
-														Column: 16,
+														Column: 20,
 														Line:   20,
 													},
 												},
@@ -704,9 +704,9 @@ var pkgAST = &ast.Package{
 											Line:   25,
 										},
 										File:   "bigpanda.flux",
-										Source: "if lvl == \"crit\" then\n        \"critical\"\nelse if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"",
+										Source: "if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"",
 										Start: ast.Position{
-											Column: 6,
+											Column: 10,
 											Line:   18,
 										},
 									},
@@ -736,13 +736,13 @@ var pkgAST = &ast.Package{
 										Errors:   nil,
 										Loc: &ast.SourceLocation{
 											End: ast.Position{
-												Column: 22,
+												Column: 26,
 												Line:   18,
 											},
 											File:   "bigpanda.flux",
 											Source: "lvl == \"crit\"",
 											Start: ast.Position{
-												Column: 9,
+												Column: 13,
 												Line:   18,
 											},
 										},
@@ -753,13 +753,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 12,
+													Column: 16,
 													Line:   18,
 												},
 												File:   "bigpanda.flux",
 												Source: "lvl",
 												Start: ast.Position{
-													Column: 9,
+													Column: 13,
 													Line:   18,
 												},
 											},
@@ -773,13 +773,13 @@ var pkgAST = &ast.Package{
 											Errors:   nil,
 											Loc: &ast.SourceLocation{
 												End: ast.Position{
-													Column: 22,
+													Column: 26,
 													Line:   18,
 												},
 												File:   "bigpanda.flux",
 												Source: "\"crit\"",
 												Start: ast.Position{
-													Column: 16,
+													Column: 20,
 													Line:   18,
 												},
 											},
@@ -800,7 +800,7 @@ var pkgAST = &ast.Package{
 										Line:   25,
 									},
 									File:   "bigpanda.flux",
-									Source: "if lvl == \"warn\" then\n        \"warning\"\nelse if lvl == \"crit\" then\n        \"critical\"\nelse if lvl == \"info\" then\n        \"ok\"\nelse if lvl == \"ok\" then\n        \"ok\"\nelse\n        \"critical\"",
+									Source: "if lvl == \"warn\" then\n        \"warning\"\n    else if lvl == \"crit\" then\n        \"critical\"\n    else if lvl == \"info\" then\n        \"ok\"\n    else if lvl == \"ok\" then\n        \"ok\"\n    else\n        \"critical\"",
 									Start: ast.Position{
 										Column: 11,
 										Line:   16,

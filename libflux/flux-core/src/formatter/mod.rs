@@ -965,6 +965,7 @@ impl Formatter {
         if multiline {
             self.write_rune('\n');
             self.unindent();
+            self.write_indent();
         } else {
             self.write_rune(' ');
         }
