@@ -29,7 +29,7 @@ require (
 	github.com/google/go-cmp v0.5.4
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/influxdata/influxdb-client-go/v2 v2.3.0
+	github.com/influxdata/influxdb-client-go/v2 v2.3.1-0.20210518120617-5d1fff431040
 	github.com/influxdata/line-protocol v0.0.0-20200327222509-2487e7298839
 	github.com/influxdata/pkg-config v0.2.7
 	github.com/influxdata/promql/v2 v2.12.0

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	apihttp "github.com/influxdata/influxdb-client-go/v2/api/http"
 	"io"
 	"io/ioutil"
 	stdhttp "net/http"
@@ -19,7 +20,6 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/csv"
 	"github.com/influxdata/flux/dependencies/http"
-	"github.com/influxdata/flux/dependencies/influxdb/internal"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
@@ -76,7 +76,7 @@ func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error
 		return nil, err
 	}
 
-	service := internal.NewService(httpClient.Config.Host, httpClient.Config.Token, httpClient.Client)
+	service := apihttp.NewService(httpClient.Config.Host, httpClient.Config.Token, apihttp.DefaultOptions().SetHTTPDoer(httpClient.Client))
 	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrName(), httpClient.Config.Bucket.IdOrName(), service, write.DefaultOptions())
 
 	return newHttpWriter(writer)
