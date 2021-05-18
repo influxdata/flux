@@ -27,7 +27,7 @@ var pkgAST = &ast.Package{
 					Line:   133,
 				},
 				File:   "promql.flux",
-				Source: "package promql\n\n\nimport \"math\"\nimport \"universe\"\nimport \"experimental\"\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth : (timestamp: float) => float\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek : (timestamp: float) => float\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth : (timestamp: float) => float\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable : () => [{_start: time, _stop: time, _time: time, _value: float}]\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate : (<-tables: [{A with _start: time, _stop: time, _time: time, _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters : (<-tables: [{A with _time: time, _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour : (timestamp: float) => float\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate : (<-tables: [{A with _time: time, _value: float}], ?isRate: bool) => [{B with _value: float}]\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace : (\n    <-tables: [{A with _value: float}],\n    source: string,\n    destination: string,\n    regex: string,\n    replacement: string,\n) => [{B with _value: float}]\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression : (<-tables: [{A with _time: time, _stop: time, _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]\n\n// promqlMinute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute : (timestamp: float) => float\n\n// promqlMonth() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth : (timestamp: float) => float\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile : (\n    <-tables: [A],\n    ?quantile: float,\n    ?countColumn: string,\n    ?upperBoundColumn: string,\n    ?valueColumn: string,\n) => [B] where\n    A: Record,\n    B: Record\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp : (<-tables: [{A with _value: float}]) => [{A with _value: float}]\n\n// promqlYear() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear : (timestamp: float) => float\n\n// quantile() accounts checks for quantile values that are out of range, above 1.0 or \n// below 0.0, by either returning positive infinity or negative infinity in the `_value` \n// column respectively. q must be a float \nquantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)\njoin = experimental.join",
+				Source: "package promql\n\n\nimport \"math\"\nimport \"universe\"\nimport \"experimental\"\n\n// changes() implements functionality equivalent to PromQL's changes() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#changes\nbuiltin changes : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// promqlDayOfMonth() implements functionality equivalent to PromQL's day_of_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_month\nbuiltin promqlDayOfMonth : (timestamp: float) => float\n\n// promqlDayOfWeek() implements functionality equivalent to PromQL's day_of_week() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#day_of_week\nbuiltin promqlDayOfWeek : (timestamp: float) => float\n\n// promqlDaysInMonth() implements functionality equivalent to PromQL's days_in_month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#days_in_month\nbuiltin promqlDaysInMonth : (timestamp: float) => float\n\n// emptyTable() returns an empty table, which is used as a helper function to implement\n// PromQL's time() and vector() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#time\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#vector\nbuiltin emptyTable : () => [{_start: time, _stop: time, _time: time, _value: float}]\n\n// extrapolatedRate() is a helper function that calculates extrapolated rates over\n// counters and is used to implement PromQL's rate(), delta(), and increase() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#rate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#increase\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#delta\nbuiltin extrapolatedRate : (<-tables: [{A with _start: time, _stop: time, _time: time, _value: float}], ?isCounter: bool, ?isRate: bool) => [{B with _value: float}]\n\n// holtWinters() implements functionality equivalent to PromQL's holt_winters()\n// function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#holt_winters\nbuiltin holtWinters : (<-tables: [{A with _time: time, _value: float}], ?smoothingFactor: float, ?trendFactor: float) => [{B with _value: float}]\n\n// promqlHour() implements functionality equivalent to PromQL's hour() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#hour\nbuiltin promqlHour : (timestamp: float) => float\n\n// instantRate() is a helper function that calculates instant rates over\n// counters and is used to implement PromQL's irate() and idelta() functions.\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#irate\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#idelta\nbuiltin instantRate : (<-tables: [{A with _time: time, _value: float}], ?isRate: bool) => [{B with _value: float}]\n\n// labelReplace implements functionality equivalent to PromQL's label_replace() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#label_replace\nbuiltin labelReplace : (\n    <-tables: [{A with _value: float}],\n    source: string,\n    destination: string,\n    regex: string,\n    replacement: string,\n) => [{B with _value: float}]\n\n// linearRegression implements linear regression functionality required to implement\n// PromQL's deriv() and predict_linear() functions:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#deriv\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#predict_linear\nbuiltin linearRegression : (<-tables: [{A with _time: time, _stop: time, _value: float}], ?predict: bool, ?fromNow: float) => [{B with _value: float}]\n\n// promqlMinute() implements functionality equivalent to PromQL's minute() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#minute\nbuiltin promqlMinute : (timestamp: float) => float\n\n// promqlMonth() implements functionality equivalent to PromQL's month() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#month\nbuiltin promqlMonth : (timestamp: float) => float\n\n// promHistogramQuantile() implements functionality equivalent to PromQL's\n// histogram_quantile() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#histogram_quantile\nbuiltin promHistogramQuantile : (\n    <-tables: [A],\n    ?quantile: float,\n    ?countColumn: string,\n    ?upperBoundColumn: string,\n    ?valueColumn: string,\n) => [B] where\n    A: Record,\n    B: Record\n\n// resets() implements functionality equivalent to PromQL's resets() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#resets\nbuiltin resets : (<-tables: [{A with _value: float}]) => [{B with _value: float}]\n\n// timestamp() implements functionality equivalent to PromQL's timestamp() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#timestamp\nbuiltin timestamp : (<-tables: [{A with _value: float}]) => [{A with _value: float}]\n\n// promqlYear() implements functionality equivalent to PromQL's year() function:\n//\n// https://prometheus.io/docs/prometheus/latest/querying/functions/#year\nbuiltin promqlYear : (timestamp: float) => float\n\n// quantile() accounts checks for quantile values that are out of range, above 1.0 or \n// below 0.0, by either returning positive infinity or negative infinity in the `_value` \n// column respectively. q must be a float \nquantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\n    else if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\n    else\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)\njoin = experimental.join",
 				Start: ast.Position{
 					Column: 1,
 					Line:   2,
@@ -6664,7 +6664,7 @@ var pkgAST = &ast.Package{
 						Line:   132,
 					},
 					File:   "promql.flux",
-					Source: "quantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+					Source: "quantile = (q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\n    else if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\n    else\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 					Start: ast.Position{
 						Column: 1,
 						Line:   122,
@@ -6701,7 +6701,7 @@ var pkgAST = &ast.Package{
 							Line:   132,
 						},
 						File:   "promql.flux",
-						Source: "(q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+						Source: "(q, tables=<-, method=\"exact_mean\") => \n    // value is in normal range. We can use the normal quantile function\n    if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\n    else if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\n    else\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 						Start: ast.Position{
 							Column: 12,
 							Line:   122,
@@ -7229,9 +7229,9 @@ var pkgAST = &ast.Package{
 									Line:   132,
 								},
 								File:   "promql.flux",
-								Source: "if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+								Source: "if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\n    else\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 								Start: ast.Position{
-									Column: 6,
+									Column: 10,
 									Line:   127,
 								},
 							},
@@ -7771,13 +7771,13 @@ var pkgAST = &ast.Package{
 								Errors:   nil,
 								Loc: &ast.SourceLocation{
 									End: ast.Position{
-										Column: 16,
+										Column: 20,
 										Line:   127,
 									},
 									File:   "promql.flux",
 									Source: "q < 0.0",
 									Start: ast.Position{
-										Column: 9,
+										Column: 13,
 										Line:   127,
 									},
 								},
@@ -7788,13 +7788,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 10,
+											Column: 14,
 											Line:   127,
 										},
 										File:   "promql.flux",
 										Source: "q",
 										Start: ast.Position{
-											Column: 9,
+											Column: 13,
 											Line:   127,
 										},
 									},
@@ -7808,13 +7808,13 @@ var pkgAST = &ast.Package{
 									Errors:   nil,
 									Loc: &ast.SourceLocation{
 										End: ast.Position{
-											Column: 16,
+											Column: 20,
 											Line:   127,
 										},
 										File:   "promql.flux",
 										Source: "0.0",
 										Start: ast.Position{
-											Column: 13,
+											Column: 17,
 											Line:   127,
 										},
 									},
@@ -7835,7 +7835,7 @@ var pkgAST = &ast.Package{
 								Line:   132,
 							},
 							File:   "promql.flux",
-							Source: "if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\nelse if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\nelse\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
+							Source: "if q <= 1.0 and q >= 0.0 then\n        tables\n            |> universe.quantile(q: q, method: method)\n    else if q < 0.0 then\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: -1)}, fn: (r, accumulator) => accumulator)\n    else\n        tables\n            |> reduce(identity: {_value: math.mInf(sign: 1)}, fn: (r, accumulator) => accumulator)",
 							Start: ast.Position{
 								Column: 5,
 								Line:   124,

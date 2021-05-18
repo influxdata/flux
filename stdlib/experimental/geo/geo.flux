@@ -35,7 +35,7 @@ ST_Length = (geometry, units=units) => stLength(geometry: geometry, units: units
 ST_LineString = (tables=<-) => tables
     |> reduce(
         fn: (r, accumulator) => ({
-            __linestring: accumulator.__linestring + if accumulator.__count > 0 then ", " else "" + string(v: r.lon) + " " + string(v: r.lat),
+            __linestring: accumulator.__linestring + (if accumulator.__count > 0 then ", " else "") + string(v: r.lon) + " " + string(v: r.lat),
             __count: accumulator.__count + 1,
         }),
         identity: {
