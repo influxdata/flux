@@ -224,9 +224,9 @@ fn dependencies<'a>(
     }
 }
 
-/// Constructs a polytype, or more specifically a generic row type, from a hash map.
+/// Constructs a polytype, or more specifically a generic record type, from a hash map.
 pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Error> {
-    let (r, cons) = build_row(from, f);
+    let (r, cons) = build_record(from, f);
     let mut kinds = TvarKinds::new();
     let sub = infer::solve(&cons, &mut kinds, f)?;
     Ok(infer::generalize(
@@ -236,7 +236,7 @@ pub fn build_polytype(from: PolyTypeMap, f: &mut Fresher) -> Result<PolyType, Er
     ))
 }
 
-fn build_row(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
+fn build_record(from: PolyTypeMap, f: &mut Fresher) -> (Record, Constraints) {
     let mut r = Record::Empty;
     let mut cons = Constraints::empty();
 
