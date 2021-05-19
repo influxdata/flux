@@ -79,7 +79,7 @@ impl From<&str> for Error {
         }
     }
 }
-/// Infers the types of the standard library returning two [`Importer`]s, one for the prelude
+/// Infers the types of the standard library returning two [`PolyTypeMap`]s, one for the prelude
 /// and one for the standard library, as well as a type variable [`Fresher`].
 #[allow(clippy::type_complexity)]
 pub fn infer_stdlib() -> Result<(PolyTypeMap, PolyTypeMap, Fresher, Vec<String>), Error> {
