@@ -2,6 +2,7 @@
 
 #[allow(clippy::all, missing_docs)]
 pub mod semantic_generated;
+#[allow(missing_docs)]
 pub mod types;
 
 use std::cell::RefCell;

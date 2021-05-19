@@ -1,5 +1,3 @@
-#![allow(missing_docs)]
-
 use std::ops;
 
 use derive_more::Display;

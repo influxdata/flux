@@ -1,5 +1,3 @@
-#![allow(missing_docs)]
-
 use crate::semantic::types::{PolyType, PolyTypeMap};
 
 pub trait Importer {
