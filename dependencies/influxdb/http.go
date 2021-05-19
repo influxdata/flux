@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/apache/arrow/go/arrow/memory"
@@ -21,6 +22,10 @@ import (
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/semantic"
 	"github.com/influxdata/flux/values"
+	"github.com/influxdata/influxdb-client-go/v2/api"
+	apihttp "github.com/influxdata/influxdb-client-go/v2/api/http"
+	"github.com/influxdata/influxdb-client-go/v2/api/write"
+	protocol "github.com/influxdata/line-protocol"
 )
 
 // HttpProvider is an implementation of the Provider that
@@ -63,6 +68,18 @@ func (h HttpProvider) SeriesCardinalityReaderFor(ctx context.Context, conf Confi
 		Bounds:       bounds,
 		PredicateSet: predicateSet,
 	}, nil
+}
+
+func (h HttpProvider) WriterFor(ctx context.Context, conf Config) (Writer, error) {
+	httpClient, err := h.clientFor(ctx, conf)
+	if err != nil {
+		return nil, err
+	}
+
+	service := apihttp.NewService(httpClient.Config.Host, "Token "+httpClient.Config.Token, apihttp.DefaultOptions().SetHTTPDoer(httpClient.Client))
+	writer := api.NewWriteAPI(httpClient.Config.Org.IdOrName(), httpClient.Config.Bucket.IdOrName(), service, write.DefaultOptions())
+
+	return newHttpWriter(writer)
 }
 
 func (h HttpProvider) clientFor(ctx context.Context, conf Config) (*HttpClient, error) {
@@ -440,4 +457,65 @@ func (h seriesCardinalityHttpReader) Read(ctx context.Context, f func(flux.Table
 		},
 	}
 	return h.Query(ctx, f, &file, h.Bounds.Now, mem)
+}
+
+type httpWriter struct {
+	writer      *api.WriteAPIImpl
+	errChan     <-chan error
+	latestError chan error
+}
+
+func newHttpWriter(writer *api.WriteAPIImpl) (*httpWriter, error) {
+	w := &httpWriter{
+		writer:      writer,
+		errChan:     writer.Errors(),
+		latestError: make(chan error, 1),
+	}
+	go func() {
+		for err := range w.errChan {
+			if err != nil {
+				select {
+				case w.latestError <- err:
+				default:
+				}
+			}
+		}
+		close(w.latestError)
+	}()
+	return w, nil
+}
+
+var _ Writer = &httpWriter{}
+
+// Write sends points asynchronously to the underlying write api.
+// Errors are returned only on a best-effort basis.
+func (h *httpWriter) Write(metric ...protocol.Metric) error {
+	buf := new(bytes.Buffer)
+	enc := protocol.NewEncoder(buf)
+	for i := range metric {
+		buf.Truncate(0)
+		_, err := enc.Encode(metric[i])
+		if err != nil {
+			h.writer.Flush()
+			return err
+		}
+		h.writer.WriteRecord(strings.TrimRight(buf.String(), "\n"))
+	}
+	select {
+	case err := <-h.latestError:
+		return err
+	default:
+	}
+	return nil
+}
+
+func (h *httpWriter) Close() error {
+	h.writer.Flush()
+	h.writer.Close()
+	var err error
+	// This ensures latestError is closed which ensures errChan is closed
+	for e := range h.latestError {
+		err = e
+	}
+	return err
 }
