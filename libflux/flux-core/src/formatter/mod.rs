@@ -37,11 +37,9 @@ pub fn convert_to_string(file: &File) -> Result<String, Error> {
 ///
 /// ```rust
 /// # use fluxcore::formatter::format;
-/// # fn main() {
 /// let source = "(r) => r.user ==              \"user1\"";
 /// let formatted = format(source).unwrap();
 /// assert_eq!(formatted, "(r) => r.user == \"user1\"");
-/// # }
 /// ```
 pub fn format(contents: &str) -> Result<String, Error> {
     let file = parse_string("", contents);
