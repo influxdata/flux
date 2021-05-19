@@ -1,8 +1,5 @@
-#![allow(missing_docs)]
-
 //! This module defines methods for serializing and deserializing MonoTypes
 //! and PolyTypes using the flatbuffer encoding.
-//!
 use crate::semantic::env::Environment;
 use crate::semantic::flatbuffers::semantic_generated::fbsemantic as fb;
 
