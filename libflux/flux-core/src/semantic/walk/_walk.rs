@@ -245,7 +245,7 @@ impl<'a> Node<'a> {
 ///
 /// Print out the nodes of a semantic graph
 ///
-/// ```
+/// ```no_run
 /// use fluxcore::ast;
 /// use fluxcore::semantic::walk::{Node, walk};
 /// use fluxcore::semantic::nodes::*;
@@ -266,7 +266,7 @@ impl<'a> Node<'a> {
 ///
 /// A "scoped" visitor that errors if finds more than one addition operation in the same scope:
 ///
-/// ```
+/// ```no_run
 /// use fluxcore::ast::Operator::AdditionOperator;
 /// use fluxcore::semantic::walk::{Node, Visitor};
 /// use fluxcore::semantic::nodes::*;

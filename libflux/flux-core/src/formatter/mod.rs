@@ -32,6 +32,17 @@ pub fn convert_to_string(file: &File) -> Result<String, Error> {
 }
 
 /// Format a string of Flux code.
+///
+/// # Example
+///
+/// ```rust
+/// # use fluxcore::formatter::format;
+/// # fn main() {
+/// let src = "(r) => r.user ==              \"user1\"";
+/// let out = format(src).unwrap();
+/// assert_eq!(out, "(r) => r.user == \"user1\"");
+/// # }
+/// ```
 pub fn format(contents: &str) -> Result<String, Error> {
     let file = parse_string("", contents);
     convert_to_string(&file)
