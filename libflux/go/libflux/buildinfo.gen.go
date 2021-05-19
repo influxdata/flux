@@ -596,8 +596,7 @@ var sourceHashes = map[string]string{
 	"stdlib/universe/window_generate_empty_test.flux":                               "9c0ab9048145d6c967f03242348101571b92e67f0bfd3f591f65553c34c90691",
 	"stdlib/universe/window_group_mean_ungroup_test.flux":                           "8b02e2ad1966defd103f71f588cd46a65c96cf08cc5ce978bb4fff30dae70f2c",
 	"stdlib/universe/window_null_test.flux":                                         "7facbcee778f33ef733017b39c82d7b10eb339fa299f84f02502549e9f065127",
-	"stdlib/universe/window_offset_test.flux":                                       "e87e03f3c6c6327e0e5cb68a1a9b77cb8b9bf0384cce34625e389f73be7ade02",
 	"stdlib/universe/window_start_bound_test.flux":                                  "9df0b6c5b286762bb36d7900e507c02fb6882bd0af56361a62058cced25ca854",
-	"stdlib/universe/window_test.flux":                                              "a6c7172aa4f3ebf5ae1f9019b2292a8280873346f91ace07d41b00e2fe354b57",
+	"stdlib/universe/window_test.flux":                                              "e1cdaa7fea47e3105e80038707a7240dd793902fde836069163856cd260fa1b4",
 	"stdlib/universe/yield_test.flux":                                               "0484f5afea429ca8ca55ec9498cdb1692f5425f41355be8992bc5024a9254d00",
 }
