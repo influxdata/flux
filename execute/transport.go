@@ -11,8 +11,10 @@ import (
 	"github.com/influxdata/flux/codes"
 	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
+	"github.com/influxdata/flux/internal/jaeger"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"github.com/opentracing/opentracing-go"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +26,7 @@ type Transport interface {
 
 // consecutiveTransport implements Transport by transporting data consecutively to the downstream Transformation.
 type consecutiveTransport struct {
+	ctx        context.Context
 	dispatcher Dispatcher
 	logger     *zap.Logger
 
@@ -39,8 +42,9 @@ type consecutiveTransport struct {
 	inflight       int32
 }
 
-func newConsecutiveTransport(dispatcher Dispatcher, t Transformation, n plan.Node, logger *zap.Logger) *consecutiveTransport {
+func newConsecutiveTransport(ctx context.Context, dispatcher Dispatcher, t Transformation, n plan.Node, logger *zap.Logger) *consecutiveTransport {
 	return &consecutiveTransport{
+		ctx:        ctx,
 		dispatcher: dispatcher,
 		logger:     logger,
 		t:          t,
@@ -390,11 +394,21 @@ func (t *consecutiveTransportTable) Cols() []flux.ColMeta {
 func (t *consecutiveTransportTable) Do(f func(flux.ColReader) error) error {
 	return t.tbl.Do(func(cr flux.ColReader) error {
 		if err := t.validate(cr); err != nil {
-			logger := t.transport.logger
-			logger.Info("Invalid column reader received from parent",
+			fields := []zap.Field{
 				zap.String("source", t.transport.sourceInfo()),
 				zap.Error(err),
-			)
+			}
+
+			ctx, logger := t.transport.ctx, t.transport.logger
+			if span := opentracing.SpanFromContext(ctx); span != nil {
+				if traceID, sampled, found := jaeger.InfoFromSpan(span); found {
+					fields = append(fields,
+						zap.String("tracing/id", traceID),
+						zap.Bool("tracing/sampled", sampled),
+					)
+				}
+			}
+			logger.Info("Invalid column reader received from predecessor", fields...)
 		}
 		return f(cr)
 	})

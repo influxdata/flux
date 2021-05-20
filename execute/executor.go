@@ -232,7 +232,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 
 		for _, p := range nonYieldPredecessors(node) {
 			executionNode := v.nodes[p]
-			transport := newConsecutiveTransport(v.es.dispatcher, tr, node, v.es.logger)
+			transport := newConsecutiveTransport(v.es.ctx, v.es.dispatcher, tr, node, v.es.logger)
 			v.es.transports = append(v.es.transports, transport)
 			executionNode.AddTransformation(transport)
 		}
