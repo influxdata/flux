@@ -3,10 +3,12 @@
 package fbast
 
 import (
+	"strconv"
+
 	flatbuffers "github.com/google/flatbuffers/go"
 )
 
-type MonoType = byte
+type MonoType byte
 
 const (
 	MonoTypeNONE         MonoType = 0
@@ -28,7 +30,24 @@ var EnumNamesMonoType = map[MonoType]string{
 	MonoTypeFunctionType: "FunctionType",
 }
 
-type ParameterKind = int8
+var EnumValuesMonoType = map[string]MonoType{
+	"NONE":         MonoTypeNONE,
+	"NamedType":    MonoTypeNamedType,
+	"TvarType":     MonoTypeTvarType,
+	"ArrayType":    MonoTypeArrayType,
+	"DictType":     MonoTypeDictType,
+	"RecordType":   MonoTypeRecordType,
+	"FunctionType": MonoTypeFunctionType,
+}
+
+func (v MonoType) String() string {
+	if s, ok := EnumNamesMonoType[v]; ok {
+		return s
+	}
+	return "MonoType(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type ParameterKind int8
 
 const (
 	ParameterKindRequired ParameterKind = 0
@@ -42,7 +61,20 @@ var EnumNamesParameterKind = map[ParameterKind]string{
 	ParameterKindPipe:     "Pipe",
 }
 
-type Statement = byte
+var EnumValuesParameterKind = map[string]ParameterKind{
+	"Required": ParameterKindRequired,
+	"Optional": ParameterKindOptional,
+	"Pipe":     ParameterKindPipe,
+}
+
+func (v ParameterKind) String() string {
+	if s, ok := EnumNamesParameterKind[v]; ok {
+		return s
+	}
+	return "ParameterKind(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type Statement byte
 
 const (
 	StatementNONE                Statement = 0
@@ -70,7 +102,27 @@ var EnumNamesStatement = map[Statement]string{
 	StatementTestCaseStatement:   "TestCaseStatement",
 }
 
-type Assignment = byte
+var EnumValuesStatement = map[string]Statement{
+	"NONE":                StatementNONE,
+	"BadStatement":        StatementBadStatement,
+	"VariableAssignment":  StatementVariableAssignment,
+	"MemberAssignment":    StatementMemberAssignment,
+	"ExpressionStatement": StatementExpressionStatement,
+	"ReturnStatement":     StatementReturnStatement,
+	"OptionStatement":     StatementOptionStatement,
+	"BuiltinStatement":    StatementBuiltinStatement,
+	"TestStatement":       StatementTestStatement,
+	"TestCaseStatement":   StatementTestCaseStatement,
+}
+
+func (v Statement) String() string {
+	if s, ok := EnumNamesStatement[v]; ok {
+		return s
+	}
+	return "Statement(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type Assignment byte
 
 const (
 	AssignmentNONE               Assignment = 0
@@ -84,7 +136,20 @@ var EnumNamesAssignment = map[Assignment]string{
 	AssignmentVariableAssignment: "VariableAssignment",
 }
 
-type Expression = byte
+var EnumValuesAssignment = map[string]Assignment{
+	"NONE":               AssignmentNONE,
+	"MemberAssignment":   AssignmentMemberAssignment,
+	"VariableAssignment": AssignmentVariableAssignment,
+}
+
+func (v Assignment) String() string {
+	if s, ok := EnumNamesAssignment[v]; ok {
+		return s
+	}
+	return "Assignment(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type Expression byte
 
 const (
 	ExpressionNONE                   Expression = 0
@@ -144,7 +209,43 @@ var EnumNamesExpression = map[Expression]string{
 	ExpressionBadExpression:          "BadExpression",
 }
 
-type Operator = int8
+var EnumValuesExpression = map[string]Expression{
+	"NONE":                   ExpressionNONE,
+	"StringExpression":       ExpressionStringExpression,
+	"ParenExpression":        ExpressionParenExpression,
+	"ArrayExpression":        ExpressionArrayExpression,
+	"DictExpression":         ExpressionDictExpression,
+	"FunctionExpression":     ExpressionFunctionExpression,
+	"BinaryExpression":       ExpressionBinaryExpression,
+	"BooleanLiteral":         ExpressionBooleanLiteral,
+	"CallExpression":         ExpressionCallExpression,
+	"ConditionalExpression":  ExpressionConditionalExpression,
+	"DateTimeLiteral":        ExpressionDateTimeLiteral,
+	"DurationLiteral":        ExpressionDurationLiteral,
+	"FloatLiteral":           ExpressionFloatLiteral,
+	"Identifier":             ExpressionIdentifier,
+	"IntegerLiteral":         ExpressionIntegerLiteral,
+	"LogicalExpression":      ExpressionLogicalExpression,
+	"MemberExpression":       ExpressionMemberExpression,
+	"IndexExpression":        ExpressionIndexExpression,
+	"ObjectExpression":       ExpressionObjectExpression,
+	"PipeExpression":         ExpressionPipeExpression,
+	"PipeLiteral":            ExpressionPipeLiteral,
+	"RegexpLiteral":          ExpressionRegexpLiteral,
+	"StringLiteral":          ExpressionStringLiteral,
+	"UnaryExpression":        ExpressionUnaryExpression,
+	"UnsignedIntegerLiteral": ExpressionUnsignedIntegerLiteral,
+	"BadExpression":          ExpressionBadExpression,
+}
+
+func (v Expression) String() string {
+	if s, ok := EnumNamesExpression[v]; ok {
+		return s
+	}
+	return "Expression(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type Operator int8
 
 const (
 	OperatorInvalidOperator          Operator = 0
@@ -194,7 +295,38 @@ var EnumNamesOperator = map[Operator]string{
 	OperatorNotRegexpMatchOperator:   "NotRegexpMatchOperator",
 }
 
-type LogicalOperator = int8
+var EnumValuesOperator = map[string]Operator{
+	"InvalidOperator":          OperatorInvalidOperator,
+	"MultiplicationOperator":   OperatorMultiplicationOperator,
+	"DivisionOperator":         OperatorDivisionOperator,
+	"ModuloOperator":           OperatorModuloOperator,
+	"PowerOperator":            OperatorPowerOperator,
+	"AdditionOperator":         OperatorAdditionOperator,
+	"SubtractionOperator":      OperatorSubtractionOperator,
+	"LessThanEqualOperator":    OperatorLessThanEqualOperator,
+	"LessThanOperator":         OperatorLessThanOperator,
+	"GreaterThanEqualOperator": OperatorGreaterThanEqualOperator,
+	"GreaterThanOperator":      OperatorGreaterThanOperator,
+	"StartsWithOperator":       OperatorStartsWithOperator,
+	"InOperator":               OperatorInOperator,
+	"NotOperator":              OperatorNotOperator,
+	"ExistsOperator":           OperatorExistsOperator,
+	"NotEmptyOperator":         OperatorNotEmptyOperator,
+	"EmptyOperator":            OperatorEmptyOperator,
+	"EqualOperator":            OperatorEqualOperator,
+	"NotEqualOperator":         OperatorNotEqualOperator,
+	"RegexpMatchOperator":      OperatorRegexpMatchOperator,
+	"NotRegexpMatchOperator":   OperatorNotRegexpMatchOperator,
+}
+
+func (v Operator) String() string {
+	if s, ok := EnumNamesOperator[v]; ok {
+		return s
+	}
+	return "Operator(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type LogicalOperator int8
 
 const (
 	LogicalOperatorAndOperator LogicalOperator = 0
@@ -206,7 +338,19 @@ var EnumNamesLogicalOperator = map[LogicalOperator]string{
 	LogicalOperatorOrOperator:  "OrOperator",
 }
 
-type TimeUnit = int8
+var EnumValuesLogicalOperator = map[string]LogicalOperator{
+	"AndOperator": LogicalOperatorAndOperator,
+	"OrOperator":  LogicalOperatorOrOperator,
+}
+
+func (v LogicalOperator) String() string {
+	if s, ok := EnumNamesLogicalOperator[v]; ok {
+		return s
+	}
+	return "LogicalOperator(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type TimeUnit int8
 
 const (
 	TimeUnity  TimeUnit = 0
@@ -234,7 +378,27 @@ var EnumNamesTimeUnit = map[TimeUnit]string{
 	TimeUnitns: "ns",
 }
 
-type ExpressionOrBlock = byte
+var EnumValuesTimeUnit = map[string]TimeUnit{
+	"y":  TimeUnity,
+	"mo": TimeUnitmo,
+	"w":  TimeUnitw,
+	"d":  TimeUnitd,
+	"h":  TimeUnith,
+	"m":  TimeUnitm,
+	"s":  TimeUnits,
+	"ms": TimeUnitms,
+	"us": TimeUnitus,
+	"ns": TimeUnitns,
+}
+
+func (v TimeUnit) String() string {
+	if s, ok := EnumNamesTimeUnit[v]; ok {
+		return s
+	}
+	return "TimeUnit(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type ExpressionOrBlock byte
 
 const (
 	ExpressionOrBlockNONE              ExpressionOrBlock = 0
@@ -248,7 +412,20 @@ var EnumNamesExpressionOrBlock = map[ExpressionOrBlock]string{
 	ExpressionOrBlockWrappedExpression: "WrappedExpression",
 }
 
-type PropertyKey = byte
+var EnumValuesExpressionOrBlock = map[string]ExpressionOrBlock{
+	"NONE":              ExpressionOrBlockNONE,
+	"Block":             ExpressionOrBlockBlock,
+	"WrappedExpression": ExpressionOrBlockWrappedExpression,
+}
+
+func (v ExpressionOrBlock) String() string {
+	if s, ok := EnumNamesExpressionOrBlock[v]; ok {
+		return s
+	}
+	return "ExpressionOrBlock(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
+type PropertyKey byte
 
 const (
 	PropertyKeyNONE          PropertyKey = 0
@@ -262,6 +439,19 @@ var EnumNamesPropertyKey = map[PropertyKey]string{
 	PropertyKeyStringLiteral: "StringLiteral",
 }
 
+var EnumValuesPropertyKey = map[string]PropertyKey{
+	"NONE":          PropertyKeyNONE,
+	"Identifier":    PropertyKeyIdentifier,
+	"StringLiteral": PropertyKeyStringLiteral,
+}
+
+func (v PropertyKey) String() string {
+	if s, ok := EnumNamesPropertyKey[v]; ok {
+		return s
+	}
+	return "PropertyKey(" + strconv.FormatInt(int64(v), 10) + ")"
+}
+
 type NamedType struct {
 	_tab flatbuffers.Table
 }
@@ -270,6 +460,13 @@ func GetRootAsNamedType(buf []byte, offset flatbuffers.UOffsetT) *NamedType {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &NamedType{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsNamedType(buf []byte, offset flatbuffers.UOffsetT) *NamedType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &NamedType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -332,6 +529,13 @@ func GetRootAsTvarType(buf []byte, offset flatbuffers.UOffsetT) *TvarType {
 	return x
 }
 
+func GetSizePrefixedRootAsTvarType(buf []byte, offset flatbuffers.UOffsetT) *TvarType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &TvarType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *TvarType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -391,6 +595,13 @@ func GetRootAsArrayType(buf []byte, offset flatbuffers.UOffsetT) *ArrayType {
 	return x
 }
 
+func GetSizePrefixedRootAsArrayType(buf []byte, offset flatbuffers.UOffsetT) *ArrayType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ArrayType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *ArrayType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -413,16 +624,16 @@ func (rcv *ArrayType) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *ArrayType) ElementType() byte {
+func (rcv *ArrayType) ElementType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ArrayType) MutateElementType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *ArrayType) MutateElementType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *ArrayType) Element(obj *flatbuffers.Table) bool {
@@ -440,8 +651,8 @@ func ArrayTypeStart(builder *flatbuffers.Builder) {
 func ArrayTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func ArrayTypeAddElementType(builder *flatbuffers.Builder, elementType byte) {
-	builder.PrependByteSlot(1, elementType, 0)
+func ArrayTypeAddElementType(builder *flatbuffers.Builder, elementType MonoType) {
+	builder.PrependByteSlot(1, byte(elementType), 0)
 }
 func ArrayTypeAddElement(builder *flatbuffers.Builder, element flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(element), 0)
@@ -458,6 +669,13 @@ func GetRootAsDictType(buf []byte, offset flatbuffers.UOffsetT) *DictType {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &DictType{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsDictType(buf []byte, offset flatbuffers.UOffsetT) *DictType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &DictType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -483,16 +701,16 @@ func (rcv *DictType) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *DictType) KeyType() byte {
+func (rcv *DictType) KeyType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *DictType) MutateKeyType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *DictType) MutateKeyType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *DictType) Key(obj *flatbuffers.Table) bool {
@@ -504,16 +722,16 @@ func (rcv *DictType) Key(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *DictType) ValType() byte {
+func (rcv *DictType) ValType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *DictType) MutateValType(n byte) bool {
-	return rcv._tab.MutateByteSlot(10, n)
+func (rcv *DictType) MutateValType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(10, byte(n))
 }
 
 func (rcv *DictType) Val(obj *flatbuffers.Table) bool {
@@ -531,14 +749,14 @@ func DictTypeStart(builder *flatbuffers.Builder) {
 func DictTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func DictTypeAddKeyType(builder *flatbuffers.Builder, keyType byte) {
-	builder.PrependByteSlot(1, keyType, 0)
+func DictTypeAddKeyType(builder *flatbuffers.Builder, keyType MonoType) {
+	builder.PrependByteSlot(1, byte(keyType), 0)
 }
 func DictTypeAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(key), 0)
 }
-func DictTypeAddValType(builder *flatbuffers.Builder, valType byte) {
-	builder.PrependByteSlot(3, valType, 0)
+func DictTypeAddValType(builder *flatbuffers.Builder, valType MonoType) {
+	builder.PrependByteSlot(3, byte(valType), 0)
 }
 func DictTypeAddVal(builder *flatbuffers.Builder, val flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(val), 0)
@@ -555,6 +773,13 @@ func GetRootAsPropertyType(buf []byte, offset flatbuffers.UOffsetT) *PropertyTyp
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &PropertyType{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsPropertyType(buf []byte, offset flatbuffers.UOffsetT) *PropertyType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &PropertyType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -593,16 +818,16 @@ func (rcv *PropertyType) Id(obj *Identifier) *Identifier {
 	return nil
 }
 
-func (rcv *PropertyType) MonotypeType() byte {
+func (rcv *PropertyType) MonotypeType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *PropertyType) MutateMonotypeType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *PropertyType) MutateMonotypeType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *PropertyType) Monotype(obj *flatbuffers.Table) bool {
@@ -623,8 +848,8 @@ func PropertyTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.
 func PropertyTypeAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
 }
-func PropertyTypeAddMonotypeType(builder *flatbuffers.Builder, monotypeType byte) {
-	builder.PrependByteSlot(2, monotypeType, 0)
+func PropertyTypeAddMonotypeType(builder *flatbuffers.Builder, monotypeType MonoType) {
+	builder.PrependByteSlot(2, byte(monotypeType), 0)
 }
 func PropertyTypeAddMonotype(builder *flatbuffers.Builder, monotype flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(monotype), 0)
@@ -641,6 +866,13 @@ func GetRootAsRecordType(buf []byte, offset flatbuffers.UOffsetT) *RecordType {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &RecordType{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsRecordType(buf []byte, offset flatbuffers.UOffsetT) *RecordType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &RecordType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -729,6 +961,13 @@ func GetRootAsParameterType(buf []byte, offset flatbuffers.UOffsetT) *ParameterT
 	return x
 }
 
+func GetSizePrefixedRootAsParameterType(buf []byte, offset flatbuffers.UOffsetT) *ParameterType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ParameterType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *ParameterType) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -764,16 +1003,16 @@ func (rcv *ParameterType) Id(obj *Identifier) *Identifier {
 	return nil
 }
 
-func (rcv *ParameterType) MonotypeType() byte {
+func (rcv *ParameterType) MonotypeType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ParameterType) MutateMonotypeType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *ParameterType) MutateMonotypeType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *ParameterType) Monotype(obj *flatbuffers.Table) bool {
@@ -788,13 +1027,13 @@ func (rcv *ParameterType) Monotype(obj *flatbuffers.Table) bool {
 func (rcv *ParameterType) Kind() ParameterKind {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+		return ParameterKind(rcv._tab.GetInt8(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
 func (rcv *ParameterType) MutateKind(n ParameterKind) bool {
-	return rcv._tab.MutateInt8Slot(12, n)
+	return rcv._tab.MutateInt8Slot(12, int8(n))
 }
 
 func ParameterTypeStart(builder *flatbuffers.Builder) {
@@ -806,14 +1045,14 @@ func ParameterTypeAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers
 func ParameterTypeAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
 }
-func ParameterTypeAddMonotypeType(builder *flatbuffers.Builder, monotypeType byte) {
-	builder.PrependByteSlot(2, monotypeType, 0)
+func ParameterTypeAddMonotypeType(builder *flatbuffers.Builder, monotypeType MonoType) {
+	builder.PrependByteSlot(2, byte(monotypeType), 0)
 }
 func ParameterTypeAddMonotype(builder *flatbuffers.Builder, monotype flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(monotype), 0)
 }
-func ParameterTypeAddKind(builder *flatbuffers.Builder, kind int8) {
-	builder.PrependInt8Slot(4, kind, 0)
+func ParameterTypeAddKind(builder *flatbuffers.Builder, kind ParameterKind) {
+	builder.PrependInt8Slot(4, int8(kind), 0)
 }
 func ParameterTypeEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -827,6 +1066,13 @@ func GetRootAsFunctionType(buf []byte, offset flatbuffers.UOffsetT) *FunctionTyp
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &FunctionType{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsFunctionType(buf []byte, offset flatbuffers.UOffsetT) *FunctionType {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &FunctionType{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -872,16 +1118,16 @@ func (rcv *FunctionType) ParametersLength() int {
 	return 0
 }
 
-func (rcv *FunctionType) MonotypeType() byte {
+func (rcv *FunctionType) MonotypeType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *FunctionType) MutateMonotypeType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *FunctionType) MutateMonotypeType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *FunctionType) Monotype(obj *flatbuffers.Table) bool {
@@ -905,8 +1151,8 @@ func FunctionTypeAddParameters(builder *flatbuffers.Builder, parameters flatbuff
 func FunctionTypeStartParametersVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func FunctionTypeAddMonotypeType(builder *flatbuffers.Builder, monotypeType byte) {
-	builder.PrependByteSlot(2, monotypeType, 0)
+func FunctionTypeAddMonotypeType(builder *flatbuffers.Builder, monotypeType MonoType) {
+	builder.PrependByteSlot(2, byte(monotypeType), 0)
 }
 func FunctionTypeAddMonotype(builder *flatbuffers.Builder, monotype flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(monotype), 0)
@@ -923,6 +1169,13 @@ func GetRootAsTypeConstraint(buf []byte, offset flatbuffers.UOffsetT) *TypeConst
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &TypeConstraint{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsTypeConstraint(buf []byte, offset flatbuffers.UOffsetT) *TypeConstraint {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &TypeConstraint{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1011,6 +1264,13 @@ func GetRootAsTypeExpression(buf []byte, offset flatbuffers.UOffsetT) *TypeExpre
 	return x
 }
 
+func GetSizePrefixedRootAsTypeExpression(buf []byte, offset flatbuffers.UOffsetT) *TypeExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &TypeExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *TypeExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1033,16 +1293,16 @@ func (rcv *TypeExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *TypeExpression) MonotypeType() byte {
+func (rcv *TypeExpression) MonotypeType() MonoType {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return MonoType(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *TypeExpression) MutateMonotypeType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *TypeExpression) MutateMonotypeType(n MonoType) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *TypeExpression) Monotype(obj *flatbuffers.Table) bool {
@@ -1080,8 +1340,8 @@ func TypeExpressionStart(builder *flatbuffers.Builder) {
 func TypeExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func TypeExpressionAddMonotypeType(builder *flatbuffers.Builder, monotypeType byte) {
-	builder.PrependByteSlot(1, monotypeType, 0)
+func TypeExpressionAddMonotypeType(builder *flatbuffers.Builder, monotypeType MonoType) {
+	builder.PrependByteSlot(1, byte(monotypeType), 0)
 }
 func TypeExpressionAddMonotype(builder *flatbuffers.Builder, monotype flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(monotype), 0)
@@ -1138,6 +1398,13 @@ func GetRootAsSourceLocation(buf []byte, offset flatbuffers.UOffsetT) *SourceLoc
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &SourceLocation{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsSourceLocation(buf []byte, offset flatbuffers.UOffsetT) *SourceLocation {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &SourceLocation{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1222,6 +1489,13 @@ func GetRootAsComment(buf []byte, offset flatbuffers.UOffsetT) *Comment {
 	return x
 }
 
+func GetSizePrefixedRootAsComment(buf []byte, offset flatbuffers.UOffsetT) *Comment {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Comment{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *Comment) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1257,6 +1531,13 @@ func GetRootAsBaseNode(buf []byte, offset flatbuffers.UOffsetT) *BaseNode {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BaseNode{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsBaseNode(buf []byte, offset flatbuffers.UOffsetT) *BaseNode {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &BaseNode{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1352,6 +1633,13 @@ func GetRootAsPackage(buf []byte, offset flatbuffers.UOffsetT) *Package {
 	return x
 }
 
+func GetSizePrefixedRootAsPackage(buf []byte, offset flatbuffers.UOffsetT) *Package {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Package{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *Package) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1440,6 +1728,13 @@ func GetRootAsFile(buf []byte, offset flatbuffers.UOffsetT) *File {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &File{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsFile(buf []byte, offset flatbuffers.UOffsetT) *File {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &File{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1576,6 +1871,13 @@ func GetRootAsPackageClause(buf []byte, offset flatbuffers.UOffsetT) *PackageCla
 	return x
 }
 
+func GetSizePrefixedRootAsPackageClause(buf []byte, offset flatbuffers.UOffsetT) *PackageClause {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &PackageClause{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *PackageClause) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1632,6 +1934,13 @@ func GetRootAsImportDeclaration(buf []byte, offset flatbuffers.UOffsetT) *Import
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ImportDeclaration{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsImportDeclaration(buf []byte, offset flatbuffers.UOffsetT) *ImportDeclaration {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ImportDeclaration{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1710,6 +2019,13 @@ func GetRootAsWrappedStatement(buf []byte, offset flatbuffers.UOffsetT) *Wrapped
 	return x
 }
 
+func GetSizePrefixedRootAsWrappedStatement(buf []byte, offset flatbuffers.UOffsetT) *WrappedStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &WrappedStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *WrappedStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1719,16 +2035,16 @@ func (rcv *WrappedStatement) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *WrappedStatement) StatementType() byte {
+func (rcv *WrappedStatement) StatementType() Statement {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Statement(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *WrappedStatement) MutateStatementType(n byte) bool {
-	return rcv._tab.MutateByteSlot(4, n)
+func (rcv *WrappedStatement) MutateStatementType(n Statement) bool {
+	return rcv._tab.MutateByteSlot(4, byte(n))
 }
 
 func (rcv *WrappedStatement) Statement(obj *flatbuffers.Table) bool {
@@ -1743,8 +2059,8 @@ func (rcv *WrappedStatement) Statement(obj *flatbuffers.Table) bool {
 func WrappedStatementStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func WrappedStatementAddStatementType(builder *flatbuffers.Builder, statementType byte) {
-	builder.PrependByteSlot(0, statementType, 0)
+func WrappedStatementAddStatementType(builder *flatbuffers.Builder, statementType Statement) {
+	builder.PrependByteSlot(0, byte(statementType), 0)
 }
 func WrappedStatementAddStatement(builder *flatbuffers.Builder, statement flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(statement), 0)
@@ -1761,6 +2077,13 @@ func GetRootAsBadStatement(buf []byte, offset flatbuffers.UOffsetT) *BadStatemen
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BadStatement{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsBadStatement(buf []byte, offset flatbuffers.UOffsetT) *BadStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &BadStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1818,6 +2141,13 @@ func GetRootAsVariableAssignment(buf []byte, offset flatbuffers.UOffsetT) *Varia
 	return x
 }
 
+func GetSizePrefixedRootAsVariableAssignment(buf []byte, offset flatbuffers.UOffsetT) *VariableAssignment {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &VariableAssignment{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *VariableAssignment) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -1853,16 +2183,16 @@ func (rcv *VariableAssignment) Id(obj *Identifier) *Identifier {
 	return nil
 }
 
-func (rcv *VariableAssignment) Init_type() byte {
+func (rcv *VariableAssignment) Init_type() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *VariableAssignment) MutateInit_type(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *VariableAssignment) MutateInit_type(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *VariableAssignment) Init_(obj *flatbuffers.Table) bool {
@@ -1883,8 +2213,8 @@ func VariableAssignmentAddBaseNode(builder *flatbuffers.Builder, baseNode flatbu
 func VariableAssignmentAddId(builder *flatbuffers.Builder, id flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(id), 0)
 }
-func VariableAssignmentAddInit_type(builder *flatbuffers.Builder, init_type byte) {
-	builder.PrependByteSlot(2, init_type, 0)
+func VariableAssignmentAddInit_type(builder *flatbuffers.Builder, init_type Expression) {
+	builder.PrependByteSlot(2, byte(init_type), 0)
 }
 func VariableAssignmentAddInit_(builder *flatbuffers.Builder, init_ flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(init_), 0)
@@ -1901,6 +2231,13 @@ func GetRootAsMemberAssignment(buf []byte, offset flatbuffers.UOffsetT) *MemberA
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &MemberAssignment{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsMemberAssignment(buf []byte, offset flatbuffers.UOffsetT) *MemberAssignment {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &MemberAssignment{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -1939,16 +2276,16 @@ func (rcv *MemberAssignment) Member(obj *MemberExpression) *MemberExpression {
 	return nil
 }
 
-func (rcv *MemberAssignment) Init_type() byte {
+func (rcv *MemberAssignment) Init_type() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *MemberAssignment) MutateInit_type(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *MemberAssignment) MutateInit_type(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *MemberAssignment) Init_(obj *flatbuffers.Table) bool {
@@ -1969,8 +2306,8 @@ func MemberAssignmentAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuff
 func MemberAssignmentAddMember(builder *flatbuffers.Builder, member flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(member), 0)
 }
-func MemberAssignmentAddInit_type(builder *flatbuffers.Builder, init_type byte) {
-	builder.PrependByteSlot(2, init_type, 0)
+func MemberAssignmentAddInit_type(builder *flatbuffers.Builder, init_type Expression) {
+	builder.PrependByteSlot(2, byte(init_type), 0)
 }
 func MemberAssignmentAddInit_(builder *flatbuffers.Builder, init_ flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(init_), 0)
@@ -1987,6 +2324,13 @@ func GetRootAsExpressionStatement(buf []byte, offset flatbuffers.UOffsetT) *Expr
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ExpressionStatement{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsExpressionStatement(buf []byte, offset flatbuffers.UOffsetT) *ExpressionStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ExpressionStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2012,16 +2356,16 @@ func (rcv *ExpressionStatement) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *ExpressionStatement) ExpressionType() byte {
+func (rcv *ExpressionStatement) ExpressionType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ExpressionStatement) MutateExpressionType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *ExpressionStatement) MutateExpressionType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *ExpressionStatement) Expression(obj *flatbuffers.Table) bool {
@@ -2039,8 +2383,8 @@ func ExpressionStatementStart(builder *flatbuffers.Builder) {
 func ExpressionStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func ExpressionStatementAddExpressionType(builder *flatbuffers.Builder, expressionType byte) {
-	builder.PrependByteSlot(1, expressionType, 0)
+func ExpressionStatementAddExpressionType(builder *flatbuffers.Builder, expressionType Expression) {
+	builder.PrependByteSlot(1, byte(expressionType), 0)
 }
 func ExpressionStatementAddExpression(builder *flatbuffers.Builder, expression flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(expression), 0)
@@ -2057,6 +2401,13 @@ func GetRootAsReturnStatement(buf []byte, offset flatbuffers.UOffsetT) *ReturnSt
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ReturnStatement{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsReturnStatement(buf []byte, offset flatbuffers.UOffsetT) *ReturnStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ReturnStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2082,16 +2433,16 @@ func (rcv *ReturnStatement) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *ReturnStatement) ArgumentType() byte {
+func (rcv *ReturnStatement) ArgumentType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ReturnStatement) MutateArgumentType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *ReturnStatement) MutateArgumentType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *ReturnStatement) Argument(obj *flatbuffers.Table) bool {
@@ -2109,8 +2460,8 @@ func ReturnStatementStart(builder *flatbuffers.Builder) {
 func ReturnStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func ReturnStatementAddArgumentType(builder *flatbuffers.Builder, argumentType byte) {
-	builder.PrependByteSlot(1, argumentType, 0)
+func ReturnStatementAddArgumentType(builder *flatbuffers.Builder, argumentType Expression) {
+	builder.PrependByteSlot(1, byte(argumentType), 0)
 }
 func ReturnStatementAddArgument(builder *flatbuffers.Builder, argument flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(argument), 0)
@@ -2127,6 +2478,13 @@ func GetRootAsOptionStatement(buf []byte, offset flatbuffers.UOffsetT) *OptionSt
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &OptionStatement{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsOptionStatement(buf []byte, offset flatbuffers.UOffsetT) *OptionStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &OptionStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2152,16 +2510,16 @@ func (rcv *OptionStatement) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *OptionStatement) AssignmentType() byte {
+func (rcv *OptionStatement) AssignmentType() Assignment {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Assignment(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *OptionStatement) MutateAssignmentType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *OptionStatement) MutateAssignmentType(n Assignment) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *OptionStatement) Assignment(obj *flatbuffers.Table) bool {
@@ -2179,8 +2537,8 @@ func OptionStatementStart(builder *flatbuffers.Builder) {
 func OptionStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func OptionStatementAddAssignmentType(builder *flatbuffers.Builder, assignmentType byte) {
-	builder.PrependByteSlot(1, assignmentType, 0)
+func OptionStatementAddAssignmentType(builder *flatbuffers.Builder, assignmentType Assignment) {
+	builder.PrependByteSlot(1, byte(assignmentType), 0)
 }
 func OptionStatementAddAssignment(builder *flatbuffers.Builder, assignment flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(assignment), 0)
@@ -2197,6 +2555,13 @@ func GetRootAsBuiltinStatement(buf []byte, offset flatbuffers.UOffsetT) *Builtin
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BuiltinStatement{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsBuiltinStatement(buf []byte, offset flatbuffers.UOffsetT) *BuiltinStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &BuiltinStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2259,6 +2624,13 @@ func GetRootAsTestStatement(buf []byte, offset flatbuffers.UOffsetT) *TestStatem
 	return x
 }
 
+func GetSizePrefixedRootAsTestStatement(buf []byte, offset flatbuffers.UOffsetT) *TestStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &TestStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *TestStatement) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2281,16 +2653,16 @@ func (rcv *TestStatement) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *TestStatement) AssignmentType() byte {
+func (rcv *TestStatement) AssignmentType() Assignment {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Assignment(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *TestStatement) MutateAssignmentType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *TestStatement) MutateAssignmentType(n Assignment) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *TestStatement) Assignment(obj *flatbuffers.Table) bool {
@@ -2308,8 +2680,8 @@ func TestStatementStart(builder *flatbuffers.Builder) {
 func TestStatementAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func TestStatementAddAssignmentType(builder *flatbuffers.Builder, assignmentType byte) {
-	builder.PrependByteSlot(1, assignmentType, 0)
+func TestStatementAddAssignmentType(builder *flatbuffers.Builder, assignmentType Assignment) {
+	builder.PrependByteSlot(1, byte(assignmentType), 0)
 }
 func TestStatementAddAssignment(builder *flatbuffers.Builder, assignment flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(assignment), 0)
@@ -2326,6 +2698,13 @@ func GetRootAsTestCaseStatement(buf []byte, offset flatbuffers.UOffsetT) *TestCa
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &TestCaseStatement{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsTestCaseStatement(buf []byte, offset flatbuffers.UOffsetT) *TestCaseStatement {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &TestCaseStatement{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2420,6 +2799,13 @@ func GetRootAsWrappedExpression(buf []byte, offset flatbuffers.UOffsetT) *Wrappe
 	return x
 }
 
+func GetSizePrefixedRootAsWrappedExpression(buf []byte, offset flatbuffers.UOffsetT) *WrappedExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &WrappedExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *WrappedExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2429,16 +2815,16 @@ func (rcv *WrappedExpression) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *WrappedExpression) ExprType() byte {
+func (rcv *WrappedExpression) ExprType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *WrappedExpression) MutateExprType(n byte) bool {
-	return rcv._tab.MutateByteSlot(4, n)
+func (rcv *WrappedExpression) MutateExprType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(4, byte(n))
 }
 
 func (rcv *WrappedExpression) Expr(obj *flatbuffers.Table) bool {
@@ -2453,8 +2839,8 @@ func (rcv *WrappedExpression) Expr(obj *flatbuffers.Table) bool {
 func WrappedExpressionStart(builder *flatbuffers.Builder) {
 	builder.StartObject(2)
 }
-func WrappedExpressionAddExprType(builder *flatbuffers.Builder, exprType byte) {
-	builder.PrependByteSlot(0, exprType, 0)
+func WrappedExpressionAddExprType(builder *flatbuffers.Builder, exprType Expression) {
+	builder.PrependByteSlot(0, byte(exprType), 0)
 }
 func WrappedExpressionAddExpr(builder *flatbuffers.Builder, expr flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(expr), 0)
@@ -2471,6 +2857,13 @@ func GetRootAsBinaryExpression(buf []byte, offset flatbuffers.UOffsetT) *BinaryE
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BinaryExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsBinaryExpression(buf []byte, offset flatbuffers.UOffsetT) *BinaryExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &BinaryExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2499,25 +2892,25 @@ func (rcv *BinaryExpression) BaseNode(obj *BaseNode) *BaseNode {
 func (rcv *BinaryExpression) Operator() Operator {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+		return Operator(rcv._tab.GetInt8(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
 func (rcv *BinaryExpression) MutateOperator(n Operator) bool {
-	return rcv._tab.MutateInt8Slot(6, n)
+	return rcv._tab.MutateInt8Slot(6, int8(n))
 }
 
-func (rcv *BinaryExpression) LeftType() byte {
+func (rcv *BinaryExpression) LeftType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *BinaryExpression) MutateLeftType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *BinaryExpression) MutateLeftType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *BinaryExpression) Left(obj *flatbuffers.Table) bool {
@@ -2529,16 +2922,16 @@ func (rcv *BinaryExpression) Left(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *BinaryExpression) RightType() byte {
+func (rcv *BinaryExpression) RightType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *BinaryExpression) MutateRightType(n byte) bool {
-	return rcv._tab.MutateByteSlot(12, n)
+func (rcv *BinaryExpression) MutateRightType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(12, byte(n))
 }
 
 func (rcv *BinaryExpression) Right(obj *flatbuffers.Table) bool {
@@ -2556,17 +2949,17 @@ func BinaryExpressionStart(builder *flatbuffers.Builder) {
 func BinaryExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func BinaryExpressionAddOperator(builder *flatbuffers.Builder, operator int8) {
-	builder.PrependInt8Slot(1, operator, 0)
+func BinaryExpressionAddOperator(builder *flatbuffers.Builder, operator Operator) {
+	builder.PrependInt8Slot(1, int8(operator), 0)
 }
-func BinaryExpressionAddLeftType(builder *flatbuffers.Builder, leftType byte) {
-	builder.PrependByteSlot(2, leftType, 0)
+func BinaryExpressionAddLeftType(builder *flatbuffers.Builder, leftType Expression) {
+	builder.PrependByteSlot(2, byte(leftType), 0)
 }
 func BinaryExpressionAddLeft(builder *flatbuffers.Builder, left flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(left), 0)
 }
-func BinaryExpressionAddRightType(builder *flatbuffers.Builder, rightType byte) {
-	builder.PrependByteSlot(4, rightType, 0)
+func BinaryExpressionAddRightType(builder *flatbuffers.Builder, rightType Expression) {
+	builder.PrependByteSlot(4, byte(rightType), 0)
 }
 func BinaryExpressionAddRight(builder *flatbuffers.Builder, right flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(right), 0)
@@ -2583,6 +2976,13 @@ func GetRootAsLogicalExpression(buf []byte, offset flatbuffers.UOffsetT) *Logica
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &LogicalExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsLogicalExpression(buf []byte, offset flatbuffers.UOffsetT) *LogicalExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &LogicalExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2611,25 +3011,25 @@ func (rcv *LogicalExpression) BaseNode(obj *BaseNode) *BaseNode {
 func (rcv *LogicalExpression) Operator() LogicalOperator {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+		return LogicalOperator(rcv._tab.GetInt8(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
 func (rcv *LogicalExpression) MutateOperator(n LogicalOperator) bool {
-	return rcv._tab.MutateInt8Slot(6, n)
+	return rcv._tab.MutateInt8Slot(6, int8(n))
 }
 
-func (rcv *LogicalExpression) LeftType() byte {
+func (rcv *LogicalExpression) LeftType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *LogicalExpression) MutateLeftType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *LogicalExpression) MutateLeftType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *LogicalExpression) Left(obj *flatbuffers.Table) bool {
@@ -2641,16 +3041,16 @@ func (rcv *LogicalExpression) Left(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *LogicalExpression) RightType() byte {
+func (rcv *LogicalExpression) RightType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(12))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *LogicalExpression) MutateRightType(n byte) bool {
-	return rcv._tab.MutateByteSlot(12, n)
+func (rcv *LogicalExpression) MutateRightType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(12, byte(n))
 }
 
 func (rcv *LogicalExpression) Right(obj *flatbuffers.Table) bool {
@@ -2668,17 +3068,17 @@ func LogicalExpressionStart(builder *flatbuffers.Builder) {
 func LogicalExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func LogicalExpressionAddOperator(builder *flatbuffers.Builder, operator int8) {
-	builder.PrependInt8Slot(1, operator, 0)
+func LogicalExpressionAddOperator(builder *flatbuffers.Builder, operator LogicalOperator) {
+	builder.PrependInt8Slot(1, int8(operator), 0)
 }
-func LogicalExpressionAddLeftType(builder *flatbuffers.Builder, leftType byte) {
-	builder.PrependByteSlot(2, leftType, 0)
+func LogicalExpressionAddLeftType(builder *flatbuffers.Builder, leftType Expression) {
+	builder.PrependByteSlot(2, byte(leftType), 0)
 }
 func LogicalExpressionAddLeft(builder *flatbuffers.Builder, left flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(left), 0)
 }
-func LogicalExpressionAddRightType(builder *flatbuffers.Builder, rightType byte) {
-	builder.PrependByteSlot(4, rightType, 0)
+func LogicalExpressionAddRightType(builder *flatbuffers.Builder, rightType Expression) {
+	builder.PrependByteSlot(4, byte(rightType), 0)
 }
 func LogicalExpressionAddRight(builder *flatbuffers.Builder, right flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(5, flatbuffers.UOffsetT(right), 0)
@@ -2695,6 +3095,13 @@ func GetRootAsUnaryExpression(buf []byte, offset flatbuffers.UOffsetT) *UnaryExp
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &UnaryExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsUnaryExpression(buf []byte, offset flatbuffers.UOffsetT) *UnaryExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &UnaryExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2723,25 +3130,25 @@ func (rcv *UnaryExpression) BaseNode(obj *BaseNode) *BaseNode {
 func (rcv *UnaryExpression) Operator() Operator {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+		return Operator(rcv._tab.GetInt8(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
 func (rcv *UnaryExpression) MutateOperator(n Operator) bool {
-	return rcv._tab.MutateInt8Slot(6, n)
+	return rcv._tab.MutateInt8Slot(6, int8(n))
 }
 
-func (rcv *UnaryExpression) ArgumentType() byte {
+func (rcv *UnaryExpression) ArgumentType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *UnaryExpression) MutateArgumentType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *UnaryExpression) MutateArgumentType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *UnaryExpression) Argument(obj *flatbuffers.Table) bool {
@@ -2759,11 +3166,11 @@ func UnaryExpressionStart(builder *flatbuffers.Builder) {
 func UnaryExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func UnaryExpressionAddOperator(builder *flatbuffers.Builder, operator int8) {
-	builder.PrependInt8Slot(1, operator, 0)
+func UnaryExpressionAddOperator(builder *flatbuffers.Builder, operator Operator) {
+	builder.PrependInt8Slot(1, int8(operator), 0)
 }
-func UnaryExpressionAddArgumentType(builder *flatbuffers.Builder, argumentType byte) {
-	builder.PrependByteSlot(2, argumentType, 0)
+func UnaryExpressionAddArgumentType(builder *flatbuffers.Builder, argumentType Expression) {
+	builder.PrependByteSlot(2, byte(argumentType), 0)
 }
 func UnaryExpressionAddArgument(builder *flatbuffers.Builder, argument flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(argument), 0)
@@ -2780,6 +3187,13 @@ func GetRootAsBooleanLiteral(buf []byte, offset flatbuffers.UOffsetT) *BooleanLi
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BooleanLiteral{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsBooleanLiteral(buf []byte, offset flatbuffers.UOffsetT) *BooleanLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &BooleanLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2838,6 +3252,13 @@ func GetRootAsDateTimeLiteral(buf []byte, offset flatbuffers.UOffsetT) *DateTime
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &DateTimeLiteral{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsDateTimeLiteral(buf []byte, offset flatbuffers.UOffsetT) *DateTimeLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &DateTimeLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -2929,6 +3350,13 @@ func GetRootAsDurationLiteral(buf []byte, offset flatbuffers.UOffsetT) *Duration
 	return x
 }
 
+func GetSizePrefixedRootAsDurationLiteral(buf []byte, offset flatbuffers.UOffsetT) *DurationLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &DurationLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *DurationLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -2998,6 +3426,13 @@ func GetRootAsDuration(buf []byte, offset flatbuffers.UOffsetT) *Duration {
 	return x
 }
 
+func GetSizePrefixedRootAsDuration(buf []byte, offset flatbuffers.UOffsetT) *Duration {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Duration{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *Duration) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3022,13 +3457,13 @@ func (rcv *Duration) MutateMagnitude(n int64) bool {
 func (rcv *Duration) Unit() TimeUnit {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetInt8(o + rcv._tab.Pos)
+		return TimeUnit(rcv._tab.GetInt8(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
 func (rcv *Duration) MutateUnit(n TimeUnit) bool {
-	return rcv._tab.MutateInt8Slot(6, n)
+	return rcv._tab.MutateInt8Slot(6, int8(n))
 }
 
 func DurationStart(builder *flatbuffers.Builder) {
@@ -3037,8 +3472,8 @@ func DurationStart(builder *flatbuffers.Builder) {
 func DurationAddMagnitude(builder *flatbuffers.Builder, magnitude int64) {
 	builder.PrependInt64Slot(0, magnitude, 0)
 }
-func DurationAddUnit(builder *flatbuffers.Builder, unit int8) {
-	builder.PrependInt8Slot(1, unit, 0)
+func DurationAddUnit(builder *flatbuffers.Builder, unit TimeUnit) {
+	builder.PrependInt8Slot(1, int8(unit), 0)
 }
 func DurationEnd(builder *flatbuffers.Builder) flatbuffers.UOffsetT {
 	return builder.EndObject()
@@ -3052,6 +3487,13 @@ func GetRootAsFloatLiteral(buf []byte, offset flatbuffers.UOffsetT) *FloatLitera
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &FloatLiteral{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsFloatLiteral(buf []byte, offset flatbuffers.UOffsetT) *FloatLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &FloatLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3113,6 +3555,13 @@ func GetRootAsIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *IntegerLi
 	return x
 }
 
+func GetSizePrefixedRootAsIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *IntegerLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &IntegerLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *IntegerLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3171,6 +3620,13 @@ func GetRootAsPipeLiteral(buf []byte, offset flatbuffers.UOffsetT) *PipeLiteral 
 	return x
 }
 
+func GetSizePrefixedRootAsPipeLiteral(buf []byte, offset flatbuffers.UOffsetT) *PipeLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &PipeLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *PipeLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3211,6 +3667,13 @@ func GetRootAsRegexpLiteral(buf []byte, offset flatbuffers.UOffsetT) *RegexpLite
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &RegexpLiteral{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsRegexpLiteral(buf []byte, offset flatbuffers.UOffsetT) *RegexpLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &RegexpLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3268,6 +3731,13 @@ func GetRootAsStringLiteral(buf []byte, offset flatbuffers.UOffsetT) *StringLite
 	return x
 }
 
+func GetSizePrefixedRootAsStringLiteral(buf []byte, offset flatbuffers.UOffsetT) *StringLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &StringLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *StringLiteral) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3319,6 +3789,13 @@ func GetRootAsUnsignedIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *U
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &UnsignedIntegerLiteral{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsUnsignedIntegerLiteral(buf []byte, offset flatbuffers.UOffsetT) *UnsignedIntegerLiteral {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &UnsignedIntegerLiteral{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3380,6 +3857,13 @@ func GetRootAsIdentifier(buf []byte, offset flatbuffers.UOffsetT) *Identifier {
 	return x
 }
 
+func GetSizePrefixedRootAsIdentifier(buf []byte, offset flatbuffers.UOffsetT) *Identifier {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Identifier{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *Identifier) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3431,6 +3915,13 @@ func GetRootAsStringExpression(buf []byte, offset flatbuffers.UOffsetT) *StringE
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &StringExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsStringExpression(buf []byte, offset flatbuffers.UOffsetT) *StringExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &StringExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3503,6 +3994,13 @@ func GetRootAsStringExpressionPart(buf []byte, offset flatbuffers.UOffsetT) *Str
 	return x
 }
 
+func GetSizePrefixedRootAsStringExpressionPart(buf []byte, offset flatbuffers.UOffsetT) *StringExpressionPart {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &StringExpressionPart{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *StringExpressionPart) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3533,16 +4031,16 @@ func (rcv *StringExpressionPart) TextValue() []byte {
 	return nil
 }
 
-func (rcv *StringExpressionPart) InterpolatedExpressionType() byte {
+func (rcv *StringExpressionPart) InterpolatedExpressionType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *StringExpressionPart) MutateInterpolatedExpressionType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *StringExpressionPart) MutateInterpolatedExpressionType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *StringExpressionPart) InterpolatedExpression(obj *flatbuffers.Table) bool {
@@ -3563,8 +4061,8 @@ func StringExpressionPartAddBaseNode(builder *flatbuffers.Builder, baseNode flat
 func StringExpressionPartAddTextValue(builder *flatbuffers.Builder, textValue flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(textValue), 0)
 }
-func StringExpressionPartAddInterpolatedExpressionType(builder *flatbuffers.Builder, interpolatedExpressionType byte) {
-	builder.PrependByteSlot(2, interpolatedExpressionType, 0)
+func StringExpressionPartAddInterpolatedExpressionType(builder *flatbuffers.Builder, interpolatedExpressionType Expression) {
+	builder.PrependByteSlot(2, byte(interpolatedExpressionType), 0)
 }
 func StringExpressionPartAddInterpolatedExpression(builder *flatbuffers.Builder, interpolatedExpression flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(interpolatedExpression), 0)
@@ -3581,6 +4079,13 @@ func GetRootAsParenExpression(buf []byte, offset flatbuffers.UOffsetT) *ParenExp
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ParenExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsParenExpression(buf []byte, offset flatbuffers.UOffsetT) *ParenExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ParenExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3606,16 +4111,16 @@ func (rcv *ParenExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *ParenExpression) ExpressionType() byte {
+func (rcv *ParenExpression) ExpressionType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ParenExpression) MutateExpressionType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *ParenExpression) MutateExpressionType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *ParenExpression) Expression(obj *flatbuffers.Table) bool {
@@ -3633,8 +4138,8 @@ func ParenExpressionStart(builder *flatbuffers.Builder) {
 func ParenExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func ParenExpressionAddExpressionType(builder *flatbuffers.Builder, expressionType byte) {
-	builder.PrependByteSlot(1, expressionType, 0)
+func ParenExpressionAddExpressionType(builder *flatbuffers.Builder, expressionType Expression) {
+	builder.PrependByteSlot(1, byte(expressionType), 0)
 }
 func ParenExpressionAddExpression(builder *flatbuffers.Builder, expression flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(expression), 0)
@@ -3651,6 +4156,13 @@ func GetRootAsArrayExpression(buf []byte, offset flatbuffers.UOffsetT) *ArrayExp
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ArrayExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsArrayExpression(buf []byte, offset flatbuffers.UOffsetT) *ArrayExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ArrayExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3723,6 +4235,13 @@ func GetRootAsDictExpression(buf []byte, offset flatbuffers.UOffsetT) *DictExpre
 	return x
 }
 
+func GetSizePrefixedRootAsDictExpression(buf []byte, offset flatbuffers.UOffsetT) *DictExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &DictExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *DictExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3792,6 +4311,13 @@ func GetRootAsDictItem(buf []byte, offset flatbuffers.UOffsetT) *DictItem {
 	return x
 }
 
+func GetSizePrefixedRootAsDictItem(buf []byte, offset flatbuffers.UOffsetT) *DictItem {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &DictItem{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *DictItem) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -3801,16 +4327,16 @@ func (rcv *DictItem) Table() flatbuffers.Table {
 	return rcv._tab
 }
 
-func (rcv *DictItem) KeyType() byte {
+func (rcv *DictItem) KeyType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(4))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *DictItem) MutateKeyType(n byte) bool {
-	return rcv._tab.MutateByteSlot(4, n)
+func (rcv *DictItem) MutateKeyType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(4, byte(n))
 }
 
 func (rcv *DictItem) Key(obj *flatbuffers.Table) bool {
@@ -3822,16 +4348,16 @@ func (rcv *DictItem) Key(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *DictItem) ValType() byte {
+func (rcv *DictItem) ValType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *DictItem) MutateValType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *DictItem) MutateValType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *DictItem) Val(obj *flatbuffers.Table) bool {
@@ -3846,14 +4372,14 @@ func (rcv *DictItem) Val(obj *flatbuffers.Table) bool {
 func DictItemStart(builder *flatbuffers.Builder) {
 	builder.StartObject(4)
 }
-func DictItemAddKeyType(builder *flatbuffers.Builder, keyType byte) {
-	builder.PrependByteSlot(0, keyType, 0)
+func DictItemAddKeyType(builder *flatbuffers.Builder, keyType Expression) {
+	builder.PrependByteSlot(0, byte(keyType), 0)
 }
 func DictItemAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(key), 0)
 }
-func DictItemAddValType(builder *flatbuffers.Builder, valType byte) {
-	builder.PrependByteSlot(2, valType, 0)
+func DictItemAddValType(builder *flatbuffers.Builder, valType Expression) {
+	builder.PrependByteSlot(2, byte(valType), 0)
 }
 func DictItemAddVal(builder *flatbuffers.Builder, val flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(val), 0)
@@ -3870,6 +4396,13 @@ func GetRootAsFunctionExpression(buf []byte, offset flatbuffers.UOffsetT) *Funct
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &FunctionExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsFunctionExpression(buf []byte, offset flatbuffers.UOffsetT) *FunctionExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &FunctionExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -3915,16 +4448,16 @@ func (rcv *FunctionExpression) ParamsLength() int {
 	return 0
 }
 
-func (rcv *FunctionExpression) BodyType() byte {
+func (rcv *FunctionExpression) BodyType() ExpressionOrBlock {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return ExpressionOrBlock(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *FunctionExpression) MutateBodyType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *FunctionExpression) MutateBodyType(n ExpressionOrBlock) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *FunctionExpression) Body(obj *flatbuffers.Table) bool {
@@ -3948,8 +4481,8 @@ func FunctionExpressionAddParams(builder *flatbuffers.Builder, params flatbuffer
 func FunctionExpressionStartParamsVector(builder *flatbuffers.Builder, numElems int) flatbuffers.UOffsetT {
 	return builder.StartVector(4, numElems, 4)
 }
-func FunctionExpressionAddBodyType(builder *flatbuffers.Builder, bodyType byte) {
-	builder.PrependByteSlot(2, bodyType, 0)
+func FunctionExpressionAddBodyType(builder *flatbuffers.Builder, bodyType ExpressionOrBlock) {
+	builder.PrependByteSlot(2, byte(bodyType), 0)
 }
 func FunctionExpressionAddBody(builder *flatbuffers.Builder, body flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(body), 0)
@@ -3966,6 +4499,13 @@ func GetRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &Block{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsBlock(buf []byte, offset flatbuffers.UOffsetT) *Block {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Block{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4038,6 +4578,13 @@ func GetRootAsCallExpression(buf []byte, offset flatbuffers.UOffsetT) *CallExpre
 	return x
 }
 
+func GetSizePrefixedRootAsCallExpression(buf []byte, offset flatbuffers.UOffsetT) *CallExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &CallExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *CallExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -4060,16 +4607,16 @@ func (rcv *CallExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *CallExpression) CalleeType() byte {
+func (rcv *CallExpression) CalleeType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *CallExpression) MutateCalleeType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *CallExpression) MutateCalleeType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *CallExpression) Callee(obj *flatbuffers.Table) bool {
@@ -4100,8 +4647,8 @@ func CallExpressionStart(builder *flatbuffers.Builder) {
 func CallExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func CallExpressionAddCalleeType(builder *flatbuffers.Builder, calleeType byte) {
-	builder.PrependByteSlot(1, calleeType, 0)
+func CallExpressionAddCalleeType(builder *flatbuffers.Builder, calleeType Expression) {
+	builder.PrependByteSlot(1, byte(calleeType), 0)
 }
 func CallExpressionAddCallee(builder *flatbuffers.Builder, callee flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(callee), 0)
@@ -4121,6 +4668,13 @@ func GetRootAsConditionalExpression(buf []byte, offset flatbuffers.UOffsetT) *Co
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ConditionalExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsConditionalExpression(buf []byte, offset flatbuffers.UOffsetT) *ConditionalExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ConditionalExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4146,16 +4700,16 @@ func (rcv *ConditionalExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *ConditionalExpression) TestType() byte {
+func (rcv *ConditionalExpression) TestType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ConditionalExpression) MutateTestType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *ConditionalExpression) MutateTestType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *ConditionalExpression) Test(obj *flatbuffers.Table) bool {
@@ -4167,16 +4721,16 @@ func (rcv *ConditionalExpression) Test(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *ConditionalExpression) ConsequentType() byte {
+func (rcv *ConditionalExpression) ConsequentType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ConditionalExpression) MutateConsequentType(n byte) bool {
-	return rcv._tab.MutateByteSlot(10, n)
+func (rcv *ConditionalExpression) MutateConsequentType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(10, byte(n))
 }
 
 func (rcv *ConditionalExpression) Consequent(obj *flatbuffers.Table) bool {
@@ -4188,16 +4742,16 @@ func (rcv *ConditionalExpression) Consequent(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *ConditionalExpression) AlternateType() byte {
+func (rcv *ConditionalExpression) AlternateType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(14))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *ConditionalExpression) MutateAlternateType(n byte) bool {
-	return rcv._tab.MutateByteSlot(14, n)
+func (rcv *ConditionalExpression) MutateAlternateType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(14, byte(n))
 }
 
 func (rcv *ConditionalExpression) Alternate(obj *flatbuffers.Table) bool {
@@ -4215,20 +4769,20 @@ func ConditionalExpressionStart(builder *flatbuffers.Builder) {
 func ConditionalExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func ConditionalExpressionAddTestType(builder *flatbuffers.Builder, testType byte) {
-	builder.PrependByteSlot(1, testType, 0)
+func ConditionalExpressionAddTestType(builder *flatbuffers.Builder, testType Expression) {
+	builder.PrependByteSlot(1, byte(testType), 0)
 }
 func ConditionalExpressionAddTest(builder *flatbuffers.Builder, test flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(test), 0)
 }
-func ConditionalExpressionAddConsequentType(builder *flatbuffers.Builder, consequentType byte) {
-	builder.PrependByteSlot(3, consequentType, 0)
+func ConditionalExpressionAddConsequentType(builder *flatbuffers.Builder, consequentType Expression) {
+	builder.PrependByteSlot(3, byte(consequentType), 0)
 }
 func ConditionalExpressionAddConsequent(builder *flatbuffers.Builder, consequent flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(consequent), 0)
 }
-func ConditionalExpressionAddAlternateType(builder *flatbuffers.Builder, alternateType byte) {
-	builder.PrependByteSlot(5, alternateType, 0)
+func ConditionalExpressionAddAlternateType(builder *flatbuffers.Builder, alternateType Expression) {
+	builder.PrependByteSlot(5, byte(alternateType), 0)
 }
 func ConditionalExpressionAddAlternate(builder *flatbuffers.Builder, alternate flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(6, flatbuffers.UOffsetT(alternate), 0)
@@ -4245,6 +4799,13 @@ func GetRootAsProperty(buf []byte, offset flatbuffers.UOffsetT) *Property {
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &Property{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsProperty(buf []byte, offset flatbuffers.UOffsetT) *Property {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &Property{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4270,16 +4831,16 @@ func (rcv *Property) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *Property) KeyType() byte {
+func (rcv *Property) KeyType() PropertyKey {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return PropertyKey(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *Property) MutateKeyType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *Property) MutateKeyType(n PropertyKey) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *Property) Key(obj *flatbuffers.Table) bool {
@@ -4291,16 +4852,16 @@ func (rcv *Property) Key(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *Property) ValueType() byte {
+func (rcv *Property) ValueType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *Property) MutateValueType(n byte) bool {
-	return rcv._tab.MutateByteSlot(10, n)
+func (rcv *Property) MutateValueType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(10, byte(n))
 }
 
 func (rcv *Property) Value(obj *flatbuffers.Table) bool {
@@ -4318,14 +4879,14 @@ func PropertyStart(builder *flatbuffers.Builder) {
 func PropertyAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func PropertyAddKeyType(builder *flatbuffers.Builder, keyType byte) {
-	builder.PrependByteSlot(1, keyType, 0)
+func PropertyAddKeyType(builder *flatbuffers.Builder, keyType PropertyKey) {
+	builder.PrependByteSlot(1, byte(keyType), 0)
 }
 func PropertyAddKey(builder *flatbuffers.Builder, key flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(key), 0)
 }
-func PropertyAddValueType(builder *flatbuffers.Builder, valueType byte) {
-	builder.PrependByteSlot(3, valueType, 0)
+func PropertyAddValueType(builder *flatbuffers.Builder, valueType Expression) {
+	builder.PrependByteSlot(3, byte(valueType), 0)
 }
 func PropertyAddValue(builder *flatbuffers.Builder, value flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(value), 0)
@@ -4342,6 +4903,13 @@ func GetRootAsMemberExpression(buf []byte, offset flatbuffers.UOffsetT) *MemberE
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &MemberExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsMemberExpression(buf []byte, offset flatbuffers.UOffsetT) *MemberExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &MemberExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4367,16 +4935,16 @@ func (rcv *MemberExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *MemberExpression) ObjectType() byte {
+func (rcv *MemberExpression) ObjectType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *MemberExpression) MutateObjectType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *MemberExpression) MutateObjectType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *MemberExpression) Object(obj *flatbuffers.Table) bool {
@@ -4388,16 +4956,16 @@ func (rcv *MemberExpression) Object(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *MemberExpression) PropertyType() byte {
+func (rcv *MemberExpression) PropertyType() PropertyKey {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return PropertyKey(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *MemberExpression) MutatePropertyType(n byte) bool {
-	return rcv._tab.MutateByteSlot(10, n)
+func (rcv *MemberExpression) MutatePropertyType(n PropertyKey) bool {
+	return rcv._tab.MutateByteSlot(10, byte(n))
 }
 
 func (rcv *MemberExpression) Property(obj *flatbuffers.Table) bool {
@@ -4415,14 +4983,14 @@ func MemberExpressionStart(builder *flatbuffers.Builder) {
 func MemberExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func MemberExpressionAddObjectType(builder *flatbuffers.Builder, objectType byte) {
-	builder.PrependByteSlot(1, objectType, 0)
+func MemberExpressionAddObjectType(builder *flatbuffers.Builder, objectType Expression) {
+	builder.PrependByteSlot(1, byte(objectType), 0)
 }
 func MemberExpressionAddObject(builder *flatbuffers.Builder, object flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(object), 0)
 }
-func MemberExpressionAddPropertyType(builder *flatbuffers.Builder, propertyType byte) {
-	builder.PrependByteSlot(3, propertyType, 0)
+func MemberExpressionAddPropertyType(builder *flatbuffers.Builder, propertyType PropertyKey) {
+	builder.PrependByteSlot(3, byte(propertyType), 0)
 }
 func MemberExpressionAddProperty(builder *flatbuffers.Builder, property flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(property), 0)
@@ -4439,6 +5007,13 @@ func GetRootAsIndexExpression(buf []byte, offset flatbuffers.UOffsetT) *IndexExp
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &IndexExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsIndexExpression(buf []byte, offset flatbuffers.UOffsetT) *IndexExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &IndexExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4464,16 +5039,16 @@ func (rcv *IndexExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *IndexExpression) ArrayType() byte {
+func (rcv *IndexExpression) ArrayType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *IndexExpression) MutateArrayType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *IndexExpression) MutateArrayType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *IndexExpression) Array(obj *flatbuffers.Table) bool {
@@ -4485,16 +5060,16 @@ func (rcv *IndexExpression) Array(obj *flatbuffers.Table) bool {
 	return false
 }
 
-func (rcv *IndexExpression) IndexType() byte {
+func (rcv *IndexExpression) IndexType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(10))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *IndexExpression) MutateIndexType(n byte) bool {
-	return rcv._tab.MutateByteSlot(10, n)
+func (rcv *IndexExpression) MutateIndexType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(10, byte(n))
 }
 
 func (rcv *IndexExpression) Index(obj *flatbuffers.Table) bool {
@@ -4512,14 +5087,14 @@ func IndexExpressionStart(builder *flatbuffers.Builder) {
 func IndexExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func IndexExpressionAddArrayType(builder *flatbuffers.Builder, arrayType byte) {
-	builder.PrependByteSlot(1, arrayType, 0)
+func IndexExpressionAddArrayType(builder *flatbuffers.Builder, arrayType Expression) {
+	builder.PrependByteSlot(1, byte(arrayType), 0)
 }
 func IndexExpressionAddArray(builder *flatbuffers.Builder, array flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(array), 0)
 }
-func IndexExpressionAddIndexType(builder *flatbuffers.Builder, indexType byte) {
-	builder.PrependByteSlot(3, indexType, 0)
+func IndexExpressionAddIndexType(builder *flatbuffers.Builder, indexType Expression) {
+	builder.PrependByteSlot(3, byte(indexType), 0)
 }
 func IndexExpressionAddIndex(builder *flatbuffers.Builder, index flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(4, flatbuffers.UOffsetT(index), 0)
@@ -4536,6 +5111,13 @@ func GetRootAsObjectExpression(buf []byte, offset flatbuffers.UOffsetT) *ObjectE
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &ObjectExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsObjectExpression(buf []byte, offset flatbuffers.UOffsetT) *ObjectExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &ObjectExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4624,6 +5206,13 @@ func GetRootAsPipeExpression(buf []byte, offset flatbuffers.UOffsetT) *PipeExpre
 	return x
 }
 
+func GetSizePrefixedRootAsPipeExpression(buf []byte, offset flatbuffers.UOffsetT) *PipeExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &PipeExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
+	return x
+}
+
 func (rcv *PipeExpression) Init(buf []byte, i flatbuffers.UOffsetT) {
 	rcv._tab.Bytes = buf
 	rcv._tab.Pos = i
@@ -4646,16 +5235,16 @@ func (rcv *PipeExpression) BaseNode(obj *BaseNode) *BaseNode {
 	return nil
 }
 
-func (rcv *PipeExpression) ArgumentType() byte {
+func (rcv *PipeExpression) ArgumentType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(6))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *PipeExpression) MutateArgumentType(n byte) bool {
-	return rcv._tab.MutateByteSlot(6, n)
+func (rcv *PipeExpression) MutateArgumentType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(6, byte(n))
 }
 
 func (rcv *PipeExpression) Argument(obj *flatbuffers.Table) bool {
@@ -4686,8 +5275,8 @@ func PipeExpressionStart(builder *flatbuffers.Builder) {
 func PipeExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(0, flatbuffers.UOffsetT(baseNode), 0)
 }
-func PipeExpressionAddArgumentType(builder *flatbuffers.Builder, argumentType byte) {
-	builder.PrependByteSlot(1, argumentType, 0)
+func PipeExpressionAddArgumentType(builder *flatbuffers.Builder, argumentType Expression) {
+	builder.PrependByteSlot(1, byte(argumentType), 0)
 }
 func PipeExpressionAddArgument(builder *flatbuffers.Builder, argument flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(2, flatbuffers.UOffsetT(argument), 0)
@@ -4707,6 +5296,13 @@ func GetRootAsBadExpression(buf []byte, offset flatbuffers.UOffsetT) *BadExpress
 	n := flatbuffers.GetUOffsetT(buf[offset:])
 	x := &BadExpression{}
 	x.Init(buf, n+offset)
+	return x
+}
+
+func GetSizePrefixedRootAsBadExpression(buf []byte, offset flatbuffers.UOffsetT) *BadExpression {
+	n := flatbuffers.GetUOffsetT(buf[offset+flatbuffers.SizeUint32:])
+	x := &BadExpression{}
+	x.Init(buf, n+offset+flatbuffers.SizeUint32)
 	return x
 }
 
@@ -4740,16 +5336,16 @@ func (rcv *BadExpression) Text() []byte {
 	return nil
 }
 
-func (rcv *BadExpression) ExpressionType() byte {
+func (rcv *BadExpression) ExpressionType() Expression {
 	o := flatbuffers.UOffsetT(rcv._tab.Offset(8))
 	if o != 0 {
-		return rcv._tab.GetByte(o + rcv._tab.Pos)
+		return Expression(rcv._tab.GetByte(o + rcv._tab.Pos))
 	}
 	return 0
 }
 
-func (rcv *BadExpression) MutateExpressionType(n byte) bool {
-	return rcv._tab.MutateByteSlot(8, n)
+func (rcv *BadExpression) MutateExpressionType(n Expression) bool {
+	return rcv._tab.MutateByteSlot(8, byte(n))
 }
 
 func (rcv *BadExpression) Expression(obj *flatbuffers.Table) bool {
@@ -4770,8 +5366,8 @@ func BadExpressionAddBaseNode(builder *flatbuffers.Builder, baseNode flatbuffers
 func BadExpressionAddText(builder *flatbuffers.Builder, text flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(1, flatbuffers.UOffsetT(text), 0)
 }
-func BadExpressionAddExpressionType(builder *flatbuffers.Builder, expressionType byte) {
-	builder.PrependByteSlot(2, expressionType, 0)
+func BadExpressionAddExpressionType(builder *flatbuffers.Builder, expressionType Expression) {
+	builder.PrependByteSlot(2, byte(expressionType), 0)
 }
 func BadExpressionAddExpression(builder *flatbuffers.Builder, expression flatbuffers.UOffsetT) {
 	builder.PrependUOffsetTSlot(3, flatbuffers.UOffsetT(expression), 0)

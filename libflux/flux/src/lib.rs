@@ -32,17 +32,21 @@ use std::os::raw::c_char;
 
 pub fn prelude() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/prelude.data"));
-    flatbuffers::get_root::<fb::TypeEnvironment>(buf).into()
+    flatbuffers::root::<fb::TypeEnvironment>(buf)
+        .unwrap()
+        .into()
 }
 
 pub fn imports() -> Option<Environment> {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/stdlib.data"));
-    flatbuffers::get_root::<fb::TypeEnvironment>(buf).into()
+    flatbuffers::root::<fb::TypeEnvironment>(buf)
+        .unwrap()
+        .into()
 }
 
 pub fn fresher() -> Fresher {
     let buf = include_bytes!(concat!(env!("OUT_DIR"), "/fresher.data"));
-    flatbuffers::get_root::<fb::Fresher>(buf).into()
+    flatbuffers::root::<fb::Fresher>(buf).unwrap().into()
 }
 
 /// An error handle designed to allow passing `Error` instances to library

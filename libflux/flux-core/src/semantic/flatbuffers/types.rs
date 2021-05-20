@@ -90,6 +90,7 @@ impl From<fb::Kind> for Kind {
             fb::Kind::Negatable => Kind::Negatable,
             fb::Kind::Timeable => Kind::Timeable,
             fb::Kind::Stringable => Kind::Stringable,
+            _ => unreachable!("Unknown fb::Kind"),
         }
     }
 }
@@ -108,6 +109,7 @@ impl From<Kind> for fb::Kind {
             Kind::Negatable => fb::Kind::Negatable,
             Kind::Timeable => fb::Kind::Timeable,
             Kind::Stringable => fb::Kind::Stringable,
+            _ => unreachable!("Unknown Kind"),
         }
     }
 }
@@ -136,6 +138,7 @@ fn from_table(table: flatbuffers::Table, t: fb::MonoType) -> Option<MonoType> {
             Some(MonoType::Dict(Box::new(opt?)))
         }
         fb::MonoType::NONE => None,
+        _ => unreachable!("Unknown type from table"),
     }
 }
 
@@ -151,6 +154,7 @@ impl From<fb::Basic<'_>> for MonoType {
             fb::Type::Time => MonoType::Time,
             fb::Type::Regexp => MonoType::Regexp,
             fb::Type::Bytes => MonoType::Bytes,
+            _ => unreachable!("Unknown fb::Type"),
         }
     }
 }
@@ -260,10 +264,10 @@ where
 
 pub fn deserialize<'a, T: 'a, S>(buf: &'a [u8]) -> S
 where
-    T: flatbuffers::Follow<'a>,
+    T: flatbuffers::Follow<'a> + flatbuffers::Verifiable,
     S: std::convert::From<T::Inner>,
 {
-    flatbuffers::get_root::<T>(buf).into()
+    flatbuffers::root::<T>(buf).unwrap().into()
 }
 
 fn build_vec<T, S, F, B>(v: Vec<T>, b: &mut B, f: F) -> Vec<S>
@@ -686,7 +690,7 @@ mod tests {
     }
     #[test]
     fn test_flatbuffers_semantic() {
-        let mut builder = flatbuffers::FlatBufferBuilder::new_with_capacity(256);
+        let mut builder = flatbuffers::FlatBufferBuilder::with_capacity(256);
 
         // Testing out a unary expression using a float
         let floatval = FloatLiteral::create(

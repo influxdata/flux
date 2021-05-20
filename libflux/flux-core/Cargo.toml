@@ -25,7 +25,7 @@ wasm-bindgen = { version = "0.2.62", features = ["serde-serialize"] }
 chrono = { version = "0.4", features = ["serde"] }
 regex = "1"
 maplit = "1.0.2"
-flatbuffers = "0.6.1"
+flatbuffers = "2.0.0"
 derivative = "2.1.1"
 walkdir = "2.2.9"
 

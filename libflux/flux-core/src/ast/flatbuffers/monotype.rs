@@ -394,6 +394,7 @@ mod tests {
                 MonoType::Function(Box::new(fb::FunctionType::init_from_table(table).into()))
             }
             fb::MonoType::NONE => unimplemented!("cannot convert fb::MonoType::NONE"),
+            _ => unreachable!("Unknown type from table"),
         }
     }
     impl From<fb::Identifier<'_>> for Identifier {
@@ -483,6 +484,7 @@ mod tests {
                     },
                     monotype: monotype_from_table(p.monotype().unwrap(), p.monotype_type()),
                 },
+                _ => unreachable!("Unknown type from fbtype"),
             }
         }
     }
@@ -553,11 +555,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::NamedType>(serialize(
+            flatbuffers::root::<fb::NamedType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_named_type
             ))
+            .unwrap()
             .into()
         );
     }
@@ -575,11 +578,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::TvarType>(serialize(
+            flatbuffers::root::<fb::TvarType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_tvar_type
             ))
+            .unwrap()
             .into()
         );
     }
@@ -600,11 +604,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::ArrayType>(serialize(
+            flatbuffers::root::<fb::ArrayType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_array_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -632,11 +637,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::DictType>(serialize(
+            flatbuffers::root::<fb::DictType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_dict_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -652,11 +658,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::RecordType>(serialize(
+            flatbuffers::root::<fb::RecordType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_record_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -701,11 +708,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::RecordType>(serialize(
+            flatbuffers::root::<fb::RecordType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_record_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -753,11 +761,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::RecordType>(serialize(
+            flatbuffers::root::<fb::RecordType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_record_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -779,11 +788,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::FunctionType>(serialize(
+            flatbuffers::root::<fb::FunctionType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_function_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -851,11 +861,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::FunctionType>(serialize(
+            flatbuffers::root::<fb::FunctionType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_function_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -890,11 +901,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::FunctionType>(serialize(
+            flatbuffers::root::<fb::FunctionType>(serialize(
                 &mut builder,
                 want.clone(),
                 build_function_type,
             ))
+            .unwrap()
             .into()
         );
     }
@@ -965,11 +977,12 @@ mod tests {
 
         assert_eq!(
             want,
-            flatbuffers::get_root::<fb::TypeExpression>(serialize(
+            flatbuffers::root::<fb::TypeExpression>(serialize(
                 &mut builder,
                 want.clone(),
                 build_type_expression,
             ))
+            .unwrap()
             .into()
         );
     }

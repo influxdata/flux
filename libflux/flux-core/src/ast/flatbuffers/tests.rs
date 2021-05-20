@@ -8,7 +8,7 @@ use chrono::FixedOffset;
 #[test]
 fn test_flatbuffers_ast() {
     use super::ast_generated::fbast::*;
-    let mut b = flatbuffers::FlatBufferBuilder::new_with_capacity(256);
+    let mut b = flatbuffers::FlatBufferBuilder::with_capacity(256);
 
     // Generate a flatbuffer representation of `40+60`.
 
@@ -151,7 +151,7 @@ fn serialize_and_compare(path: &str, flux_script: &str) -> Result<(), String> {
 }
 
 fn compare_ast_fb(ast_pkg: &ast::Package, fb: &[u8]) -> Result<(), String> {
-    let fb_pkg = fbast::get_root_as_package(fb);
+    let fb_pkg = fbast::root_as_package(fb).unwrap();
     compare_pkg_fb(ast_pkg, &fb_pkg)?;
     Ok(())
 }
@@ -267,7 +267,7 @@ fn compare_stmts(
         }
         (ast_stmt, fb_ty) => {
             let ast_stmt_ty = ast::walk::Node::from_stmt(ast_stmt);
-            let fb_ty = fbast::enum_name_statement(fb_ty);
+            let fb_ty = fb_ty.variant_name().unwrap();
             Err(String::from(format!(
                 "wrong statement type; ast = {}, fb = {}",
                 ast_stmt_ty, fb_ty
@@ -367,7 +367,7 @@ fn compare_exprs(
                 if ast_d.magnitude != fb_d.magnitude() {
                     return Err(String::from("invalid duration magnitude"));
                 }
-                if ast_d.unit != fbast::enum_name_time_unit(fb_d.unit()) {
+                if ast_d.unit != fb_d.unit().variant_name().unwrap() {
                     return Err(String::from("invalid duration time unit"));
                 }
                 i = i + 1;
@@ -537,7 +537,7 @@ fn compare_exprs(
         }
         (ast_expr, fb_expr_ty) => {
             let ast_expr_ty = ast::walk::Node::from_expr(ast_expr);
-            let fb_ty = fbast::enum_name_expression(fb_expr_ty);
+            let fb_ty = fb_expr_ty.variant_name().unwrap();
             Err(String::from(format!(
                 "wrong expr type; ast = {}, fb = {}",
                 ast_expr_ty, fb_ty
@@ -925,12 +925,14 @@ fn ast_operator(fb_op: fbast::Operator) -> ast::Operator {
         fbast::Operator::RegexpMatchOperator => ast::Operator::RegexpMatchOperator,
         fbast::Operator::NotRegexpMatchOperator => ast::Operator::NotRegexpMatchOperator,
         fbast::Operator::InvalidOperator => ast::Operator::InvalidOperator,
+        _ => unreachable!("Unknown fbast::Operator"),
     }
 }
 
 fn ast_logical_operator(lo: &fbast::LogicalOperator) -> ast::LogicalOperator {
-    match lo {
+    match *lo {
         fbast::LogicalOperator::AndOperator => ast::LogicalOperator::AndOperator,
         fbast::LogicalOperator::OrOperator => ast::LogicalOperator::OrOperator,
+        _ => unreachable!("Unknown fbast::LogicalOperator"),
     }
 }

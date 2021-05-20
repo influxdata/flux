@@ -25,11 +25,11 @@ pub fn serialize(ast_pkg: &ast::Package) -> Result<(Vec<u8>, usize), String> {
     v.finish()
 }
 
+const UNKNOWNVARIANTNAME: &str = "UNKNOWNAST";
+
 fn new_serializing_visitor_with_capacity<'a>(_capacity: usize) -> SerializingVisitor<'a> {
     SerializingVisitor {
-        inner: Rc::new(RefCell::new(SerializingVisitorState::new_with_capacity(
-            1024,
-        ))),
+        inner: Rc::new(RefCell::new(SerializingVisitorState::with_capacity(1024))),
     }
 }
 
@@ -806,10 +806,10 @@ struct SerializingVisitorState<'a> {
 }
 
 impl<'a> SerializingVisitorState<'a> {
-    fn new_with_capacity(capacity: usize) -> SerializingVisitorState<'a> {
+    fn with_capacity(capacity: usize) -> SerializingVisitorState<'a> {
         SerializingVisitorState {
             err: None,
-            builder: flatbuffers::FlatBufferBuilder::new_with_capacity(capacity),
+            builder: flatbuffers::FlatBufferBuilder::with_capacity(capacity),
             package: None,
             package_clause: None,
             import_decls: Vec::new(),
@@ -841,8 +841,8 @@ impl<'a> SerializingVisitorState<'a> {
                 } else {
                     self.err = Some(format!(
                         "expected {} on expr stack, got {}",
-                        fbast::enum_name_expression(kind),
-                        fbast::enum_name_expression(e)
+                        kind.variant_name().unwrap_or(UNKNOWNVARIANTNAME),
+                        e.variant_name().unwrap_or(UNKNOWNVARIANTNAME)
                     ));
                     None
                 }
@@ -1005,10 +1005,10 @@ fn print_expr_stack(st: &[(WIPOffset<UnionWIPOffset>, fbast::Expression)]) {
         return;
     }
     for (_, et) in &st[..st.len() - 1] {
-        print!(" {}", fbast::enum_name_expression(*et));
+        print!(" {}", (*et).variant_name().unwrap_or(UNKNOWNVARIANTNAME));
     }
     let (_, et) = st[st.len() - 1];
-    println!(" -> {}", fbast::enum_name_expression(et));
+    println!(" -> {}", et.variant_name().unwrap_or(UNKNOWNVARIANTNAME));
 }
 
 fn fb_operator(o: &ast::Operator) -> fbast::Operator {
