@@ -75,7 +75,6 @@ func (e *executor) Execute(ctx context.Context, p *plan.Spec, a *memory.Allocato
 	if err != nil {
 		return nil, nil, errors.Wrap(err, codes.Inherit, "failed to initialize execute state")
 	}
-	es.logger = e.logger
 	es.do()
 	return es.results, es.metaCh, nil
 }
@@ -102,6 +101,7 @@ func (e *executor) createExecutionState(ctx context.Context, p *plan.Spec, a *me
 		results:   make(map[string]flux.Result),
 		// TODO(nathanielc): Have the planner specify the dispatcher throughput
 		dispatcher: newPoolDispatcher(10, e.logger),
+		logger:     e.logger,
 	}
 	v := &createExecutionNodeVisitor{
 		es:    es,
@@ -232,7 +232,7 @@ func (v *createExecutionNodeVisitor) Visit(node plan.Node) error {
 
 		for _, p := range nonYieldPredecessors(node) {
 			executionNode := v.nodes[p]
-			transport := newConsecutiveTransport(v.es.dispatcher, tr, node)
+			transport := newConsecutiveTransport(v.es.dispatcher, tr, node, v.es.logger)
 			v.es.transports = append(v.es.transports, transport)
 			executionNode.AddTransformation(transport)
 		}

@@ -9,9 +9,11 @@ import (
 
 	"github.com/influxdata/flux"
 	"github.com/influxdata/flux/codes"
+	"github.com/influxdata/flux/execute/table"
 	"github.com/influxdata/flux/internal/errors"
 	"github.com/influxdata/flux/interpreter"
 	"github.com/influxdata/flux/plan"
+	"go.uber.org/zap"
 )
 
 type Transport interface {
@@ -23,6 +25,7 @@ type Transport interface {
 // consecutiveTransport implements Transport by transporting data consecutively to the downstream Transformation.
 type consecutiveTransport struct {
 	dispatcher Dispatcher
+	logger     *zap.Logger
 
 	t        Transformation
 	messages MessageQueue
@@ -36,9 +39,10 @@ type consecutiveTransport struct {
 	inflight       int32
 }
 
-func newConsecutiveTransport(dispatcher Dispatcher, t Transformation, n plan.Node) *consecutiveTransport {
+func newConsecutiveTransport(dispatcher Dispatcher, t Transformation, n plan.Node, logger *zap.Logger) *consecutiveTransport {
 	return &consecutiveTransport{
 		dispatcher: dispatcher,
+		logger:     logger,
 		t:          t,
 		// TODO(nathanielc): Have planner specify message queue initial buffer size.
 		messages: newMessageQueue(64),
@@ -110,7 +114,7 @@ func (t *consecutiveTransport) Process(id DatasetID, tbl flux.Table) error {
 	}
 	t.pushMsg(&processMsg{
 		srcMessage: srcMessage(id),
-		table:      tbl,
+		table:      newConsecutiveTransportTable(t, tbl),
 	})
 	return nil
 }
@@ -359,4 +363,72 @@ func (m *finishMsg) Type() MessageType {
 }
 func (m *finishMsg) Error() error {
 	return m.err
+}
+
+// consecutiveTransportTable is a flux.Table that is being processed
+// within a consecutiveTransport.
+type consecutiveTransportTable struct {
+	transport *consecutiveTransport
+	tbl       flux.Table
+}
+
+func newConsecutiveTransportTable(t *consecutiveTransport, tbl flux.Table) flux.Table {
+	return &consecutiveTransportTable{
+		transport: t,
+		tbl:       tbl,
+	}
+}
+
+func (t *consecutiveTransportTable) Key() flux.GroupKey {
+	return t.tbl.Key()
+}
+
+func (t *consecutiveTransportTable) Cols() []flux.ColMeta {
+	return t.tbl.Cols()
+}
+
+func (t *consecutiveTransportTable) Do(f func(flux.ColReader) error) error {
+	return t.tbl.Do(func(cr flux.ColReader) error {
+		if err := t.validate(cr); err != nil {
+			logger := t.transport.logger
+			logger.Info("Invalid column reader received from parent",
+				zap.String("source", t.transport.sourceInfo()),
+				zap.Error(err),
+			)
+		}
+		return f(cr)
+	})
+}
+
+func (t *consecutiveTransportTable) Done() {
+	t.tbl.Done()
+}
+
+func (t *consecutiveTransportTable) Empty() bool {
+	return t.tbl.Empty()
+}
+
+func (t *consecutiveTransportTable) validate(cr flux.ColReader) error {
+	if len(cr.Cols()) == 0 {
+		return nil
+	}
+
+	sz := table.Values(cr, 0).Len()
+	for i, n := 1, len(cr.Cols()); i < n; i++ {
+		nsz := table.Values(cr, i).Len()
+		if sz != nsz {
+			// Mismatched column lengths.
+			// Look at all column lengths so we can give a more complete
+			// error message.
+			// We avoid this in the usual case to avoid allocating an array
+			// of lengths for every table when it might not be needed.
+			lens := make(map[string]int, len(cr.Cols()))
+			for i, col := range cr.Cols() {
+				label := fmt.Sprintf("%s:%s", col.Label, col.Type)
+				lens[label] = table.Values(cr, i).Len()
+			}
+			return errors.Newf(codes.Internal, "mismatched column lengths: %v", lens)
+		}
+	}
+	return nil
 }
