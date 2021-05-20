@@ -36,13 +36,13 @@ v1.databases(chicken:"what is this?")`,
 		{
 			Name: "databases with host and token",
 			Raw: `import "influxdata/influxdb/v1"
-v1.databases(host: "http://localhost:9999", token: "mytoken")`,
+v1.databases(host: "http://localhost:8086", token: "mytoken")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID: "databases0",
 						Spec: &v1.DatabasesOpSpec{
-							Host:  stringPtr("http://localhost:9999"),
+							Host:  stringPtr("http://localhost:8086"),
 							Token: stringPtr("mytoken"),
 						},
 					},

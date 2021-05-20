@@ -65,7 +65,7 @@ func TestCardinality_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "cardinality with host and token",
-			Raw:  `influxdb.cardinality(bucket:"mybucket", host: "http://localhost:9999", token: "mytoken", start: -2h)`,
+			Raw:  `influxdb.cardinality(bucket:"mybucket", host: "http://localhost:8086", token: "mytoken", start: -2h)`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
@@ -73,7 +73,7 @@ func TestCardinality_NewQuery(t *testing.T) {
 						Spec: &influxdb.CardinalityOpSpec{
 							Config: influxdb.Config{
 								Bucket: influxdb.NameOrID{Name: "mybucket"},
-								Host:   "http://localhost:9999",
+								Host:   "http://localhost:8086",
 								Token:  "mytoken",
 							},
 							Start: flux.Time{

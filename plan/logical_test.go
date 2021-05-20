@@ -58,7 +58,7 @@ func TestPlan_LogicalPlanFromSpec(t *testing.T) {
 		fromSpec = &influxdb.FromProcedureSpec{
 			Org:    &influxdb.NameOrID{Name: "influxdata"},
 			Bucket: influxdb.NameOrID{Name: "my-bucket"},
-			Host:   func(v string) *string { return &v }("http://localhost:9999"),
+			Host:   func(v string) *string { return &v }("http://localhost:8086"),
 		}
 		rangeSpec = &universe.RangeProcedureSpec{
 			Bounds: flux.Bounds{

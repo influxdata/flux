@@ -32,13 +32,13 @@ func TestBuckets_NewQuery(t *testing.T) {
 		},
 		{
 			Name: "buckets with host and token",
-			Raw:  `buckets(host: "http://localhost:9999", token: "mytoken")`,
+			Raw:  `buckets(host: "http://localhost:8086", token: "mytoken")`,
 			Want: &flux.Spec{
 				Operations: []*flux.Operation{
 					{
 						ID: "buckets0",
 						Spec: &influxdb.BucketsOpSpec{
-							Host:  stringPtr("http://localhost:9999"),
+							Host:  stringPtr("http://localhost:8086"),
 							Token: stringPtr("mytoken"),
 						},
 					},

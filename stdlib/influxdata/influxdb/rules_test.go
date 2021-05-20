@@ -99,7 +99,7 @@ func TestFromRemoteRule_WithHost(t *testing.T) {
 	fromSpec := influxdb.FromProcedureSpec{
 		Org:    &influxdb.NameOrID{Name: "influxdata"},
 		Bucket: influxdb.NameOrID{Name: "telegraf"},
-		Host:   stringPtr("http://localhost:9999"),
+		Host:   stringPtr("http://localhost:8086"),
 	}
 	rangeSpec := universe.RangeProcedureSpec{
 		Bounds: flux.Bounds{
@@ -212,7 +212,7 @@ func TestFromRemoteRule_WithoutRangeValidation(t *testing.T) {
 	fromSpec := influxdb.FromProcedureSpec{
 		Org:    &influxdb.NameOrID{Name: "influxdata"},
 		Bucket: influxdb.NameOrID{Name: "telegraf"},
-		Host:   stringPtr("http://localhost:9999"),
+		Host:   stringPtr("http://localhost:8086"),
 	}
 
 	tc := plantest.RuleTestCase{
@@ -239,7 +239,7 @@ func TestMergeRemoteRangeRule(t *testing.T) {
 
 	fromSpec := influxdb.FromProcedureSpec{
 		Bucket: influxdb.NameOrID{Name: "telegraf"},
-		Host:   stringPtr("http://localhost:9999"),
+		Host:   stringPtr("http://localhost:8086"),
 	}
 	rangeSpec := universe.RangeProcedureSpec{
 		Bounds: flux.Bounds{
@@ -291,7 +291,7 @@ func TestMergeRemoteFilterRule(t *testing.T) {
 
 	fromSpec := influxdb.FromProcedureSpec{
 		Bucket: influxdb.NameOrID{Name: "telegraf"},
-		Host:   stringPtr("http://localhost:9999"),
+		Host:   stringPtr("http://localhost:8086"),
 	}
 	rangeSpec := universe.RangeProcedureSpec{
 		Bounds: flux.Bounds{
@@ -356,7 +356,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 			Rules: []plan.Rule{
 				influxdb.DefaultFromAttributes{
 					Org:   &influxdb.NameOrID{Name: "influxdata"},
-					Host:  stringPtr("http://localhost:9999"),
+					Host:  stringPtr("http://localhost:8086"),
 					Token: stringPtr("mytoken"),
 				},
 			},
@@ -372,7 +372,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 					plan.CreateLogicalNode("from", &influxdb.FromProcedureSpec{
 						Org:    &influxdb.NameOrID{Name: "influxdata"},
 						Bucket: influxdb.NameOrID{Name: "telegraf"},
-						Host:   stringPtr("http://localhost:9999"),
+						Host:   stringPtr("http://localhost:8086"),
 						Token:  stringPtr("mytoken"),
 					}),
 				},
@@ -383,7 +383,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 			Rules: []plan.Rule{
 				influxdb.DefaultFromAttributes{
 					Org:   &influxdb.NameOrID{Name: "influxdata"},
-					Host:  stringPtr("http://localhost:9999"),
+					Host:  stringPtr("http://localhost:8086"),
 					Token: stringPtr("mytoken"),
 				},
 			},
@@ -392,7 +392,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 					plan.CreateLogicalNode("from", &influxdb.FromProcedureSpec{
 						Org:    &influxdb.NameOrID{Name: "alternate_org"},
 						Bucket: influxdb.NameOrID{Name: "telegraf"},
-						Host:   stringPtr("http://mysupersecretserver:9999"),
+						Host:   stringPtr("http://mysupersecretserver:8086"),
 						Token:  stringPtr("differenttoken"),
 					}),
 				},
@@ -402,7 +402,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 					plan.CreateLogicalNode("from", &influxdb.FromProcedureSpec{
 						Org:    &influxdb.NameOrID{Name: "alternate_org"},
 						Bucket: influxdb.NameOrID{Name: "telegraf"},
-						Host:   stringPtr("http://mysupersecretserver:9999"),
+						Host:   stringPtr("http://mysupersecretserver:8086"),
 						Token:  stringPtr("differenttoken"),
 					}),
 				},
@@ -413,7 +413,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 			Rules: []plan.Rule{
 				influxdb.FromRemoteRule{},
 				influxdb.DefaultFromAttributes{
-					Host: stringPtr("http://localhost:9999"),
+					Host: stringPtr("http://localhost:8086"),
 				},
 			},
 			Before: &plantest.PlanSpec{
@@ -428,7 +428,7 @@ func TestDefaultFromAttributes(t *testing.T) {
 					plan.CreatePhysicalNode("fromRemote", &influxdb.FromRemoteProcedureSpec{
 						Config: influxdb.Config{
 							Bucket: influxdb.NameOrID{Name: "telegraf"},
-							Host:   "http://localhost:9999",
+							Host:   "http://localhost:8086",
 						},
 					}),
 				},
