@@ -292,7 +292,7 @@ impl<'a> NodeMut<'a> {
 ///
 /// A visitor that mutates node types:
 ///
-/// ```
+/// ```no_run
 /// use fluxcore::semantic::walk::{NodeMut, VisitorMut};
 /// use fluxcore::semantic::types::*;
 ///

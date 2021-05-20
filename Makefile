@@ -110,7 +110,9 @@ test-go: libflux-go
 	$(GO_TEST) $(GO_TEST_FLAGS) ./...
 
 test-rust:
-	cd libflux && $(CARGO) test $(CARGO_ARGS) && $(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
+	cd libflux && $(CARGO) test $(CARGO_ARGS) && \
+	$(CARGO) test --doc && \
+	$(CARGO) clippy $(CARGO_ARGS) -- -Dclippy::all
 
 test-flux:
 	$(GO_RUN) ./cmd/flux test -v
