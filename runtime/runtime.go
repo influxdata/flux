@@ -18,7 +18,7 @@ import (
 // required to execute a flux script.
 var Default = &runtime{}
 
-const panicNotFinalized = "builtins not finalized (you may be missing an `import _ \"github.com/influxdata/idpe/fluxinit/static\"` statement)"
+const panicNotFinalized = "builtins not finalized (you may be missing an `import _ \"github.com/influxdata/REPO/fluxinit/static\"` statement)"
 
 // runtime contains the flux runtime for interpreting and
 // executing queries.
