@@ -7,7 +7,11 @@ use pretty_assertions::assert_eq;
 
 fn assert_unchanged(script: &str) {
     let output = format(script).unwrap();
-    assert_eq!(script, output);
+    assert_eq!(
+        script, output,
+        "\n EXPECTED: \n {} \n OUTPUT: \n {} \n",
+        script, output
+    );
 }
 
 fn assert_format(script: &str, expected: &str) {
