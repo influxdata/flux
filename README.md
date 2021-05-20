@@ -24,20 +24,22 @@ Building Flux requires the following:
 
 Flux is currently available in InfluxDB 1.7 and 2.0, or through the REPL that can be compiled from this repository.
 
-To build Flux, first install the `pkg-config` utility, and ensure the GNU `pkg-config` utility is also installed.
+To build Flux, first install the GNU `pkg-config` utility on your system, then ensure the `pkg-config` wrapper is also installed.
 
 ```
+# First install GNU pkg-config.
 # On Debian/Ubuntu
 $ sudo apt-get install -y clang pkg-config
-# On Mac OS X with Homebrew
+# Or on Mac OS X with Homebrew
 $ brew install pkg-config
-# Install the pkg-config wrapper utility
+
+# Next, install the pkg-config wrapper utility
 $ go get github.com/influxdata/pkg-config
-# Ensure the GOBIN directory is on your PATH
+# Optionally, add the GOBIN directory to your PATH
 $ export PATH=${GOPATH}/bin:${PATH}
 ```
 
-To ensure that `pkg-config` is configured correctly, you can use `which -a`.
+If GOBIN is in your PATH, ensure that `pkg-config` is configured correctly by using `which -a`.
 
 ```
 $ which -a pkg-config
@@ -52,12 +54,11 @@ $ go build ./cmd/flux
 $ ./flux repl
 ```
 
-If you do not want to add the wrapper `pkg-config` to your `PATH`, you can also set `PKG_CONFIG` and Go will use it.
+Alternatively, because the `pkg-config` wrapper may not work in all projects you may not want to add the wrapper `pkg-config` to your `PATH`. In this case you can set `PKG_CONFIG` and Go will use it. Eg, to build and install to ${GOPATH}/bin using `PKG_CONFIG`:
 
 ```
-$ export PKG_CONFIG=/home/user/go/bin/pkg-config
-$ go build ./cmd/flux
-$ ./flux repl
+$ PKG_CONFIG=/home/user/go/bin/pkg-config go install ./cmd/flux
+$ ${GOPATH}/bin/flux repl
 ```
 
 From within the REPL, you can run any Flux expression.
