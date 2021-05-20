@@ -19,10 +19,12 @@ import (
 
 const DiffKind = "diff"
 const DefaultEpsilon = 1e-9
+const DefaultNaNsEqual = false
 
 type DiffOpSpec struct {
-	Verbose bool    `json:"verbose,omitempty"`
-	Epsilon float64 `json:"minValue"`
+	Verbose   bool    `json:"verbose,omitempty"`
+	Epsilon   float64 `json:"epsilon"`
+	NaNsEqual bool    `json:"nansEqual,omitempty"`
 }
 
 func (s *DiffOpSpec) Kind() flux.OperationKind {
@@ -72,8 +74,14 @@ func createDiffOpSpec(args flux.Arguments, a *flux.Administration) (flux.Operati
 	} else if !ok {
 		epsilon = DefaultEpsilon
 	}
+	nansEqual, ok, err := args.GetBool("nansEqual")
+	if err != nil {
+		return nil, err
+	} else if !ok {
+		nansEqual = DefaultNaNsEqual
+	}
 
-	return &DiffOpSpec{Verbose: verbose, Epsilon: epsilon}, nil
+	return &DiffOpSpec{Verbose: verbose, Epsilon: epsilon, NaNsEqual: nansEqual}, nil
 }
 
 func newDiffOp() flux.OperationSpec {
@@ -116,7 +124,8 @@ type DiffTransformation struct {
 
 	inputCache *execute.RandomAccessGroupLookup
 
-	epsilon float64
+	epsilon   float64
+	nansEqual bool
 }
 
 type diffParentState struct {
@@ -504,6 +513,10 @@ func (t *DiffTransformation) rowEqual(want, got *tableBuffer, i int) bool {
 		switch wantCol.Type {
 		case flux.TFloat:
 			want, got := wantCol.Values.(*array.Float64).Value(i), gotCol.Values.(*array.Float64).Value(i)
+			if t.nansEqual && math.IsNaN(want) && math.IsNaN(got) {
+				// treat NaNs as equal so go to next column
+				continue
+			}
 			if math.Abs(want-got) > t.epsilon {
 				return false
 			}

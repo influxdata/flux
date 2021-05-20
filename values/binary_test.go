@@ -2,6 +2,7 @@ package values_test
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"testing"
 
@@ -38,6 +39,10 @@ func TestBinaryOperator(t *testing.T) {
 		// float + float
 		{lhs: 4.5, op: "+", rhs: 8.2, want: 12.7},
 		{lhs: 4.5, op: "+", rhs: floatNullValue, want: floatNullValue},
+		{lhs: 1.0, op: "/", rhs: 0.0, want: math.Inf(1)},
+		{lhs: -1.0, op: "/", rhs: 0.0, want: math.Inf(-1)},
+		{lhs: 1.0, op: "%", rhs: 0.0, want: math.NaN()},
+		{lhs: -1.0, op: "%", rhs: 0.0, want: math.NaN()},
 		// string + string
 		{lhs: "a", op: "+", rhs: "b", want: "ab"},
 		{lhs: "a", op: "+", rhs: stringNullValue, want: stringNullValue},
@@ -627,13 +632,19 @@ func Value(v interface{}) values.Value {
 	return values.New(v)
 }
 
-// ValueEqual compares two values and considers two null
+// ValueEqual compares two values and considers two null or two NaNs
 // values to be equal to each other.
 //
-// The standard equality operator does not consider null
-// to be equal to null.
+// The standard equality operator does not consider nulls or NaNs
+// to be equal.
 func ValueEqual(l, r values.Value) bool {
 	if l.IsNull() && r.IsNull() {
+		return true
+	}
+	if l.Type().Nature() == semantic.Float &&
+		r.Type().Nature() == semantic.Float &&
+		math.IsNaN(l.Float()) &&
+		math.IsNaN(r.Float()) {
 		return true
 	}
 	return l.Equal(r)
