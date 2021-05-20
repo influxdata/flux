@@ -1085,26 +1085,3 @@ else
     z",
     );
 }
-#[test]
-fn line_deleter() {
-    assert_unchanged(
-        "tables
-    |> map(
-        fn: (r) => ({r with
-
-
-            level_value: if r._level == levelCrit then
-                4
-            else if r._level == levelWarn then
-                3
-            else if r._level == levelInfo then
-                2
-            else if r._level == levelOK then
-                1
-            else
-                0,
-            foo: bar,
-        }),
-    )",
-    );
-}
