@@ -1085,3 +1085,14 @@ else
     z",
     );
 }
+#[test]
+fn line_separation() {
+    assert_unchanged(
+        r#",,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119554,2020-10-09T22:19:00Z
+,,5,inodes_used,disk,disk1s1,apfs,ip-192-168-1-16.ec2.internal,rw,/System/Volumes/Data,4119586.6,2020-10-09T22:19:44.191958Z"
+
+outData = "
+#group,false,false,true,false,false,false,false,false,false,false,false,false"#,
+    );
+
+}

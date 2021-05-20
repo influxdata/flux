@@ -729,16 +729,19 @@ impl Formatter {
         }
 
         let mut prev: i8 = -1;
+        let previous_location = n.base.location.position.line;
         for (i, stmt) in n.body.iter().enumerate() {
             let cur = stmt.typ();
             self.write_rune(sep);
-
+            let current_location = n.base.location.position.line;
             if i != 0 {
+                let line_gap = current_location - previous_location;
                 // separate different statements with double newline or statements with comments
-                if cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
+                if line_gap > 1 || cur != prev || starts_with_comment(Node::from_stmt(&stmt)) {
                     self.write_rune(sep);
                 }
             }
+            let previous_location = current_location;
             self.write_indent();
             self.format_node(&Node::from_stmt(stmt));
             prev = cur;
