@@ -31,7 +31,7 @@ sendAlert = (url="https://api.opsgenie.com/v2/alerts", apiKey, message, alias=""
 
         return if strings.strlen(v: v2) > max then
             string(v: json.encode(v: "${strings.substring(v: v2, start: 0, end: max)}"))
-else
+        else
             string(v: json.encode(v: v2))
     }
     body = "{

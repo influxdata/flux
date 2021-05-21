@@ -17,13 +17,13 @@ severityFromLevel = (level) => {
     lvl = strings.toLower(v: level)
     sev = if lvl == "warn" then
         "warning"
-else if lvl == "crit" then
+    else if lvl == "crit" then
         "critical"
-else if lvl == "info" then
+    else if lvl == "info" then
         "info"
-else if lvl == "ok" then
+    else if lvl == "ok" then
         "info"
-else
+    else
         "error"
 
     return sev
